@@ -3,7 +3,7 @@
 # YAML Template
 Below an example of a simple template for demonstration purposes.
  
-```YAML 
+```yaml 
 templates:
   python:   ./templates/python
   angular:  ./templates/angular
