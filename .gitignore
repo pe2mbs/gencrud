@@ -2,3 +2,4 @@
 *.pyc
 __cachepy__
 output/
+templates.old/
