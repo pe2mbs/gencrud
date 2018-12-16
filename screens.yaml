@@ -1,0 +1,73 @@
+templates:
+  python:   ./templates/python
+  angular:  ./templates/angular
+source:
+  python:   ./output/backend
+  angular:  ./output/src/app
+objects:
+- name:                   role
+  class:                  Role
+  application:            testrun
+  uri:
+    backend:              /api/role
+    frontend:             /roles
+  menu:
+    caption:              Database
+    index:                0
+  table:
+    name:                 WA_ROLES
+    columns:
+    - field:              D_ROLE_ID       INT         AUTO NUMBER  PRIMARY KEY
+      label:              Identification
+      index:              0
+      ui:                 label
+    - field:              D_ROLE          CHAR(20)    NOT NULL
+      label:              Role
+      index:              1
+      ui:                 textbox
+    - field:              USERS           RECORD      RELATION User
+      label:              Users
+      ui:                 label
+      inport:             User            ../../testrun/user/model
+- name:                   user
+  class:                  User
+  application:            testrun
+  uri:
+    backend:              /api/user
+    frontend:             /users
+  menu:
+    caption:              Database
+    index:                1
+  table:
+    name:                 WA_USERS
+    columns:
+    - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
+      label:              Identification
+      index:              0
+      ui:                 label
+    - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
+      label:              User name
+      index:              1
+      ui:                 textbox
+    - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
+      label:              Password
+      ui:                 password
+    - field:              D_FIRST_NAME    CHAR(30)    NOT NULL
+      label:              First name
+      index:              3
+      ui:                 textbox
+    - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
+      label:              Middle name
+      index:              4
+      ui:                 textbox
+    - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
+      label:              Last name
+      index:              5
+      ui:                 textbox
+    - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
+      label:              Role
+      ui:                 choice
+    - field:              ROLE            RECORD      RELATION Role
+      label:              Role
+      ui:                 label
+      inport:             Role            ../../testrun/role/model
