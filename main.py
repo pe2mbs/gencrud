@@ -500,18 +500,50 @@ def generatePython( templates, config ):
     return
 
 
-def updateAngularProject( config, declarations = {}, components = {}, imports = {}, providers = {}, entryComponents = {} ):
+def updateAngularProject( config, app_module ):
     print( config.angular.source )
     # File to edit 'app.module.ts'
     # inject the following;
+    #   inport
     #   declarations:       search for 'declarations: ['
     #   imports:            search for 'imports: ['
     #   providers:          search for 'providers: ['
     #   entryComponents:    search for 'entryComponents: ['
+    with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
+        json.dump( app_module, stream, indent = 4 )
+
     return
 
+
+def joinJson( json1, json2 ):
+    result = {}
+    for key, value in json2.items():
+        if key not in result:
+            result[ key ] = value
+
+    for key, value in json1.items():
+        if type( value ) in ( list, tuple ):
+            for item in value:
+                if item not in result[ key ]:
+                    result[ key ].append( item )
+
+        elif type( value ) is dict:
+            result[ key ] = joinJson( result[ key ], value )
+
+        else:
+            result[ key ] = value
+
+    return result
+
+
 def generateAngular( templates, config ):
+    modules = []
+    if not os.path.isdir( config.angular.source ):
+        os.makedirs( config.angular.source )
+
     for cfg in config:
+        modules.append( [ cfg.application, cfg.name ] )
+        makeAngularModule( config.angular.source, cfg.application, cfg.name )
         for templ in templates:
             if verbose:
                 print( "template    : {0}".format( templ ) )
@@ -527,26 +559,45 @@ def generateAngular( templates, config ):
                 print( "primary key : {0}".format( cfg.primaryKey ) )
                 print( "uri         : {0}".format( cfg.uri ) )
 
-            if not os.path.isdir( config.angular.source ):
-                os.makedirs( config.angular.source )
-
-            makeAngularModule( config.angular.source, cfg.application,
-                                            cfg.name )
             with open( os.path.join( config.angular.source,
                                      cfg.application,
                                      cfg.name, sourceName( templ ) ),
                        C_FILEMODE_WRITE ) as stream:
-                #print( Template( filename=os.path.abspath( templ ) ).
-                #       render( obj = cfg ), file = stream )
                 for line in Template( filename=os.path.abspath( templ ) ).render( obj = cfg ).split('\n'):
                     stream.write( line )
+                    if sys.platform.startswith( 'linux' ):
+                        stream.write( '\n' )
 
             if verbose:
                 print( "" )
 
-    updateAngularProject( config )
+    appModule = None
+    for app, mod in modules:
+        app_module_json_file = os.path.join( config.angular.source,
+                                           app, mod, 'app.module.json' )
+        with open( app_module_json_file, 'r' ) as stream:
+            data = json.load( stream )
+            if appModule is None:
+                appModule = data
+
+            else:
+                appModule = joinJson( appModule, data )
+
+        os.remove( app_module_json_file )
+
+    updateAngularProject( config, appModule )
     return
 
+
+def verifyLoadProject( root, configFile ):
+    result = None
+    if os.path.isdir( root.source ) and os.path.isfile( os.path.join( root.source, configFile ) ):
+        with open( os.path.join( root.source, configFile ), C_FILEMODE_READ ) as stream:
+            result = json.load( stream )
+
+        return result
+
+    return result
 
 def main():
     try:
@@ -596,28 +647,26 @@ def main():
     with open( inputFile, 'r' ) as stream:
         config = TemplateConfiguration( **yaml.load( stream ) )
 
-    if os.path.isdir( config.angular.source ) and os.path.isfile( os.path.join( config.angular.source, 'angular.json' ) ):
-        with open( os.path.join( config.angular.source, 'angular.json' ), C_FILEMODE_READ ) as stream:
-            data = json.load( stream )
-            # Check if we have a valid Angular environment
-            if 'defaultProject' in data and 'projects' in data:
-                if data[ 'defaultProject' ] not in data[ 'projects' ]:
-                    print( 'Error: Angular environment not found' )
-                else:
-                    proj = data[ 'projects' ][ data[ 'defaultProject' ] ]
-
-            else:
+    data = verifyLoadProject( config.angular, 'angular.json' )
+    if data is not None:
+        # Check if we have a valid Angular environment
+        if 'defaultProject' in data and 'projects' in data:
+            if data[ 'defaultProject' ] not in data[ 'projects' ]:
                 print( 'Error: Angular environment not found' )
+            else:
+                proj = data[ 'projects' ][ data[ 'defaultProject' ] ]
+
+        else:
+            print( 'Error: Angular environment not found' )
 
     else:
         print( 'Error: Angular environment not found' )
 
-    if os.path.isdir( config.python.source ) and os.path.isfile( os.path.join( config.python.source, 'config.json' ) ):
-        with open( os.path.join( config.python.source, 'config.json' ), C_FILEMODE_READ ) as stream:
-            data = json.load( stream )
-            # Check if we have a valid Python-Flask environment
-            if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
-                print( 'Error: Python Flask environment not found' )
+    data = verifyLoadProject( config.python, 'config.json' )
+    if data is not None:
+        # Check if we have a valid Python-Flask environment
+        if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
+            print( 'Error: Python Flask environment not found' )
 
     else:
         print( 'Error: Python Flask environment not found' )
