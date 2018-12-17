@@ -67,7 +67,7 @@ objects:
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
       ui:                 choice
-    - field:              ROLE            RECORD      RELATION Role
+    - field:              D_ROLES_REL     RECORD      RELATION Role
       label:              Role
       ui:                 label
       inport:             Role            ../../testrun/role/model

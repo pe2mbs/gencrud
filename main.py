@@ -1,18 +1,36 @@
+#!/usr/bin/python3
+#
+#   Python backend and Angular frontend code generation by Template
+#   Copyright (C) 2018 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
+#
+#   This library is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU Library General Public
+#   License as published by the Free Software Foundation; either
+#   version 2 of the License, or (at your option) any later version.
+#
+#   This library is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License along with this library; if not, write to the Free Software
+#   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#
 import os
 import sys
 import yaml
+import json
 import getopt
 from nltk.tokenize import word_tokenize
 from mako.template import Template
 
-try:
-    word_tokenize( "It's." )
-except:
-    import nltk
-    nltk.download( 'punkt' )
-
+sslVerify = True
 verbose = False
 
+C_FILEMODE_UPDATE = 'r+'
+C_FILEMODE_WRITE  = 'w'
+C_FILEMODE_READ   = 'r'
 
 class TemplateSource( object ):
     def __init__( self, type, **cfg ):
@@ -22,11 +40,11 @@ class TemplateSource( object ):
 
     @property
     def source( self ):
-        return self.__source
+        return os.path.abspath( os.path.normpath( self.__source ) )
 
     @property
     def template( self ):
-        return self.__template
+        return os.path.abspath( os.path.normpath( self.__template ) )
 
 
 class TemplateColumn( object ):
@@ -252,11 +270,9 @@ class TemplateColumn( object ):
                            file = sys.stderr )
         else:
 
-            result += 'relationship( "{0}"'.format( self.__interface[0] )
-            for rest in self.__interface[ 1: ]:
-                result += rest
+            result += 'relationship( "{0}"'.format( self.__interface[ 1 ] )
 
-        result += ')'
+        result += ' )'
         return result
 
     @property
@@ -374,8 +390,9 @@ def sourceName( templateName ):
 
 def makePythonModules( root_path, *args ):
     def write__init__py():
-        with open( os.path.join( root_path, '__init__.py' ), 'w' ) as stream:
-            print( '', file = stream )
+        #with open( os.path.join( root_path, '__init__.py' ), 'w+' ) as stream:
+        #    print( '', file = stream )
+        return
 
     if len( args ) > 0:
         modulePath = os.path.join( root_path, args[ 0 ] )
@@ -406,6 +423,7 @@ def makeAngularModule( root_path, *args ):
 
 
 def generatePython( templates, config ):
+    modules = []
     global verbose
     for cfg in config:
         for templ in templates:
@@ -423,19 +441,74 @@ def generatePython( templates, config ):
                 print( "primary key : {0}".format( cfg.primaryKey ) )
                 print( "uri         : {0}".format( cfg.uri ) )
 
-            makePythonModules( config.python.source, cfg.application, cfg.name )
-            with open( os.path.join( config.python.source,
-                                     cfg.application,
-                                     cfg.name, sourceName( templ ) ), 'w' ) as stream:
+            if not os.path.isdir( config.python.source ):
+                os.makedirs( config.python.source )
 
-                print( Template( filename=os.path.abspath( templ ) ).
-                       render( obj = cfg ), file = stream )
+            makePythonModules( config.python.source, cfg.application, cfg.name )
+            modulePath = os.path.join( config.python.source,
+                                   cfg.application,
+                                   cfg.name )
+
+            with open( os.path.join( modulePath, sourceName( templ ) ), C_FILEMODE_WRITE ) as stream:
+                for line in Template( filename=os.path.abspath( templ ) ).render( obj = cfg ).split('\n'):
+                    stream.write( line )
+
+                # Open the __init__.py
+                with open( os.path.join( modulePath, '__init__.py' ), C_FILEMODE_UPDATE ) as stream:
+                    stream.seek( 0, os.SEEK_END )
+                    moduleName, _ = os.path.splitext( sourceName( templ ) )
+                    importStr = 'from {0}.{1}.{2} import *'.format( cfg.application, cfg.name, moduleName )
+                    print( "Try to add '{0}'".format( importStr ), file = sys.stderr )
+                    try:
+                        lines = stream.readlines()
+
+                    except:
+                        print( "Error reading the file", file = sys.stdout )
+                        lines = ""
+
+                    if verbose:
+                        print( lines, file = sys.stdout )
+
+                    if not importStr + '\n' in lines:
+                        print( importStr, file = stream )
+
+                modules.append( ( cfg.application, cfg.name ) )
 
             if verbose:
                 print( "" )
 
+    for applic, module in modules:
+        with open( os.path.join( config.python.source,
+                                 applic, '__init__.py' ), C_FILEMODE_UPDATE ) as stream:
+            importStr = 'from {0}.{1} import *'.format( applic, module )
+            print( "Try to add '{0}'".format( importStr ), file = sys.stderr )
+            try:
+                lines = stream.readlines()
+
+            except:
+                if verbose:
+                    print( "Error reading the file", file = sys.stdout )
+
+                lines = ""
+
+            if verbose:
+                print( lines, file = sys.stdout )
+
+            if not importStr + '\n' in lines:
+                print( importStr, file = stream )
+
     return
 
+
+def updateAngularProject( config, declarations = {}, components = {}, imports = {}, providers = {}, entryComponents = {} ):
+    print( config.angular.source )
+    # File to edit 'app.module.ts'
+    # inject the following;
+    #   declarations:       search for 'declarations: ['
+    #   imports:            search for 'imports: ['
+    #   providers:          search for 'providers: ['
+    #   entryComponents:    search for 'entryComponents: ['
+    return
 
 def generateAngular( templates, config ):
     for cfg in config:
@@ -454,24 +527,30 @@ def generateAngular( templates, config ):
                 print( "primary key : {0}".format( cfg.primaryKey ) )
                 print( "uri         : {0}".format( cfg.uri ) )
 
+            if not os.path.isdir( config.angular.source ):
+                os.makedirs( config.angular.source )
+
             makeAngularModule( config.angular.source, cfg.application,
                                             cfg.name )
             with open( os.path.join( config.angular.source,
                                      cfg.application,
                                      cfg.name, sourceName( templ ) ),
-                       'w' ) as stream:
-                print( Template( filename=os.path.abspath( templ ) ).
-                       render( obj = cfg ), file = stream )
+                       C_FILEMODE_WRITE ) as stream:
+                #print( Template( filename=os.path.abspath( templ ) ).
+                #       render( obj = cfg ), file = stream )
+                for line in Template( filename=os.path.abspath( templ ) ).render( obj = cfg ).split('\n'):
+                    stream.write( line )
 
             if verbose:
                 print( "" )
 
+    updateAngularProject( config )
     return
 
 
 def main():
     try:
-        opts, args = getopt.getopt( sys.argv[1:], "hi:v", ["help", "input="] )
+        opts, args = getopt.getopt( sys.argv[1:], "hi:s:v", [ "help", "input=", 'sslverify=' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -492,12 +571,56 @@ def main():
         elif o in ("-i", "--input"):
             inputFile = a
 
+        elif o.lower() in ( '-s', '--sslverify' ):
+            global sslVerify
+            sslVerify   = a.lower() == 'true'
+
         else:
             assert False, "unhandled option"
 
+    try:
+        word_tokenize( "It's." )
+
+    except:
+        from nltk import download
+        if not sslVerify:
+            from ssl import _create_unverified_context
+            from six.moves.urllib.request import install_opener, HTTPSHandler, build_opener
+
+            ctx = _create_unverified_context()
+            opener = build_opener( HTTPSHandler( context = ctx ) )
+            install_opener( opener )
+
+        download( 'punkt' )
 
     with open( inputFile, 'r' ) as stream:
         config = TemplateConfiguration( **yaml.load( stream ) )
+
+    if os.path.isdir( config.angular.source ) and os.path.isfile( os.path.join( config.angular.source, 'angular.json' ) ):
+        with open( os.path.join( config.angular.source, 'angular.json' ), C_FILEMODE_READ ) as stream:
+            data = json.load( stream )
+            # Check if we have a valid Angular environment
+            if 'defaultProject' in data and 'projects' in data:
+                if data[ 'defaultProject' ] not in data[ 'projects' ]:
+                    print( 'Error: Angular environment not found' )
+                else:
+                    proj = data[ 'projects' ][ data[ 'defaultProject' ] ]
+
+            else:
+                print( 'Error: Angular environment not found' )
+
+    else:
+        print( 'Error: Angular environment not found' )
+
+    if os.path.isdir( config.python.source ) and os.path.isfile( os.path.join( config.python.source, 'config.json' ) ):
+        with open( os.path.join( config.python.source, 'config.json' ), C_FILEMODE_READ ) as stream:
+            data = json.load( stream )
+            # Check if we have a valid Python-Flask environment
+            if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
+                print( 'Error: Python Flask environment not found' )
+
+    else:
+        print( 'Error: Python Flask environment not found' )
 
     generatePython( [ os.path.abspath( os.path.join( config.python.template, t ) )
                                    for t in os.listdir( config.python.template ) ],
