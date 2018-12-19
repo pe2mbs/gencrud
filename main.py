@@ -24,6 +24,7 @@ import json
 import getopt
 from nltk.tokenize import word_tokenize
 from mako.template import Template
+import shutil
 
 sslVerify = True
 verbose = False
@@ -379,11 +380,6 @@ class TemplateConfiguration( object ):
         return iter( self.__objects )
 
 
-
-def usage():
-    return
-
-
 def sourceName( templateName ):
     return os.path.splitext( os.path.basename( templateName ) )[ 0 ]
 
@@ -499,6 +495,45 @@ def generatePython( templates, config ):
 
     return
 
+class PositionInterface( object ):
+    def __init__( self ):
+        self.__start = 0
+        self.__end = 0
+        return
+
+    @property
+    def start( self ):
+        return self.__start
+
+    @start.setter
+    def start( self, value ):
+        self.__start = value
+        return
+
+    @property
+    def end( self ):
+        return self.__end
+
+    @end.setter
+    def end( self, value ):
+        self.__end = value
+        return
+
+    def range( self ):
+        return range( self.__start, self.__end + 1 )
+
+    def dump( self, caption ):
+        print( "{0}\n- start: {1} end {2}".format( caption, self.__start, self.__end ) )
+
+
+def backupFile( file_name ):
+    idx = 1
+    while os.path.isfile( file_name + '.~{0}'.format( idx ) ):
+        idx += 1
+
+    shutil.copyfile( file_name, file_name + '.~{0}'.format( idx ) )
+    return
+
 
 def updateAngularProject( config, app_module ):
     print( config.angular.source )
@@ -511,6 +546,135 @@ def updateAngularProject( config, app_module ):
     #   entryComponents:    search for 'entryComponents: ['
     with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
         json.dump( app_module, stream, indent = 4 )
+
+    with open( os.path.join( config.angular.source, 'app.module.ts' ), 'r' ) as stream:
+        lines = stream.readlines()
+
+    backupFile( os.path.join( config.angular.source, 'app.module.ts' ) )
+    stage           = 0
+    importPos       = PositionInterface()
+    declModulePos   = PositionInterface()
+    impModulePos    = PositionInterface()
+    entryModulePos  = PositionInterface()
+    provModulePos   = PositionInterface()
+    for lineNo, lineText in enumerate( lines ):
+        if stage == 0:
+            if lineText.startswith( 'import' ):
+                importPos.end = lineNo
+
+            elif lineText.startswith( '@NgModule' ):
+                stage += 1
+
+        elif stage == 1:
+            if 'declarations: [' in lineText:
+                declModulePos.start = lineNo
+
+            if '],' in lineText:
+                declModulePos.end = lineNo
+                stage += 1
+
+        elif stage == 2:
+            if 'imports: [' in lineText:
+                impModulePos.start = lineNo
+
+            if '],' in lineText:
+                impModulePos.end = lineNo
+                stage += 1
+
+        elif stage == 3:
+            if 'entryComponents: [' in lineText:
+                entryModulePos.start = lineNo
+
+            if '],' in lineText:
+                entryModulePos.end = lineNo
+                stage += 1
+
+        elif stage == 4:
+            if 'providers: [' in lineText:
+                provModulePos.start = lineNo
+
+            if '],' in lineText:
+                provModulePos.end = lineNo
+                stage += 1
+
+    if verbose:
+        importPos.dump( "importPos" )
+        declModulePos.dump( "declModulePos" )
+        impModulePos.dump( "impModulePos" )
+        entryModulePos.dump( "entryModulePos" )
+        provModulePos.dump( "provModulePos" )
+
+    for line in app_module[ 'providers' ]:
+        found = False
+        for idx in provModulePos.range():
+            if line in lines[ idx ]:
+                found = True
+
+        if not found:
+            if verbose:
+                print( 'inject providers [{0}] @ {1}'.format( line, provModulePos.end + 1 ) )
+
+            lines.insert( provModulePos.end, '    {0}\n'.format( line ) )
+            provModulePos.end += 1
+
+    for line in app_module[ 'entryComponents' ]:
+        found = False
+        for idx in entryModulePos.range():
+            if line in lines[ idx ]:
+                found = True
+
+        if not found:
+            if verbose:
+                print( 'inject entryComponents [{0}] @ {1}'.format( line, entryModulePos.end + 1 ) )
+
+            lines.insert( entryModulePos.end, '    {0}\n'.format( line ) )
+            entryModulePos.end += 1
+
+    for line in app_module[ 'imports' ]:
+        found = False
+        for idx in impModulePos.range():
+            if line in lines[ idx ]:
+                found = True
+
+        if not found:
+            if verbose:
+                print( 'inject imports [{0}] @ {1}'.format( line, impModulePos.end + 1 ) )
+
+            lines.insert( impModulePos.end, '    {0}\n'.format( line ) )
+            impModulePos.end += 1
+
+    for line in app_module[ 'declarations' ]:
+        found = False
+        for idx in declModulePos.range():
+            if line in lines[ idx ]:
+                found = True
+
+        if not found:
+            if verbose:
+                print( 'inject declarations [{0}] @ {1}'.format( line, declModulePos.end + 1 ) )
+
+            lines.insert( declModulePos.end, '    {0}\n'.format( line ) )
+            declModulePos.end += 1
+
+    for line in app_module[ 'files' ]:
+        found = False
+        for idx in importPos.range():
+            if line in lines[ idx ]:
+                found = True
+
+        if not found:
+            if verbose:
+                print( 'inject files [{0}] @ {1}'.format( line, importPos.end + 1 ) )
+
+            lines.insert( importPos.end + 1, line + '\n' )
+            importPos.end += 1
+
+
+    with open( os.path.join( config.angular.source, 'app.module.ts' ), 'w' ) as stream:
+        for line in lines:
+            stream.write( line )
+            if verbose:
+                print( line, end = '' )
 
     return
 
@@ -598,6 +762,11 @@ def verifyLoadProject( root, configFile ):
         return result
 
     return result
+
+
+def usage():
+    return
+
 
 def main():
     try:
