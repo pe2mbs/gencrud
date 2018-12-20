@@ -1,0 +1,35 @@
+from distutils.core import setup
+
+setup( name='pytemplate',
+       version='1.0',
+       py_modules=[ 'gencrud' ],
+       classifiers=[
+          'Development Status :: 4 - Beta',
+          'Environment :: Console',
+          'Environment :: Angular/Flask Environment',
+          'Intended Audience :: Developers',
+          'License :: OSI Approved :: Python Software Foundation License',
+          'Operating System :: Microsoft :: Windows',
+          'Operating System :: Linux',
+          'Programming Language :: Python',
+          'Topic :: Communications :: Email',
+          ],
+       data_files=[
+                    ( 'templates',  [ 'templates/angular/addedit.dialog.html.templ',
+                                      'templates/angular/addedit.dialog.ts.templ',
+                                      'templates/angular/app.module.json.templ',
+                                      'templates/angular/datasource.ts.templ',
+                                      'templates/angular/delete.dialog.html.templ',
+                                      'templates/angular/delete.dialog.ts.templ',
+                                      'templates/angular/model.ts.templ',
+                                      'templates/angular/service.ts.templ',
+                                      'templates/angular/table.component.html.templ',
+                                      'templates/angular/table.component.scss.templ',
+                                      'templates/angular/table.component.spec.ts.templ',
+                                      'templates/angular/table.component.ts.templ',
+                                      'templates/python/model.py.templ',
+                                      'templates/python/schema.py.templ',
+                                      'templates/python/view.py.templ' ] ),
+                    ],
+       scripts=['scripts/gencrud', 'scripts/gencrud']
+     )

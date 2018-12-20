@@ -33,6 +33,38 @@ C_FILEMODE_UPDATE = 'r+'
 C_FILEMODE_WRITE  = 'w'
 C_FILEMODE_READ   = 'r'
 
+
+class PositionInterface( object ):
+    def __init__( self ):
+        self.__start = 0
+        self.__end = 0
+        return
+
+    @property
+    def start( self ):
+        return self.__start
+
+    @start.setter
+    def start( self, value ):
+        self.__start = value
+        return
+
+    @property
+    def end( self ):
+        return self.__end
+
+    @end.setter
+    def end( self, value ):
+        self.__end = value
+        return
+
+    def range( self ):
+        return range( self.__start, self.__end + 1 )
+
+    def dump( self, caption ):
+        print( "{0}\n- start: {1} end {2}".format( caption, self.__start, self.__end ) )
+
+
 class TemplateSource( object ):
     def __init__( self, type, **cfg ):
         self.__template = cfg[ 'templates' ][ type ]
@@ -386,21 +418,19 @@ def sourceName( templateName ):
 
 def makePythonModules( root_path, *args ):
     def write__init__py():
-        #with open( os.path.join( root_path, '__init__.py' ), 'w+' ) as stream:
-        #    print( '', file = stream )
+        with open( os.path.join( root_path, '__init__.py' ), 'w+' ) as stream:
+            print( '', file = stream )
+
         return
 
     if len( args ) > 0:
-        modulePath = os.path.join( root_path, args[ 0 ] )
-        if not os.path.isdir( modulePath ):
-            os.mkdir( modulePath )
+        root_path = os.path.join( root_path, args[ 0 ] )
+        if not os.path.isdir( root_path ):
+            os.mkdir( root_path )
 
-        makePythonModules( modulePath, *args[ 1: ] )
+        makePythonModules( root_path, *args[ 1: ] )
 
-        if not os.path.isfile( os.path.join( root_path, '__init__.py' ) ):
-            write__init__py()
-
-    else:
+    if len( args ) > 0:
         if not os.path.isfile( os.path.join( root_path, '__init__.py' ) ):
             write__init__py()
 
@@ -494,37 +524,6 @@ def generatePython( templates, config ):
                 print( importStr, file = stream )
 
     return
-
-class PositionInterface( object ):
-    def __init__( self ):
-        self.__start = 0
-        self.__end = 0
-        return
-
-    @property
-    def start( self ):
-        return self.__start
-
-    @start.setter
-    def start( self, value ):
-        self.__start = value
-        return
-
-    @property
-    def end( self ):
-        return self.__end
-
-    @end.setter
-    def end( self, value ):
-        self.__end = value
-        return
-
-    def range( self ):
-        return range( self.__start, self.__end + 1 )
-
-    def dump( self, caption ):
-        print( "{0}\n- start: {1} end {2}".format( caption, self.__start, self.__end ) )
-
 
 def backupFile( file_name ):
     idx = 1
@@ -676,6 +675,7 @@ def updateAngularProject( config, app_module ):
             if verbose:
                 print( line, end = '' )
 
+    os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
     return
 
 
@@ -827,18 +827,26 @@ def main():
 
         else:
             print( 'Error: Angular environment not found' )
+            return
 
     else:
         print( 'Error: Angular environment not found' )
+        return
 
     data = verifyLoadProject( config.python, 'config.json' )
     if data is not None:
         # Check if we have a valid Python-Flask environment
         if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
             print( 'Error: Python Flask environment not found' )
+            return
+
+        if data[ 'COMMON' ][ 'API_MODULE' ] != config.objects[ 0 ].application:
+            print( 'Error: Not correct Python Flask environment not found' )
+            return
 
     else:
         print( 'Error: Python Flask environment not found' )
+        return
 
     generatePython( [ os.path.abspath( os.path.join( config.python.template, t ) )
                                    for t in os.listdir( config.python.template ) ],
