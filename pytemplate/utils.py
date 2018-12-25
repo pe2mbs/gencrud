@@ -1,8 +1,10 @@
 import os
 import shutil
 
-sslVerify = True
-verbose = False
+sslVerify       = True
+verbose         = False
+backupFiles     = False
+overWriteFiles  = False
 
 C_FILEMODE_UPDATE = 'r+'
 C_FILEMODE_WRITE  = 'w'
@@ -110,3 +112,8 @@ def check_nltk():
 
     return
 
+
+class ModuleExistsAlready( Exception ):
+    def __init__( self, obj, path ):
+        self.__obj = obj
+        super( ModuleExistsAlready, self ).__init__( path )

@@ -114,6 +114,10 @@ def generateAngular( templates, config ):
         os.makedirs( config.angular.source )
 
     for cfg in config:
+        modulePath = os.path.join( config.angular.source, cfg.application, cfg.name )
+        if os.path.isdir( modulePath ) and not pytemplate.utils.overWriteFiles:
+            raise pytemplate.utils.ModuleExistsAlready( cfg, modulePath )
+
         makeAngularModule( config.angular.source, cfg.application, cfg.name )
         for templ in templates:
             if pytemplate.utils.verbose:
@@ -180,46 +184,5 @@ def generateAngular( templates, config ):
         json.dump( appModule, stream, indent = 4 )
 
     updateAngularProject( config, appModule )
-
-    #os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
+    os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
     return
-
-'''
-{
-  declarations: [
-    AppComponent,
-    AddEditIssueDialog,
-    DeleteIssueDialog,
-    CrudTableComponent
-    ,AddEditUserDialog
-    ,DeleteUserDialog
-    ,UserTableComponent
-  ],
-  imports: [
-    BrowserModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-    MatDialogModule,
-    FormsModule,
-    MatButtonModule,
-    MatInputModule,
-    MatIconModule,
-    MatSortModule,
-    MatTableModule,
-    MatToolbarModule,
-    MatPaginatorModule,
-    ReactiveFormsModule
-  ],
-  entryComponents: [
-    AddEditIssueDialog,
-    DeleteIssueDialog
-    ,AddEditUserDialog
-    ,DeleteUserDialog
-  ],
-  providers: [
-    IssueDataService
-    ,UserDataService
-  ],
-  bootstrap: [AppComponent]
-}
-'''

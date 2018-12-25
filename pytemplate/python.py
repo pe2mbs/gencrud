@@ -196,10 +196,13 @@ def generatePython( templates, config ):
             if not os.path.isdir( config.python.source ):
                 os.makedirs( config.python.source )
 
-            makePythonModules( config.python.source, cfg.application, cfg.name )
             modulePath = os.path.join( config.python.source,
                                    cfg.application,
                                    cfg.name )
+            if os.path.isdir( modulePath ) and not pytemplate.utils.overWriteFiles:
+                raise pytemplate.utils.ModuleExistsAlready( cfg, modulePath )
+
+            makePythonModules( config.python.source, cfg.application, cfg.name )
 
             with open( os.path.join( modulePath, pytemplate.utils.sourceName( templ ) ), pytemplate.utils.C_FILEMODE_WRITE ) as stream:
                 for line in Template( filename=os.path.abspath( templ ) ).render( obj = cfg ).split('\n'):

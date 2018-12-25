@@ -1,0 +1,32 @@
+source:
+  python:   /home/mbertens/src/angular/angular-mat-table-crud/backend
+  angular:  /home/mbertens/src/angular/angular-mat-table-crud/src/app
+objects:
+- name:                   role
+  class:                  Role
+  application:            testrun
+  uri:                    /api/role
+  menu:
+    displayName:          Database
+    iconName:             settings
+    index:                -1
+  menuItem:
+    displayName:          Roles table
+    iconName:             verified_user
+    route:                /roles
+    index:                -1
+  table:
+    name:                 WA_ROLES
+    columns:
+    - field:              D_ROLE_ID       INT         AUTO NUMBER  PRIMARY KEY
+      label:              Identification
+      index:              0
+      ui:                 label
+    - field:              D_ROLE_NAME     CHAR(20)    NOT NULL
+      label:              Role
+      index:              1
+      ui:                 textbox
+    - field:              USERS           RECORD      RELATION User
+      label:              Users
+      ui:                 label
+      inport:             User            ../../testrun/user/model

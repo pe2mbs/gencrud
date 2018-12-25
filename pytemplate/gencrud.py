@@ -118,8 +118,8 @@ Parameters:
 
 Options:
     -h / --help         This help information.
-    -i / --input        Instead of the parameters, input just one file.
-                        See documentation for the format of the input-file.
+    -b / --backup       Make backup of the orginal project files files.
+    -o / --overwrite    Force overwriting the files.
     -s / --sslverify    Disable the verification of ssl certificate when
                         retrieving some external profile data.
     -v                  Verbose option, prints what the tool is doing.
@@ -132,10 +132,12 @@ def main():
 
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hi:s:vV', [ 'help',
-                                                 'input=',
-                                                 'sslverify=',
-                                                 'version' ] )
+                                    'hi:s:obvV', [ 'help',
+                                                   'input=',
+                                                   'sslverify=',
+                                                   'overwrite',
+                                                   'backup'
+                                                   'version' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -147,16 +149,19 @@ def main():
             if o == '-v':
                 pytemplate.utils.verbose = True
 
-            elif o in ('-h', '--help'):
+            elif o in ( '-h', '--help' ):
                 usage()
                 sys.exit()
+
+            elif o in ( '-b', '--backup' ):
+                pytemplate.utils.backupFiles = True
+
+            elif o in ( '-o', '--overwrite' ):
+                pytemplate.utils.overWriteFiles = True
 
             elif o in ('-V', '--version'):
                 print( '{0}'.format( __version__ ) )
                 sys.exit()
-
-            elif o in ('-i', '--input'):
-                args.append( a )
 
             elif o.lower() in ( '-s', '--sslverify' ):
                 pytemplate.utils.sslVerify = a.lower() == 'true'
@@ -172,6 +177,9 @@ def main():
         banner()
         for arg in args:
             doWork( arg )
+    except pytemplate.utils.ModuleExistsAlready as exc:
+        print( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
+        print( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
 
     except Exception as exc:
         if pytemplate.utils.verbose:
