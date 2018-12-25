@@ -1,3 +1,6 @@
+templates:
+  python:   ./templates/python
+  angular:  ./templates/angular
 source:
   python:   ./output/backend
   angular:  ./output/src/app
@@ -5,16 +8,12 @@ objects:
 - name:                   role
   class:                  Role
   application:            testrun
-  uri:                    /api/role
+  uri:
+    backend:              /api/role
+    frontend:             /roles
   menu:
-    displayName:          Database
-    iconName:             database
+    caption:              Database
     index:                0
-  menuItem:
-    displayName:          Roles table
-    iconName:             verified_user
-    route:                /roles
-    index:                -1
   table:
     name:                 WA_ROLES
     columns:
@@ -33,16 +32,12 @@ objects:
 - name:                   user
   class:                  User
   application:            testrun
-  uri:                    /api/user
+  uri:
+    backend:              /api/user
+    frontend:             /users
   menu:
-    displayName:          Database
-    iconName:             database
-    index:                0
-  menuItem:
-    displayName:          Users table
-    iconName:             verified_user
-    route:                /users
-    index:                -1
+    caption:              Database
+    index:                1
   table:
     name:                 WA_USERS
     columns:

@@ -1,0 +1,8 @@
+# Include the README, LICENCE and USAGE markdown files.
+include *.md
+
+# Include an example template file
+include screens.yaml
+
+# Include the data files
+recursive-include templates *
