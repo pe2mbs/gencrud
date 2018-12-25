@@ -20,6 +20,75 @@ You should have received a copy of the GNU Library General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+# Installation
+Download the zip file from the version control or use git to obtain the
+ repository.
+
+## Install via .zip
+```bash
+    pip3 install pytemplate-master.zip
+```
+
+```bash
+    git clone https://gitlab.pe2mbs.nl/angular/pytemplate.git
+    cd pytemplate
+    pip3 install . 
+```     
+
+**Note: if you're using Python 2.7.x use pip2** 
+
+# Usage
+Standard usage:
+```bash
+    gencrud [ options ] <configuration-files> 
+```
+
+## Actual usage
+```bash
+    gencrud examples\role-table.yaml 
+```
+This generates for the role table the frontend and backend code. 
+ 
+```bash
+    gencrud examples\role-table.yaml examples\user-table.yaml 
+```
+This generates for the role and user tables the frontend and backend code. 
+ 
+ 
+## Options
+The following options
+> -h / --help         This help information.
+
+> -b / --backup       Make backup of the orginal project files files.
+
+When used every file that belongs to the orignal project will be backuped every time its altered.  
+
+> -o / --overwrite    Force overwriting the files.
+
+If  this option is omitted the program will exit on encountering a module name that already exists.
+
+> -s / --sslverify    Disable the verification of ssl certificate when
+>                     retrieving some external profile data.
+
+When you are behind a proxy that uses it own certificates, you may need to enable this option ones,
+  to retrieve to extra data files from the nltk package.
+
+> -v                  Verbose option, prints what the tool is doing.
+
+> -V / --version      Print the version of the tool.
+
+
+
+# Example files
+The folowing example files use the templates that where installed with the
+ package.
+examples\role-table.yaml
+examples\user-table.yaml
+examples\screens-base.yaml
+
+The folowing example file use private templates that where created by you.
+examples\screens.yaml
+
 
  
 # YAML Template

@@ -1,6 +1,3 @@
-templates:
-  python:   ./templates/python
-  angular:  ./templates/angular
 source:
   python:   ./output/backend
   angular:  ./output/src/app
