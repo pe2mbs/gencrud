@@ -1,6 +1,6 @@
 <!--
 *
-*   Python backend and Angular frontend code generation by Template
+*   Python backend and Angular frontend code generation by gencrud
 *   Copyright (C) 2018 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 *
 *   This library is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
     </mat-form-field>
 </div>
 <mat-table #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell">
-% for field in obj.columns:
+% for field in obj.table.listViewColumns:
     <!-- ${ field.name } Column -->
     <ng-container matColumnDef="column_${ field.name }"
                   class="column_${ field.name }">

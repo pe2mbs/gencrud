@@ -1,6 +1,6 @@
 from pytemplate.column import TemplateColumn
 from pytemplate.menuitem import TemplateMenuItem
-
+from pytemplate.table import TemplateTable
 
 class TemplateObject( object ):
     def __init__( self, **cfg ):
@@ -9,9 +9,11 @@ class TemplateObject( object ):
         self.__primaryKey   = ''
         self.__menuRoot     = TemplateMenuItem( 'menu', **cfg )
         self.__menuItem     = TemplateMenuItem( 'menuItem', **cfg )
+        self.__table        = TemplateTable( **cfg[ 'table' ] )
+
+        noColumns           = len( cfg[ 'table' ][ 'columns' ] )
         for col in cfg[ 'table' ][ 'columns' ]:
-            #print( col )
-            column = TemplateColumn( **col )
+            column = TemplateColumn( noColumns, **col )
             self.__columns.append( column )
             if column.isPrimaryKey():
                 self.__primaryKey = column.name
@@ -20,19 +22,19 @@ class TemplateObject( object ):
 
     @property
     def application( self ):
-        return self.__config[ 'application' ]
+        return self.__config.get( 'application', '' )
 
     @property
     def name( self ):
-        return self.__config[ 'name' ]
+        return self.__config.get( 'name', '' )
 
     @property
     def cls( self ):
-        return self.__config[ 'class' ]
+        return self.__config.get( 'class', '' )
 
     @property
     def uri( self ):
-        return self.__config[ 'uri' ]
+        return self.__config.get( 'uri', '' )
 
     @property
     def menu( self ):
@@ -42,6 +44,12 @@ class TemplateObject( object ):
     def menuItem( self ):
         return self.__menuItem
 
+    @property
+    def table( self ):
+        return self.__table
+
+    '''
+    # TODO: move to TemplateTable() class
     @property
     def tableName( self ):
         return self.__config[ 'table' ][ 'name' ]
@@ -61,3 +69,10 @@ class TemplateObject( object ):
             result.extend( col.inports )
 
         return result
+
+    @property
+    def listViewColumns( self ):
+        return sorted( [ col for col in self.__columns if col.index is not None ] )
+    '''
+
+

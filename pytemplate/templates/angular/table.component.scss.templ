@@ -1,6 +1,6 @@
 /*
 *
-*   Python backend and Angular frontend code generation by Template
+*   Python backend and Angular frontend code generation by gencrud
 *   Copyright (C) 2018 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 *
 *   This library is free software; you can redistribute it and/or modify
@@ -70,38 +70,17 @@
     font-style: italic;
 }
 
-.mat-cell:nth-child(1),
-.mat-header-cell:nth-child(1)
+% for field in obj.table.listViewColumns:
+.mat-cell:nth-child( ${ field.index } ),
+.mat-header-cell:nth-child( ${ field.index } )
 {
-    flex: 0 0 6%;
+    // Field ${ field.name }
+    flex: 0 0 ${ field.css.width };
 }
-  
-.mat-cell:nth-child(2),
-.mat-header-cell:nth-child(2)
-{
-    flex: 0 0 30%;
-}
-  
-.mat-cell:nth-child(3),
-.mat-header-cell:nth-child(3)
-{
-    flex: 0 0 6%;
-}
+% endfor
 
-.mat-cell:nth-child(5),
-.mat-header-cell:nth-child(5)
-{
-    flex: 0 0 10%;
-}
-
-.mat-cell:nth-child(6),
-.mat-header-cell:nth-child(6)
-{
-    flex: 0 0 10%;
-}
-
-.mat-cell:nth-child(7),
-.mat-header-cell:nth-child(7)
+.mat-cell:nth-child( ${ len( obj.table.listViewColumns ) } ),
+.mat-header-cell:nth-child( ${ len( obj.table.listViewColumns ) } )
 {
     flex: 0 0 2%;
 }

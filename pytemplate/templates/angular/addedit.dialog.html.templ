@@ -1,6 +1,6 @@
 <!--
 *
-*   Python backend and Angular frontend code generation by Template
+*   Python backend and Angular frontend code generation by gencrud
 *   Copyright (C) 2018 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 *
 *   This library is free software; you can redistribute it and/or modify
@@ -24,9 +24,9 @@
 *
 -->
 <div class="container">
-    <h3 mat-dialog-title>${ obj.cls } Id: {{ data.${ obj.primaryKey } }}</h3>
+    <h3 mat-dialog-title>${ obj.cls } Id: {{ data.${ obj.table.primaryKey } }}</h3>
     <form class="mat-dialog-content" (ngSubmit)="submit" [formGroup]="formGroup">
-% for field in obj.columns:
+% for field in obj.table.columns:
  % if field.index is not None:
         <div class="form" *ngIf="isEditMode() == true">
             <mat-form-field color="accent">
@@ -34,7 +34,7 @@
                        class="form-control"
                        id="${ obj.cls }.${ field.name }"
                        placeholder="${ field.label }"
-   % if field.name == obj.primaryKey:
+   % if field.name == obj.table.primaryKey:
                        readonly
    % endif
                        formControlName="${ field.name }">

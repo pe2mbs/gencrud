@@ -177,9 +177,20 @@ def main():
         banner()
         for arg in args:
             doWork( arg )
+
     except pytemplate.utils.ModuleExistsAlready as exc:
         print( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
         print( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
+
+    except FileNotFoundError as exc:
+        if exc.filename in args:
+            print( "Input file '{0}' is not found.".format( exc.filename ), file = sys.stderr )
+
+        else:
+            if pytemplate.utils.verbose:
+                traceback.print_exc()
+
+            print( exc, file = sys.stderr )
 
     except Exception as exc:
         if pytemplate.utils.verbose:

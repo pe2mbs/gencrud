@@ -4,7 +4,7 @@ import os
 import io
 import sys
 import pytemplate.utils
-from pytemplate.javescript_obj import TypeScript
+from pytemplate.typescript_obj import TypeScript
 from mako.template import Template
 from pytemplate.positon import PositionInterface
 
@@ -83,7 +83,7 @@ def updateAngularProject( config, app_module ):
                 stage = 0
                 rangePos.end = lineNo
 
-
+    rangePos.end += 1
     for imp in app_module[ 'files' ]:
         foundLine = False
         for lineNo in rangePos.range():
@@ -125,13 +125,13 @@ def generateAngular( templates, config ):
                 print( 'application : {0}'.format( cfg.application ) )
                 print( 'name        : {0}'.format( cfg.name ) )
                 print( 'class       : {0}'.format( cfg.cls ) )
-                print( 'table       : {0}'.format( cfg.tableName ) )
-                for col in cfg.columns:
+                print( 'table       : {0}'.format( cfg.table.name ) )
+                for col in cfg.table.columns:
                     print( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
                     for imp in col.inports:
                         print( '  {0}  {1}'.format( *imp ) )
 
-                print( 'primary key : {0}'.format( cfg.primaryKey ) )
+                print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
                 print( 'uri         : {0}'.format( cfg.uri ) )
 
             with open( os.path.join( config.angular.source,

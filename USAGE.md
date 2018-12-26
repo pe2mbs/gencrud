@@ -255,7 +255,14 @@ For relationshis RECORD fields
  
 
 #### index variable (optional)
-When set to a numeric value the field is included into list view, the value dertemines the order where the fields shall appear.  
+When set to a numeric value the field is included into list view, the value dertemines the order where the fields shall appear.
+  
+#### css section (optional)
+
+##### width variable (optional)
+This variable is used for the width of the list view columns. 
+The best way to define the width of the columns is using percentage, therefore the columns scale with the total view. 
+The total width of the columns may not exceed 97%. 
 
 #### import variable (optional) 
 When set to a string the first word is the class name of the table that contains the relationship, the second part is the path where the module can be found. 

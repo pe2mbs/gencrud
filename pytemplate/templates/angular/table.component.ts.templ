@@ -1,6 +1,6 @@
 /*
 *
-*   Python backend and Angular frontend code generation by Template
+*   Python backend and Angular frontend code generation by gencrud
 *   Copyright (C) 2018 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 *
 *   This library is free software; you can redistribute it and/or modify
@@ -41,10 +41,8 @@ import { ${ obj.cls }DataSource } from './datasource';
 export class ${ obj.cls }TableComponent implements OnInit
 {
     displayedColumns = [
-% for field in obj.columns:
- % if field.index is not None:
+% for field in obj.table.listViewColumns:
                             '${ field.name }',
- % endif
 % endfor
                         ];
 
@@ -102,7 +100,7 @@ export class ${ obj.cls }TableComponent implements OnInit
     startEdit( i: number, record: ${ obj.cls}Record )
     {
         this.dataService.lockRecord( record );
-        this.id = record.${ obj.primaryKey };
+        this.id = record.${ obj.table.primaryKey };
         // index row is used just for debugging proposes and can be removed
         this.index = i;      
         console.log( this.index );
@@ -120,7 +118,7 @@ export class ${ obj.cls }TableComponent implements OnInit
             {
                 // When using an edit things are little different,
                 // firstly we find record inside DataService by id
-                const foundIndex = this.dataService.dataChange.value.findIndex( x => x.${ obj.primaryKey } === this.id );
+                const foundIndex = this.dataService.dataChange.value.findIndex( x => x.${ obj.table.primaryKey } === this.id );
                 console.log( "startEdit() updating index ", foundIndex );
                 // Then you update that record using data from
                 // dialogData (values you enetered)
@@ -139,7 +137,7 @@ export class ${ obj.cls }TableComponent implements OnInit
     deleteItem( i: number, record: ${ obj.cls }Record )
     {
         this.dataService.lockRecord( record );
-        this.id = record.${ obj.primaryKey };
+        this.id = record.${ obj.table.primaryKey };
         console.log( "deleteItem ", record );
         const dialogRef = this.dialog.open( Delete${ obj.cls }Dialog,
         {
@@ -153,7 +151,7 @@ export class ${ obj.cls }TableComponent implements OnInit
             if ( result === 1 ) 
             {
                 const foundIndex = this.dataService.dataChange.value.findIndex( x =>
-                                    x.${ obj.primaryKey } === this.id );
+                                    x.${ obj.table.primaryKey } === this.id );
                 console.log( "deleteItem() removing index ", foundIndex );
                 this.dataService.dataChange.value.splice( foundIndex, 1 );
                 this.refreshTable();

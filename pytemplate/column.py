@@ -1,9 +1,10 @@
 import sys
 from nltk.tokenize import word_tokenize
+from pytemplate.css import TemplateCss
 
 
 class TemplateColumn( object ):
-    def __init__( self, **cfg ):
+    def __init__( self, no_columns, **cfg ):
         '''
             field:              D_ROLE_ID       INT         AUTO_NUMBER  PRIMARY KEY
 
@@ -18,8 +19,7 @@ class TemplateColumn( object ):
         self.__interface    = None
         self.__import       = None
         if 'field' in cfg:
-            tokens = [ x for x in word_tokenize( cfg[ 'field' ] ) ]
-            #print( 'TOKENS:', tokens )
+            tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
             self.__field = tokens[ 0 ]
             self.__sqlType  = tokens[ 1 ]
             offset = 2
@@ -60,7 +60,9 @@ class TemplateColumn( object ):
 
                 offset += 2
 
-        self._checkForImports( cfg )
+            self.__css = TemplateCss( no_columns, **self.__config.get( 'css', {} ) )
+            self._checkForImports( cfg )
+
         return
 
     def _checkForImports( self, cfg ):
@@ -80,18 +82,19 @@ class TemplateColumn( object ):
 
     @property
     def label( self ):
-        return self.__config[ 'label' ]
+        return self.__config.get( 'label', '' )
 
     @property
     def index( self ):
-        if 'index' in self.__config:
-            return self.__config[ 'index' ]
+        return self.__config.get( 'index', None )
 
-        return None
+    @property
+    def css( self ):
+        return self.__css
 
     @property
     def uiObject( self ):
-        return self.__config[ 'ui' ]
+        return self.__config.get( 'ui', 'textbox' )
 
     @property
     def name( self ):

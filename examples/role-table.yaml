@@ -21,10 +21,14 @@ objects:
     - field:              D_ROLE_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification
       index:              0
+      css:
+        width:            5%
       ui:                 label
     - field:              D_ROLE_NAME     CHAR(20)    NOT NULL
       label:              Role
       index:              1
+      css:
+        width:            93%
       ui:                 textbox
     - field:              USERS           RECORD      RELATION User
       label:              Users

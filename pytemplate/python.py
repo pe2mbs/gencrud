@@ -184,13 +184,13 @@ def generatePython( templates, config ):
                 print( 'application : {0}'.format( cfg.application ) )
                 print( 'name        : {0}'.format( cfg.name ) )
                 print( 'class       : {0}'.format( cfg.cls ) )
-                print( 'table       : {0}'.format( cfg.tableName ) )
-                for col in cfg.columns:
+                print( 'table       : {0}'.format( cfg.table.tableName ) )
+                for col in cfg.table.columns:
                     print( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
                     for imp in col.inports:
                         print( '  {0}  {1}'.format( *imp ) )
 
-                print( 'primary key : {0}'.format( cfg.primaryKey ) )
+                print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
                 print( 'uri         : {0}'.format( cfg.uri ) )
 
             if not os.path.isdir( config.python.source ):
