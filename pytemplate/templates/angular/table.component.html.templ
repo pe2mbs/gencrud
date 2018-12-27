@@ -31,7 +31,7 @@
 <mat-table #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell">
 % for field in obj.table.listViewColumns:
     <!-- ${ field.name } Column -->
-    <ng-container matColumnDef="column_${ field.name }"
+    <ng-container matColumnDef="${ field.name }"
                   class="column_${ field.name }">
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header>${ field.label }</mat-header-cell>

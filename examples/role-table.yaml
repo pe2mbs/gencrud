@@ -30,7 +30,3 @@ objects:
       css:
         width:            93%
       ui:                 textbox
-    - field:              USERS           RECORD      RELATION User
-      label:              Users
-      ui:                 label
-      inport:             User            ../../testrun/user/model

@@ -22,13 +22,13 @@ objects:
       label:              Identification
       index:              0
       css:
-        width:            3%
+        width:            5%
       ui:                 label
     - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
       label:              User name
       index:              1
       css:
-        width:            35%
+        width:            20%
       ui:                 textbox
     - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
       label:              Password
@@ -37,7 +37,7 @@ objects:
       label:              First name
       index:              3
       css:
-        width:            20%
+        width:            25%
       ui:                 textbox
     - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
       label:              Middle name
@@ -49,12 +49,9 @@ objects:
       label:              Last name
       index:              5
       css:
-        width:            20%
+        width:            25%
       ui:                 textbox
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
       ui:                 choice
-    - field:              D_ROLES_REL     RECORD      RELATION Role
-      label:              Role
-      ui:                 label
-      inport:             Role            ../../testrun/role/model
+

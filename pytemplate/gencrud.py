@@ -32,7 +32,6 @@ from pytemplate.python import generatePython
 
 
 def verifyLoadProject( env, config ):
-    result = None
     if env == 'angular':
         configFile = os.path.join( '..', '..', 'angular.json' )
         root = config.angular

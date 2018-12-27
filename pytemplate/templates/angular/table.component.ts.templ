@@ -35,8 +35,8 @@ import { ${ obj.cls }DataSource } from './datasource';
 
 @Component({
     selector: 'app-${ obj.name }-table',
-    templateUrl: './crud-table.component.html',
-    styleUrls: ['./crud-table.component.scss']
+    templateUrl: './table.component.html',
+    styleUrls: ['./table.component.scss']
 })
 export class ${ obj.cls }TableComponent implements OnInit
 {
@@ -44,6 +44,7 @@ export class ${ obj.cls }TableComponent implements OnInit
 % for field in obj.table.listViewColumns:
                             '${ field.name }',
 % endfor
+                            'actions'
                         ];
 
     dataSource:       ${ obj.cls }DataSource  | null;

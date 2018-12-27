@@ -7,7 +7,9 @@ class TemplateTable( object ):
         self.__primaryKey   = ''
         noColumns           = len( self.__table[ 'columns' ] )
         for col in self.__table[ 'columns' ]:
-            column = TemplateColumn( noColumns, **col )
+            column = TemplateColumn( noColumns,
+                                     self.__table[ 'name' ],
+                                     **col )
             self.__columns.append( column )
             if column.isPrimaryKey():
                 self.__primaryKey = column.name

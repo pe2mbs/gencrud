@@ -13,7 +13,9 @@ class TemplateObject( object ):
 
         noColumns           = len( cfg[ 'table' ][ 'columns' ] )
         for col in cfg[ 'table' ][ 'columns' ]:
-            column = TemplateColumn( noColumns, **col )
+            column = TemplateColumn( noColumns,
+                                     cfg[ 'table' ][ 'name' ],
+                                     **col )
             self.__columns.append( column )
             if column.isPrimaryKey():
                 self.__primaryKey = column.name

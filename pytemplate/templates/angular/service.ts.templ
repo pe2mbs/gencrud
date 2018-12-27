@@ -35,7 +35,7 @@ export class ${ obj.cls }DataService extends CrudDataService<${ obj.cls }Record>
     constructor ( httpClient: HttpClient ) 
     {
         super( httpClient );
-        this.uri = ${ obj.uri };
+        this.uri = '${ obj.uri }';
         return;
     }
 }

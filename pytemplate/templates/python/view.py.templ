@@ -34,7 +34,7 @@ ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
 logger = logging.getLogger()
 
 
-def register( app, cors ):
+def registerApi( app, cors ):
     # Set the logger for the users module
     if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
         app.logger.info( 'Allowing CORS' )
@@ -42,11 +42,12 @@ def register( app, cors ):
             origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' )
             cors.init_app( '${ obj.name }Api', origins = origins )
 
-    app.register_blueprint( '${ obj.name }Api' )
+    logger.info( 'Register ${ obj.cls } routes' )
+    app.register_blueprint( ${ obj.name }Api )
     return
 
 
-@${ obj.name }Api.route( "${ obj.uri }/list", methods=[ 'GET' ] )
+@${ obj.name }Api.route( '${ obj.uri }/list', methods=[ 'GET' ] )
 def get${ obj.cls }List():
     recordList = db.session.query( ${ obj.cls } ).order_by( ${ obj.cls }.${ obj.table.primaryKey } ).all()
     result = ${ obj.name }sSchema.jsonify( recordList )
@@ -54,7 +55,7 @@ def get${ obj.cls }List():
     return result
 
 
-@${ obj.name }Api.route( "${ obj.uri }/new", methods = [ 'POST' ] )
+@${ obj.name }Api.route( '${ obj.uri }/new', methods = [ 'POST' ] )
 def api${ obj.cls }New():
     data    = request.json
     logging.info( 'POST: {0}'.format( repr( data ) ) )
@@ -67,7 +68,7 @@ def api${ obj.cls }New():
     return result
 
 
-@${ obj.name }Api.route( "${ obj.uri }/get", methods = [ 'GET' ] )
+@${ obj.name }Api.route( '${ obj.uri }/get', methods = [ 'GET' ] )
 def api${ obj.cls }Get():
     data    = request.json
     logging.info( 'GET: {0}'.format( repr( data ) ) )
@@ -77,7 +78,7 @@ def api${ obj.cls }Get():
     return result
 
 
-@${ obj.name }Api.route( "${ obj.uri }/delete", methods = [ 'DELETE' ] )
+@${ obj.name }Api.route( '${ obj.uri }/delete', methods = [ 'DELETE' ] )
 def api${ obj.cls }Delete():
     data    = request.json
     logging.info( 'DELETE: {0}'.format( repr( data ) ) )
@@ -89,7 +90,7 @@ def api${ obj.cls }Delete():
     return result
 
 
-@${ obj.name }Api.route( "${ obj.uri }/put", methods=['PUT'] )
+@${ obj.name }Api.route( '${ obj.uri }/put', methods=['PUT'] )
 def api${ obj.cls }Put():
     data    = request.json
     logging.info( 'PUT: {0}'.format( repr( data ) ) )
@@ -104,7 +105,7 @@ def api${ obj.cls }Put():
     return result
 
 
-@${ obj.name }Api.route( "{obj.uri}/update", methods=[ 'PATCH' ] )
+@${ obj.name }Api.route( '${ obj.uri }/update', methods=[ 'PATCH' ] )
 def api${ obj.cls }Patch():
     data    = request.json
     logging.info( 'PATCH: {0}'.format( repr( data ) ) )

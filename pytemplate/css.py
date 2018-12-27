@@ -11,3 +11,6 @@ class TemplateCss( object ):
     def width( self ):
         return self.data.get( 'width', int( 97 / self.noColumns ) )
 
+    @property
+    def cls( self ):
+        return self.data.get( 'class', '' )

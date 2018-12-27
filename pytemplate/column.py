@@ -4,13 +4,14 @@ from pytemplate.css import TemplateCss
 
 
 class TemplateColumn( object ):
-    def __init__( self, no_columns, **cfg ):
+    def __init__( self, no_columns, table_name, **cfg ):
         '''
             field:              D_ROLE_ID       INT         AUTO_NUMBER  PRIMARY KEY
 
         :param cfg:
         :return:
         '''
+        self.__tableName    = table_name
         self.__config       = cfg
         self.__field        = ''
         self.__sqlType      = ''
@@ -74,6 +75,10 @@ class TemplateColumn( object ):
         return
 
     @property
+    def tableName( self ):
+        return self.__tableName
+
+    @property
     def inports( self ):
         if self.__import is None:
             return []
@@ -130,37 +135,37 @@ class TemplateColumn( object ):
         :return:
         '''
         if self.__sqlType == 'CHAR' or self.__sqlType.startswith( 'VARCHAR' ):
-            return 'String'
+            return 'db.String'
 
         elif self.__sqlType == 'INT':
-            return 'Integer'
+            return 'db.Integer'
 
         elif self.__sqlType == 'BIGINT':
-            return 'BigInteger'
+            return 'db.BigInteger'
 
         elif self.__sqlType == 'BOOLEAN':
-            return 'Boolean'
+            return 'db.Boolean'
 
         elif self.__sqlType == 'DATE':
-            return 'Date'
+            return 'db.Date'
 
         elif self.__sqlType == 'FLOAT' or self.__sqlType == 'REAL':
-            return 'Float'
+            return 'db.Float'
 
         elif self.__sqlType == 'INTERVAL':
-            return 'Interval'
+            return 'db.Interval'
 
         elif self.__sqlType == 'BLOB':
-            return 'LargeBinary'
+            return 'db.LargeBinary'
 
         elif self.__sqlType == 'NUMERIC' or self.__sqlType == 'DECIMAL':
-            return 'Numeric'
+            return 'db.Numeric'
 
         elif self.__sqlType == 'CLOB' or self.__sqlType == 'TEXT':
-            return 'Text'
+            return 'db.Text'
 
         elif self.__sqlType == 'TIME':
-            return 'Time'
+            return 'db.Time'
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
@@ -228,7 +233,7 @@ class TemplateColumn( object ):
                     result += ', nullable = False'
 
                 elif attr.startswith( 'FOREIGN KEY' ):
-                    result += ', ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
+                    result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
 
                 elif attr.startswith( 'DEFAULT' ):
                     result += ', default = "{0}"'.format( attr.split( ' ' )[ 1 ] )
@@ -237,8 +242,18 @@ class TemplateColumn( object ):
                     print( 'Extra unknown attributes found: {0}'.format( attr ),
                            file = sys.stderr )
         else:
+            """
+                TODO: Fix the relationship implemenation, at this moment it raises the following error
 
-            result += 'relationship( "{0}"'.format( self.__interface[ 1 ] )
+                sqlalchemy.exc.InvalidRequestError: When initializing mapper Mapper|Role|WA_ROLES,
+                expression 'User' failed to locate a name ("name 'User' is not defined").
+                If this is a class name, consider adding this relationship() to the
+                <class 'testrun.role.model.Role'> class after both dependent classes
+                have been defined.
+            """
+            result += 'db.relationship( "{0}", backref = db.backref( "{1}" )'.\
+                        format( self.__interface[ 1 ],
+                                self.__interface[ 2 ] )
 
         result += ' )'
         return result

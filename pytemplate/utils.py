@@ -12,11 +12,13 @@ C_FILEMODE_READ   = 'r'
 
 
 def backupFile( file_name ):
-    idx = 1
-    while os.path.isfile( file_name + '.~{0}'.format( idx ) ):
-        idx += 1
+    if backupFiles:
+        idx = 1
+        while os.path.isfile( file_name + '.~{0}'.format( idx ) ):
+            idx += 1
 
-    shutil.copyfile( file_name, file_name + '.~{0}'.format( idx ) )
+        shutil.copyfile( file_name, file_name + '.~{0}'.format( idx ) )
+
     return
 
 
@@ -46,12 +48,14 @@ def insertLinesUnique( lines, rangeObj, line ):
     for idx in rangeObj.range():
         if verbose:
             print( "Check line {} of {}".format( idx, rangeObj.end ) )
+
         if line in lines[ idx ].strip( '\n' ):
             found = True
 
     if not found:
         if verbose:
             print( 'inject files [{0}] @ {1}'.format( line, rangeObj.end + 1 ) )
+
 
         lines.insert( rangeObj.end + 1, line + '\n' )
         rangeObj.end += 1

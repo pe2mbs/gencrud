@@ -70,18 +70,18 @@
     font-style: italic;
 }
 
-% for field in obj.table.listViewColumns:
-.mat-cell:nth-child( ${ field.index } ),
-.mat-header-cell:nth-child( ${ field.index } )
+% for idx, field in enumerate( obj.table.listViewColumns ):
+.mat-cell:nth-child( ${ idx + 1 } ),
+.mat-header-cell:nth-child( ${ idx + 1 } )
 {
     // Field ${ field.name }
     flex: 0 0 ${ field.css.width };
 }
 % endfor
 
-.mat-cell:nth-child( ${ len( obj.table.listViewColumns ) } ),
-.mat-header-cell:nth-child( ${ len( obj.table.listViewColumns ) } )
+.mat-cell:nth-child( ${ len( obj.table.listViewColumns ) + 1 } ),
+.mat-header-cell:nth-child( ${ len( obj.table.listViewColumns ) + 1 } )
 {
-    flex: 0 0 2%;
+    flex: 0 0 5%;
 }
 

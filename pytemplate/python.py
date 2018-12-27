@@ -42,13 +42,23 @@ menuItems = [
 ##
 #   End section maintained by gencrud.py
 ##
+menuApi = Blueprint( 'menuApi', __name__ )
 logger = logging.getLogger()
 
 
 def registerApi( app, cors ):
+    logger = app.logger
     for module in listModules:
         module.registerApi( app, cors )
 
+    if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
+        app.logger.info( 'Allowing CORS' )
+        if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
+            origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' )
+            cors.init_app( 'menuApi', origins = origins )
+
+    logger.info( 'Register Menu route' )
+    app.register_blueprint( menuApi )
     return
 
 
@@ -62,6 +72,10 @@ def registerShellContext( app, db ):
 
 def registerCommands( app ):
     return
+
+@menuApi.route( "/api/menu", methods=[ 'GET' ] )
+def getUserMenu():
+    return jsonify( menuItems )
 
 '''
 
@@ -84,10 +98,11 @@ def updatePythonProject( config, app_module ):
         if lineText.startswith( 'import' ):
             rangePos.end = lineNo
 
+    rangePos.end += 1
     # update import section
     modules = []
     for table in config:
-        line = 'import {0}.{1} # import maintained by gencrud.py'.format( table.application, table.name )
+        line = 'import {0}.{1}   # import maintained by gencrud.py'.format( table.application, table.name )
         pytemplate.utils.insertLinesUnique( lines, rangePos, line )
         modules.append( '{0}.{1}'.format( table.application, table.name ) )
 
@@ -95,15 +110,20 @@ def updatePythonProject( config, app_module ):
                                                    rangePos,
                                                    'listModules = [',
                                                    ']' )
-    pos = sectionLines[ 0 ].find( '[' )
-    sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
-    sectionLines = json.loads( ''.join( sectionLines ) )
-    for module in modules:
-        if module not in sectionLines:
-            sectionLines.append( module )
+    del sectionLines[ 0 ]
+    del sectionLines[ -1 ]
+    for line in sectionLines:
+        line = line.strip( ' ,\n' )
+        if line not in modules:
+            modules.append( line )
 
-    sectionLines = json.dumps( sectionLines, indent = 4 ).split( '\n' )
-    sectionLines[ 0 ] = 'listModules = ' + sectionLines[ 0 ]
+    sectionLines = [ 'listModules = [\n' ]
+
+    for idx, mod in enumerate( modules ):
+        sectionLines.append( '    {0}{1}\n'.format( mod,
+                                                    '' if len( modules )-1 == idx else ',' ) )
+
+    sectionLines.append( ']\n' )
     pytemplate.utils.replaceInList( lines, rangePos, sectionLines )
 
     sectionLines = pytemplate.utils.searchSection( lines,
@@ -234,7 +254,7 @@ def generatePython( templates, config ):
 
             if pytemplate.utils.verbose:
                 print( '' )
-
+    """
     for applic, module in modules:
         filename = os.path.join( config.python.source,
                                  applic, '__init__.py' )
@@ -259,6 +279,7 @@ def generatePython( templates, config ):
         pytemplate.utils.backupFile( filename )
         open( filename, pytemplate.utils.C_FILEMODE_WRITE ).writelines( lines )
 
+    """
     updatePythonProject( config, '' )
     return
 
