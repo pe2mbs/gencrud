@@ -132,11 +132,38 @@ class TemplateColumn( object ):
     def isPassword( self ):
         return self.uiObject.lower() == 'password'
 
+    def isNumber( self ):
+        return self.uiObject.lower() == 'number'
+
     def isChoice( self ):
         return self.uiObject.lower() == 'choice'
 
     def hasLabel( self ):
         return self.__config.get( 'label', '' ) != ''
+
+    def minimal( self ):
+        return self.__config.get( 'minimal', '0' )
+
+    def maximal( self ):
+        if self.__sqlType == 'BIGINT':
+            return self.__config.get( 'maximal', str( 2 ** 63 - 1 ) )
+
+        elif self.__sqlType == 'NUMERIC' or self.__sqlType == 'DECIMAL':
+            return self.__config.get( 'maximal', str( 2 ** ( self.__length * 8 ) - 1 ) )
+
+        return self.__config.get( 'maximal', str( 2 ** 31 - 1 ) )
+
+    def hasPrefix( self ):
+        return 'prefix' in self.__config
+
+    def prefix( self ):
+        return self.__config.get( 'prefix', '' )
+
+    def hasSuffix( self ):
+        return 'suffix' in self.__config
+
+    def suffix( self ):
+        return self.__config.get( 'suffix', '' )
 
     @property
     def choice( self ):

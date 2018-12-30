@@ -34,6 +34,8 @@
                 <input [type]="hide_${ field.name } ? 'password' : 'text'"
   % elif field.isTextArea():
                 <textarea
+  % elif field.isNumber():
+                <input type="number" min="${ field.minimal }" max="${ field.maximal }"
   % else:
                 <input
   % endif
@@ -49,6 +51,12 @@
                 </textarea>
   % elif field.isPassword():
                 <mat-icon matSuffix (click)="hide_${ field.name } = !hide_${ field.name }">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+  % endif
+  % if field.hasPrefix():
+                <span matPrefix>${ field.prefix }</span>
+  % endif
+  % if field.hasSuffix():
+                <span matSuffix>${ field.suffix }</span>
   % endif
                 <mat-error *ngIf="${ field.name }.invalid">
                     {{ getErrorMessage( ${ field.name } ) }}
