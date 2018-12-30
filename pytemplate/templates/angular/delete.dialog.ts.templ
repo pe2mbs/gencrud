@@ -51,7 +51,8 @@ export class Delete${ obj.cls }Dialog extends BaseDialog
 
     onSaveClick(): void 
     {
-        this.dataService.deleteRecord( this.data.record );
+        console.log( "Delete${ obj.cls }Dialog.onSaveClick() ${ obj.table.primaryKey } => ", this.data.record.${ obj.table.primaryKey } );
+        this.dataService.deleteRecord( this.data.record.${ obj.table.primaryKey } );
         return;
     }
 }

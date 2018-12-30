@@ -23,8 +23,10 @@
 *   the table from the configuration.
 *
 */
-% for imp in obj.table.imports:
-import { ${ imp[ 0 ] }Record } from '${ imp[ 1 ] }'
+% for imp in obj.table.tsInports:
+ % if imp.module.endswith( "model" ):
+import { ${ imp.name }Record } from '${ imp.module }';
+ % endif
 % endfor
 
 export class ${ obj.cls }Record

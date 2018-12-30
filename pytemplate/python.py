@@ -207,8 +207,12 @@ def generatePython( templates, config ):
                 print( 'table       : {0}'.format( cfg.table.tableName ) )
                 for col in cfg.table.columns:
                     print( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
-                    for imp in col.inports:
-                        print( '  {0}  {1}'.format( *imp ) )
+
+                for imp in cfg.table.tsInports:
+                    print( '  {0}  {1}'.format( imp.module, imp.name ) )
+
+                for imp in cfg.table.pyInports:
+                    print( '  {0}  {1}'.format( imp.module, imp.name ) )
 
                 print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
                 print( 'uri         : {0}'.format( cfg.uri ) )

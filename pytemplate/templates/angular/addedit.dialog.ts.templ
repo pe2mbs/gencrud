@@ -37,6 +37,12 @@ import { ${ obj.cls }DataService } from './service';
 })
 export class AddEdit${ obj.cls }Dialog extends BaseDialog
 {
+% for field in obj.table.columns:
+ % if field.isPassword():
+    public hide_${ field.name }: boolean  = true;
+ % endif
+% endfor
+
     constructor( dialogRef: MatDialogRef<AddEdit${ obj.cls }Dialog>,
                  @Inject( MAT_DIALOG_DATA ) public data: any, 
                  dataService: ${ obj.cls }DataService )
@@ -66,7 +72,14 @@ export class AddEdit${ obj.cls }Dialog extends BaseDialog
     onSaveClick(): void
     {
         console.log( "AddEdit${ obj.cls }Dialog.onSaveClick() => ", this.formGroup.value );
-        this.dataService.updateRecord( this.formGroup.value );
+        if ( !this.isEditMode() )
+        {
+            this.dataService.addRecord( this.formGroup.value );
+        }
+        else
+        {
+            this.dataService.updateRecord( this.formGroup.value );
+        }
         super.onSaveClick();
         return;
     }

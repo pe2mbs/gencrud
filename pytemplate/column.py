@@ -2,6 +2,34 @@ import sys
 from nltk.tokenize import word_tokenize
 from pytemplate.css import TemplateCss
 
+class TemplateChoice( object ):
+    # TODO: implement the choice/combobox
+    def __init__( self, **cfg ):
+        self.__cfg = cfg
+        return
+
+    @property
+    def service( self ):
+        return self.__cfg.get( 'service', '' )
+
+    @property
+    def cls( self ):
+        return self.__cfg.get( 'class', '' )
+
+    @property
+    def function( self ):
+        return self.__cfg.get( 'function', '' )
+
+    @property
+    def value( self ):
+        return self.__cfg.get( 'value', '' )
+
+    @property
+    def label( self ):
+        return self.__cfg.get( 'label', '' )
+
+
+
 
 class TemplateColumn( object ):
     def __init__( self, no_columns, table_name, **cfg ):
@@ -16,9 +44,9 @@ class TemplateColumn( object ):
         self.__field        = ''
         self.__sqlType      = ''
         self.__length       = 0
+        self.__choice       = None
         self.__attrs        = []
         self.__interface    = None
-        self.__import       = None
         if 'field' in cfg:
             tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
             self.__field = tokens[ 0 ]
@@ -27,8 +55,9 @@ class TemplateColumn( object ):
             if self.__sqlType == 'RECORD':
                 # relationship
                 # RELATION <class>
-                self.__interface = tokens[ offset: ]
-                self._checkForImports( cfg )
+                if tokens[ offset ] == 'RELATION':
+                    self.__interface = tokens[ offset + 1 ]
+
                 return
 
             elif tokens[ offset ] == '(':
@@ -62,28 +91,14 @@ class TemplateColumn( object ):
                 offset += 2
 
             self.__css = TemplateCss( no_columns, **self.__config.get( 'css', {} ) )
-            self._checkForImports( cfg )
-
-        return
-
-    def _checkForImports( self, cfg ):
-        if 'inport' in cfg:
-            self.__import = []
-            for importDef in cfg[ 'inport' ].split( ',' ):
-                self.__import.append( [ x for x in word_tokenize( importDef ) ] )
+            if 'choice' in cfg:
+                self.__choice = TemplateChoice( **cfg.get( 'list', {} ) )
 
         return
 
     @property
     def tableName( self ):
         return self.__tableName
-
-    @property
-    def inports( self ):
-        if self.__import is None:
-            return []
-
-        return self.__import
 
     @property
     def label( self ):
@@ -105,12 +120,27 @@ class TemplateColumn( object ):
     def name( self ):
         return self.__field
 
-    @property
-    def name( self ):
-        return self.__field
-
     def isPrimaryKey( self ):
         return 'PRIMARY KEY' in self.__attrs
+
+    def isTextbox( self ):
+        return self.uiObject.lower() == 'textbox'
+
+    def isTextArea( self ):
+        return self.uiObject.lower() == 'textarea'
+
+    def isPassword( self ):
+        return self.uiObject.lower() == 'password'
+
+    def isChoice( self ):
+        return self.uiObject.lower() == 'choice'
+
+    def hasLabel( self ):
+        return self.__config.get( 'label', '' ) != ''
+
+    @property
+    def choice( self ):
+        return self.__choice
 
     @property
     def pType( self ):
@@ -167,6 +197,9 @@ class TemplateColumn( object ):
         elif self.__sqlType == 'TIME':
             return 'db.Time'
 
+        elif self.__sqlType == 'RECORD':
+            return ''
+
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
     @property
@@ -205,7 +238,11 @@ class TemplateColumn( object ):
             return 'string'
 
         elif self.__sqlType == 'RECORD':
-            return '{}Record'.format( self.__interface[ 1 ] )
+            if self.__interface:
+                return '{}Record'.format( self.__interface )
+
+            else:
+                return 'var'
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
@@ -242,21 +279,15 @@ class TemplateColumn( object ):
                     print( 'Extra unknown attributes found: {0}'.format( attr ),
                            file = sys.stderr )
         else:
-            """
-                TODO: Fix the relationship implemenation, at this moment it raises the following error
-
-                sqlalchemy.exc.InvalidRequestError: When initializing mapper Mapper|Role|WA_ROLES,
-                expression 'User' failed to locate a name ("name 'User' is not defined").
-                If this is a class name, consider adding this relationship() to the
-                <class 'testrun.role.model.Role'> class after both dependent classes
-                have been defined.
-            """
-            result += 'db.relationship( "{0}", backref = db.backref( "{1}" )'.\
-                        format( self.__interface[ 1 ],
-                                self.__interface[ 2 ] )
+            result += 'db.relationship( "{0}", backref = "{1}", lazy = True'.\
+                        format( self.__interface, self.__tableName )
 
         result += ' )'
         return result
+
+    @property
+    def nestedCls( self ):
+        return self.__interface
 
     @property
     def validators( self ):

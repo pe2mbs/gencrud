@@ -30,8 +30,14 @@ class ${ obj.cls }Schema( mm.ModelSchema ):
     When modifing the file make sure that you remove the table from the configuration.
     """
     class Meta:
-        model = ${ obj.cls }
-
+        #model = ${ obj.cls }
+        fields = [
+% for field in obj.table.columns:
+ % if field.pType != '':
+            '${ field.name }',
+ % endif
+% endfor
+        ]
 
 ${ obj.name }Schema   = ${ obj.cls }Schema()
 ${ obj.name }sSchema  = ${ obj.cls }Schema( many = True )

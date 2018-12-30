@@ -33,14 +33,21 @@ export class ${ obj.cls }DataSource extends CrudDataSource<${ obj.cls }Record>
     {
         switch ( active ) 
         {
-% for field in obj.table.columns:
- % if field.index is not None:
+% for field in obj.table.listViewColumns:
         case '${ field.name }':
             return ( [ a.${ field.name }, b.${ field.name } ] );
- % endif
 % endfor
         }
         return ( [ null, null ] );        
+    }
+
+<%!
+    def filter( oList ):
+        return 'record.' + ( ' + record.'.join( [ x.name for x in oList ] ) )
+%>
+    public makeSearchString( record: any ) : string
+    {
+        return ( ( ${ filter( obj.table.listViewColumns ) } ).toLowerCase() );
     }
 }
 

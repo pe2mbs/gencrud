@@ -73,6 +73,4 @@ objects:
       label:              Role
       ui:                 choice
     - field:              D_ROLES_REL     RECORD      RELATION Role
-      label:              Role
-      ui:                 label
       inport:             Role            ../../testrun/role/model

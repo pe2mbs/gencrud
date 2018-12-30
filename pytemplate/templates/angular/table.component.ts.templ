@@ -77,6 +77,7 @@ export class ${ obj.cls }TableComponent implements OnInit
     addNew() 
     {
         let record: ${ obj.cls }Record = new ${ obj.cls }Record;
+        console.log( 'addNew ', record );
         const dialogRef = this.dialog.open( AddEdit${ obj.cls }Dialog,
         {
             data: { record: record,

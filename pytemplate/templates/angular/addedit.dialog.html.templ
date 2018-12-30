@@ -24,20 +24,32 @@
 *
 -->
 <div class="container">
-    <h3 mat-dialog-title>${ obj.cls } Id: {{ data.${ obj.table.primaryKey } }}</h3>
+    <h3 mat-dialog-title>${ obj.cls } Id: {{ data.record.${ obj.table.primaryKey } }}</h3>
     <form class="mat-dialog-content" (ngSubmit)="submit" [formGroup]="formGroup">
 % for field in obj.table.columns:
- % if field.index is not None:
-        <div class="form" *ngIf="isEditMode() == true">
+ % if field.hasLabel():
+        <div class="form">
             <mat-form-field color="accent">
-                <input matInput
+  % if field.isPassword():
+                <input [type]="hide_${ field.name } ? 'password' : 'text'"
+  % elif field.isTextArea():
+                <textarea
+  % else:
+                <input
+  % endif
+                       matInput
                        class="form-control"
                        id="${ obj.cls }.${ field.name }"
                        placeholder="${ field.label }"
-   % if field.name == obj.table.primaryKey:
+  % if field.isPrimaryKey():
                        readonly
-   % endif
+  % endif
                        formControlName="${ field.name }">
+  % if field.isTextArea():
+                </textarea>
+  % elif field.isPassword():
+                <mat-icon matSuffix (click)="hide_${ field.name } = !hide_${ field.name }">{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+  % endif
                 <mat-error *ngIf="${ field.name }.invalid">
                     {{ getErrorMessage( ${ field.name } ) }}
                 </mat-error>

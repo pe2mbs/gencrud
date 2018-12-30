@@ -1,10 +1,13 @@
 from pytemplate.column import TemplateColumn
+from pytemplate._inports import SourceImport
+
 
 class TemplateTable( object ):
     def __init__( self, **table ):
         self.__table        = table
         self.__columns      = []
         self.__primaryKey   = ''
+        self.__inports      = SourceImport()
         noColumns           = len( self.__table[ 'columns' ] )
         for col in self.__table[ 'columns' ]:
             column = TemplateColumn( noColumns,
@@ -14,6 +17,16 @@ class TemplateTable( object ):
             if column.isPrimaryKey():
                 self.__primaryKey = column.name
 
+        if 'tsInport' in table:
+            source = 'tsInport'
+
+        elif 'psInport' in table:
+            source = 'tsInport'
+
+        else:
+            return
+
+        self.__inports.append( source, table[ source ] )
         return
 
     @property
@@ -33,12 +46,12 @@ class TemplateTable( object ):
         return self.__primaryKey
 
     @property
-    def imports( self ):
-        result = []
-        for col in self.__columns:
-            result.extend( col.inports )
+    def tsInports( self ):
+        return self.__inports.typescript
 
-        return result
+    @property
+    def pyInports( self ):
+        return self.__inports.python
 
     @property
     def listViewColumns( self ):

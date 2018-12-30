@@ -17,6 +17,11 @@ objects:
     index:                -1
   table:
     name:                 WA_USERS
+    pyInport:
+    - RoleSchema          testrun.role.schema
+    tsInport:
+    - Role                ../role/model
+    - RoleDataService     ../role/service
     columns:
     - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification
@@ -49,9 +54,16 @@ objects:
       label:              Last name
       index:              5
       css:
-        width:            25%
+        width:            20%
       ui:                 textbox
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
-      ui:                 choice
+      ui:                 textbox
+      choice:
+        service:          RoleDataService
+        class:            Role
+        function:         getAll
+        value:            D_ROLE_ID
+        label:            D_ROLE_NAME
+    - field:              D_ROLES_REL     RECORD      RELATION Role
 
