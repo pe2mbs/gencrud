@@ -1,0 +1,60 @@
+.container 
+{
+    display: flex;
+    flex-direction: column;
+    min-width: 450px;
+}
+
+.container > * 
+{
+    width: 100%;
+}
+
+.form 
+{
+    display: flex;
+    padding-top: 6px;
+}
+
+.mat-form-field 
+{
+    font-size: 16px;
+    flex-grow: 1;
+}
+
+/*
+*   To avoid scrollbars in the dialog window
+*/
+/deep/.mat-dialog-content 
+{
+    overflow-y: hidden !important;
+}
+
+.mat-dialog-container 
+{
+    display: flex !important;
+    flex-direction: column;
+}
+
+.mat-dialog-container > * 
+{
+    display: flex;
+    flex-direction: column;
+}
+
+.mat-dialog-content 
+{
+    max-height: inherit !important;
+}
+
+.mat-dialog-actions 
+{
+    display: block !important;
+    flex-grow: inherit;
+    flex-shrink: inherit;
+    padding: 12px 0 0 !important;
+
+    &:last-child {
+        margin-bottom: 0 !important;
+    }
+}
