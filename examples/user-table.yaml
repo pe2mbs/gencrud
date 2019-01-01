@@ -28,42 +28,49 @@ objects:
       index:              0
       css:
         width:            5%
-      ui:                 label
+      ui:
+        type:             textbox
     - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
       label:              User name
       index:              1
       css:
         width:            20%
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
       label:              Password
-      ui:                 password
+      ui:
+        type:             password
     - field:              D_FIRST_NAME    CHAR(30)    NOT NULL
       label:              First name
       index:              3
       css:
         width:            25%
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
       label:              Middle name
       index:              4
       css:
         width:            20%
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
       label:              Last name
       index:              5
       css:
         width:            20%
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
-      ui:                 textbox
-      choice:
-        service:          RoleDataService
-        class:            Role
-        function:         getAll
-        value:            D_ROLE_ID
-        label:            D_ROLE_NAME
+      ui:
+        type:             textbox
+        choice:
+          service:          RoleDataService
+          class:            Role
+          function:         getAll
+          value:            D_ROLE_ID
+          label:            D_ROLE_NAME
     - field:              D_ROLES_REL     RECORD      RELATION Role
 

@@ -29,6 +29,99 @@ class TemplateChoice( object ):
         return self.__cfg.get( 'label', '' )
 
 
+class TemplateUi( object ):
+    def __init__( self, **cfg ):
+        self.__cfg = cfg
+        return
+
+    @property
+    def uiObject( self ):
+        return self.__cfg.get( 'type', 'textbox' )
+
+    def rows( self ):
+        return self.__cfg.get( 'rows', '4' )
+
+    def cols( self ):
+        return self.__cfg.get( 'cols', '80' )
+
+    def hasPrefix( self ):
+        return 'prefix' in self.__cfg
+
+    def prefixType( self ):
+        return self.__cfg.get( 'prefix-type', 'text' )
+
+    def prefix( self ):
+        return self.__cfg.get( 'prefix', '' )
+
+    def hasSuffix( self ):
+        return 'suffix' in self.__cfg
+
+    def suffixType( self ):
+        return self.__cfg.get( 'suffix-type', 'text' )
+
+    def suffix( self ):
+        return self.__cfg.get( 'suffix', '' )
+
+    def isTextbox( self ):
+        return self.uiObject.lower() == 'textbox'
+
+    def isTextArea( self ):
+        return self.uiObject.lower() == 'textarea'
+
+    def isPassword( self ):
+        return self.uiObject.lower() == 'password'
+
+    def isNumber( self ):
+        return self.uiObject.lower() == 'number'
+
+    def isChoice( self ):
+        return self.uiObject.lower() == 'choice'
+
+    def isCombobox( self ):
+        return self.uiObject.lower() == 'combobox'
+
+    def isDate( self ):
+        return self.uiObject.lower() == 'datepicker'
+
+    def isDateTime( self ):
+        return self.uiObject.lower() == 'datetimepicker'
+
+    def isTime( self ):
+        return self.uiObject.lower() == 'timepicker'
+
+    def isLabel( self ):
+        return self.uiObject.lower() == 'label'
+
+    def buildInputElement( self, table, field, label, options = None ):
+        if options is None:
+            options = []
+
+        type2component = {
+            'label':            'pyt-label-box',
+            'textbox':          'pyt-text-input-box',
+            'text':             'pyt-text-input-box',
+            'password':         'pyt-password-input-box',
+            'textarea':         'pyt-textarea-input-box',
+            'number':           'pyt-number-input-box',
+            'email':            'pyt-email-input-box',
+            'choice':           'pyt-choice-input-box',
+            'combobox':         'pyt-combo-input-box',
+            'combo':            'pyt-combo-input-box',
+            'date':             'pyt-date-input-box',
+            'time':             'pyt-time-input-box',
+            'datetime':         'pyt-datetime-input-box',
+            'datepicker':       'pyt-datepicker-input-box',
+            'timepicker':       'pyt-timepicker-input-box',
+            'datetimepicker':   'pyt-datetimepicker-input-box'
+        }
+
+        return '''<{tag} id="{table}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
+                format( tag = type2component[ self.__cfg.get( 'type', 'textbox' ) ],
+                        id = field,
+                        table = table,
+                        placeholder = label,
+                        option = ' '.join( options ),
+                        field = field )
 
 
 class TemplateColumn( object ):
@@ -47,6 +140,7 @@ class TemplateColumn( object ):
         self.__choice       = None
         self.__attrs        = []
         self.__interface    = None
+        self.__ui           = None
         if 'field' in cfg:
             tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
             self.__field = tokens[ 0 ]
@@ -60,7 +154,7 @@ class TemplateColumn( object ):
 
                 return
 
-            elif tokens[ offset ] == '(':
+            elif offset < len( tokens ) and tokens[ offset ] == '(':
                 offset += 1
                 self.__length   = int( tokens[ offset ] )
                 offset += 2
@@ -91,18 +185,14 @@ class TemplateColumn( object ):
                 offset += 2
 
             self.__css = TemplateCss( no_columns, **self.__config.get( 'css', {} ) )
-            if 'choice' in cfg:
-                self.__choice = TemplateChoice( **cfg.get( 'list', {} ) )
+            if 'ui' in cfg and type( cfg[ 'ui' ] ) is dict:
+                self.__ui = TemplateUi( **cfg.get( 'ui', {} ) )
 
         return
 
     @property
     def tableName( self ):
         return self.__tableName
-
-    @property
-    def label( self ):
-        return self.__config.get( 'label', '' )
 
     @property
     def index( self ):
@@ -113,33 +203,82 @@ class TemplateColumn( object ):
         return self.__css
 
     @property
-    def uiObject( self ):
-        return self.__config.get( 'ui', 'textbox' )
-
-    @property
     def name( self ):
         return self.__field
+
+    def hasLabel( self ):
+        return self.__config.get( 'label', '' ) != ''
+
+    @property
+    def label( self ):
+        return self.__config.get( 'label', '' )
 
     def isPrimaryKey( self ):
         return 'PRIMARY KEY' in self.__attrs
 
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    @property
+    def uiObject( self ):
+        if self.__ui is not None:
+            return self.__ui.uiObject
+
+        return self.__config.get( 'ui', 'textbox' )
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
     def isTextbox( self ):
         return self.uiObject.lower() == 'textbox'
 
+    # TODO: Obsolete, shall be removed in favor of 'ui'
     def isTextArea( self ):
         return self.uiObject.lower() == 'textarea'
 
+    # TODO: Obsolete, shall be removed in favor of 'ui'
     def isPassword( self ):
         return self.uiObject.lower() == 'password'
 
+    # TODO: Obsolete, shall be removed in favor of 'ui'
     def isNumber( self ):
         return self.uiObject.lower() == 'number'
 
+    # TODO: Obsolete, shall be removed in favor of 'ui'
     def isChoice( self ):
         return self.uiObject.lower() == 'choice'
 
-    def hasLabel( self ):
-        return self.__config.get( 'label', '' ) != ''
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def isCombobox( self ):
+        return self.uiObject.lower() == 'combobox'
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def isDate( self ):
+        return self.uiObject.lower() == 'datepicker'
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def isDateTime( self ):
+        return self.uiObject.lower() == 'datetimepicker'
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def isTime( self ):
+        return self.uiObject.lower() == 'timepicker'
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def hasPrefix( self ):
+        return 'prefix' in self.__config
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def prefix( self ):
+        return self.__config.get( 'prefix', '' )
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def hasSuffix( self ):
+        return 'suffix' in self.__config
+
+    # TODO: Obsolete, shall be removed in favor of 'ui'
+    def suffix( self ):
+        return self.__config.get( 'suffix', '' )
+
+    @property
+    def ui( self ):
+        return self.__ui
 
     def minimal( self ):
         return self.__config.get( 'minimal', '0' )
@@ -152,22 +291,6 @@ class TemplateColumn( object ):
             return self.__config.get( 'maximal', str( 2 ** ( self.__length * 8 ) - 1 ) )
 
         return self.__config.get( 'maximal', str( 2 ** 31 - 1 ) )
-
-    def hasPrefix( self ):
-        return 'prefix' in self.__config
-
-    def prefix( self ):
-        return self.__config.get( 'prefix', '' )
-
-    def hasSuffix( self ):
-        return 'suffix' in self.__config
-
-    def suffix( self ):
-        return self.__config.get( 'suffix', '' )
-
-    @property
-    def choice( self ):
-        return self.__choice
 
     @property
     def pType( self ):
@@ -202,6 +325,9 @@ class TemplateColumn( object ):
 
         elif self.__sqlType == 'BOOLEAN':
             return 'db.Boolean'
+
+        elif self.__sqlType == 'TIMESTAMP':
+            return 'db.DateTime'
 
         elif self.__sqlType == 'DATE':
             return 'db.Date'
@@ -244,7 +370,10 @@ class TemplateColumn( object ):
             return 'boolean'
 
         elif self.__sqlType == 'DATE':
-            return 'string'
+            return 'Date'
+
+        elif self.__sqlType == 'TIMESTAMP':
+            return 'Date'
 
         elif self.__sqlType == 'FLOAT' or self.__sqlType == 'REAL':
             return 'number'
@@ -262,7 +391,7 @@ class TemplateColumn( object ):
             return 'string'
 
         elif self.__sqlType == 'TIME':
-            return 'string'
+            return 'Date'
 
         elif self.__sqlType == 'RECORD':
             if self.__interface:
@@ -327,3 +456,11 @@ class TemplateColumn( object ):
 
         result += ' ]'
         return result
+
+    def angularUiInput( self ):
+        return self.__ui.buildInputElement( self.__tableName,
+                                            self.__field,
+                                            self.__config.get( 'label', '' ),
+                                            [ 'readonly' if self.isPrimaryKey() else '' ] )
+
+

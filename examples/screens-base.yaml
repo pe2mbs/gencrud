@@ -17,14 +17,17 @@ objects:
     - field:              D_ROLE_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification
       index:              0
-      ui:                 label
+      ui:
+        type:             label
     - field:              D_ROLE          CHAR(20)    NOT NULL
       label:              Role
       index:              1
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              USERS           RECORD      RELATION User
       label:              Users
-      ui:                 label
+      ui:
+        type:             label
       inport:             User            ../../testrun/user/model
 - name:                   user
   class:                  User
@@ -41,30 +44,38 @@ objects:
     - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification
       index:              0
-      ui:                 label
+      ui:
+        type:             label
     - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
       label:              User name
       index:              1
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
       label:              Password
-      ui:                 password
+      ui:
+        type:             password
     - field:              D_FIRST_NAME    CHAR(30)    NOT NULL
       label:              First name
       index:              3
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
       label:              Middle name
       index:              4
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
       label:              Last name
       index:              5
-      ui:                 textbox
+      ui:
+        type:             textbox
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
-      ui:                 choice
+      ui:
+        type:             choice
     - field:              D_ROLES_REL     RECORD      RELATION Role
       label:              Role
-      ui:                 label
+      ui:
+        type:             label
       inport:             Role            ../../testrun/role/model

@@ -256,6 +256,7 @@ For relationshis RECORD fields
 
 #### index variable (optional)
 When set to a numeric value the field is included into list view, the value dertemines the order where the fields shall appear.
+Also when set the column is included in the search filter of the list view. 
   
 #### css section (optional)
 

@@ -23,10 +23,16 @@ objects:
       index:              0
       css:
         width:            5%
-      ui:                 label
+      ui:
+        type:             textbox
     - field:              D_ROLE_NAME     CHAR(20)    NOT NULL
       label:              Role
       index:              1
       css:
         width:            93%
-      ui:                 textbox
+      ui:
+        type:             textbox
+    - field:              D_MOD_DATETIME  TIMESTAMP
+      label:              Last Modified Date & Time
+      ui:
+        type:             textbox

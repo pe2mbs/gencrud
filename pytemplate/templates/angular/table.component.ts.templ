@@ -103,9 +103,6 @@ export class ${ obj.cls }TableComponent implements OnInit
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
-        // index row is used just for debugging proposes and can be removed
-        this.index = i;      
-        console.log( this.index );
         let height: number = ( 6 * 72 ) + 190;
         const dialogRef = this.dialog.open( AddEdit${ obj.cls }Dialog,
         {
@@ -123,7 +120,7 @@ export class ${ obj.cls }TableComponent implements OnInit
                 const foundIndex = this.dataService.dataChange.value.findIndex( x => x.${ obj.table.primaryKey } === this.id );
                 console.log( "startEdit() updating index ", foundIndex );
                 // Then you update that record using data from
-                // dialogData (values you enetered)
+                // dialogData (values you entered)
                 this.dataService.dataChange.value[ foundIndex ] = this.dataService.getDialogData();
                 // And lastly refresh table
                 this.refreshTable();
