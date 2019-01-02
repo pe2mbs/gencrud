@@ -73,6 +73,7 @@ export class CrudDataService<T>
         this.dialogData = record;
         this.httpClient.post<T>( this._uri + '/new', record ).subscribe(result => {
             console.log ( result );
+            this.getAll();
         },
         (error: HttpErrorResponse) => {
             console.log (error.name + ' ' + error.message);

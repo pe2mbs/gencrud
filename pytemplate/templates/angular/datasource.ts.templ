@@ -43,7 +43,7 @@ export class ${ obj.cls }DataSource extends CrudDataSource<${ obj.cls }Record>
 
 <%!
     def filter( oList ):
-        return 'record.' + ( ' + record.'.join( [ x.name for x in oList ] ) )
+        return 'record.' + ( " || '' + record.".join( [ x.name for x in oList ] ) ) + " || ''"
 %>
     public makeSearchString( record: any ) : string
     {
