@@ -99,6 +99,7 @@ class TypeScript( object ):
         while idx < len( text ) and text[ idx ] != '}':
             idx = self.__skipWhiteSpace( text, idx )
             key, idx = self._parse( text, idx )
+            idx = self.__skipWhiteSpace( text, idx )
             if text[ idx ] == ':':
                 idx += 1
                 self.__column += 1
@@ -168,10 +169,15 @@ class TypeScript( object ):
     def parse( self, text ):
         self.__line = 1
         self.__column = 1
-        if type( text ) in ( tuple, list ):
-            return self._parse( '\n'.join( text ), 0 )[ 0 ]
+        try:
+            if type( text ) in ( tuple, list ):
+                return self._parse( '\n'.join( text ), 0 )[ 0 ]
 
-        return self._parse( text, 0 )[ 0 ]
+            return self._parse( text, 0 )[ 0 ]
+
+        except Exception:
+            print( text )
+            raise
 
 
 class MyTest( unittest.TestCase ):
