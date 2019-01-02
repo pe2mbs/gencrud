@@ -132,7 +132,12 @@ def updatePythonProject( config, app_module ):
                                                    ']' )
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
-    menuItems = json.loads( ''.join( sectionLines ) )
+    try:
+        menuItems = json.loads( ''.join( sectionLines ) )
+
+    except:
+        print( ''.join( sectionLines ) )
+        raise
 
     def createMenuItem( cfg ):
         return { 'displayName': cfg.menuItem.displayName,

@@ -1,4 +1,5 @@
 import json
+import shutil
 import yaml
 import os
 import io
@@ -163,7 +164,13 @@ def generateAngular( templates, config ):
                                            app, mod, 'app.module.json' )
         if os.path.isfile( app_module_json_file ):
             with open( app_module_json_file, 'r' ) as stream:
-                data = json.load( stream )
+                try:
+                    data = json.load( stream )
+
+                except:
+                    print( "Error in file: {0}".format( app_module_json_file ) )
+                    raise
+
                 if appModule is None:
                     appModule = data
 
@@ -189,4 +196,17 @@ def generateAngular( templates, config ):
 
     updateAngularProject( config, appModule )
     os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
+    # Now copy the common files from common-ts to
+
+    if os.path.isdir( os.path.join( config.angular.source, 'common' ) ):
+        if pytemplate.utils.overWriteFiles:
+            shutil.rmtree( os.path.join( config.angular.source, 'common' ) )
+
+            shutil.copytree( os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'common-ts' ) ),
+                     os.path.join( config.angular.source, 'common' ) )
+
+    else:
+        shutil.copytree( os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'common-ts' ) ),
+                         os.path.join( config.angular.source, 'common' ) )
+
     return

@@ -2,26 +2,21 @@ source:
   python:   C:\src\angular\angular-flask\backend
   angular:  C:\src\angular\angular-flask\src\app
 objects:
-- name:                   user
-  class:                  User
+- name:                   test
+  class:                  Test
   application:            testrun
-  uri:                    /api/user
+  uri:                    /api/test
   menu:
     displayName:          Database
     iconName:             settings
     index:                -2
   menuItem:
-    displayName:          Users table
+    displayName:          Test table
     iconName:             verified_user
-    route:                /users
+    route:                /tester
     index:                -1
   table:
-    name:                 WA_USERS
-    pyInport:
-    - RoleSchema          testrun.role.schema
-    tsInport:
-    - Role                ../role/model
-    - RoleDataService     ../role/service
+    name:                 WA_TESTER
     columns:
     - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification
@@ -66,15 +61,4 @@ objects:
       label:              Last changed
       ui:
         type:             datetime
-    - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
-      label:              Role
-      ui:
-        type:             textbox
-        choice:
-          service:          RoleDataService
-          class:            Role
-          function:         getAll
-          value:            D_ROLE_ID
-          label:            D_ROLE_NAME
-    - field:              D_ROLES_REL     RECORD      RELATION Role
 
