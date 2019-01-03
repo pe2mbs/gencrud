@@ -45,6 +45,9 @@ def joinJson( json1, json2 ):
 
 def insertLinesUnique( lines, rangeObj, line ):
     found = False
+    if rangeObj.end + 1 < len( lines ):
+        rangeObj.end += 1
+
     for idx in rangeObj.range():
         if verbose:
             print( "Check line {} of {}".format( idx, rangeObj.end ) )
@@ -57,7 +60,7 @@ def insertLinesUnique( lines, rangeObj, line ):
             print( 'inject files [{0}] @ {1}'.format( line, rangeObj.end + 1 ) )
 
 
-        lines.insert( rangeObj.end + 1, line + '\n' )
+        lines.insert( rangeObj.end, line + '\n' )
         rangeObj.end += 1
 
     return

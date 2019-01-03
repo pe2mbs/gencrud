@@ -61,7 +61,7 @@ def updateImportSection( lines, files ):
                 stage = 0
                 rangePos.end = lineNo
 
-    #rangePos.end += 1
+    rangePos.end += 1
     for imp in files:
         foundLine = False
         for lineNo in rangePos.range():
@@ -70,7 +70,7 @@ def updateImportSection( lines, files ):
                 break
 
         if not foundLine:
-            lines.insert( rangePos.end + 1, imp + '\n' )
+            lines.insert( rangePos.end, imp + '\n' )
             rangePos.end += 1
 
 
