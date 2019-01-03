@@ -61,4 +61,62 @@ objects:
       label:              Last changed
       ui:
         type:             datetime
-
+- name:                   test1
+  class:                  Test1
+  application:            testrun
+  uri:                    /api/test1
+  menu:
+    displayName:          Database
+    iconName:             settings
+    index:                -2
+  menuItem:
+    displayName:          Test table1
+    iconName:             verified_user
+    route:                /tester1
+    index:                -1
+  table:
+    name:                 WA_TESTER1
+    columns:
+    - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
+      label:              Identification
+      index:              0
+      css:
+        width:            5%
+      ui:
+        type:             textbox
+    - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
+      label:              User name
+      index:              1
+      css:
+        width:            20%
+      ui:
+        type:             textbox
+    - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
+      label:              Password
+      ui:
+        type:             password
+    - field:              D_FIRST_NAME    CHAR(30)    NOT NULL
+      label:              First name
+      index:              3
+      css:
+        width:            25%
+      ui:
+        type:             textbox
+    - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
+      label:              Middle name
+      index:              4
+      css:
+        width:            20%
+      ui:
+        type:             textbox
+    - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
+      label:              Last name
+      index:              5
+      css:
+        width:            20%
+      ui:
+        type:             textbox
+    - field:              D_LAST_CHANGED  TIMESTAMP   NOT NULL
+      label:              Last changed
+      ui:
+        type:             datetime

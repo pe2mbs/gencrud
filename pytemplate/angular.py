@@ -1,8 +1,6 @@
 import json
 import shutil
-import yaml
 import os
-import io
 import sys
 import pytemplate.utils
 from pytemplate.typescript_obj import TypeScript
@@ -74,7 +72,7 @@ def updateImportSection( lines, files ):
             rangePos.end += 1
 
 
-def updateAngularAppModuleTs( config, app_module ):
+def updateAngularAppModuleTs( config, app_module, exportsModules ):
     if pytemplate.utils.verbose:
         print( config.angular.source )
     # File to edit 'app.module.ts'
@@ -241,6 +239,7 @@ def generateAngular( templates, config ):
                 print( '' )
 
     appModule = None
+    exportsModules = []
     for app, mod, source, export in modules:
         app_module_json_file = os.path.join( config.angular.source,
                                            app, mod, 'app.module.json' )
@@ -261,22 +260,15 @@ def generateAngular( templates, config ):
 
             os.remove( app_module_json_file )
 
-        if 'exports' in appModule:
-            appModule[ 'exports' ].append( { 'application':   app,
-                                             'modules':       mod,
-                                             'source':        source,
-                                             'export':        export } )
-
-        else:
-            appModule[ 'exports' ] = [ { 'application':   app,
+        exportsModules.append( { 'application':   app,
                                          'modules':       mod,
                                          'source':        source,
-                                         'export':        export } ]
+                                         'export':        export } )
 
     with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
 
-    updateAngularAppModuleTs( config, appModule )
+    updateAngularAppModuleTs( config, appModule, exportsModules )
     updateAngularAppRoutingModuleTs( config, appModule )
 
     os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
