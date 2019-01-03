@@ -71,7 +71,7 @@ export class AddEdit${ obj.cls }Dialog extends BaseDialog
 
     onSaveClick(): void
     {
-        console.log( "AddEdit${ obj.cls }Dialog.onSaveClick() => ", this.formGroup.value );
+        console.log( 'AddEdit${ obj.cls }Dialog.onSaveClick() => ', this.formGroup.value );
         if ( !this.isEditMode() )
         {
             this.dataService.addRecord( this.formGroup.value );

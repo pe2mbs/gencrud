@@ -19,7 +19,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 
 @Component( {
   selector: 'pyt-datetime-input-box',
-  template:`<div class="form">
+  template: `<div class="form">
     <mat-form-field color="accent">
         <input  matInput 
                 class="custom-input__input" 
@@ -37,19 +37,16 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
             'mat-form-field { width: 100%; }' ],
   encapsulation: ViewEncapsulation.None,
   providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
-  animations:[ trigger(
-      'visibilityChanged',[
-        state( 'true', style( { 'height':'*','padding-top':'4px' } ) ),
-        state( 'false', style( { height:'0px','padding-top':'0px' } ) ),
+  animations: [ trigger(
+      'visibilityChanged', [
+        state( 'true', style( { 'height': '*', 'padding-top': '4px' } ) ),
+        state( 'false', style( { height: '0px', 'padding-top': '0px' } ) ),
         transition( '*=>*', animate( '200ms' ) )
       ]
     )
   ]
 } )
 export class PytDateTimeInputComponent extends PytBaseComponent
-                                       implements ControlValueAccessor, 
-                                                  AfterViewInit, 
-                                                  OnChanges, OnInit 
 {
     constructor( formGroupDir: FormGroupDirective ) 
     {

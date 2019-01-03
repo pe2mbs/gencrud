@@ -47,9 +47,6 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   ]
 } )
 export class PytNumberInputComponent extends PytBaseComponent
-                                     implements ControlValueAccessor, 
-                                                AfterViewInit, 
-                                                OnChanges, OnInit 
 {
     constructor( formGroupDir: FormGroupDirective ) 
     {

@@ -42,7 +42,7 @@ export class CrudDataSource<T> extends DataSource<T>
 
     public makeSearchString( record: any ) : string
     {
-        return ( "" );
+        return ( '' );
     }
 
     /** Connect function called by the table to retrieve one stream containing the data to render. */
@@ -95,7 +95,7 @@ export class CrudDataSource<T> extends DataSource<T>
         return data.sort( ( a, b ) => {
             let propertyA: number | string = '';
             let propertyB: number | string = '';
-            [ propertyA, propertyB ] = this.sortActive( this._sort.active, a, b )
+            [ propertyA, propertyB ] = this.sortActive( this._sort.active, a, b );
             
             const valueA = isNaN( +propertyA ) ? propertyA : +propertyA;
             const valueB = isNaN( +propertyB ) ? propertyB : +propertyB;

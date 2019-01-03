@@ -69,7 +69,7 @@ export class CrudDataService<T>
 
     public addRecord( record: T ): void 
     {
-        console.log( "addRecord", record );
+        console.log( 'addRecord', record );
         this.dialogData = record;
         this.httpClient.post<T>( this._uri + '/new', record ).subscribe(result => {
             console.log ( result );
@@ -83,7 +83,7 @@ export class CrudDataService<T>
 
     public getRecord( record: T ): void 
     {
-        console.log( "addRecord", record );
+        console.log( 'addRecord', record );
         this.dialogData = record;
         this.httpClient.get<T>( this._uri + '/get', record ).subscribe(result => {
             console.log ( result );
@@ -96,7 +96,7 @@ export class CrudDataService<T>
 
     public updateRecord( record: T ): void 
     {
-        console.log( "updateRecord", record );
+        console.log( 'updateRecord', record );
         this.dialogData = record;
         this.httpClient.post<T>( this._uri + '/update', record ).subscribe(result => {
             console.log ( result );
@@ -109,7 +109,7 @@ export class CrudDataService<T>
 
     public deleteRecord( record: string ): void 
     {
-        console.log( "deleteRecord", record );
+        console.log( 'deleteRecord', record );
         this.httpClient.delete<T>( this._uri + '/' + record ).subscribe( result => {
             console.log ( result );
         },

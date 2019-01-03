@@ -39,14 +39,10 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     animations: CUSTOM_ANIMATIONS_CONTROLE
 } )
 export class PytTextInputComponent extends PytBaseComponent
-                                   implements ControlValueAccessor, 
-                                              AfterViewInit, 
-                                              OnChanges, OnInit 
 {
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );
         return;
     }
-
 }

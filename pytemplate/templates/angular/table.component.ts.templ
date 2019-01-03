@@ -86,7 +86,7 @@ export class ${ obj.cls }TableComponent implements OnInit
         let height: number = ( 6 * 72 ) + 130;
         dialogRef.afterClosed().subscribe( result => 
         {
-            console.log( "addNew() dialog result ", result );
+            console.log( 'addNew() dialog result ', result );
             if ( result === 1 ) 
             {
                 // After dialog is closed we're doing frontend updates
@@ -95,7 +95,7 @@ export class ${ obj.cls }TableComponent implements OnInit
                 this.refreshTable();
             }
         } );
-        dialogRef.updateSize( "85%", height.toString() + "px" );
+        dialogRef.updateSize( '85%', height.toString() + 'px' );
         return;
     }
 
@@ -109,16 +109,16 @@ export class ${ obj.cls }TableComponent implements OnInit
             data: { record:     record, 
                     mode:       'edit' },
         } );
-        dialogRef.updateSize( "85%", height.toString() + "px" );
+        dialogRef.updateSize( '85%', height.toString() + 'px' );
         dialogRef.afterClosed().subscribe( result => 
         {
-            console.log( "startEdit() dialog result ", result );
+            console.log( 'startEdit() dialog result ', result );
             if ( result === 1 ) 
             {
                 // When using an edit things are little different,
                 // firstly we find record inside DataService by id
                 const foundIndex = this.dataService.dataChange.value.findIndex( x => x.${ obj.table.primaryKey } === this.id );
-                console.log( "startEdit() updating index ", foundIndex );
+                console.log( 'startEdit() updating index ', foundIndex );
                 // Then you update that record using data from
                 // dialogData (values you entered)
                 this.dataService.dataChange.value[ foundIndex ] = this.dataService.getDialogData();
@@ -137,7 +137,7 @@ export class ${ obj.cls }TableComponent implements OnInit
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
-        console.log( "deleteItem ", record );
+        console.log( 'deleteItem ', record );
         const dialogRef = this.dialog.open( Delete${ obj.cls }Dialog,
         {
             data: { record: record, 
@@ -146,12 +146,12 @@ export class ${ obj.cls }TableComponent implements OnInit
 
         dialogRef.afterClosed().subscribe( result => 
         {
-            console.log( "deleteItem() dialog result ", result );
+            console.log( 'deleteItem() dialog result ', result );
             if ( result === 1 ) 
             {
                 const foundIndex = this.dataService.dataChange.value.findIndex( x =>
                                     x.${ obj.table.primaryKey } === this.id );
-                console.log( "deleteItem() removing index ", foundIndex );
+                console.log( 'deleteItem() removing index ', foundIndex );
                 this.dataService.dataChange.value.splice( foundIndex, 1 );
                 this.refreshTable();
             }

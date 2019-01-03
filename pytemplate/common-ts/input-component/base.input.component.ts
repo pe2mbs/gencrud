@@ -1,35 +1,35 @@
-import { Input } from "@angular/core";
-import { FormControl, FormGroupDirective } from "@angular/forms";
+import { Input, OnChanges, OnInit, AfterViewInit } from '@angular/core';
+import { FormControl, FormGroupDirective } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 export const CUSTOM_ANIMATIONS_CONTROLE: any = [ trigger(
     'visibilityChanged', [
-            state( 'true', style( { 'height':'*','padding-top':'4px' } ) ),
-            state( 'false', style( { height:'0px','padding-top':'0px' } ) ),
+            state( 'true', style( { 'height': '*', 'padding-top': '4px' } ) ),
+            state( 'false', style( { height: '0px', 'padding-top': '0px' } ) ),
             transition( '*=>*', animate( '200ms' ) )
         ]
     )
-]
+];
 
-export class PytBaseComponent
+export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit, AfterViewInit
 {
     // ID attribute for the field and for attribute for the label
-    @Input()    id:             string; 
+    @Input()    id:                 string;
     // placeholder input
-    @Input()    placeholder:    string; 
+    @Input()    placeholder:        string;
     // formControlName fieldname
-    @Input()    formControlName:string; 
+    @Input()    formControlName:    string;
     // is the control readonly 
-    @Input()    readonly:       string;
+    @Input()    readonly:           string;
     // Field prefix
-    @Input()    prefix:         string;
-    public      prefixType:     string;
+    @Input()    prefix:             string;
+    public      prefixType:         string;
     // Field suffix
-    @Input()    suffix:         string;
-    public      suffixType:     string;
+    @Input()    suffix:             string;
+    public      suffixType:         string;
 
-    public      control:        FormControl;
-    public      formGroupDir:   FormGroupDirective;        
+    public      control:            FormControl;
+    public      formGroupDir:       FormGroupDirective;
 
     constructor( fgd: FormGroupDirective )
     {
@@ -44,7 +44,7 @@ export class PytBaseComponent
         console.log( 'base-control', this.control );
         if ( this.placeholder === undefined )
         {
-            this.placeholder = "Enter text"; 
+            this.placeholder = 'Enter text';
         }
         if ( this.readonly !== undefined )
         {
@@ -54,7 +54,7 @@ export class PytBaseComponent
         if ( this.prefix !== undefined )
         {
             let result = this.prefix.split( ' ' );
-            if ( result.length == 1 )
+            if ( result.length === 1 )
             {
                 this.prefix = result[ 0 ];
                 this.prefixType = 'text';
@@ -68,7 +68,7 @@ export class PytBaseComponent
         if ( this.suffix !== undefined )
         {
             let result = this.prefix.split( ' ' );
-            if ( result.length == 1 )
+            if ( result.length === 1 )
             {
                 this.suffix = result[ 0 ];
                 this.suffixType = 'text';
@@ -106,17 +106,17 @@ export class PytBaseComponent
         // RESET the custom input form control UI when the form control is RESET
         this.control.valueChanges.subscribe( () => {
             // check condition if the form control is RESET
-            if ( this.control.value == "" || 
-                  this.control.value == null || 
-                  this.control.value == undefined ) {
-                this.value = "";      
+            if ( this.control.value === '' ||
+                  this.control.value === null ||
+                  this.control.value === undefined ) {
+                this.value = '';
             }
         } );
     }
 
     // event fired when input value is changed. later propagated up 
     // to the form control using the custom value accessor interface
-    onChange( e:Event, value:any )
+    onChange( e: Event, value: any )
     {
         console.log( 'base-onChange', this.control );
         // set changed value
@@ -128,8 +128,8 @@ export class PytBaseComponent
     }
 
     // propagate changes into the custom form control
-    propagateChange = (_: any) => { }
-    touchedChange   = (_: any) => { }
+    propagateChange = (_: any) => { };
+    touchedChange   = (_: any) => { };
 
     // From ControlValueAccessor interface
     writeValue( value: any ) 
