@@ -23,8 +23,23 @@ template_list   = [ 'templates/angular/addedit.dialog.html.templ',
                     'templates/python/model.py.templ',
                     'templates/python/schema.py.templ',
                     'templates/python/view.py.templ',
+                    'common-ts/input-component/base.input.component.ts',
+                    'common-ts/input-component/choice.component.ts',
+                    'common-ts/input-component/combobox.component.ts',
+                    'common-ts/input-component/date.component.ts',
+                    'common-ts/input-component/datetime.component.ts',
+                    'common-ts/input-component/email.component.ts',
+                    'common-ts/input-component/label.component.ts',
+                    'common-ts/input-component/number.component.ts',
+                    'common-ts/input-component/password.component.ts',
+                    'common-ts/input-component/textarea.component.ts',
+                    'common-ts/input-component/textbox.component.ts',
+                    'common-ts/input-component/time.component.ts',
+                    'common-ts/crud-dataservice.ts',
+                    'common-ts/crud-datasource.ts',
+                    'common-ts/dialog.scss',
+                    'common-ts/dialog.ts',
                     'screen.yaml' ]
-
 
 here = path.abspath(path.dirname(__file__))
 
