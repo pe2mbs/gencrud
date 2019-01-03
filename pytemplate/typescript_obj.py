@@ -112,6 +112,11 @@ class TypeScript( object ):
             elif text[ idx ] == '}':
                 break
 
+            elif text[ idx ] == ',':    # special case after reading constant strings single or double qouted
+                idx += 1
+                self.__column += 1
+                continue
+
             elif text[ idx ] == ',':
                 # next element
                 print( 'next element: {}'.format( key ) )
@@ -145,6 +150,27 @@ class TypeScript( object ):
 
     def _parse( self, text, idx ):
         idx = self.__skipWhiteSpace( text, idx )
+
+        def copyUntil( idx, until ):
+            result = ''
+            while idx < len( text ) and text[ idx ] not in until:
+                if text[ idx ] == '//':
+                    result += text[ idx ]
+                    self.__column += 1
+                    idx += 1
+                    result += text[ idx ]
+                    self.__column += 1
+                    idx += 1
+
+                else:
+                    result += text[ idx ]
+                    self.__column += 1
+                    idx += 1
+
+            idx = self.__skipWhiteSpace( text, idx )
+            return result, idx
+
+
         if text[ idx ] == '{':
             # dict
             idx += 1
@@ -157,12 +183,20 @@ class TypeScript( object ):
             self.__column += 1
             obj, idx = self._parseArray( text, idx )
 
+        elif text[ idx ] == "'":    # Constant string single quote
+            idx += 1
+            self.__column += 1
+            obj, idx = copyUntil( idx, "'" )
+            obj = "'{0}'".format( obj )
+
+        elif text[ idx ] == '"':    # Constant string double quote
+            idx += 1
+            self.__column += 1
+            obj, idx = copyUntil( idx, '"' )
+            obj = '"{0}"'.format( obj )
+
         else:
-            obj = ''
-            while idx < len( text ) and text[ idx ] not in ',{}[]: \t\n\r':
-                obj += text[ idx ]
-                self.__column += 1
-                idx += 1
+            obj, idx = copyUntil( idx, ',{}[]: \t\n\r' )
 
         return ( obj, idx )
 

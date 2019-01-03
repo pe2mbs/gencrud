@@ -8,6 +8,17 @@ import pytemplate.utils
 from pytemplate.typescript_obj import TypeScript
 from mako.template import Template
 from pytemplate.positon import PositionInterface
+import hashlib
+
+LABEL_APP_ROUTES    = 'const appRoutes: Routes ='
+LABEL_NG_MODULE     = '@NgModule('
+APP_MODULE          = 'app.module.ts'
+APP_ROUTING_MODULE  = 'app.routingmodule.ts'
+NG_ENTRY_COMPONENTS = 'entryComponents'
+NG_IMPORTS          = 'imports'
+NG_PROVIDERS        = 'providers'
+NG_DECLARATIONS     = 'declarations'
+
 
 def makeAngularModule( root_path, *args ):
     if len( args ) > 0:
@@ -19,55 +30,21 @@ def makeAngularModule( root_path, *args ):
 
     return
 
+def sha256sum( filename ):
+    # BUF_SIZE is totally arbitrary, change for your app!
+    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+    sha256 = hashlib.sha256()
+    with open( filename, 'rb' ) as f:
+        while True:
+            data = f.read( BUF_SIZE )
+            if not data:
+                break
+            sha256.update( data )
 
-def updateAngularProject( config, app_module ):
-    if pytemplate.utils.verbose:
-        print( config.angular.source )
-    # File to edit 'app.module.ts'
-    # inject the following;
-    #   inport
-    #   declarations:       search for 'declarations: ['
-    #   imports:            search for 'imports: ['
-    #   providers:          search for 'providers: ['
-    #   entryComponents:    search for 'entryComponents: ['
-    with open( os.path.join( config.angular.source, 'app.module.ts' ), 'r' ) as stream:
-        lines = stream.readlines()
+    return sha256.hexdigest()
 
-    pytemplate.utils.backupFile( os.path.join( config.angular.source, 'app.module.ts' ) )
-    rangePos        = PositionInterface()
 
-    sectionLines    = pytemplate.utils.searchSection( lines,
-                                                      rangePos,
-                                                      '@NgModule({',
-                                                      '})' )
-    pos = sectionLines[0].find( '{' )
-    sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
-    pos = sectionLines[ -1 ].find( '}' )
-    sectionLines[ -1 ] = sectionLines[ -1 ][ : pos + 1 ]
-
-    ts = TypeScript()
-    NgModule = ts.parse( ''.join( sectionLines ) )
-
-    for decl in app_module[ 'declarations' ]:
-        if decl != '' and decl not in NgModule[ 'declarations' ]:
-            NgModule[ 'declarations' ].append( decl )
-
-    for decl in app_module[ 'providers' ]:
-        if decl != '' and decl not in NgModule[ 'providers' ]:
-            NgModule[ 'providers' ].append( decl )
-
-    for decl in app_module[ 'imports' ]:
-        if decl != '' and decl not in NgModule[ 'imports' ]:
-            NgModule[ 'imports' ].append( decl )
-
-    for decl in app_module[ 'entryComponents' ]:
-        if decl != '' and decl not in NgModule[ 'entryComponents' ]:
-            NgModule[ 'entryComponents' ].append( decl )
-
-    buffer = '@NgModule(' + ts.build( NgModule, 2 ) + ')'
-    bufferLines = [ '{}\n'.format ( x ) for x in buffer.split( '\n' ) ]
-    pytemplate.utils.replaceInList( lines, rangePos, bufferLines )
-
+def updateImportSection( lines, files ):
     rangePos = PositionInterface()
     stage = 0
     for lineNo, lineText in enumerate( lines ):
@@ -85,7 +62,7 @@ def updateAngularProject( config, app_module ):
                 rangePos.end = lineNo
 
     rangePos.end += 1
-    for imp in app_module[ 'files' ]:
+    for imp in files:
         foundLine = False
         for lineNo in rangePos.range():
             if imp in lines[ lineNo ]:
@@ -96,7 +73,116 @@ def updateAngularProject( config, app_module ):
             lines.insert( rangePos.end + 1, imp + '\n' )
             rangePos.end += 1
 
-    with open( os.path.join( config.angular.source, 'app.module.ts' ), 'w' ) as stream:
+
+def updateAngularAppModuleTs( config, app_module ):
+    if pytemplate.utils.verbose:
+        print( config.angular.source )
+    # File to edit 'app.module.ts'
+    # inject the following;
+    #   inport
+    #   declarations:       search for 'declarations: ['
+    #   imports:            search for 'imports: ['
+    #   providers:          search for 'providers: ['
+    #   entryComponents:    search for 'entryComponents: ['
+    with open( os.path.join( config.angular.source, APP_MODULE ), 'r' ) as stream:
+        lines = stream.readlines()
+
+    pytemplate.utils.backupFile( os.path.join( config.angular.source, APP_MODULE ) )
+    rangePos        = PositionInterface()
+
+    sectionLines    = pytemplate.utils.searchSection( lines,
+                                                      rangePos,
+                                                      LABEL_NG_MODULE + '{',
+                                                      '})' )
+    pos = sectionLines[0].find( '{' )
+    sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
+    pos = sectionLines[ -1 ].find( '}' )
+    sectionLines[ -1 ] = sectionLines[ -1 ][ : pos + 1 ]
+
+    ts = TypeScript()
+    NgModule = ts.parse( ''.join( sectionLines ) )
+
+    def updateNgModule( section ):
+        for decl in app_module[ section ]:
+            if decl != '' and decl not in NgModule[ section ]:
+                NgModule[ section ].append( decl )
+
+    updateNgModule( NG_DECLARATIONS )
+    updateNgModule( NG_PROVIDERS )
+    updateNgModule( NG_IMPORTS )
+    updateNgModule( NG_ENTRY_COMPONENTS )
+
+    buffer = LABEL_NG_MODULE + ts.build( NgModule, 2 ) + ')'
+    bufferLines = [ '{}\n'.format ( x ) for x in buffer.split( '\n' ) ]
+    pytemplate.utils.replaceInList( lines, rangePos, bufferLines )
+
+    updateImportSection( lines, app_module[ 'files' ] )
+    with open( os.path.join( config.angular.source, APP_MODULE ), 'w' ) as stream:
+        for line in lines:
+            stream.write( line )
+            if pytemplate.utils.verbose:
+                print( line, end = '' )
+
+    return
+
+
+def updateAngularAppRoutingModuleTs( config, app_module ):
+    with open( os.path.join( config.angular.source, APP_ROUTING_MODULE ), 'r' ) as stream:
+        lines = stream.readlines()
+
+    pytemplate.utils.backupFile( os.path.join( config.angular.source, APP_ROUTING_MODULE ) )
+
+    imports = []
+    entries = []
+    for cfg in config:
+        print( cfg.application, cfg.name, cfg.cls )
+        imports.append( "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
+                                                                                                       app = cfg.application,
+                                                                                                       mod = cfg.name ) )
+        entries.append( {
+            'path': "'{}'".format( cfg.menu.route ),
+            'component': '{cls}TableComponent'.format( cls = cfg.cls ),
+            'data': { 'title': "'{cls} table'".format( cls = cfg.cls ) }
+        } )
+
+    rangePos = PositionInterface()
+    for item in lines:
+        print( item, end = '' )
+
+    sectionLines = pytemplate.utils.searchSection( lines,
+                                                   rangePos,
+                                                   LABEL_APP_ROUTES,
+                                                   ']' )
+    print( sectionLines )
+    pos = sectionLines[ 0 ].find( '[' )
+    sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
+    pos = sectionLines[ -1 ].find( ']' )
+    sectionLines[ -1 ] = sectionLines[ -1 ][ : pos + 1 ]
+
+    ts = TypeScript()
+    appRoutes = ts.parse( ''.join( sectionLines ) )
+    for entry in entries:
+        if pytemplate.utils.verbose:
+            print( entry )
+
+        found = False
+        for route in appRoutes:
+            if route[ 'path' ] == entry[ 'path' ]:
+                found = True
+                break
+
+        if not found:
+            appRoutes.append( entry )
+
+    if pytemplate.utils.verbose:
+        print( '' )
+
+    buffer = LABEL_APP_ROUTES + ' ' + ts.build( appRoutes, 2 ) + ';'
+    bufferLines = [ '{}\n'.format( x ) for x in buffer.split( '\n' ) ]
+    pytemplate.utils.replaceInList( lines, rangePos, bufferLines )
+
+    updateImportSection( lines, imports )
+    with open( os.path.join( config.angular.source, APP_ROUTING_MODULE ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
             if pytemplate.utils.verbose:
@@ -194,20 +280,31 @@ def generateAngular( templates, config ):
     with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
 
-    updateAngularProject( config, appModule )
+    updateAngularAppModuleTs( config, appModule )
+    updateAngularAppRoutingModuleTs( config, appModule )
+
     os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
-    # Now copy the common files from common-ts to
+    copyAngularCommon( os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'common-ts' ) ),
+                       os.path.join( config.angular.source, 'common' ) )
+    return
 
-    '''
-    if os.path.isdir( os.path.join( config.angular.source, 'common' ) ):
-        if pytemplate.utils.overWriteFiles:
-            shutil.rmtree( os.path.join( config.angular.source, 'common' ), ignore_errors=True )
+def copyAngularCommon( source, destination ):
+    files = os.listdir( source )
+    for filename in files:
+        if os.path.isfile( os.path.join( destination, filename ) ):
+            if sha256sum( os.path.join( destination, filename ) ) != sha256sum( os.path.join( source, filename ) ):
+                # Hash differs, therefore replace the file
+                if pytemplate.utils.verbose:
+                    print( "Hash differs, therefore replace the file {0} => {1}".format( os.path.join( source, filename ),
+                                                                                     os.path.join( destination, filename ) ) )
+                shutil.copy( os.path.join( source, filename ),
+                             os.path.join( destination, filename ) )
 
-            shutil.copytree( os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'common-ts' ) ),
-                     os.path.join( config.angular.source, 'common' ) )
+            elif pytemplate.utils.verbose:
+                print( "{0} is the same {1}".format( os.path.join( source, filename ),
+                                                     os.path.join( destination, filename ) ) )
 
-    else:
-        shutil.copytree( os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'common-ts' ) ),
-                         os.path.join( config.angular.source, 'common' ) )
-    '''
+        elif os.path.isdir( os.path.join( destination, filename ) ):
+            copyAngularCommon( os.path.join( source, filename ), os.path.join( destination, filename ) )
+
     return
