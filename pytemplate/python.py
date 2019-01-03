@@ -78,6 +78,13 @@ def getUserMenu():
     return jsonify( menuItems )
 
 '''
+MENU_CHILDEREN_LABEL    = 'childeren'
+MENU_DISPLAY_NAME       = 'displayName'
+MENU_ICON_NAME          = 'iconName'
+MENU_ROUTE              = 'route'
+LABEL_LIST_MODULES      = 'listModules = ['
+LABEL_MENU_ITEMS        = 'menuItems = ['
+LABEL_END_LIST          = ']'
 
 def updatePythonProject( config, app_module ):
     if pytemplate.utils.verbose:
@@ -108,8 +115,8 @@ def updatePythonProject( config, app_module ):
 
     sectionLines = pytemplate.utils.searchSection( lines,
                                                    rangePos,
-                                                   'listModules = [',
-                                                   ']' )
+                                                   LABEL_LIST_MODULES,
+                                                   LABEL_END_LIST )
     del sectionLines[ 0 ]
     del sectionLines[ -1 ]
     for line in sectionLines:
@@ -117,19 +124,19 @@ def updatePythonProject( config, app_module ):
         if line not in modules:
             modules.append( line )
 
-    sectionLines = [ 'listModules = [\n' ]
+    sectionLines = [ LABEL_LIST_MODULES + '\n' ]
 
     for idx, mod in enumerate( modules ):
         sectionLines.append( '    {0}{1}\n'.format( mod,
                                                     '' if len( modules )-1 == idx else ',' ) )
 
-    sectionLines.append( ']\n' )
+    sectionLines.append( LABEL_END_LIST + '\n' )
     pytemplate.utils.replaceInList( lines, rangePos, sectionLines )
 
     sectionLines = pytemplate.utils.searchSection( lines,
                                                    rangePos,
-                                                   'menuItems = [',
-                                                   ']' )
+                                                   LABEL_MENU_ITEMS,
+                                                   LABEL_END_LIST )
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
     try:
@@ -140,25 +147,25 @@ def updatePythonProject( config, app_module ):
         raise
 
     def createMenuItem( cfg ):
-        return { 'displayName': cfg.menuItem.displayName,
-                 'iconName': cfg.menuItem.iconName,
-                 'route': cfg.menuItem.route }
+        return { MENU_DISPLAY_NAME: cfg.menuItem.displayName,
+                 MENU_ICON_NAME: cfg.menuItem.iconName,
+                 MENU_ROUTE: cfg.menuItem.route }
 
     def createRootMenuItem( cfg ):
-        return { 'displayName': cfg.menu.displayName,
-                 'iconName': cfg.menu.iconName,
-                 'children': [ createMenuItem( cfg ) ] }
+        return { MENU_DISPLAY_NAME: cfg.menu.displayName,
+                 MENU_ICON_NAME: cfg.menu.iconName,
+                 MENU_CHILDEREN_LABEL: [ createMenuItem( cfg ) ] }
 
     for cfg in config:
         foundMenu = False
         for menuItem in menuItems:
-            if menuItem[ 'displayName' ] == cfg.menu.displayName:
+            if menuItem[ MENU_DISPLAY_NAME ] == cfg.menu.displayName:
                 foundMenu = True
                 # Found the menu
-                subMenuItems = menuItem[ 'childeren' ]
+                subMenuItems = menuItem[ MENU_CHILDEREN_LABEL ]
                 foundSubMenu = False
                 for subMenuItem in subMenuItems:
-                    if subMenuItem[ 'displayName' ] == cfg.menuItem.displayName:
+                    if subMenuItem[ MENU_DISPLAY_NAME ] == cfg.menuItem.displayName:
                         foundSubMenu = True
                         # don't bother, its already there
                         break
@@ -192,7 +199,7 @@ def updatePythonProject( config, app_module ):
                 menuItems.insert( cfg.menu.index, createRootMenuItem( cfg ) )
 
 
-    menuItemsBlock = ("menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
+    menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
     pytemplate.utils.replaceInList( lines, rangePos, menuItemsBlock )
 
     open( filename, 'w' ).writelines( lines )
@@ -263,32 +270,7 @@ def generatePython( templates, config ):
 
             if pytemplate.utils.verbose:
                 print( '' )
-    """
-    for applic, module in modules:
-        filename = os.path.join( config.python.source,
-                                 applic, '__init__.py' )
-        importStr = 'from {0}.{1} import *'.format( applic, module )
-        lines = []
-        if pytemplate.utils.verbose:
-            print( 'Try to add "{0}"'.format( importStr ), file = sys.stderr )
 
-        try:
-            lines = open( filename, pytemplate.utils.C_FILEMODE_READ ).readlines()
-
-        except:
-            if pytemplate.utils.verbose:
-                print( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
-
-        if pytemplate.utils.verbose:
-            print( lines, file = sys.stdout )
-
-        pytemplate.utils.insertLinesUnique( lines,
-                                            PositionInterface( end = len( lines ) ),
-                                            importStr )
-        pytemplate.utils.backupFile( filename )
-        open( filename, pytemplate.utils.C_FILEMODE_WRITE ).writelines( lines )
-
-    """
     updatePythonProject( config, '' )
     return
 
