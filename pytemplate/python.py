@@ -273,5 +273,3 @@ def generatePython( templates, config ):
 
     updatePythonProject( config, '' )
     return
-
-
