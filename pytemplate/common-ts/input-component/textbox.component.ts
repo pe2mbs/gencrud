@@ -19,7 +19,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 
 @Component( {
     selector: 'pyt-text-input-box',
-    template:`<div class="form">
+    template: `<div class="form">
     <mat-form-field color="accent">
         <input  matInput 
                 class="custom-input__input" 

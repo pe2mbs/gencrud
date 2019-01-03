@@ -155,7 +155,7 @@ def updatePythonProject( config, app_module ):
             if menuItem[ 'displayName' ] == cfg.menu.displayName:
                 foundMenu = True
                 # Found the menu
-                subMenuItems = menuItem[ 'children' ]
+                subMenuItems = menuItem[ 'childeren' ]
                 foundSubMenu = False
                 for subMenuItem in subMenuItems:
                     if subMenuItem[ 'displayName' ] == cfg.menuItem.displayName:

@@ -198,9 +198,10 @@ def generateAngular( templates, config ):
     os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
     # Now copy the common files from common-ts to
 
+    '''
     if os.path.isdir( os.path.join( config.angular.source, 'common' ) ):
         if pytemplate.utils.overWriteFiles:
-            shutil.rmtree( os.path.join( config.angular.source, 'common' ) )
+            shutil.rmtree( os.path.join( config.angular.source, 'common' ), ignore_errors=True )
 
             shutil.copytree( os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'common-ts' ) ),
                      os.path.join( config.angular.source, 'common' ) )
@@ -208,5 +209,5 @@ def generateAngular( templates, config ):
     else:
         shutil.copytree( os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'common-ts' ) ),
                          os.path.join( config.angular.source, 'common' ) )
-
+    '''
     return

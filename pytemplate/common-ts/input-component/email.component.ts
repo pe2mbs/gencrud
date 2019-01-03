@@ -13,13 +13,13 @@ import { PytBaseComponent } from './base.input.component';
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef( () => PytTextInputComponent ),
+    useExisting: forwardRef( () => PytEmailInputComponent ),
     multi: true
 };
 
 @Component( {
-  selector: 'pyt-text-input-box',
-  template:`<div class="form">
+  selector: 'pyt-email-input-box',
+  template: `<div class="form">
     <mat-form-field color="accent">
         <input  matInput 
                 type="email"
@@ -37,19 +37,19 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
             'mat-form-field { width: 100%; }' ],
   encapsulation: ViewEncapsulation.None,
   providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
-  animations:[ trigger(
-      'visibilityChanged',[
-        state( 'true', style( { 'height':'*','padding-top':'4px' } ) ),
-        state( 'false', style( { height:'0px','padding-top':'0px' } ) ),
+  animations: [ trigger(
+      'visibilityChanged', [
+        state( 'true', style( { 'height': '*', 'padding-top': '4px' } ) ),
+        state( 'false', style( { height: '0px', 'padding-top': '0px' } ) ),
         transition( '*=>*', animate( '200ms' ) )
       ]
     )
   ]
 } )
-export class PytTextInputComponent extends PytBaseComponent
-                                   implements ControlValueAccessor, 
-                                              AfterViewInit, 
-                                              OnChanges, OnInit 
+export class PytEmailInputComponent extends PytBaseComponent
+                                    implements ControlValueAccessor, 
+                                               AfterViewInit, 
+                                               OnChanges, OnInit 
 {
     constructor( formGroupDir: FormGroupDirective ) 
     {

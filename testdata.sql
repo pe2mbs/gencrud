@@ -12,5 +12,11 @@ insert into WA_USERS ( D_USER_NAME, D_PASSWORD, D_FIRST_NAME, D_MIDDLE_NAME, D_L
        values ( 'erijerse', '123456', 'Ernst', '', 'Rijerse', 1, DateTime('now', 'localtime') );
 
 
+insert into WA_TESTER ( D_USER_NAME, D_PASSWORD, D_FIRST_NAME, D_MIDDLE_NAME, D_LAST_NAME, D_LAST_CHANGED )
+       values ( 'mbertens', '5701mb', 'Marc', '', 'Bertens-Nguyen', DateTime('now', 'UTC') );
+
+insert into WA_TESTER ( D_USER_NAME, D_PASSWORD, D_FIRST_NAME, D_MIDDLE_NAME, D_LAST_NAME, D_LAST_CHANGED )
+       values ( 'erijerse', '123456', 'Ernst', '', 'Rijerse', DateTime('now', 'localtime') );
+
 
 
