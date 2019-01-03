@@ -1,7 +1,6 @@
-import { FormControl, FormGroup } from "@angular/forms";
-import { MatDialogRef } from "@angular/material/dialog";
-import { CrudDataService } from "./crud-dataservice";
-
+import { FormControl, FormGroup } from '@angular/forms';
+import { MatDialogRef } from '@angular/material/dialog';
+import { CrudDataService } from './crud-dataservice';
 
 
 export class BaseDialog
@@ -22,13 +21,13 @@ export class BaseDialog
 
     public isEditMode(): boolean
     {
-        return this.mode === 'edit'
+        return ( this.mode === 'edit' );
     }
 
     public getErrorMessage( ctrl_name: any ) : string
     {
         let ctrl = null;
-        if ( typeof ctrl_name === "string" )
+        if ( typeof ctrl_name === 'string' )
         {
             ctrl = this.formGroup.get( ctrl_name );
         }
@@ -41,7 +40,7 @@ export class BaseDialog
             return ( '' );
         }
         //console.log( "getErrorMessage( ctrl_name = '" + ctrl_name + "' )" );
-        let result: string = "Unknown error";
+        let result = 'Unknown error';
         if ( ctrl.hasError( 'required' ) )
         {
             result = 'Required field';
@@ -59,7 +58,7 @@ export class BaseDialog
             console.log( result, ctrl );
         }
         //console.log( "getErrorMessage() => " + result );
-        return ( result )
+        return ( result );
     }
 
     submit() 
@@ -70,14 +69,14 @@ export class BaseDialog
 
     public onSaveClick(): void 
     {
-        console.log( "onSaveClick() close" );
+        console.log( 'onSaveClick() close' );
         this.dialogRef.close( 1 );
         return;
     }
 
     public onCancelClick(): void 
     {
-        console.log( "onCancelClick() close" );
+        console.log( 'onCancelClick() close' );
         this.dialogRef.close( 0 );
         return;
     }
