@@ -61,7 +61,7 @@ def updateImportSection( lines, files ):
                 stage = 0
                 rangePos.end = lineNo
 
-    rangePos.end += 1
+    #rangePos.end += 1
     for imp in files:
         foundLine = False
         for lineNo in rangePos.range():
@@ -140,20 +140,16 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                                                                                                        app = cfg.application,
                                                                                                        mod = cfg.name ) )
         entries.append( {
-            'path': "'{}'".format( cfg.menu.route ),
+            'path': "'{}'".format( cfg.menuItem.route[1:] ),
             'component': '{cls}TableComponent'.format( cls = cfg.cls ),
             'data': { 'title': "'{cls} table'".format( cls = cfg.cls ) }
         } )
 
     rangePos = PositionInterface()
-    for item in lines:
-        print( item, end = '' )
-
     sectionLines = pytemplate.utils.searchSection( lines,
                                                    rangePos,
                                                    LABEL_APP_ROUTES,
                                                    ']' )
-    print( sectionLines )
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
     pos = sectionLines[ -1 ].find( ']' )
@@ -172,7 +168,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                 break
 
         if not found:
-            appRoutes.append( entry )
+            appRoutes.insert( -1, entry )
 
     if pytemplate.utils.verbose:
         print( '' )
