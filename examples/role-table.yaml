@@ -31,8 +31,4 @@ objects:
       css:
         width:            93%
       ui:
-        type:             textbox
-    - field:              D_MOD_DATETIME  TIMESTAMP
-      label:              Last Modified Date & Time
-      ui:
-        type:             textbox
+        type:             textarea

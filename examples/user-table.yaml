@@ -1,6 +1,6 @@
 source:
-  python:   C:\src\angular\angular-flask\backend
-  angular:  C:\src\angular\angular-flask\src\app
+  python:   /home/mbertens/src/angular/angular-mat-table-crud/backend
+  angular:  /home/mbertens/src/angular/angular-mat-table-crud/src/app
 objects:
 - name:                   user
   class:                  User
@@ -54,7 +54,9 @@ objects:
       css:
         width:            20%
       ui:
-        type:             textbox
+        type:             textarea
+        rows:             4
+        cols:             80
     - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
       label:              Last name
       index:              5
@@ -69,11 +71,11 @@ objects:
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
       ui:
-        type:             textbox
-        choice:
-          service:          RoleDataService
-          class:            Role
-          function:         getAll
+        type:             choice
+        service:
+          name:             role
+          class:            RoleDataService
+          path:             ../role/service
           value:            D_ROLE_ID
           label:            D_ROLE_NAME
     - field:              D_ROLES_REL     RECORD      RELATION Role
