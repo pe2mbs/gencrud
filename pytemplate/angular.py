@@ -125,6 +125,9 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
 
 
 def updateAngularAppRoutingModuleTs( config, app_module ):
+    if not os.path.isfile( os.path.join( config.angular.source, APP_ROUTING_MODULE ) ):
+        return
+
     with open( os.path.join( config.angular.source, APP_ROUTING_MODULE ), 'r' ) as stream:
         lines = stream.readlines()
 
@@ -279,7 +282,15 @@ def generateAngular( templates, config ):
 def copyAngularCommon( source, destination ):
     files = os.listdir( source )
     for filename in files:
-        if os.path.isfile( os.path.join( destination, filename ) ):
+        if not os.path.isfile( os.path.join( destination, filename ) ) and \
+               os.path.isfile( os.path.join( source, filename ) ):
+            if pytemplate.utils.verbose:
+                print( "Copy new file {0} => {1}".format( os.path.join( source, filename ),
+                                                          os.path.join( destination, filename ) ) )
+            shutil.copy( os.path.join( source, filename ),
+                         os.path.join( destination, filename ) )
+
+        elif os.path.isfile( os.path.join( destination, filename ) ):
             if sha256sum( os.path.join( destination, filename ) ) != sha256sum( os.path.join( source, filename ) ):
                 # Hash differs, therefore replace the file
                 if pytemplate.utils.verbose:

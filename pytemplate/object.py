@@ -10,16 +10,6 @@ class TemplateObject( object ):
         self.__menuRoot     = TemplateMenuItem( 'menu', **cfg )
         self.__menuItem     = TemplateMenuItem( 'menuItem', **cfg )
         self.__table        = TemplateTable( **cfg[ 'table' ] )
-
-        noColumns           = len( cfg[ 'table' ][ 'columns' ] )
-        for col in cfg[ 'table' ][ 'columns' ]:
-            column = TemplateColumn( noColumns,
-                                     cfg[ 'table' ][ 'name' ],
-                                     **col )
-            self.__columns.append( column )
-            if column.isPrimaryKey():
-                self.__primaryKey = column.name
-
         return
 
     @property
@@ -50,31 +40,14 @@ class TemplateObject( object ):
     def table( self ):
         return self.__table
 
-    '''
-    # TODO: move to TemplateTable() class
     @property
-    def tableName( self ):
-        return self.__config[ 'table' ][ 'name' ]
-
-    @property
-    def columns( self ):
-        return self.__columns
-
-    @property
-    def primaryKey( self ):
-        return self.__primaryKey
-
-    @property
-    def imports( self ):
+    def externalService( self ):
         result = []
-        for col in self.__columns:
-            result.extend( col.inports )
+        for field in self.__table.columns:
+            if field.ui is not None and ( field.ui.isCombobox() or field.ui.isChoice() ):
+                result.append( 'public {name}Service: {cls}'.format(
+                                name = field.ui.service.name,
+                                cls = field.ui.service.cls ) )
 
-        return result
-
-    @property
-    def listViewColumns( self ):
-        return sorted( [ col for col in self.__columns if col.index is not None ] )
-    '''
-
+        return ( ', ' if len( result ) > 0 else '' ) + ( ', '.join( result ) )
 
