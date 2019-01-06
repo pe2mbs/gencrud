@@ -1,5 +1,5 @@
 import { Input, OnChanges, OnInit, AfterViewInit } from '@angular/core';
-import { FormControl, FormGroupDirective } from '@angular/forms';
+import { FormControl, FormGroupDirective, ControlValueAccessor } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 export const CUSTOM_ANIMATIONS_CONTROLE: any = [ trigger(
@@ -13,6 +13,7 @@ export const CUSTOM_ANIMATIONS_CONTROLE: any = [ trigger(
 
 export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit, AfterViewInit
 {
+    protected   debug:              boolean = false;
     // ID attribute for the field and for attribute for the label
     @Input()    id:                 string;
     // placeholder input
@@ -39,9 +40,15 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
 
     ngOnInit() 
     {
-        console.log( 'base-ngOnInit', this.formControlName );
+        if ( this.debug )
+        {
+            console.log( 'base-ngOnInit', this.formControlName );
+        }
         this.control = this.formGroupDir.control.get( this.formControlName ) as FormControl;
-        console.log( 'base-control', this.control );
+        if ( this.debug )
+        {
+            console.log( 'base-control', this.control );
+        }
         if ( this.placeholder === undefined )
         {
             this.placeholder = 'Enter text';
@@ -50,7 +57,10 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
         {
             this.control.disable();
         }
-        console.log( 'base-ngOnInit - this.readonly', this.readonly );
+        if ( this.debug )
+        {
+            console.log( 'base-ngOnInit - this.readonly', this.readonly );
+        }
         if ( this.prefix !== undefined )
         {
             let result = this.prefix.split( ' ' );
@@ -84,7 +94,10 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
 
     ngOnChanges()
     {
-        console.log( 'base-ngOnChanges', this.control );
+        if ( this.debug )
+        {
+            console.log( 'base-ngOnChanges', this.control );
+        }
         return;
     }
 
@@ -95,14 +108,18 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
     
     public set value( v: any ) 
     {
-        this.control.setValue( v );
+        //this.control.setValue( v, { emitEvent: false } );
+        //this.control.patchValue( v, { emitEvent: false } )
         return;
     }
 
     //Lifecycle hook. angular.io for more info
     ngAfterViewInit()
-    { 
-        console.log( 'base-ngAfterViewInit', this.formControlName, this.control );
+    {
+        if ( this.debug )
+        {
+            console.log( 'base-ngAfterViewInit', this.formControlName, this.control );
+        }
         // RESET the custom input form control UI when the form control is RESET
         this.control.valueChanges.subscribe( () => {
             // check condition if the form control is RESET
@@ -118,7 +135,10 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
     // to the form control using the custom value accessor interface
     onChange( e: Event, value: any )
     {
-        console.log( 'base-onChange', this.control );
+        if ( this.debug )
+        {
+            console.log( 'base-onChange', this.control );
+        }
         // set changed value
         this.value = value;
         // propagate value into form control using control value 
@@ -134,14 +154,21 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
     // From ControlValueAccessor interface
     writeValue( value: any ) 
     {
-        console.log( 'base-writeValue', value );
+        if ( this.debug )
+        {
+            console.log( 'base-writeValue', value );
+        }
         this.value = value;
+        //this.control.patchValue( value, { emitEvent: false } )
     }
 
     //From ControlValueAccessor interface
     registerOnChange( fn: any ) 
     {
-        console.log( 'base-registerOnChange', fn );
+        if ( this.debug )
+        {
+            console.log( 'base-registerOnChange', fn );
+        }
         this.propagateChange = fn;
         return;
     }
@@ -149,7 +176,10 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
     //From ControlValueAccessor interface
     registerOnTouched( fn: any ) 
     {
-        console.log( 'base-registerOnTouched', fn );
+        if ( this.debug )
+        {
+            console.log( 'base-registerOnTouched', fn );
+        }
         this.touchedChange = fn;
         return;
     }

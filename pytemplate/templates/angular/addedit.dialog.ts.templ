@@ -28,6 +28,15 @@ import { Component, Inject } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
 import { BaseDialog } from '../../common/dialog';
 import { ${ obj.cls }DataService } from './service';
+% for field in obj.table.columns:
+ % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+import { PytSelectList } from '../../common/crud-dataservice';
+import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
+<%
+    break
+%>
+ % endif
+% endfor
 
 
 @Component({
@@ -38,14 +47,19 @@ import { ${ obj.cls }DataService } from './service';
 export class AddEdit${ obj.cls }Dialog extends BaseDialog
 {
 % for field in obj.table.columns:
- % if field.isPassword():
+ % if field.ui is not None:
+  % if field.ui.isPassword():
     public hide_${ field.name }: boolean  = true;
+  % elif field.ui.isChoice() or field.ui.isCombobox():
+    public ${ field.ui.service.name }List: PytSelectList[];
+  % endif
  % endif
 % endfor
 
-    constructor( dialogRef: MatDialogRef<AddEdit${ obj.cls }Dialog>,
-                 @Inject( MAT_DIALOG_DATA ) public data: any, 
-                 dataService: ${ obj.cls }DataService )
+    constructor( dialogRef: MatDialogRef<AddEdit${ obj.cls }Dialog>
+                 , @Inject( MAT_DIALOG_DATA ) public data: any
+                 , dataService: ${ obj.cls }DataService
+                 ${ obj.externalService } )
     { 
         super( dialogRef, dataService, data.mode );
         if ( !this.isEditMode() )
@@ -58,6 +72,14 @@ export class AddEdit${ obj.cls }Dialog extends BaseDialog
                                               ${ field.validators } ),
 % endfor
         } );
+% for field in obj.table.columns:
+  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+        ${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( data => {
+            console.log( '${ field.ui.service.name }Service.getSelectList => ', data );
+            this.${ field.ui.service.name }List = data;
+        } );
+ % endif
+% endfor
         return;
     }
 
@@ -68,7 +90,6 @@ export class AddEdit${ obj.cls }Dialog extends BaseDialog
     }
 
 % endfor
-
     onSaveClick(): void
     {
         console.log( 'AddEdit${ obj.cls }Dialog.onSaveClick() => ', this.formGroup.value );

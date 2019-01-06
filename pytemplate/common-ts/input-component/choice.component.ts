@@ -21,11 +21,15 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   selector: 'pyt-choice-input-box',
   template: `<div class="form">
     <mat-form-field color="accent">
-        <input  matInput 
-                class="custom-input__input" 
-                id="{{ id }}"
-                placeholder="{{ placeholder }}"
-                [formControl]="control"/>
+        <mat-select [(value)]="selected"
+                    class="custom-input__input"
+                    id="{{ id }}"
+                    placeholder="{{ placeholder }}"
+                    [formControl]="control">
+            <mat-option *ngFor="let item of items" [value]="item.value">
+                {{item.label}}
+            </mat-option>
+        </mat-select>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
@@ -47,6 +51,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytChoiceInputComponent extends PytBaseComponent
 {
+    @Input() items;
+
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

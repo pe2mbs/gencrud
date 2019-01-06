@@ -48,6 +48,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytPasswordInputComponent extends PytBaseComponent
 {
+    hide: boolean = true;
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

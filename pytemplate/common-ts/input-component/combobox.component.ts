@@ -21,11 +21,16 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   selector: 'pyt-combo-input-box',
   template: `<div class="form">
     <mat-form-field color="accent">
-        <input  matInput 
-                class="custom-input__input" 
+        <input  matInput [matAutocomplete]="auto"
+                class="custom-input__input"
                 id="{{ id }}"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"/>
+        <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let item of items" [value]="item.label">
+                {{ item.label }}
+            </mat-option>
+        </mat-autocomplete>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
@@ -47,6 +52,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytComboInputComponent extends PytBaseComponent
 {
+    @Input() items;
+
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );
