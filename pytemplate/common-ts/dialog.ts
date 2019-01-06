@@ -5,6 +5,7 @@ import { CrudDataService } from './crud-dataservice';
 
 export class BaseDialog
 {
+    protected debug: boolean = false;
     public dialogRef: MatDialogRef<any>;
     public dataService: CrudDataService<any>;
     public formControl: FormControl;
@@ -39,7 +40,10 @@ export class BaseDialog
         {
             return ( '' );
         }
-        //console.log( "getErrorMessage( ctrl_name = '" + ctrl_name + "' )" );
+        if ( this.debug )
+        {
+            console.log( "getErrorMessage( ctrl_name = '" + ctrl_name + "' )" );
+        }
         let result = 'Unknown error';
         if ( ctrl.hasError( 'required' ) )
         {
@@ -57,7 +61,10 @@ export class BaseDialog
         {
             console.log( result, ctrl );
         }
-        //console.log( "getErrorMessage() => " + result );
+        if ( this.debug )
+        {
+            console.log( "getErrorMessage() => " + result );
+        }
         return ( result );
     }
 
@@ -69,14 +76,20 @@ export class BaseDialog
 
     public onSaveClick(): void 
     {
-        console.log( 'onSaveClick() close' );
+        if ( this.debug )
+        {
+            console.log( 'onSaveClick() close' );
+        }
         this.dialogRef.close( 1 );
         return;
     }
 
     public onCancelClick(): void 
     {
-        console.log( 'onCancelClick() close' );
+        if ( this.debug )
+        {
+            console.log( 'onCancelClick() close' );
+        }
         this.dialogRef.close( 0 );
         return;
     }

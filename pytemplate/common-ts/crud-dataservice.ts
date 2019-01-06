@@ -1,8 +1,17 @@
-import { BehaviorSubject} from 'rxjs';
-import { HttpClient, HttpErrorResponse} from '@angular/common/http';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+
+
+export interface PytSelectList
+{
+    value:  number;
+    label:  string;
+}
+
 
 export class CrudDataService<T> 
 {
+    protected debug: boolean = false;
     protected _uri: string;
     dataChange: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
     // Temporarily stores data from dialogs
@@ -45,64 +54,118 @@ export class CrudDataService<T>
         });
     }
 
+    public getSelectList( value: string, label: string ): Observable<PytSelectList[]>
+    {
+        const params = new HttpParams().set('label', label ).set('value', value );
+        return ( Observable.create( observer => {
+            this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
+            .subscribe( ( data ) => {
+                    if ( this.debug )
+                    {
+                        console.log( 'getSelectList() => ', data );
+                    }
+                    observer.next( data );
+                    observer.complete();
+                },
+                ( error: HttpErrorResponse ) => {
+                    console.log (error.name + ' ' + error.message);
+                }
+            )
+        } ) );
+    }
+
     public lockRecord( record: T ): void 
     {
+        this.dialogData = record;
         this.httpClient.post<T>( this._uri + '/lock', record ).subscribe(result => {
-            console.log ( result );
+            if ( this.debug )
+            {
+                console.log( result );
+            }
         },
         (error: HttpErrorResponse) => {
-            console.log (error.name + ' ' + error.message);
+            console.log( error.name + ' ' + error.message );
         });
         return;
     }
 
     public unlockRecord( record: T ): void 
     {
+        this.dialogData = null;
         this.httpClient.post<T>( this._uri + '/unlock', record ).subscribe(result => {
-            console.log ( result );
+            if ( this.debug )
+            {
+                console.log( result );
+            }
         },
         (error: HttpErrorResponse) => {
-            console.log (error.name + ' ' + error.message);
+            console.log( error.name + ' ' + error.message );
         });
         return;
     }
 
     public addRecord( record: T ): void 
     {
-        console.log( 'addRecord', record );
+        if ( this.debug )
+        {
+            console.log( 'addRecord', record );
+        }
         this.dialogData = record;
         this.httpClient.post<T>( this._uri + '/new', record ).subscribe(result => {
-            console.log ( result );
+            if ( this.debug )
+            {
+                console.log( result );
+            }
             this.getAll();
         },
         (error: HttpErrorResponse) => {
-            console.log (error.name + ' ' + error.message);
+            console.log( error.name + ' ' + error.message );
         });
         return;
     }
 
     public getRecord( record: T ): void 
     {
-        console.log( 'addRecord', record );
+        if ( this.debug )
+        {
+            console.log( 'addRecord', record );
+        }
         this.dialogData = record;
         this.httpClient.get<T>( this._uri + '/get', record ).subscribe(result => {
-            console.log ( result );
+            if ( this.debug )
+            {
+                console.log( result );
+            }
         },
         (error: HttpErrorResponse) => {
-            console.log (error.name + ' ' + error.message);
+            console.log( error.name + ' ' + error.message );
         });
         return;
     }
 
     public updateRecord( record: T ): void 
     {
-        console.log( 'updateRecord', record );
-        this.dialogData = record;
-        this.httpClient.post<T>( this._uri + '/update', record ).subscribe(result => {
-            console.log ( result );
+        if ( this.debug )
+        {
+            console.log( 'updateRecord.orignal ', this.dialogData );
+            console.log( 'updateRecord.updated ', record );
+        }
+        for ( let key of Object.keys( record ) )
+        {
+            if ( this.debug )
+            {
+                console.log( 'update key ' + key + ' with value ', record[ key ] );
+            }
+            this.dialogData[ key ] = record[ key ];
+        }
+        this.httpClient.post<T>( this._uri + '/update', this.dialogData ).subscribe( result => {
+            if ( this.debug )
+            {
+                console.log ( result );
+            }
         },
         (error: HttpErrorResponse) => {
-            console.log (error.name + ' ' + error.message);
+            console.log( error.name + ' ' + error.message );
         });
         return;
     }
@@ -111,7 +174,10 @@ export class CrudDataService<T>
     {
         console.log( 'deleteRecord', record );
         this.httpClient.delete<T>( this._uri + '/' + record ).subscribe( result => {
-            console.log ( result );
+            if ( this.debug )
+            {
+                console.log ( result );
+            }
         },
         (error: HttpErrorResponse) => {
             console.log ( error.name + ' ' + error.message );
