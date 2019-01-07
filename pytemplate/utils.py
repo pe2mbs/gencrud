@@ -57,7 +57,11 @@ def findImportSection( lines ):
 def insertLinesUnique( lines, rangeObj, line ):
     found = False
     print( "insertLinesUnique from line {} to line {}".format( rangeObj.start, rangeObj.end ) )
-    for idx in rangeObj.range():
+    end = rangeObj.end
+    if end + 1 < len( lines ):
+        end += 1
+
+    for idx in range( rangeObj.start, end ):
         if verbose:
             print( "Check line {} of {} => '{}'".format( idx, rangeObj.end, lines[ idx ].strip( '\r\n') ) )
 
