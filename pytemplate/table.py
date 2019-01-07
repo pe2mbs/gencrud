@@ -29,6 +29,8 @@ class TemplateTable( object ):
         self.__inports.append( source, table[ source ] )
         return
 
+    # TODO: Add 'unique-key' property to YAML
+
     @property
     def tableName( self ):
         return self.__table.get( 'name', '' )

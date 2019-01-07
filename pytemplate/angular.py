@@ -17,7 +17,6 @@ NG_IMPORTS          = 'imports'
 NG_PROVIDERS        = 'providers'
 NG_DECLARATIONS     = 'declarations'
 
-
 def makeAngularModule( root_path, *args ):
     if len( args ) > 0:
         modulePath = os.path.join( root_path, args[ 0 ] )

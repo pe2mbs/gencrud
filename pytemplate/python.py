@@ -5,6 +5,7 @@ import pytemplate.utils
 from pytemplate.positon import PositionInterface
 from mako.template import Template
 
+# TODO: Fix the position of the import statements in main.py
 
 def makePythonModules( root_path, *args ):
     def write__init__py():
