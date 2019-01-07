@@ -28,6 +28,8 @@ def makePythonModules( root_path, *args ):
 
 
 mainModuleText = '''import logging
+from flask import Blueprint, jsonify
+
 ##
 #   Section maintained by gencrud.py
 ##
@@ -81,6 +83,7 @@ def getUserMenu():
 MENU_CHILDEREN_LABEL    = 'childeren'
 MENU_DISPLAY_NAME       = 'displayName'
 MENU_ICON_NAME          = 'iconName'
+MENU_INDEX              = 'index'
 MENU_ROUTE              = 'route'
 LABEL_LIST_MODULES      = 'listModules = ['
 LABEL_MENU_ITEMS        = 'menuItems = ['
@@ -121,7 +124,6 @@ def updatePythonProject( config, app_module ):
             modules.append( line )
 
     sectionLines = [ LABEL_LIST_MODULES + '\n' ]
-
     for idx, mod in enumerate( modules ):
         sectionLines.append( '    {0}{1}\n'.format( mod,
                                                     '' if len( modules )-1 == idx else ',' ) )
@@ -136,6 +138,7 @@ def updatePythonProject( config, app_module ):
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
     try:
+        print( ''.join( sectionLines ) )
         menuItems = json.loads( ''.join( sectionLines ) )
 
     except:
@@ -169,31 +172,31 @@ def updatePythonProject( config, app_module ):
                 if not foundSubMenu:
                     # Add /insert the sub-menu
                     if cfg.menuItem.index < 0:
-                        pos = len( subMenuItems ) + cfg.menuItem.index
-                        if cfg.menu.index == -1 or pos > len( subMenuItems ):
-                            subMenuItems.append( createMenuItem( cfg ) )
-
-                        else:
-                            subMenuItems.insert( pos, createMenuItem( cfg ) )
+                        idx = ( len( subMenuItems ) + cfg.menuItem.index ) + 1
 
                     else:
-                        subMenuItems.insert( cfg.menuItem.index, createMenuItem( cfg ) )
+                        idx = cfg.menuItem.index
 
+                    subMenuItems.insert( idx, createMenuItem( cfg ) )
+                    break
 
         if not foundMenu:
             if cfg.menu.index < 0:
                 # from the end
-                pos = len( menuItems ) + cfg.menu.index
-                if cfg.menu.index == -1 or pos > len( menuItems ):
-                    menuItems.append( createRootMenuItem( cfg ) )
-
-                else:
-                    menuItems.insert( pos, createRootMenuItem( cfg ) )
+                pos = ( len( menuItems ) + cfg.menu.index + 1 )
 
             else:
-                # insert at
-                menuItems.insert( cfg.menu.index, createRootMenuItem( cfg ) )
+                pos = cfg.menu.index
 
+            # insert at
+            menuItems.insert( cfg.menu.index, createRootMenuItem( cfg ) )
+
+    for idx, menuItem in enumerate( menuItems ):
+        menuItem[ MENU_INDEX ] = idx
+        if MENU_CHILDEREN_LABEL in menuItem:
+            # Re-number the submenu
+            for idx, subMenuItem in enumerate( menuItem[ MENU_CHILDEREN_LABEL ] ):
+                subMenuItem[ MENU_INDEX ] = idx
 
     menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
     pytemplate.utils.replaceInList( lines, rangePos, menuItemsBlock )
