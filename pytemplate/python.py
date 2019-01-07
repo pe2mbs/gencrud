@@ -100,12 +100,8 @@ def updatePythonProject( config, app_module ):
         lines = mainModuleText.split( '\n' )
         lines = [ l + '\n' for l in lines ]
 
-    rangePos            = PositionInterface()
-    for lineNo, lineText in enumerate( lines ):
-        if lineText.startswith( 'import' ):
-            rangePos.end = lineNo
+    rangePos            = pytemplate.utils.findImportSection( lines )
 
-    rangePos.end += 1
     # update import section
     modules = []
     for table in config:
