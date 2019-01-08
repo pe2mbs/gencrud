@@ -1,5 +1,6 @@
 import os
 import shutil
+from pytemplate.positon import PositionInterface
 
 sslVerify       = True
 verbose         = False
@@ -43,25 +44,37 @@ def joinJson( json1, json2 ):
     return result
 
 
+def findImportSection( lines ):
+    rangePos            = PositionInterface()
+    for lineNo, lineText in enumerate( lines ):
+        if lineText.startswith( 'import' ) or ( lineText.startswith( 'from' ) and
+                                                'import' in lineText ):
+            rangePos.end = lineNo
+
+    return rangePos
+
+
 def insertLinesUnique( lines, rangeObj, line ):
     found = False
-    if rangeObj.end + 1 < len( lines ):
-        rangeObj.end += 1
+    print( "insertLinesUnique from line {} to line {}".format( rangeObj.start, rangeObj.end ) )
+    end = rangeObj.end
+    if end + 1 < len( lines ):
+        end += 1
 
-    for idx in rangeObj.range():
+    for idx in range( rangeObj.start, end ):
         if verbose:
-            print( "Check line {} of {}".format( idx, rangeObj.end ) )
+            print( "Check line {} of {} => '{}'".format( idx, rangeObj.end, lines[ idx ].strip( '\r\n') ) )
 
         if line in lines[ idx ].strip( '\n' ):
             found = True
 
     if not found:
         if verbose:
-            print( 'inject files [{0}] @ {1}'.format( line, rangeObj.end + 1 ) )
+            print( 'inject files [{0}] @ {1}'.format( line, rangeObj.end ) )
 
-
-        lines.insert( rangeObj.end, line + '\n' )
+        lines.insert( rangeObj.end+1, line + '\n' )
         rangeObj.end += 1
+
 
     return
 

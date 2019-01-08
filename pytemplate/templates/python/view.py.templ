@@ -22,6 +22,7 @@
 #   the table from the configuration.
 #
 import logging
+import datetime
 from flask import Blueprint, request, jsonify
 from applic.database import db
 import flask.json as json
@@ -47,14 +48,24 @@ def registerApi( app, cors ):
 
 
 def fieldConversion( record, key, value ):
-    if type( getattr( record, key ) ) is int:
+    if isinstance( getattr( record, key ), int ):
         value = int( value )
 
-    elif type( getattr( record, key ) ) is float:
+    elif isinstance( getattr( record, key ), float ):
         value = float( value )
 
-    elif type( getattr( record, key ) ) is float:
-        value = float( value )
+    elif isinstance( getattr( record, key ), datetime.datetime ):
+        value = value[0:22] + value[23:]
+        logger.info( 'datetime.datetime.value: {}'.format( value ) )
+        value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S%z' )
+
+    elif isinstance( getattr( record, key ), datetime.date ):
+        # TODO: needs to be tested
+        value = datetime.datetime.strptime( value, '%Y-%m-%d' ).date()
+
+    elif isinstance( getattr( record, key ), datetime.time ):
+        # TODO: needs to be tested
+        value = datetime.datetime.strptime( value, '%H:%M:%S' ).time()
 
     return value
 
@@ -149,6 +160,29 @@ def api${ obj.cls }Patch():
     result = ${ obj.name }Schema.jsonify( record )
     logger.debug( 'get${ obj.cls }Patch() => {0}'.format( result ) )
     return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/select', methods=[ 'GET' ] )
+def api${ obj.cls }Select():
+    data    = request.json
+    logging.info( 'POST: {0}'.format( repr( data ) ) )
+    if data is not None:
+        value = data[ 'value' ]
+        label = data[ 'label' ]
+
+    else:
+        value = request.args.get( 'value', '${ obj.table.primaryKey }' )    # primary key
+        label = request.args.get( 'label', '${ obj.table.columns[ 1 ].name }' )  # first field name
+
+    result = []
+    recordList = db.session.query( ${ obj.cls } ).order_by( ${ obj.cls }.${ obj.table.primaryKey } ).all()
+    for record in recordList:
+        result.append( { 'value': getattr( record, value ),
+                         'label': getattr( record, label ) } )
+
+    logger.debug( 'api${ obj.cls }Select => {0}'.format( result ) )
+
+    return jsonify( result )
 
 
 @${ obj.name }Api.route( '${ obj.uri }/lock', methods=[ 'POST' ] )
