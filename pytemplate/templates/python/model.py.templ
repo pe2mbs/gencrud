@@ -30,5 +30,15 @@ class ${obj.cls}( db.Model ):
     """
     __tablename__       = '${ obj.table.name }'
 % for field in obj.table.columns:
-    ${ field.name } = ${ field.sqlAlchemyDef() }
+    ${ field.name }     = ${ field.sqlAlchemyDef() }
 % endfor
+% for field in obj.table.columns:
+ %if field.hasUniqueKey():
+    db.UniqueConstraint( '${ field.name }', name='${field.uniqueKey}' )
+ % endif
+% endfor
+% if obj.table.hasUniqueKey():
+ % for index, fields in obj.table.uniqueKey.items():
+    db.UniqueConstraint( ${ fields }, name='${ index }' )
+ % endfor
+% endif

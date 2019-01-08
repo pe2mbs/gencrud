@@ -40,6 +40,22 @@ class TemplateTable( object ):
         return self.__table.get( 'name', '' )
 
     @property
+    def uniqueKey( self ):
+        values  = {}
+        for value in self.__table.get( 'unique-key', {} ):
+            for key in value.keys():
+                values[ key ] = ', '.join( [ "'{0}'".format( x ) for x in value[ key ] ] )
+
+        return values
+
+    def hasUniqueKey( self ):
+        if 'unique-key' in self.__table:
+            if type( self.__table.get( 'unique-key', None ) ) in ( dict, tuple, list ):
+                return True
+
+        return False
+
+    @property
     def columns( self ):
         return self.__columns
 

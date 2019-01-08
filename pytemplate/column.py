@@ -78,6 +78,13 @@ class TemplateColumn( object ):
         return self.__config.get( 'index', None )
 
     @property
+    def uniqueKey( self ):
+        return self.__config.get( 'unique-key', '' )
+
+    def hasUniqueKey( self ):
+        return 'unique-key' in self.__config
+
+    @property
     def css( self ):
         return self.__css
 
