@@ -139,7 +139,6 @@ def updatePythonProject( config, app_module ):
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
     try:
-        print( ''.join( sectionLines ) )
         menuItems = json.loads( ''.join( sectionLines ) )
 
     except:
@@ -167,6 +166,9 @@ def updatePythonProject( config, app_module ):
                 for subMenuItem in subMenuItems:
                     if subMenuItem[ MENU_DISPLAY_NAME ] == cfg.menuItem.displayName:
                         foundSubMenu = True
+                        # update the route and icon information
+                        subMenuItem[ MENU_ICON_NAME ]   = cfg.menuItem.iconName
+                        subMenuItem[ MENU_ROUTE ]       = cfg.menuItem.route
                         # don't bother, its already there
                         break
 

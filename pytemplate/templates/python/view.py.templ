@@ -84,7 +84,9 @@ def api${ obj.cls }New():
     if data is None:
         return "Invalid request, missing ${ obj.cls }Record", 500
     logging.info( 'POST: {0}'.format( repr( data ) ) )
-    del data[ '${ obj.table.primaryKey }' ]
+    if '${ obj.table.primaryKey }' in data:
+        del data[ '${ obj.table.primaryKey }' ]
+
     record = ${ obj.cls }()
     for key, value in request.json.items():
         if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):

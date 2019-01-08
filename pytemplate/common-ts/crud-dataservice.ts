@@ -70,7 +70,44 @@ export class CrudDataService<T>
                 ( error: HttpErrorResponse ) => {
                     console.log (error.name + ' ' + error.message);
                 }
-            )
+            );
+        } ) );
+    }
+
+    public getSelectionList( value: string, label: string ): Observable<Array<string>>
+    {
+        const params = new HttpParams().set('label', label ).set('value', value );
+        return ( Observable.create( observer => {
+            this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
+            .subscribe( ( data ) => {
+                    if ( this.debug )
+                    {
+                        console.log( 'getSelectList() => ', data );
+                    }
+                    let result = new Array<string>();
+                    result.push( "<Unknown - null value>" )
+                    data = data.sort( ( n1, n2 ) => {
+                        if (n1.value > n2.value )
+                        {
+                            return 1;
+                        }
+                        else if (n1.value < n2.value )
+                        {
+                            return -1;
+                        }
+                        return 0;
+                    });
+                    for ( let entry of data )
+                    {
+                        result.push( entry.label );
+                    }
+                    observer.next( result );
+                    observer.complete();
+                },
+                ( error: HttpErrorResponse ) => {
+                    console.log (error.name + ' ' + error.message);
+                }
+            );
         } ) );
     }
 

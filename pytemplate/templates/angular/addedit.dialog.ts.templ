@@ -31,10 +31,14 @@ import { ${ obj.cls }DataService } from './service';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
 import { PytSelectList } from '../../common/crud-dataservice';
-import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
 <%
     break
 %>
+ % endif
+% endfor
+% for field in obj.table.columns:
+ % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
  % endif
 % endfor
 
@@ -59,7 +63,7 @@ export class AddEdit${ obj.cls }Dialog extends BaseDialog
     constructor( dialogRef: MatDialogRef<AddEdit${ obj.cls }Dialog>
                  , @Inject( MAT_DIALOG_DATA ) public data: any
                  , dataService: ${ obj.cls }DataService
-                 ${ obj.externalService } )
+${ obj.externalService } )
     { 
         super( dialogRef, dataService, data.mode );
         if ( !this.isEditMode() )

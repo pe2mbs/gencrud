@@ -42,6 +42,8 @@ class TemplateObject( object ):
 
     @property
     def externalService( self ):
+        FILLER = '                 , '
+        FILLER_LF = '\r\n                 , '
         result = []
         for field in self.__table.columns:
             if field.ui is not None and ( field.ui.isCombobox() or field.ui.isChoice() ):
@@ -49,5 +51,5 @@ class TemplateObject( object ):
                                 name = field.ui.service.name,
                                 cls = field.ui.service.cls ) )
 
-        return ( ', ' if len( result ) > 0 else '' ) + ( ', '.join( result ) )
+        return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
 

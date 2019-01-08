@@ -8,7 +8,7 @@ export class CrudDataSource<T> extends DataSource<T>
 {
     protected _filterChange = new BehaviorSubject( '' );
 
-    public get filter(): string 
+    public get filter(): string
     {
         return this._filterChange.value;
     }
