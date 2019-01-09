@@ -85,7 +85,7 @@ export class CrudDataService<T>
                         console.log( 'getSelectList() => ', data );
                     }
                     let result = new Array<string>();
-                    result.push( "<Unknown - null value>" )
+                    result.push( '-' );
                     data = data.sort( ( n1, n2 ) => {
                         if (n1.value > n2.value )
                         {

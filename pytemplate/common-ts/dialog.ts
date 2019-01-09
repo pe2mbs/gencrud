@@ -42,7 +42,7 @@ export class BaseDialog
         }
         if ( this.debug )
         {
-            console.log( "getErrorMessage( ctrl_name = '" + ctrl_name + "' )" );
+            console.log( 'getErrorMessage( ctrl_name = "' + ctrl_name + '" )' );
         }
         let result = 'Unknown error';
         if ( ctrl.hasError( 'required' ) )

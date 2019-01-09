@@ -34,10 +34,9 @@ import { ${ obj.cls }DataService } from './service';
 import { ${ obj.cls }DataSource } from './datasource';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
+import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
  % endif
 % endfor
-
 
 @Component({
     selector: 'app-${ obj.name }-table',
@@ -56,24 +55,12 @@ export class ${ obj.cls }TableComponent implements OnInit
     dataSource:       ${ obj.cls }DataSource  | null;
     index:            number;
     id:               number;
-% for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-    ${ field.name }_List:  Array<string>;
- % endif
-% endfor
 
     constructor( public httpClient: HttpClient
                  , public dialog: MatDialog
                  , public dataService: ${ obj.cls }DataService
 ${ obj.externalService } )
     {
-% for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-        this.${ field.name }_List = new Array<string>();
-        this.${ field.ui.service.name }Service.getSelectionList( '${ field.ui.service.value }',
-                                                '${ field.ui.service.label }' ).subscribe( data => this.${ field.name }_List = data );
- % endif
-% endfor
         return;
     }
 
@@ -190,9 +177,15 @@ ${ obj.externalService } )
 
     public loadData() 
     {
-        this.dataSource = new ${ obj.cls }DataSource( this.dataService,
-                                                this.paginator,
-                                                this.sort );
+        this.dataSource = new ${ obj.cls }DataSource( this.dataService
+                                                , this.paginator
+                                                , this.sort
+% for field in obj.table.columns:
+ % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+                                                , this.${field.ui.service.name}Service
+ % endif
+% endfor
+                                                );
         fromEvent( this.filter.nativeElement, 'keyup' ).subscribe( () => {
             if ( !this.dataSource ) 
             {
@@ -201,17 +194,4 @@ ${ obj.externalService } )
             this.dataSource.filter = this.filter.nativeElement.value;
         });
     }
-
-% for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-    public ${ field.name }_Label( id )
-    {
-        if ( id < this.${ field.name }_List.length )
-        {
-            return ( this.${ field.name }_List[ id ] );
-        }
-        return ( id );
-    }
- % endif
-% endfor
 }

@@ -76,4 +76,17 @@ class TemplateTable( object ):
         return sorted( [ col for col in self.__columns if col.index is not None ],
                        key = lambda column: column.index )
 
+    def buildFilter( self ):
+        result = [ ]
+        for item in self.listViewColumns:
+            if item.ui.isChoice() or item.ui.isCombobox():
+                result.append( "( this.{0}_Label( record.{0} ) )".format( item.name ) )
+
+            elif item.tsType == 'string':
+                result.append( "( record.{0} || '' )".format( item.name ) )
+
+        if len( result ) == 0:
+            return "''"
+
+        return (' + \r\n                   '.join( result ))
 

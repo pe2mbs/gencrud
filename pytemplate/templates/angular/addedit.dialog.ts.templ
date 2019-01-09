@@ -78,9 +78,9 @@ ${ obj.externalService } )
         } );
 % for field in obj.table.columns:
   % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-        ${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( data => {
-            console.log( '${ field.ui.service.name }Service.getSelectList => ', data );
-            this.${ field.ui.service.name }List = data;
+        ${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( dataList => {
+            console.log( '${ field.ui.service.name }Service.getSelectList => ', dataList );
+            this.${ field.ui.service.name }List = dataList;
         } );
  % endif
 % endfor

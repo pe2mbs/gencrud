@@ -39,7 +39,7 @@
                   (click)="startEdit( i, row )"
                   id='${ obj.cls }.${ field.name }'>
 % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-            {{ ${ field.name }_Label( row.${ field.name } ) }}
+            {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
 % else:
             {{ row.${ field.name } }}
 % endif
