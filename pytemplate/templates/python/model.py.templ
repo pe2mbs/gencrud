@@ -31,7 +31,13 @@ class ${obj.cls}( db.Model ):
     __tablename__       = '${ obj.table.name }'
 % for field in obj.table.columns:
     ${ field.name }     = ${ field.sqlAlchemyDef() }
+ % if field.hasRelationship():
+    ${ field.relationship.fieldName }    = db.relationship( "${ field.relationship.cls }",
+                                     backref = "${ field.relationship.tableName }",
+                                     lazy = ${ field.relationship.lazy } )
+ % endif
 % endfor
+
 % for field in obj.table.columns:
  %if field.hasUniqueKey():
     db.UniqueConstraint( '${ field.name }', name='${field.uniqueKey}' )
@@ -42,3 +48,4 @@ class ${obj.cls}( db.Model ):
     db.UniqueConstraint( ${ fields }, name='${ index }' )
  % endfor
 % endif
+

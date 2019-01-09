@@ -2,6 +2,8 @@ import sys
 from nltk.tokenize import word_tokenize
 from pytemplate.css import TemplateCss
 from pytemplate.ui import TemplateUi
+from pytemplate.relation import TemplateRelation
+
 
 class TemplateColumn( object ):
     def __init__( self, no_columns, table_name, **cfg ):
@@ -16,24 +18,16 @@ class TemplateColumn( object ):
         self.__field        = ''
         self.__sqlType      = ''
         self.__length       = 0
+        self.__relationShip = None
         self.__choice       = None
         self.__attrs        = []
-        self.__interface    = None
         self.__ui           = None
         if 'field' in cfg:
             tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
             self.__field = tokens[ 0 ]
             self.__sqlType  = tokens[ 1 ]
             offset = 2
-            if self.__sqlType == 'RECORD':
-                # relationship
-                # RELATION <class>
-                if tokens[ offset ] == 'RELATION':
-                    self.__interface = tokens[ offset + 1 ]
-
-                return
-
-            elif offset < len( tokens ) and tokens[ offset ] == '(':
+            if offset < len( tokens ) and tokens[ offset ] == '(':
                 offset += 1
                 self.__length   = int( tokens[ offset ] )
                 offset += 2
@@ -67,6 +61,8 @@ class TemplateColumn( object ):
             if 'ui' in cfg and type( cfg[ 'ui' ] ) is dict:
                 self.__ui = TemplateUi( **cfg.get( 'ui', {} ) )
 
+            self.__relationShip = TemplateRelation( self, **self.__config.get( 'relationship', {} ) )
+
         return
 
     @property
@@ -83,6 +79,17 @@ class TemplateColumn( object ):
 
     def hasUniqueKey( self ):
         return 'unique-key' in self.__config
+
+    def hasForeignKey( self ):
+        return any( 'FOREIGN KEY' in x for x in self.__attrs )
+        #return 'FOREIGN KEY' in self.__attrs
+
+    def hasRelationship( self ):
+        return self.hasForeignKey() and 'relationship' in self.__config
+
+    @property
+    def relationship( self ):
+        return self.__relationShip
 
     @property
     def css( self ):
@@ -176,9 +183,6 @@ class TemplateColumn( object ):
         elif self.__sqlType == 'TIME':
             return 'db.Time'
 
-        elif self.__sqlType == 'RECORD':
-            return ''
-
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
     @property
@@ -219,13 +223,6 @@ class TemplateColumn( object ):
         elif self.__sqlType == 'TIME':
             return 'Date'
 
-        elif self.__sqlType == 'RECORD':
-            if self.__interface:
-                return '{}Record'.format( self.__interface )
-
-            else:
-                return 'var'
-
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
     def sqlAlchemyDef( self ):
@@ -236,40 +233,32 @@ class TemplateColumn( object ):
         :return:
         '''
         result = ''
-        if self.__interface is None or self.__interface == '':
-            result = 'db.Column( {0}'.format( self.pType )
-            if self.__length != 0:
-                result += '( {0} )'.format( self.__length )
+        result = 'db.Column( {0}'.format( self.pType )
+        if self.__length != 0:
+            result += '( {0} )'.format( self.__length )
 
-            for attr in self.__attrs:
-                if 'AUTO NUMBER' in attr:
-                    result += ', autoincrement = True'
+        for attr in self.__attrs:
+            if 'AUTO NUMBER' in attr:
+                result += ', autoincrement = True'
 
-                elif 'PRIMARY KEY' in attr:
-                    result += ', primary_key = True'
+            elif 'PRIMARY KEY' in attr:
+                result += ', primary_key = True'
 
-                elif 'NOT NULL' in attr:
-                    result += ', nullable = False'
+            elif 'NOT NULL' in attr:
+                result += ', nullable = False'
 
-                elif attr.startswith( 'FOREIGN KEY' ):
-                    result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
+            elif attr.startswith( 'FOREIGN KEY' ):
+                result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
 
-                elif attr.startswith( 'DEFAULT' ):
-                    result += ', default = "{0}"'.format( attr.split( ' ' )[ 1 ] )
+            elif attr.startswith( 'DEFAULT' ):
+                result += ', default = "{0}"'.format( attr.split( ' ' )[ 1 ] )
 
-                else:
-                    print( 'Extra unknown attributes found: {0}'.format( attr ),
-                           file = sys.stderr )
-        else:
-            result += 'db.relationship( "{0}", backref = "{1}", lazy = True'.\
-                        format( self.__interface, self.__tableName )
+            else:
+                print( 'Extra unknown attributes found: {0}'.format( attr ),
+                       file = sys.stderr )
 
         result += ' )'
         return result
-
-    @property
-    def nestedCls( self ):
-        return self.__interface
 
     @property
     def validators( self ):

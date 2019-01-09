@@ -23,6 +23,11 @@
 #
 from applic.extensions import mm
 from ${ obj.application }.${ obj.name }.model import ${ obj.cls }
+% for field in obj.table.columns:
+ % if field.hasRelationship():
+from ${ obj.application }.${ field.relationship.name }.schema import ${ field.relationship.name }Schema
+ % endif
+% endfor
 
 
 class ${ obj.cls }Schema( mm.ModelSchema ):
@@ -38,6 +43,13 @@ class ${ obj.cls }Schema( mm.ModelSchema ):
  % endif
 % endfor
         ]
+% for field in obj.table.columns:
+ % if field.hasRelationship():
+        ${ field.relationship.fieldName }    = mm.Nested( ${ field.relationship.name }Schema )
+ % endif
+% endfor
+
 
 ${ obj.name }Schema   = ${ obj.cls }Schema()
 ${ obj.name }sSchema  = ${ obj.cls }Schema( many = True )
+
