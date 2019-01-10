@@ -41,10 +41,10 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytSliderInputComponent extends PytBaseComponent
 {
-    Import()    min;
-    Import()    max;
-    Import()    interval;
-    Import()    displayWith;
+    @Input()    min;
+    @Input()    max;
+    @Input()    interval;
+    @Input()    displayWith;
 
     constructor( formGroupDir: FormGroupDirective ) 
     {
