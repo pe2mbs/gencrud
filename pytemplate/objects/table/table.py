@@ -1,5 +1,5 @@
-from pytemplate.column import TemplateColumn
-from pytemplate._inports import SourceImport
+from pytemplate.objects.table._inports import SourceImport
+from pytemplate.objects.table.column import TemplateColumn
 
 
 class TemplateTable( object ):
@@ -80,6 +80,9 @@ class TemplateTable( object ):
         result = [ ]
         for item in self.listViewColumns:
             if item.ui.isChoice() or item.ui.isCombobox():
+                result.append( "( this.{0}_Label( record.{0} ) )".format( item.name ) )
+
+            elif item.ui.isCheckbox() or item.ui.isSliderToggle():
                 result.append( "( this.{0}_Label( record.{0} ) )".format( item.name ) )
 
             elif item.tsType == 'string':

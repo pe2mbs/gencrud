@@ -1,6 +1,7 @@
 import json
 import unittest
 
+
 class TypeScript( object ):
     def __init__( self ):
         self.__indent = 0

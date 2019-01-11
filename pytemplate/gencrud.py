@@ -18,17 +18,17 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #
 from __future__ import print_function    # (at top of module)
+import getopt
+import json
+import yaml
 import os
 import sys
-import yaml
-import json
-import getopt
 import traceback
-from pytemplate.version import __version__, __author__, __email__, __copyright__
+import pytemplate.util.utils
 from pytemplate.configuraton import TemplateConfiguration
-import pytemplate.utils
-from pytemplate.angular import generateAngular
-from pytemplate.python import generatePython
+from pytemplate.generators.python import generatePython
+from pytemplate.generators.angular import generateAngular
+from pytemplate.version import __version__, __author__, __email__, __copyright__
 
 
 def verifyLoadProject( env, config ):
@@ -44,7 +44,7 @@ def verifyLoadProject( env, config ):
         raise Exception( 'Invalid environment {0} in verifyLoadProject'.format( env ) )
 
     if os.path.isdir( root.source ) and os.path.isfile( os.path.join( root.source, configFile ) ):
-        with open( os.path.join( root.source, configFile ), pytemplate.utils.C_FILEMODE_READ ) as stream:
+        with open( os.path.join( root.source, configFile ), pytemplate.util.utils.C_FILEMODE_READ ) as stream:
             data = json.load( stream )
 
         if data is None:
@@ -146,29 +146,29 @@ def main():
     try:
         for o, a in opts:
             if o == '-v':
-                pytemplate.utils.verbose = True
+                pytemplate.util.utils.verbose = True
 
             elif o in ( '-h', '--help' ):
                 usage()
                 sys.exit()
 
             elif o in ( '-b', '--backup' ):
-                pytemplate.utils.backupFiles = True
+                pytemplate.util.utils.backupFiles = True
 
             elif o in ( '-o', '--overwrite' ):
-                pytemplate.utils.overWriteFiles = True
+                pytemplate.util.utils.overWriteFiles = True
 
             elif o in ('-V', '--version'):
                 print( '{0}'.format( __version__ ) )
                 sys.exit()
 
             elif o.lower() in ( '-s', '--sslverify' ):
-                pytemplate.utils.sslVerify = a.lower() == 'true'
+                pytemplate.util.utils.sslVerify = a.lower( ) == 'true'
 
             else:
                 assert False, 'unhandled option'
 
-        pytemplate.utils.check_nltk()
+        pytemplate.util.utils.check_nltk( )
         if len( args ) == 0:
             usage( 'Missing input file(s)' )
             sys.exit( 1 )
@@ -177,7 +177,7 @@ def main():
         for arg in args:
             doWork( arg )
 
-    except pytemplate.utils.ModuleExistsAlready as exc:
+    except pytemplate.util.utils.ModuleExistsAlready as exc:
         print( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
         print( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
 
@@ -186,13 +186,13 @@ def main():
             print( "Input file '{0}' is not found.".format( exc.filename ), file = sys.stderr )
 
         else:
-            if pytemplate.utils.verbose:
+            if pytemplate.util.utils.verbose:
                 traceback.print_exc()
 
             print( exc, file = sys.stderr )
 
     except Exception as exc:
-        if pytemplate.utils.verbose:
+        if pytemplate.util.utils.verbose:
             traceback.print_exc()
 
         print( exc, file = sys.stderr )

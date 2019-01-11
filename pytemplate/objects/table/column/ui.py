@@ -1,5 +1,5 @@
 
-from pytemplate.service import TemplateService
+from pytemplate.objects.table.column.service import TemplateService
 
 class TemplateUi( object ):
     def __init__( self, **cfg ):

@@ -1,5 +1,5 @@
+from pytemplate.objects.object import TemplateObject
 from pytemplate.source import TemplateSource
-from pytemplate.object import TemplateObject
 
 
 class TemplateConfiguration( object ):

@@ -1,11 +1,21 @@
+import json
 import os
 import sys
-import json
-import pytemplate.utils
-from pytemplate.positon import PositionInterface
+
 from mako.template import Template
 
-# TODO: Fix the position of the import statements in main.py
+import pytemplate.util.utils
+from pytemplate.util.positon import PositionInterface
+
+MENU_CHILDEREN_LABEL    = 'childeren'
+MENU_DISPLAY_NAME       = 'displayName'
+MENU_ICON_NAME          = 'iconName'
+MENU_INDEX              = 'index'
+MENU_ROUTE              = 'route'
+LABEL_LIST_MODULES      = 'listModules = ['
+LABEL_MENU_ITEMS        = 'menuItems = ['
+LABEL_END_LIST          = ']'
+
 
 def makePythonModules( root_path, *args ):
     def write__init__py():
@@ -28,95 +38,35 @@ def makePythonModules( root_path, *args ):
     return
 
 
-mainModuleText = '''import logging
-from flask import Blueprint, jsonify
-
-##
-#   Section maintained by gencrud.py
-##
-listModules = [
-
-]
-
-menuItems = [
-
-]
-
-##
-#   End section maintained by gencrud.py
-##
-menuApi = Blueprint( 'menuApi', __name__ )
-logger = logging.getLogger()
-
-
-def registerApi( app, cors ):
-    logger = app.logger
-    for module in listModules:
-        module.registerApi( app, cors )
-
-    if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-        app.logger.info( 'Allowing CORS' )
-        if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-            origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' )
-            cors.init_app( 'menuApi', origins = origins )
-
-    logger.info( 'Register Menu route' )
-    app.register_blueprint( menuApi )
-    return
-
-
-def registerExtensions( app, db ):
-    return
-
-
-def registerShellContext( app, db ):
-    return
-
-
-def registerCommands( app ):
-    return
-
-@menuApi.route( "/api/menu", methods=[ 'GET' ] )
-def getUserMenu():
-    return jsonify( menuItems )
-
-'''
-MENU_CHILDEREN_LABEL    = 'childeren'
-MENU_DISPLAY_NAME       = 'displayName'
-MENU_ICON_NAME          = 'iconName'
-MENU_INDEX              = 'index'
-MENU_ROUTE              = 'route'
-LABEL_LIST_MODULES      = 'listModules = ['
-LABEL_MENU_ITEMS        = 'menuItems = ['
-LABEL_END_LIST          = ']'
-
 def updatePythonProject( config, app_module ):
-    if pytemplate.utils.verbose:
+    if pytemplate.util.utils.verbose:
         print( config.python.source )
 
     lines = []
     filename = os.path.join( config.python.source, config.application, 'main.py' )
     if os.path.isfile( filename ):
         lines = open( filename, 'r' ).readlines()
-        pytemplate.utils.backupFile( filename )
+        pytemplate.util.utils.backupFile( filename )
 
     if len( lines ) <= 2:
-        lines = mainModuleText.split( '\n' )
-        lines = [ l + '\n' for l in lines ]
+        lines = open( os.path.join( os.path.dirname( __file__ ),
+                                    '..',
+                                    'common-py',
+                                    'main.py' ), 'r' ).readlines()
 
-    rangePos            = pytemplate.utils.findImportSection( lines )
+    rangePos            = pytemplate.util.utils.findImportSection( lines )
 
     # update import section
     modules = []
     for table in config:
         line = 'import {0}.{1}   # import maintained by gencrud.py'.format( table.application, table.name )
-        pytemplate.utils.insertLinesUnique( lines, rangePos, line )
+        pytemplate.util.utils.insertLinesUnique( lines, rangePos, line )
         modules.append( '{0}.{1}'.format( table.application, table.name ) )
 
-    sectionLines = pytemplate.utils.searchSection( lines,
-                                                   rangePos,
-                                                   LABEL_LIST_MODULES,
-                                                   LABEL_END_LIST )
+    sectionLines = pytemplate.util.utils.searchSection( lines,
+                                                        rangePos,
+                                                        LABEL_LIST_MODULES,
+                                                        LABEL_END_LIST )
     del sectionLines[ 0 ]
     del sectionLines[ -1 ]
     for line in sectionLines:
@@ -130,12 +80,12 @@ def updatePythonProject( config, app_module ):
                                                     '' if len( modules )-1 == idx else ',' ) )
 
     sectionLines.append( LABEL_END_LIST + '\n' )
-    pytemplate.utils.replaceInList( lines, rangePos, sectionLines )
+    pytemplate.util.utils.replaceInList( lines, rangePos, sectionLines )
 
-    sectionLines = pytemplate.utils.searchSection( lines,
-                                                   rangePos,
-                                                   LABEL_MENU_ITEMS,
-                                                   LABEL_END_LIST )
+    sectionLines = pytemplate.util.utils.searchSection( lines,
+                                                        rangePos,
+                                                        LABEL_MENU_ITEMS,
+                                                        LABEL_END_LIST )
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
     try:
@@ -202,7 +152,7 @@ def updatePythonProject( config, app_module ):
                 subMenuItem[ MENU_INDEX ] = idx
 
     menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
-    pytemplate.utils.replaceInList( lines, rangePos, menuItemsBlock )
+    pytemplate.util.utils.replaceInList( lines, rangePos, menuItemsBlock )
 
     open( filename, 'w' ).writelines( lines )
     return
@@ -213,7 +163,7 @@ def generatePython( templates, config ):
     for cfg in config:
         backupDone = False
         for templ in templates:
-            if pytemplate.utils.verbose:
+            if pytemplate.util.utils.verbose:
                 print( 'template    : {0}'.format( templ ) )
                 print( 'application : {0}'.format( cfg.application ) )
                 print( 'name        : {0}'.format( cfg.name ) )
@@ -237,40 +187,40 @@ def generatePython( templates, config ):
             modulePath = os.path.join( config.python.source,
                                    cfg.application,
                                    cfg.name )
-            if os.path.isdir( modulePath ) and not pytemplate.utils.overWriteFiles:
-                raise pytemplate.utils.ModuleExistsAlready( cfg, modulePath )
+            if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
+                raise pytemplate.util.utils.ModuleExistsAlready( cfg, modulePath )
 
             makePythonModules( config.python.source, cfg.application, cfg.name )
 
-            with open( os.path.join( modulePath, pytemplate.utils.sourceName( templ ) ), pytemplate.utils.C_FILEMODE_WRITE ) as stream:
+            with open( os.path.join( modulePath, pytemplate.util.utils.sourceName( templ ) ), pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
                 for line in Template( filename=os.path.abspath( templ ) ).render( obj = cfg ).split('\n'):
                     stream.write( line )
 
                 # Open the __init__.py
                 filename = os.path.join( modulePath, '__init__.py' )
-                moduleName, _ = os.path.splitext( pytemplate.utils.sourceName( templ ) )
+                moduleName, _ = os.path.splitext( pytemplate.util.utils.sourceName( templ ) )
                 importStr = 'from {0}.{1}.{2} import *'.format( cfg.application, cfg.name, moduleName )
                 lines = []
                 try:
-                    lines = open( filename, pytemplate.utils.C_FILEMODE_READ ).readlines()
+                    lines = open( filename, pytemplate.util.utils.C_FILEMODE_READ ).readlines( )
 
                 except:
                     print( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
 
-                if pytemplate.utils.verbose:
+                if pytemplate.util.utils.verbose:
                     print( lines, file = sys.stdout )
 
-                pytemplate.utils.insertLinesUnique( lines,
-                                                    PositionInterface( end = len( lines ) ),
-                                                    importStr )
+                pytemplate.util.utils.insertLinesUnique( lines,
+                                                         PositionInterface( end = len( lines ) ),
+                                                         importStr )
                 if not backupDone:
-                    pytemplate.utils.backupFile( filename )
+                    pytemplate.util.utils.backupFile( filename )
                     modules.append( ( cfg.application, cfg.name ) )
                     backupDone = True
 
-                open( filename, pytemplate.utils.C_FILEMODE_WRITE ).writelines( lines )
+                open( filename, pytemplate.util.utils.C_FILEMODE_WRITE ).writelines( lines )
 
-            if pytemplate.utils.verbose:
+            if pytemplate.util.utils.verbose:
                 print( '' )
 
     updatePythonProject( config, '' )

@@ -1,5 +1,6 @@
 import os
-import pytemplate.utils
+
+import pytemplate.util.utils
 
 
 class TemplateSource( object ):
@@ -10,7 +11,7 @@ class TemplateSource( object ):
         else:
             self.__template = os.path.join( os.path.dirname( __file__ ), 'templates', type )
 
-        if pytemplate.utils.verbose:
+        if pytemplate.util.utils.verbose:
             print( 'Template folder: {0}'.format( self.__template ) )
 
         cnt = 0

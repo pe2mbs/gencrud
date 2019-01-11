@@ -1,6 +1,5 @@
-from pytemplate.column import TemplateColumn
-from pytemplate.menuitem import TemplateMenuItem
-from pytemplate.table import TemplateTable
+from pytemplate.objects.menuitem import TemplateMenuItem
+from pytemplate.objects.table import TemplateTable
 
 class TemplateObject( object ):
     def __init__( self, **cfg ):

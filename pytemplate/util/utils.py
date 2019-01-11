@@ -1,6 +1,7 @@
 import os
 import shutil
-from pytemplate.positon import PositionInterface
+
+from pytemplate.util.positon import PositionInterface
 
 sslVerify       = True
 verbose         = False
