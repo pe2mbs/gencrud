@@ -76,6 +76,7 @@ class TemplateColumn( object ):
     def tableName( self ):
         return self.__tableName
 
+    # OBSOLETE: use the listview.index
     @property
     def index( self ):
         return self.__config.get( 'index', None )

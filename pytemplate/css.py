@@ -7,6 +7,7 @@ class TemplateCss( object ):
         self.data = cfg
         return
 
+    # OBSOLETE: use the columns.listview.width
     @property
     def width( self ):
         return self.data.get( 'width', int( 97 / self.noColumns ) )
