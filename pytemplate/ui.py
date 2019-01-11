@@ -53,6 +53,9 @@ class TemplateUi( object ):
     def isTextbox( self ):
         return self.uiObject.lower() == 'textbox'
 
+    def isCheckbox( self ):
+        return self.uiObject.lower() == 'checkbox'
+
     def isTextArea( self ):
         return self.uiObject.lower() == 'textarea'
 
@@ -83,6 +86,9 @@ class TemplateUi( object ):
     def isSlider( self ):
         return self.uiObject.lower() == 'slider'
 
+    def isSliderToggle( self ):
+        return self.uiObject.lower() == 'slidertoggle'
+
     def buildInputElement( self, table, field, label, options = None ):
         if options is None:
             options = []
@@ -91,6 +97,7 @@ class TemplateUi( object ):
             'label':            'pyt-label-box',
             'textbox':          'pyt-text-input-box',
             'text':             'pyt-text-input-box',
+            'checkbox':         'pyt-checkbox-input-box',
             'password':         'pyt-password-input-box',
             'textarea':         'pyt-textarea-input-box',
             'number':           'pyt-number-input-box',
@@ -99,6 +106,7 @@ class TemplateUi( object ):
             'combobox':         'pyt-combo-input-box',
             'combo':            'pyt-combo-input-box',
             'slider':           'pyt-slider-input-box',
+            'slidertoggle':     'pyt-slidertoggle-input-box',
             'date':             'pyt-date-input-box',
             'time':             'pyt-time-input-box',
             'datetime':         'pyt-datetime-input-box',

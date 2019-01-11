@@ -3,7 +3,7 @@ from nltk.tokenize import word_tokenize
 from pytemplate.css import TemplateCss
 from pytemplate.ui import TemplateUi
 from pytemplate.relation import TemplateRelation
-
+from pytemplate.listview import TemplateListView
 
 class TemplateColumn( object ):
     def __init__( self, no_columns, table_name, **cfg ):
@@ -62,8 +62,15 @@ class TemplateColumn( object ):
                 self.__ui = TemplateUi( **cfg.get( 'ui', {} ) )
 
             self.__relationShip = TemplateRelation( self, **self.__config.get( 'relationship', {} ) )
-
+            self.__listview     = TemplateListView( self, **self.__config.get( 'listview', {} ) )
         return
+
+    @property
+    def listview( self ):
+        return self.__listview
+
+    def hasResolveList( self ):
+        return self.__listview.hasResolveList()
 
     @property
     def tableName( self ):

@@ -14,9 +14,12 @@ objects:
     displayName:          Roles table
     iconName:             verified_user
     route:                /roles
-    index:                -1
+    index:                1
   table:
     name:                 WA_ROLES
+    unique-key:
+    - ID_NAME_IDX: [ D_ROLE_ID, D_ROLE_NAME ]
+    - NAME_ID_IDX: [ D_ROLE_NAME, D_ROLE_ID ]
     columns:
     - field:              D_ROLE_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification

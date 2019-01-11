@@ -1,6 +1,6 @@
 source:
-  python:   C:\src\angular\angular-flask\backend
-  angular:  C:\src\angular\angular-flask\src\app
+  python:   /home/mbertens/src/angular/angular-mat-table-crud/backend
+  angular:  /home/mbertens/src/angular/angular-mat-table-crud/src/app
 objects:
 - name:                   test
   class:                  Test
@@ -14,7 +14,7 @@ objects:
     displayName:          Test table
     iconName:             verified_user
     route:                /tester
-    index:                -1
+    index:                2
   table:
     name:                 WA_TESTER
     columns:
@@ -26,6 +26,7 @@ objects:
       ui:
         type:             textbox
     - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
+      unique-key:         D_USER_NAME_IDX
       label:              User name
       index:              1
       css:
@@ -73,7 +74,7 @@ objects:
     displayName:          Test table1
     iconName:             verified_user
     route:                /tester1
-    index:                -1
+    index:                3
   table:
     name:                 WA_TESTER1
     columns:

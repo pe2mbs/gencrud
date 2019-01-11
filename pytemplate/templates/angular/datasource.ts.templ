@@ -25,7 +25,7 @@
 */
 
 import { CrudDataSource } from '../../common/crud-datasource';
-import { CrudDataService } from 'src/app/common/crud-dataservice';
+import { CrudDataService } from '../../common/crud-dataservice';
 import { MatPaginator, MatSort } from '@angular/material';
 import { ${ obj.cls }Record } from './model';
 % for field in obj.table.columns:
@@ -85,6 +85,16 @@ ${ obj.externalService } )
         }
         return ( id.toString );
     }
+
+ % elif field.ui is not None and ( field.ui.isCheckbox() or field.ui.isSliderToggle() ):
+  %if field.hasResolveList():
+    public ${ field.name }_Label( id )
+    {
+        let values = ${ field.listview.resolveList }
+        return ( values[ id ] );
+    }
+
+  % endif
  % endif
 % endfor
 }

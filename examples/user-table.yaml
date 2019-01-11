@@ -14,7 +14,7 @@ objects:
     displayName:          Users table
     iconName:             verified_user
     route:                /users
-    index:                -1
+    index:                0
   table:
     name:                 WA_USERS
     pyInport:
@@ -25,15 +25,15 @@ objects:
     columns:
     - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification
-      index:              0
-      css:
+      listview:
+        index:            0
         width:            5%
       ui:
         type:             textbox
     - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
       label:              User name
-      index:              1
-      css:
+      listview:
+        index:            1
         width:            20%
       ui:
         type:             textbox
@@ -43,24 +43,21 @@ objects:
         type:             password
     - field:              D_FIRST_NAME    CHAR(30)    NOT NULL
       label:              First name
-      index:              3
-      css:
+      listview:
+        index:            3
         width:            25%
       ui:
         type:             textbox
     - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
       label:              Middle name
-      index:              4
-      css:
-        width:            20%
       ui:
         type:             textarea
         rows:             4
         cols:             80
     - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
       label:              Last name
-      index:              5
-      css:
+      listview:
+        index:            5
         width:            20%
       ui:
         type:             textbox
@@ -70,6 +67,10 @@ objects:
         type:             datetime
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
+      relationship:
+        name:             role
+        class:            Role
+        field-name:       D_ROLE_ID_REL
       ui:
         type:             choice
         service:
@@ -78,5 +79,17 @@ objects:
           path:             ../role/service
           value:            D_ROLE_ID
           label:            D_ROLE_NAME
-    - field:              D_ROLES_REL     RECORD      RELATION Role
+
+    - field:              D_ENABLED   BOOLEAN       DEFAULT 0
+      label:              Active
+      ui:
+        type:             checkbox
+      listview:
+        index:            6
+        width:            10%
+        resolve-list:
+        - label:          Disabled
+          value:          false
+        - label:          Enabled
+          value:          true
 

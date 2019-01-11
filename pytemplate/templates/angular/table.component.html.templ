@@ -40,6 +40,10 @@
                   id='${ obj.cls }.${ field.name }'>
 % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
             {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
+% elif field.ui is not None and ( field.ui.isCheckbox() or field.ui.isSliderToggle() ):
+ %if field.hasResolveList():
+            {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
+ % endif
 % else:
             {{ row.${ field.name } }}
 % endif

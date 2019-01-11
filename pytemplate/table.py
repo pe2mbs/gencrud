@@ -73,8 +73,8 @@ class TemplateTable( object ):
 
     @property
     def listViewColumns( self ):
-        return sorted( [ col for col in self.__columns if col.index is not None ],
-                       key = lambda column: column.index )
+        return sorted( [ col for col in self.__columns if col.listview.index is not None ],
+                       key = lambda col: col.listview.index )
 
     def buildFilter( self ):
         result = [ ]
