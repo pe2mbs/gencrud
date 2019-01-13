@@ -58,6 +58,7 @@ objects:
         cols:             80
     - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
       label:              Last name
+      auto-update:        current_user.username
       listview:
         index:            5
         width:            20%
@@ -65,6 +66,7 @@ objects:
         type:             textbox
     - field:              D_LAST_CHANGED  TIMESTAMP   NOT NULL
       label:              Last changed
+      auto-update:        datetime.datetime.now()
       ui:
         type:             datetime
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
