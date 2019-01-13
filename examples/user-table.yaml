@@ -37,6 +37,7 @@ objects:
         width:            20%
       ui:
         type:             textbox
+        hint:             Enter a unique username
     - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
       label:              Password
       ui:
@@ -48,6 +49,7 @@ objects:
         width:            25%
       ui:
         type:             textbox
+        error:            false
     - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
       label:              Middle name
       ui:
@@ -83,7 +85,10 @@ objects:
     - field:              D_ENABLED   BOOLEAN       DEFAULT 0
       label:              Active
       ui:
-        type:             checkbox
+        type:             slidertoggle
+        color:            primary
+        checked:          false
+        labelPosition:    after
       listview:
         index:            6
         width:            10%
@@ -93,3 +98,12 @@ objects:
         - label:          Enabled
           value:          true
 
+    - field:              D_SLIDER    INT       DEFAULT 0
+      label:              Slider
+      ui:
+        type:             slider
+        min:              0
+        max:              500
+        interval:         1
+        step:             1
+        thumbLabel:       true

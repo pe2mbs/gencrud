@@ -35,18 +35,22 @@ class TemplateUi( object ):
     def hasPrefix( self ):
         return 'prefix' in self.__cfg
 
+    @property
     def prefixType( self ):
         return self.__cfg.get( 'prefix-type', 'text' )
 
+    @property
     def prefix( self ):
         return self.__cfg.get( 'prefix', '' )
 
     def hasSuffix( self ):
         return 'suffix' in self.__cfg
 
+    @property
     def suffixType( self ):
         return self.__cfg.get( 'suffix-type', 'text' )
 
+    @property
     def suffix( self ):
         return self.__cfg.get( 'suffix', '' )
 
@@ -114,20 +118,43 @@ class TemplateUi( object ):
             'timepicker':       'pyt-timepicker-input-box',
             'datetimepicker':   'pyt-datetimepicker-input-box'
         }
+        if 'hint' in  self.__cfg:
+            options.append( 'hint="{0}"'.format( self.__cfg[ 'hint' ] ) )
+
+        options.append( 'error="{0}"'.format( self.error ) )
+
+        if self.hasPrefix():
+            options.append( 'prefix="{0}" prefix-type="{1}"'.format( self.prefix, self.prefixType ) )
+
+        if self.hasSuffix():
+            options.append( 'suffix="{0}" prefix-type="{1}"'.format( self.suffix, self.suffixType ) )
+
         if self.isCombobox() or self.isChoice():
             options.append( '[items]="{}List"'.format( self.__service.name ) )
 
         elif self.isTextArea():
             options.append( 'rows="{0}" cols="{1}"'.format( self.rows, self.cols ) )
 
+        elif self.isCheckbox():
+            options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
+
         elif self.isSlider():
             options.append( 'min="{0}" max="{1}"'.format( self.min, self.max ) )
-            if 'interval' in self.__cfg:
-                options.append( 'interval="{0}"'.format( self.__cfg[ 'interval' ] ) )
+            options.append( 'interval="{0}"'.format( self.interval ) )
+            options.append( 'vertical="{0}"'.format( self.vertical ) )
+            options.append( 'invert="{0}"'.format( self.invert ) )
+            options.append( 'step="{0}"'.format( self.step ) )
+            options.append( 'thumbLabel="{0}"'.format( self.thumbLabel ) )
+            options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
 
-            if 'displayWith' in self.__cfg:
-                options.append( 'displayWith="{0}"'.format( self.__cfg[ 'displayWith' ] ) )
+        if 'disabled' in self.__cfg:
+            options.append( 'disabled="{0}"'.format( self.disabled ) )
 
+        if 'color' in self.__cfg:
+            options.append( 'color="{0}"'.format( self.color ) )
+
+        if 'debug' in self.__cfg:
+            options.append( 'debug="{0}"'.format( self.__cfg[ 'debug' ] ) )
 
         return '''<{tag} id="{table}.{id}" placeholder="{placeholder}"{option} formControlName="{field}"></{tag}>'''.\
                 format( tag = type2component[ self.__cfg.get( 'type', 'textbox' ) ],
@@ -140,3 +167,43 @@ class TemplateUi( object ):
     @property
     def service( self ):
         return self.__service
+
+    @property
+    def interval( self ):
+        return self.__cfg.get( 'interval', 1 )
+
+    @property
+    def vertical( self ):
+        return str( self.__cfg.get( 'vertical', False ) ).lower()
+
+    @property
+    def disabled( self ):
+        return str( self.__cfg.get( 'disabled', False ) ).lower()
+
+    @property
+    def invert( self ):
+        return str( self.__cfg.get( 'invert', False ) ).lower()
+
+    @property
+    def step( self ):
+        return self.__cfg.get( 'step', 1 )
+
+    @property
+    def thumbLabel( self ):
+        return str( self.__cfg.get( 'thumbLabel', True ) ).lower()
+
+    @property
+    def color( self ):
+        return str( self.__cfg.get( 'color', 'primary' ) ).lower()
+
+    @property
+    def checked( self ):
+        return str( self.__cfg.get( 'checked', False ) ).lower()
+
+    @property
+    def labelPosition( self ):
+        return str( self.__cfg.get( 'labelPosition', 'before' ) ).lower()
+
+    @property
+    def error( self ):
+        return str( self.__cfg.get( 'error', True ) ).lower()
