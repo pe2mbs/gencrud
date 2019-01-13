@@ -25,9 +25,9 @@ import logging
 import datetime
 from flask import Blueprint, request, jsonify
 from applic.database import db
-import flask.json as json
 from ${ obj.application }.${ obj.name }.model import ${ obj.cls }
 from ${ obj.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
+import sqlalchemy.sql.sqltypes
 
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
 
@@ -48,22 +48,41 @@ def registerApi( app, cors ):
 
 
 def fieldConversion( record, key, value ):
-    if isinstance( getattr( record, key ), int ):
-        value = int( value )
+    if value is None:
+        return value
 
-    elif isinstance( getattr( record, key ), float ):
-        value = float( value )
+    _type = record.__table__.columns[key].type
+    logger.debug( 'field {0} value {1} type {2}'.format( key, value, _type ) )
 
-    elif isinstance( getattr( record, key ), datetime.datetime ):
+    if isinstance( _type, ( sqlalchemy.sql.sqltypes.Integer,
+                            sqlalchemy.sql.sqltypes.INTEGER,
+                            sqlalchemy.sql.sqltypes.BigInteger,
+                            sqlalchemy.sql.sqltypes.INT,
+                            sqlalchemy.sql.sqltypes.BIGINT ) ):
+        value = int( str( value ) )
+
+    elif isinstance( _type, ( sqlalchemy.sql.sqltypes.REAL,
+                              sqlalchemy.sql.sqltypes.Float,
+                              sqlalchemy.sql.sqltypes.FLOAT,
+                              sqlalchemy.sql.sqltypes.DECIMAL,
+                              sqlalchemy.sql.sqltypes.Numeric,
+                              sqlalchemy.sql.sqltypes.NUMERIC ) ):
+        value = float( str( value ) )
+
+    elif isinstance( _type, ( sqlalchemy.sql.sqltypes.DateTime,
+                              sqlalchemy.sql.sqltypes.DATETIME,
+                              sqlalchemy.sql.sqltypes.TIMESTAMP ) ):
         value = value[0:22] + value[23:]
-        logger.info( 'datetime.datetime.value: {}'.format( value ) )
+        logger.debug( 'datetime.datetime.value: {}'.format( value ) )
         value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S%z' )
 
-    elif isinstance( getattr( record, key ), datetime.date ):
+    elif isinstance( _type, ( sqlalchemy.sql.sqltypes.Date,
+                              sqlalchemy.sql.sqltypes.DATE ) ):
         # TODO: needs to be tested
         value = datetime.datetime.strptime( value, '%Y-%m-%d' ).date()
 
-    elif isinstance( getattr( record, key ), datetime.time ):
+    elif isinstance( _type, ( sqlalchemy.sql.sqltypes.Time,
+                              sqlalchemy.sql.sqltypes.TIME ) ):
         # TODO: needs to be tested
         value = datetime.datetime.strptime( value, '%H:%M:%S' ).time()
 
