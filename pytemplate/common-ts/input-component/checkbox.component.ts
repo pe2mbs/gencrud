@@ -22,14 +22,12 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     template: `<div class="form">
     <mat-checkbox class="custom-input__input"
                   id="{{ id }}"
+                  [color]="color"
+                  [labelPosition]="labelPosition"
+                  [(indeterminate)]="indeterminate"
                   [formControl]="control">
         {{ placeholder }}
     </mat-checkbox>
-
-    <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
-    <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
-    <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
-    <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
 </div><br/>`,
     styles: [   'custom-input__input{ width: 100%; }',
                 'mat-form-field { width: 100%; }' ],
@@ -39,6 +37,9 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytCheckboxInputComponent extends PytBaseComponent
 {
+    @Input() labelPosition;
+    @Input() indeterminate;
+
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

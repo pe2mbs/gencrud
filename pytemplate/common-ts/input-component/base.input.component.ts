@@ -13,29 +13,66 @@ export const CUSTOM_ANIMATIONS_CONTROLE: any = [ trigger(
 
 export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit, AfterViewInit
 {
-    protected   debug:              boolean = false;
+    @Input()                debug:              boolean = false;
     // ID attribute for the field and for attribute for the label
-    @Input()    id:                 string;
+    @Input()                id:                 string;
     // placeholder input
-    @Input()    placeholder:        string;
+    @Input()                placeholder:        string;
     // formControlName fieldname
-    @Input()    formControlName:    string;
-    // is the control readonly 
-    @Input()    readonly:           string;
+    @Input()                formControlName:    string;
+    // is the control readonly
+    @Input()                readonly:           string;
     // Field prefix
-    @Input()    prefix:             string;
-    public      prefixType:         string;
+    @Input()                prefix:             string;
+    @Input( 'prefix-type' ) prefixType:         string = 'text';
     // Field suffix
-    @Input()    suffix:             string;
-    public      suffixType:         string;
+    @Input()                suffix:             string;
+    @Input( 'suffix-type' ) suffixType:         string = 'text';
 
-    public      control:            FormControl;
-    public      formGroupDir:       FormGroupDirective;
+    @Input()                color;
+    @Input()                hint;
+    @Input()                error:              string = 'false';
+
+    public                  control:            FormControl;
+    public                  formGroupDir:       FormGroupDirective;
 
     constructor( fgd: FormGroupDirective )
     {
         this.formGroupDir = fgd;
         return;
+    }
+
+    GetErrorMessage()
+    {
+        if ( this.control == null || this.control.valid || this.control.disabled )
+        {
+            return ( '' );
+        }
+        let result = 'Unknown error';
+        if ( this.control.hasError( 'required' ) )
+        {
+            result = 'Required field';
+        }
+        else if ( this.control.hasError( 'email' ) )
+        {
+            result = 'Not a valid email';
+        }
+        else if ( this.control.hasError( 'maxlength' ) )
+        {
+            result = 'The data is too long, allowed (' + this.control.errors.maxlength.requiredLength + ')';
+        }
+        else if ( this.control.invalid )
+        {
+            if ( this.debug )
+            {
+                console.log( 'getErrorMessage( control = "', this.control, '" )' );
+            }
+        }
+        if ( this.debug && result == 'Unknown error' )
+        {
+            console.log( "getErrorMessage() => " + result );
+        }
+        return ( result );
     }
 
     ngOnInit() 
@@ -52,6 +89,11 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
         if ( this.placeholder === undefined )
         {
             this.placeholder = 'Enter text';
+        }
+        if ( this.color === '' || this.color === null ||
+                  this.color === undefined )
+        {
+            this.color = 'primary';
         }
         if ( this.readonly !== undefined )
         {

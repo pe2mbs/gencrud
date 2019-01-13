@@ -19,22 +19,26 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 
 @Component( {
     selector: 'pyt-slider-input-box',
-    template: `<div class="form">
-    <mat-slider thumbLabel
-                id="{{ id }}"
-                [displayWith]="{{ formatLabel }}"
-                tickInterval="{{ interval }}"
-                min="{{ min }}"
-                max="{{ max }}"
+    template: `<div class="form custom-input__input">
+    {{ placeholder }}
+    <mat-slider id="{{ id }}"
+                class="custom-input__input"
+                [thumbLabel]="thumbLabel"
+                [vertical]="vertical"
+                [disabled]="disabled"
+                [invert]="invert"
+                [step]="step"
+                [tickInterval]="interval"
+                [color]="color"
+                [min]="min"
+                [max]="max"
                 [formControl]="control">
     </mat-slider>
-    <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
-    <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
-    <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
-    <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
 </div><br/>`,
     styles: [   'custom-input__input{ width: 100%; }',
-                'mat-form-field { width: 100%; }' ],
+                'mat-form-field { width: 100%; }',
+                '.mat-slider-horizontal { width: 100%; }',
+                '.mat-slider-vertical { height: 300px; }' ],
     encapsulation: ViewEncapsulation.None,
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
     animations: CUSTOM_ANIMATIONS_CONTROLE
@@ -44,17 +48,28 @@ export class PytSliderInputComponent extends PytBaseComponent
     @Input()    min;
     @Input()    max;
     @Input()    interval;
-    @Input()    displayWith;
+    @Input()    thumbLabel;
+    @Input()    vertical;
+    @Input()    disabled;
+    @Input()    invert;
+    @Input()    step;
 
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );
+        this.Init();
         return;
     }
 
     ngAfterViewInit()
     {
         super.ngAfterViewInit();
+        this.Init();
+        return;
+    }
+
+    Init()
+    {
         if ( this.interval === '' || this.interval === null ||
                   this.interval === undefined )
         {
@@ -70,10 +85,41 @@ export class PytSliderInputComponent extends PytBaseComponent
         {
             this.max = 100;
         }
-        if ( this.displayWith === '' || this.displayWith === null ||
-                  this.displayWith === undefined )
+        if ( this.vertical === '' || this.vertical === null ||
+                  this.vertical === undefined )
         {
-            this.displayWith = 'formatLabel';
+            this.vertical = false;
+        }
+        if ( this.disabled === '' || this.disabled === null ||
+                  this.disabled === undefined )
+        {
+            this.disabled = false;
+        }
+        if ( this.invert === '' || this.invert === null ||
+                  this.invert === undefined )
+        {
+            this.invert = false;
+        }
+        if ( this.step === '' || this.step === null ||
+                  this.step === undefined )
+        {
+            this.step = 1;
+        }
+        if ( this.thumbLabel === '' || this.thumbLabel === null ||
+                  this.thumbLabel === undefined )
+        {
+            this.thumbLabel = true;
+        }
+        if ( this.debug )
+        {
+            console.log( 'this.interval', this.interval );
+            console.log( 'this.min', this.min );
+            console.log( 'this.max', this.max );
+            console.log( 'this.vertical', this.vertical );
+            console.log( 'this.disabled', this.disabled );
+            console.log( 'this.invert', this.invert );
+            console.log( 'this.step', this.step );
+            console.log( 'this.thumbLabel', this.thumbLabel );
         }
         return;
     }
