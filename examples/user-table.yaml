@@ -4,6 +4,8 @@ source:
 objects:
 - name:                   user
   class:                  User
+  addedit:                dialog
+  delete:                 dialog
   application:            testrun
   uri:                    /api/user
   menu:
@@ -17,6 +19,7 @@ objects:
     index:                0
   table:
     name:                 WA_USERS
+    order-by:             [ D_LAST_NAME, D_FIRST_NAME ]
     pyInport:
     - RoleSchema          testrun.role.schema
     tsInport:

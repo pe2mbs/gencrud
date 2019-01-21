@@ -106,6 +106,9 @@ def updatePythonProject( config, app_module ):
                  MENU_CHILDEREN_LABEL: [ createMenuItem( cfg ) ] }
 
     for cfg in config:
+        if cfg.menu is None:
+            continue
+
         foundMenu = False
         for menuItem in menuItems:
             if menuItem[ MENU_DISPLAY_NAME ] == cfg.menu.displayName:

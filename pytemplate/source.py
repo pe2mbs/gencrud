@@ -6,10 +6,10 @@ import pytemplate.util.utils
 class TemplateSource( object ):
     def __init__( self, type, **cfg ):
         if 'templates' in cfg:
-            self.__template = cfg[ 'templates' ][ type ]
+            self.__template = os.path.abspath( cfg[ 'templates' ][ type ] )
 
         else:
-            self.__template = os.path.join( os.path.dirname( __file__ ), 'templates', type )
+            self.__template = os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'templates', type ) )
 
         if pytemplate.util.utils.verbose:
             print( 'Template folder: {0}'.format( self.__template ) )
@@ -22,7 +22,7 @@ class TemplateSource( object ):
         if cnt == 0:
             raise Exception( 'No templates found in {0}'.format( self.__template ) )
 
-        self.__source   = cfg[ 'source' ][ type ]
+        self.__source   = os.path.abspath( cfg[ 'source' ][ type ] )
         return
 
     @property

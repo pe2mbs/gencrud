@@ -1,11 +1,10 @@
 import sys
-
 from nltk.tokenize import word_tokenize
 from pytemplate.objects.table.column.listview import TemplateListView
 from pytemplate.objects.table.column.relation import TemplateRelation
 from pytemplate.objects.table.column.ui import TemplateUi
 from pytemplate.objects.table.column.css import TemplateCss
-
+from pytemplate.util.utils import InvalidSetting
 
 class TemplateColumn( object ):
     def __init__( self, no_columns, table_name, **cfg ):
@@ -28,6 +27,13 @@ class TemplateColumn( object ):
             tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
             self.__field = tokens[ 0 ]
             self.__sqlType  = tokens[ 1 ]
+            if self.__sqlType not in ( 'INT', 'BIGINT', 'CHAR', 'VARCHAR',
+                                       'TEXT', 'CLOB',
+                                       'BOOLEAN', 'DATE', 'TIME', 'TIMESTAMP',
+                                       'FLOAT', 'REAL',  'INTERVAL', 'BLOB',
+                                       'DECIMAL', 'NUMERIC' ):
+                raise InvalidSetting( 'field', 'column', self.__field )
+
             offset = 2
             if offset < len( tokens ) and tokens[ offset ] == '(':
                 offset += 1
@@ -42,7 +48,15 @@ class TemplateColumn( object ):
             # FOREIGN KEY <reference>
             while offset < len( tokens ):
                 if tokens[ offset ] == 'NULL':
-                    self.__attrs.append( 'NOT NULL' )
+                    self.__attrs.append( 'NULL' )
+
+                elif tokens[ offset ] == 'NOT':
+                    offset += 1
+                    if tokens[ offset ] == 'NULL':
+                        self.__attrs.append( 'NOT NULL' )
+
+                    else:
+                        raise InvalidSetting( 'field', 'attr: "NOT ' + tokens[ offset ] + '"', self.__field )
 
                 elif tokens[ offset ] == 'DEFAULT':
                     self.__attrs.append( 'DEFAULT {0}'.format( tokens[ offset + 1 ] ) )
@@ -56,6 +70,9 @@ class TemplateColumn( object ):
                 elif tokens[ offset ] == 'FOREIGN':
                     self.__attrs.append( 'FOREIGN KEY {0}'.format( tokens[ offset + 2 ] ) )
                     offset += 1
+
+                else:
+                    raise InvalidSetting( 'field', 'attr: "' + tokens[ offset ] + '"', self.__field )
 
                 offset += 2
 

@@ -1,6 +1,22 @@
-# 1. Templating engine for Python and Angular CRUD interfaces.
+Templating engine for Python and Angular CRUD interfaces.
+=========================================================
 This tool generates the Python backend and Angular frontend code for 
 CRUD interfaces.
+
+Table of contents
+-----------------
+[1. General](./USAGE.md)
+
+[2. Installation](./USAGE.md)
+
+[3. Usage](./USAGE.md)
+
+[4. Example files](./USAGE.md)
+
+[5. YAML Template](./USAGE.md)
+
+
+# 1 General
 
 ## 1.1 Licencing
 Python backend and Angular frontend code generation by Template
@@ -130,7 +146,8 @@ objects:
         type:               textbox
 ```
 
-## 5.1. templates section 
+## 5.1. templates section
+At root level in the file.
 ```yaml
 templates:
   python:   ./templates/python
@@ -141,16 +158,17 @@ This is an optional section, as the default templates are located with the
 module itself. But you can set a different set of templates when you need. 
 
 ### 5.1.1. python variable
-The 'python' value contains the template folder of the Python backend folder. 
-This folder contains the Python scripts for the generated module. These scripts 
-must be able to be handled by Mako templating engine. 
+Is part of ``templates`` at root level. The 'python' value contains the template folder 
+of the Python backend folder. This folder contains the Python scripts for the generated 
+module. These scripts must be able to be handled by Mako templating engine. 
 
 ### 5.1.2. angular variable
-The 'angular' value contains the template folder of the Angular frontend folder.
-This folder contains the Angular scripts for the generated module. This folder 
-contains the Angular scripts for the generated module.
+Is part of ``templates`` at root level. The 'angular' value contains the template folder 
+of the Angular frontend folder. This folder contains the Angular scripts for the generated 
+module. This folder contains the Angular scripts for the generated module.
 
 ## 5.2. source section
+At root level in the file. 
 ```yaml
 source:
   python:   ./output/backend
@@ -158,20 +176,21 @@ source:
 ```
 
 ### 5.2.1. python variable
-The 'python' value contains the root folder of the Python backend folder. 
-This folder must contain the Flask main module.
+Is part of ``source`` at root level. The 'python' value contains the root folder of the 
+Python backend folder. This folder must contain the Flask main module.
 
 ### 5.2.2. angular variable
-The 'angular' value contains the root folder of the Angular frontend folder. 
-This folder should contain at the end '/src/app/'
+Is part of ``templates`` at root level. The 'angular' value contains the root folder of 
+the Angular frontend folder. This folder should contain at the end '/src/app/'
   
 ## 5.3. objects section (list)
+At root level in the file. 
 ```yaml
 objects:
-- name:                   role
-  class:                  Role
-  application:            testrun
-  uri:                  /api/role
+- name:                     role
+  class:                    Role
+  application:              testrun
+  uri:                      /api/role
   menu:
     displayName:            Database
     iconName:               database
@@ -192,46 +211,46 @@ This contains the name of the class used within the Python and Angular modules.
  
 ### 5.3.3. application variable
 
-### 5.3.4. uri section
+## 5.4. uri section
 The section contains the backend and frontend uri used for this module.
 
-#### 5.3.4.1. backend variable 
+### 5.4.1. backend variable 
 This contains the base uri for the backend.
 
-#### 5.3.4.2. frontend variable
+### 5.4.2. frontend variable
 This contains the uri for the frontend.  
 
-### 5.3.5. menu section
+## 5.5. menu section
 This section describes the menu entry in the frontend for the module. 
 
-#### 5.3.5.1. displayName variable
+### 5.5.1. displayName variable
 This is the display name presented to the user. 
 
-#### 5.3.5.2. iconName variable
+### 5.5.2. iconName variable
 This is to display an icon be sides the name. 
 
-#### 5.3.5.3. index variable
+### 5.5.3. index variable
 This is the index within the menu.
  
-### 5.3.6. menuitem section
+## 5.6. menuitem section
 This section describes the menu entry in the frontend for the module. 
 
-#### 5.3.6.1. displayName variable
+### 5.6.1. displayName variable
 This is the label presented to the user. 
 
-#### 5.3.6.2. iconName variable
+### 5.6.2. iconName variable
 This is to display an icon be sides the name. 
 
-#### 5.3.6.3. index variable
+### 5.6.3. index variable
 This is the index within the menu.
 
-#### 5.3.6.4. route variable
+### 5.6.4. route variable
 This is the route path in the frontend.
   
-### 5.3.7. table sub section
+### 5.7. table sub section
 This section describes the table itself, the columns and column attributes.   
   
-## 5.4. table sub section
+## 5.8. table sub section
 
 ```yaml
 table:
@@ -251,21 +270,22 @@ table:
     inport:             User            ../../testrun/user/model  
 ```
 
-### 5.4.1. name variable
+### 5.8.1. name variable
 This is the name of the table in the database.
 
-### 5.4.2. column section (list)
+## 5.9. column section (list)
 This section contains a list of column defintions
  
-#### 5.4.2.1. field variable
+### 5.9.1. field variable
 This is the field defintion using SQL syntax.
 
-#### 5.4.2.2. label variable
+### 5.9.2. label variable
 This is the field caption used in the frontend to present to the user. 
 
-#### 5.4.2.3. ui section (optional)
+## 5.10. ui section (optional)
 
-##### 5.4.2.3.1. type variable
+
+### 5.10.1. type variable
 This is user interface type of the field, the following types are supported;
 Depended of the SQL type the ``ui`` setting can be used to override the default.
 
@@ -293,74 +313,77 @@ For some ui components extra parameters are needed;
   takes optinally ``rows`` and ``cols``
    
    
-##### 5.4.2.3.3. max (optional)
+### 5.10.2. max (optional)
 This is maximal value for the slider field, when omitted the value 100 is 
 used as default.
  
-##### 5.4.2.3.2. min (optional)   
+### 5.10.3. min (optional)   
 This is minimal value for the slider field, when omitted the value 0 is 
 used as default.
 
-##### 5.4.2.3.4. rows (optional)   
+### 5.10.4. rows (optional)   
 This is the the number of rows for the textarea field, when omitted the 
 value 4 is used as default.
 
-##### 5.4.2.3.5. cols (optional)
+### 5.10.5. cols (optional)
 This is the the number of columns for the textarea field, when omitted 
 the value 80 is used as default.
 
-##### 5.4.2.3.6. interval (optional)
+### 5.10.6. interval (optional)
 This is minimal value for the slider field, when omitted the value 1 is 
 used as default.
 
-##### 5.4.2.3.7. displayWith (optional)
+### 5.10.7. displayWith (optional)
 This is displayWith value for the slider field, when omitted the value 
 ``displayWith` is used as default.
 
-##### 5.4.2.3.9. prefix-type (optional)
+### 5.10.8. prefix-type (optional)
 This is the prefix type, it can contain only two values: 
 * text
 * icon 
 When omitted the default value is text.
 
-##### 5.4.2.3.8. prefix (optional)   
+### 5.10.9. prefix (optional)   
 This can be used to prerfix a field with some text or icon.
 
-##### 5.4.2.3.11. suffix-type (optional)   
+### 5.10.10. suffix-type (optional)   
 This is the suffix type, it can contain only two values: 
 * text
 * icon 
 When omitted the default value is text.
 
-##### 5.4.2.3.10. suffix (optional)
+### 5.10.11. suffix (optional)
 This can be used to suffix a field with some text or icon.
 
-##### 5.4.2.3.12. service section (optional)
+## 5.10.12. service section (optional)
+See service section
+
+## 5.11. service section
 The service section contains variable for the choice or combobox type fields, 
 this service retrieves the values and labels for the choice. And for the 
 combobox the values and labels must be the same.       
 
-###### 5.4.2.3.12.1. name variable
+### 5.11.1. name variable
 The name of the module used to populate the list, when ever this doesn't end 
 with 'Service' then 'DataService' shall be appended to name. 
  
-###### 5.4.2.3.12.2.class
+### 5.11.2. class
 The name of the base class name used to populate the list
 
-###### 5.4.2.3.12.3.path (optional)
+### 5.11.3. path (optional)
 The name of the file where the class used to populate the list is located.
 whenever this is omitted the path used shall be '../<name>/service' 
 
-###### 5.4.2.3.12.4.value
+### 5.11.4. value
 The name of the field from the table used to populate the value of the list, 
 this value must be of the same type as the type of the field in the current 
 table. For the combobox this revers to the same column.
  
-###### 5.4.2.3.12.5.label 
+### 5.11.5. label 
 The name of the field from the table used to populate the label (presentation) 
 of the list. For the combobox this revers to the same column. 
 
-#### 5.4.2.4. index variable (optional)
+#### 5.10.12. index variable (optional)
 When set to a numeric value the field is included into list view, the value dertemines the order where the fields shall appear.
 Also when set the column is included in the search filter of the list view. 
   

@@ -128,7 +128,6 @@ Options:
 
 
 def main():
-
     try:
         opts, args = getopt.getopt( sys.argv[1:],
                                     'hi:s:obvV', [ 'help',
@@ -181,6 +180,9 @@ def main():
         print( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
         print( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
 
+    except pytemplate.util.utils.InvalidSetting as exc:
+        print( str( exc ) )
+
     except FileNotFoundError as exc:
         if exc.filename in args:
             print( "Input file '{0}' is not found.".format( exc.filename ), file = sys.stderr )
@@ -201,4 +203,9 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    if sys.version_info.major >= 3 and sys.version_info.minor >= 5:
+        main()
+
+    else:
+        banner()
+        print( "Error: This script runs with Python 3.5 or higher.")

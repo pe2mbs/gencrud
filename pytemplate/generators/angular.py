@@ -137,13 +137,14 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     for cfg in config:
         print( cfg.application, cfg.name, cfg.cls )
         imports.append( "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
-                                                                                                       app = cfg.application,
-                                                                                                       mod = cfg.name ) )
-        entries.append( {
-            'path': "'{}'".format( cfg.menuItem.route[1:] ),
-            'component': '{cls}TableComponent'.format( cls = cfg.cls ),
-            'data': { 'title': "'{cls} table'".format( cls = cfg.cls ) }
-        } )
+                                                                                                         app = cfg.application,
+                                                                                                         mod = cfg.name ) )
+        if cfg.menuItem is not None:
+            entries.append( {
+                'path': "'{}'".format( cfg.menuItem.route[1:] ),
+                'component': '{cls}TableComponent'.format( cls = cfg.cls ),
+                'data': { 'title': "'{cls} table'".format( cls = cfg.cls ) }
+            } )
 
     rangePos = PositionInterface()
     sectionLines = pytemplate.util.utils.searchSection( lines,

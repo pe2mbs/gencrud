@@ -45,4 +45,4 @@ class TemplateListView( object ):
             else:
                 result.append( item )
 
-        return json.dumps( result )
+        return json.dumps( result ).replace( "'", "\'" ).replace( '"', "'" )

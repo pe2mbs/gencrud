@@ -1,13 +1,24 @@
 from pytemplate.objects.menuitem import TemplateMenuItem
 from pytemplate.objects.table import TemplateTable
+from pytemplate.util.utils import InvalidSetting
 
 class TemplateObject( object ):
     def __init__( self, **cfg ):
         self.__config       = cfg
         self.__columns      = []
         self.__primaryKey   = ''
-        self.__menuRoot     = TemplateMenuItem( 'menu', **cfg )
-        self.__menuItem     = TemplateMenuItem( 'menuItem', **cfg )
+        if 'menu' in cfg:
+            self.__menuRoot = TemplateMenuItem( 'menu', **cfg )
+
+        else:
+            self.__menuRoot = None
+
+        if 'menuItem' in cfg:
+            self.__menuItem = TemplateMenuItem( 'menuItem', **cfg )
+
+        else:
+            self.__menuItem = None
+
         self.__table        = TemplateTable( **cfg[ 'table' ] )
         return
 
@@ -28,6 +39,22 @@ class TemplateObject( object ):
         return self.__config.get( 'uri', '' )
 
     @property
+    def addedit( self ):
+        result = self.__config.get( 'addedit', 'dialog' )
+        if result not in ( 'dialog', 'screen', 'no', 'none' ):
+            raise InvalidSetting( 'edit', 'object', self.name )
+
+        return result
+
+    @property
+    def delete( self ):
+        result = self.__config.get( 'delete', 'dialog' )
+        if result not in ( 'dialog', 'screen', 'no', 'none' ):
+            raise InvalidSetting( 'edit', 'object', self.name )
+
+        return result
+
+    @property
     def menu( self ):
         return self.__menuRoot
 
@@ -38,6 +65,13 @@ class TemplateObject( object ):
     @property
     def table( self ):
         return self.__table
+
+    def orderBy( self ):
+        orderList = []
+        for field in self.__table.orderBy:
+            orderList.append( 'order_by( {}.{} )'.format( self.cls, field ) )
+
+        return '.'.join( orderList )
 
     @property
     def externalService( self ):

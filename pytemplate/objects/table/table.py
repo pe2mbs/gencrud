@@ -20,8 +20,8 @@ class TemplateTable( object ):
         if 'tsInport' in table:
             source = 'tsInport'
 
-        elif 'psInport' in table:
-            source = 'tsInport'
+        elif 'pyInport' in table:
+            source = 'pyInport'
 
         else:
             return
@@ -38,6 +38,10 @@ class TemplateTable( object ):
     @property
     def name( self ):
         return self.__table.get( 'name', '' )
+
+    @property
+    def orderBy( self ):
+        return self.__table.get( 'order-by', [ self.__primaryKey ] )
 
     @property
     def uniqueKey( self ):

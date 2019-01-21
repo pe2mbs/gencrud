@@ -90,7 +90,7 @@ ${ obj.externalService } )
   %if field.hasResolveList():
     public ${ field.name }_Label( id )
     {
-        let values = ${ field.listview.resolveList }
+        let values = ${ field.listview.resolveList };
         return ( values[ id ] );
     }
 

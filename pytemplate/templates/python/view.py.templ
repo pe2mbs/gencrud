@@ -124,7 +124,7 @@ def fieldConversion( record, key, value, default = None ):
 
 @${ obj.name }Api.route( '${ obj.uri }/list', methods=[ 'GET' ] )
 def get${ obj.cls }List():
-    recordList = db.session.query( ${ obj.cls } ).order_by( ${ obj.cls }.${ obj.table.primaryKey } ).all()
+    recordList = db.session.query( ${ obj.cls } ).${ obj.orderBy() }.all()
     result = ${ obj.name }sSchema.jsonify( recordList )
     logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
     return result
