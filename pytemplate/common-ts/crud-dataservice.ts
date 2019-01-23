@@ -221,4 +221,19 @@ export class CrudDataService<T>
         });
         return;
     }
+
+    public genericPut( uri: string, params: string ): void
+    {
+        console.log( 'genericPut', uri, params );
+        this.httpClient.put( this._uri + uri + params ).subscribe( result => {
+            if ( this.debug )
+            {
+                console.log ( result );
+            }
+        },
+        (error: HttpErrorResponse) => {
+            console.log ( error.name + ' ' + error.message );
+        });
+        return;
+    }
 }

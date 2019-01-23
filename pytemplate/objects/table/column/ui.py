@@ -4,7 +4,7 @@ from pytemplate.objects.table.column.service import TemplateService
 class TemplateUi( object ):
     def __init__( self, **cfg ):
         self.__cfg = cfg
-        if self.isChoice() or self.isCombobox():
+        if 'service' in cfg:
             self.__service = TemplateService( **cfg[ 'service' ] )
 
         else:
@@ -163,6 +163,9 @@ class TemplateUi( object ):
                         placeholder = label,
                         option = ' '.join( options ),
                         field = field )
+
+    def hasService( self ):
+        return self.__service is not None
 
     @property
     def service( self ):

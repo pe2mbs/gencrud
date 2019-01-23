@@ -204,6 +204,32 @@ def generateAngular( templates, config ):
 
         makeAngularModule( config.angular.source, cfg.application, cfg.name )
         for templ in templates:
+            templateFilename = os.path.join( config.angular.source,
+                                             cfg.application,
+                                             cfg.name,
+                                             pytemplate.util.utils.sourceName( templ ) )
+            if os.path.isfile( templateFilename ):
+                # First remove the old file
+                os.remove( templateFilename )
+
+            if 'dialog' in templ:
+                if 'addedit' in templ:
+                    if not ( cfg.actions.valid( 'new', 'dialog' ) or cfg.actions.valid( 'edit', 'dialog' ) ):
+                        continue
+
+                elif 'delete' in templ:
+                    if not cfg.actions.valid( 'delete', 'dialog' ):
+                        continue
+
+            elif 'screen' in templ:
+                if 'addedit' in templ:
+                    if not ( cfg.actions.valid( 'new', 'screen' ) or cfg.actions.valid( 'edit', 'screen' ) ):
+                        continue
+
+                elif 'delete' in templ:
+                    if not cfg.actions.valid( 'delete', 'screen' ):
+                        continue
+
             if pytemplate.util.utils.verbose:
                 print( 'template    : {0}'.format( templ ) )
                 print( 'application : {0}'.format( cfg.application ) )
@@ -222,9 +248,8 @@ def generateAngular( templates, config ):
                 print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
                 print( 'uri         : {0}'.format( cfg.uri ) )
 
-            with open( os.path.join( config.angular.source,
-                                     cfg.application,
-                                     cfg.name, pytemplate.util.utils.sourceName( templ ) ),
+
+            with open( templateFilename,
                        pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
 
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
@@ -264,12 +289,27 @@ def generateAngular( templates, config ):
             os.remove( app_module_json_file )
 
         exportsModules.append( { 'application':   app,
-                                         'modules':       mod,
-                                         'source':        source,
-                                         'export':        export } )
+                                 'modules':       mod,
+                                 'source':        source,
+                                 'export':        export } )
 
     with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
+
+    if pytemplate.util.utils.verbose:
+        print( 'exportsModules' )
+
+    for mod in exportsModules:
+        if pytemplate.util.utils.verbose:
+            print( mod )
+
+    if pytemplate.util.utils.verbose:
+        print( 'appModule' )
+
+    for mod in appModule:
+        if pytemplate.util.utils.verbose:
+            print( mod )
+
 
     updateAngularAppModuleTs( config, appModule, exportsModules )
     updateAngularAppRoutingModuleTs( config, appModule )

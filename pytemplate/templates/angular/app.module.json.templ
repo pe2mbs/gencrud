@@ -1,7 +1,11 @@
 {
     "files": [
+% if obj.actions.get( 'new' ).position != 'none' or obj.actions.get( 'edit' ).position != 'none':
         "import { AddEdit${obj.cls}Dialog } from './${ obj.application }/${ obj.name }/addedit.dialog';",
+% endif
+% if obj.actions.get( 'delete' ).position != 'none':
         "import { Delete${obj.cls}Dialog } from './${ obj.application }/${ obj.name }/delete.dialog';",
+% endif
         "import { ${ obj.cls }TableComponent } from './${ obj.application }/${ obj.name }/table.component';",
         "import { ${ obj.cls }DataService } from './${ obj.application }/${ obj.name }/service';"
     ],
@@ -13,13 +17,22 @@
         "ReactiveFormsModule"
     ],
     "declarations": [
+% if obj.actions.get( 'new' ).position != 'none' or obj.actions.get( 'edit' ).position != 'none':
         "AddEdit${ obj.cls }Dialog",
+% endif
+% if obj.actions.get( 'delete' ).position != 'none':
         "Delete${ obj.cls }Dialog",
+% endif
         "${ obj.cls }TableComponent"
     ],
     "entryComponents": [
+% if obj.actions.get( 'new' ).position != 'none' or obj.actions.get( 'edit' ).position != 'none':
         "AddEdit${ obj.cls }Dialog",
-        "Delete${ obj.cls }Dialog"
+% endif
+% if obj.actions.get( 'delete' ).position != 'none':
+        "Delete${ obj.cls }Dialog",
+% endif
+        ""
     ],
     "providers": [
         "${ obj.cls }DataService"
