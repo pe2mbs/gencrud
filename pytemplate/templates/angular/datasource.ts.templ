@@ -50,9 +50,10 @@ ${ obj.externalService } )
         super( _databaseTable, _paginator, _sort );
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-        this.${ field.name }_List = new Array<string>();
-        this.${ field.ui.service.name }Service.getSelectionList( '${ field.ui.service.value }',
-                                                '${ field.ui.service.label }' ).subscribe( data => this.${ field.name }_List = data );
+        this.${ field.name }_List = new Array<any>();
+        this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( data => {
+            this.${ field.name }_List = data
+        } );
  % endif
 % endfor
         return;
@@ -79,9 +80,9 @@ ${ obj.externalService } )
  % if field.ui is not None and field.ui.hasService():
     public ${ field.name }_Label( id )
     {
-        if ( id < this.${ field.name }_List.length )
+        if ( this.${ field.name }_List.length )
         {
-            return ( this.${ field.name }_List[ id ] );
+            return ( this.resolveListItem( this.${ field.name }_List, id ) );
         }
         return ( id.toString );
     }
