@@ -202,12 +202,4 @@ ${ obj.externalService } )
             this.dataSource.filter = this.filter.nativeElement.value;
         });
     }
-
-% if len( obj.actions.getCustomButtons() ) > 0:
-    public genericPut( uri: string, params: string ): void
-    {
-        this.dataService.genericPut( uri, params );
-        return;
-    }
-% endif
 }

@@ -90,7 +90,7 @@ class TemplateAction( object ):
             if len( param ) > 0:
                 param = '?' + param
 
-            function = "genericPut( '{uri}', '{param}' )".format( uri = self.uri,
+            function = "dataService.genericPut( '{uri}', '{param}' )".format( uri = self.uri,
                                                                    param = param )
 
         button = '''<span class="spacer"></span>
