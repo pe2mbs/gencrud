@@ -1,12 +1,16 @@
 import os
 
 import pytemplate.util.utils
-
+import pathlib
 
 class TemplateSource( object ):
-    def __init__( self, type, **cfg ):
+    def __init__( self, type, current_path, **cfg ):
         if 'templates' in cfg:
-            self.__template = os.path.abspath( cfg[ 'templates' ][ type ] )
+            if pathlib.Path( cfg[ 'templates' ][ type ] ).is_absolute():
+                self.__template = os.path.abspath( cfg[ 'templates' ][ type ] )
+
+            else:
+                self.__template = os.path.abspath( os.path.join( current_path, cfg[ 'templates' ][ type ] ) )
 
         else:
             self.__template = os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'templates', type ) )
@@ -22,14 +26,19 @@ class TemplateSource( object ):
         if cnt == 0:
             raise Exception( 'No templates found in {0}'.format( self.__template ) )
 
-        self.__source   = os.path.abspath( cfg[ 'source' ][ type ] )
+        if pathlib.Path( cfg[ 'source' ][ type ] ).is_absolute():
+            self.__source   = os.path.abspath( cfg[ 'source' ][ type ] )
+
+        else:
+            self.__source   = os.path.abspath( os.path.join( current_path, cfg[ 'source' ][ type ] ) )
+
         return
 
     @property
     def source( self ):
-        return os.path.abspath( os.path.normpath( self.__source ) )
+        return self.__source
 
     @property
     def template( self ):
-        return os.path.abspath( os.path.normpath( self.__template ) )
+        return self.__template
 

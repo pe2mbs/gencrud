@@ -1,12 +1,47 @@
+import os
+import pathlib
 from pytemplate.objects.object import TemplateObject
 from pytemplate.source import TemplateSource
+from pytemplate.util.folders import findpath
 
 
 class TemplateConfiguration( object ):
     def __init__( self, **cfg ):
         self.__config   = cfg
-        self.__python   = TemplateSource( 'python', **self.__config )
-        self.__angular  = TemplateSource( 'angular', **self.__config )
+        current_path = os.getcwd()
+        python_path = cfg[ 'source' ][ 'python' ]
+        angular_path = cfg[ 'source' ][ 'angular' ]
+        if python_path.startswith( '.' ) and angular_path.startswith( '.' ):
+            if current_path.endswith( python_path[1:] ):
+                # We are on the python folder
+                current_path = findpath( angular_path )
+
+                pass
+
+            elif current_path.endswith( angular_path[1:] ):
+                # We are on the Angular folder
+                current_path = findpath( python_path )
+
+            elif ( os.path.isdir( os.path.join( current_path, python_path ) ) and
+                   os.path.isdir( os.path.join( current_path, angular_path ) ) ):
+                # we are on the project root folder
+                pass
+
+            else:
+                raise Exception( 'Could find the source folders, please be at the project root or {} or {}'.format( python_path,
+                                                                                                angular_path ) )
+
+        else:
+            if os.path.isdir( python_path ) and os.path.isdir( angular_path ):
+                # We have a full path and they exist
+                pass
+
+            else:
+                raise Exception( 'Could find the source folders, please be at {} or {}'.format( python_path,
+                                                                                                angular_path ) )
+
+        self.__python   = TemplateSource( 'python', current_path, **self.__config )
+        self.__angular  = TemplateSource( 'angular', current_path, **self.__config )
         self.__objects  = []
         for obj in cfg[ 'objects' ]:
             #print( obj )
