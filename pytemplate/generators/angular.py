@@ -1,4 +1,3 @@
-import hashlib
 import json
 import os
 import shutil
@@ -7,6 +6,7 @@ from mako.template import Template
 import pytemplate.util.utils
 from pytemplate.generators.typescript_obj import TypeScript
 from pytemplate.util.positon import PositionInterface
+from pytemplate.util.sha import sha256sum
 
 LABEL_APP_ROUTES    = 'const appRoutes: Routes ='
 LABEL_NG_MODULE     = '@NgModule('
@@ -17,6 +17,7 @@ NG_IMPORTS          = 'imports'
 NG_PROVIDERS        = 'providers'
 NG_DECLARATIONS     = 'declarations'
 
+
 def makeAngularModule( root_path, *args ):
     if len( args ) > 0:
         modulePath = os.path.join( root_path, args[ 0 ] )
@@ -26,19 +27,6 @@ def makeAngularModule( root_path, *args ):
         makeAngularModule( modulePath, *args[ 1: ] )
 
     return
-
-def sha256sum( filename ):
-    # BUF_SIZE is totally arbitrary, change for your app!
-    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-    sha256 = hashlib.sha256()
-    with open( filename, 'rb' ) as f:
-        while True:
-            data = f.read( BUF_SIZE )
-            if not data:
-                break
-            sha256.update( data )
-
-    return sha256.hexdigest()
 
 
 def updateImportSection( lines, files ):
@@ -74,6 +62,7 @@ def updateImportSection( lines, files ):
 def updateAngularAppModuleTs( config, app_module, exportsModules ):
     if pytemplate.util.utils.verbose:
         print( config.angular.source )
+
     # File to edit 'app.module.ts'
     # inject the following;
     #   inport
@@ -86,7 +75,6 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
 
     pytemplate.util.utils.backupFile( os.path.join( config.angular.source, APP_MODULE ) )
     rangePos        = PositionInterface()
-
     sectionLines    = pytemplate.util.utils.searchSection( lines,
                                                            rangePos,
                                                            LABEL_NG_MODULE + '{',

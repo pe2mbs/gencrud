@@ -3,7 +3,7 @@ import pathlib
 from pytemplate.objects.object import TemplateObject
 from pytemplate.source import TemplateSource
 from pytemplate.util.folders import findpath
-
+from pytemplate.util.exceptions import MissingSourceFolder
 
 class TemplateConfiguration( object ):
     def __init__( self, **cfg ):
@@ -28,8 +28,7 @@ class TemplateConfiguration( object ):
                 pass
 
             else:
-                raise Exception( 'Could find the source folders, please be at the project root or {} or {}'.format( python_path,
-                                                                                                angular_path ) )
+                raise MissingSourceFolder( python_path, angular_path )
 
         else:
             if os.path.isdir( python_path ) and os.path.isdir( angular_path ):
@@ -37,8 +36,7 @@ class TemplateConfiguration( object ):
                 pass
 
             else:
-                raise Exception( 'Could find the source folders, please be at {} or {}'.format( python_path,
-                                                                                                angular_path ) )
+                raise MissingSourceFolder( python_path, angular_path )
 
         self.__python   = TemplateSource( 'python', current_path, **self.__config )
         self.__angular  = TemplateSource( 'angular', current_path, **self.__config )

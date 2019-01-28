@@ -1,7 +1,8 @@
 import os
-
 import pytemplate.util.utils
 import pathlib
+from pytemplate.util.exceptions import MissingTemplate
+
 
 class TemplateSource( object ):
     def __init__( self, type, current_path, **cfg ):
@@ -24,7 +25,7 @@ class TemplateSource( object ):
                 cnt += 1
 
         if cnt == 0:
-            raise Exception( 'No templates found in {0}'.format( self.__template ) )
+            raise MissingTemplate( self.__template )
 
         if pathlib.Path( cfg[ 'source' ][ type ] ).is_absolute():
             self.__source   = os.path.abspath( cfg[ 'source' ][ type ] )

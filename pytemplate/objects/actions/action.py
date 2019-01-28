@@ -1,5 +1,5 @@
 
-from pytemplate.util.utils import InvalidSetting
+from pytemplate.util.exceptions import InvalidSetting
 
 
 class TemplateAction( object ):

@@ -1,7 +1,7 @@
 from pytemplate.objects.menuitem import TemplateMenuItem
 from pytemplate.objects.table import TemplateTable
 from pytemplate.objects.actions.actions import TemplateActions
-from pytemplate.util.utils import InvalidSetting
+from pytemplate.util.exceptions import InvalidSetting
 
 
 class TemplateObject( object ):

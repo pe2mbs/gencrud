@@ -1,6 +1,6 @@
 import json
 import unittest
-
+from pytemplate.util.exceptions import TypeScriptFormatError, TypeScriptInvalidStartDataType
 
 class TypeScript( object ):
     def __init__( self ):
@@ -82,7 +82,7 @@ class TypeScript( object ):
         if type( obj ) in ( dict, tuple, list ):
             return self._build( obj )
 
-        raise Exception( 'invalid starting data type for {}'.format( repr( obj ) ) )
+        raise TypeScriptInvalidStartDataType( repr( obj ) )
 
     def __skipWhiteSpace( self, text, idx ):
         while idx < len( text ) and text[ idx ] in ( ' ', '\t', '\n', '\r' ):
@@ -121,11 +121,11 @@ class TypeScript( object ):
             elif text[ idx ] == ',':
                 # next element
                 print( 'next element: {}'.format( key ) )
-                raise Exception( 'format error: found {}'.format( text[ idx ] ) )
+                raise TypeScriptFormatError( text[ idx ], self.__line, self.__column )
 
             else:
                 # format errror
-                raise Exception( 'format error: found {}'.format( text[ idx ] ) )
+                raise TypeScriptFormatError( text[ idx ], self.__line, self.__column )
 
         idx += 1
         self.__column += 1
