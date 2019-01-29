@@ -5,7 +5,7 @@
 output/
 templates.old/
 test_prg/
-test_prg/*.py
+
 
 # general things to ignore
 build/
