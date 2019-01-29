@@ -13,6 +13,7 @@ template_list   = [ 'templates/angular/*.templ',
                     'common-ts/input-component/*.ts',
                     'common-ts/*.ts',
                     'common-ts/*.scss',
+                    'common-py/*.templ'
                     'screen.yaml' ]
 
 here = path.abspath(path.dirname(__file__))
