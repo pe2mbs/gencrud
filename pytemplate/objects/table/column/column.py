@@ -23,6 +23,8 @@ class TemplateColumn( object ):
         self.__choice       = None
         self.__attrs        = []
         self.__ui           = None
+        self.__leadIn       = []
+
         if 'field' in cfg:
             tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
             self.__field = tokens[ 0 ]
@@ -83,6 +85,38 @@ class TemplateColumn( object ):
             self.__relationShip = TemplateRelation( self, **self.__config.get( 'relationship', {} ) )
             self.__listview     = TemplateListView( self, **self.__config.get( 'listview', {} ) )
         return
+
+    @property
+    def leadIn( self ):
+        return self.__leadIn
+
+    @property
+    def hasAutoUpdate( self ):
+        return 'autoupdate' in self.__config
+
+    @property
+    def autoUpdate( self ):
+        if 'autoupdate' in self.__config:
+            print( "AUTO UPDATE ", self.__config[ 'autoupdate' ] )
+            autoValue = self.__config[ 'autoupdate' ]
+            if '(' in autoValue:
+                # Python callable
+                if '.' not in autoValue:
+                    autoValue = 'common.{}'.format(autoValue)
+
+                module_name, _ = autoValue.rsplit('.', 1 )
+                import_statement = 'import {}'.format( module_name )
+                if import_statement not in self.__leadIn:
+                    self.__leadIn.append( import_statement )
+
+            else:
+                # A scalar
+                pass
+
+            print("AUTO UPDATE ", autoValue )
+            return autoValue
+
+        return None
 
     @property
     def listview( self ):
@@ -284,8 +318,45 @@ class TemplateColumn( object ):
                 print( 'Extra unknown attributes found: {0}'.format( attr ),
                        file = sys.stderr )
 
+            defValue = self.DefaultValue()
+            if defValue is not None:
+                defValue, module_name, function = defValue
+                if module_name is None:
+                    # A scalar
+                    result += ', default = {q}{val}{q}'.format( val = defValue, q = '"' if type( defValue ) is str else "" )
+
+                else:
+                    # Python callable
+                    # Need to inject the module
+                    import_statement = 'import {}'.format( module_name )
+                    if import_statement not in self.__leadIn:
+                        self.__leadIn.append( import_statement )
+
+                    result += ', default = {mod}.{call}'.format( mod = module_name, call = function )
+
         result += ' )'
         return result
+
+    def DefaultValue( self ):
+        if 'default' in self.__config:
+            module_name = function = None
+            defValue = self.__config[ 'default' ]
+            if '(' in defValue:
+                # Python callable
+                if '.' in defValue:
+                    module_name, function = defValue.rsplit('.', 1 )
+
+                else:
+                    module_name = 'common'
+                    function    = defValue
+
+            else:
+                # A scalar
+                pass
+
+            return ( defValue, module_name, function )
+
+        return None
 
     @property
     def validators( self ):

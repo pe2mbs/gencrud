@@ -29,6 +29,16 @@ class TemplateTable( object ):
         self.__inports.append( source, table[ source ] )
         return
 
+    @property
+    def leadIn( self ):
+        result = []
+        for column in self.__columns:
+            for leadin in column.leadIn:
+                if leadin not in result:
+                    result.append( leadin )
+
+        return '\n'.join( result )
+
     # TODO: Add 'unique-key' property to YAML
 
     @property
