@@ -22,13 +22,17 @@
 #   the table from the configuration.
 #
 import logging
-import datetime
 from flask import Blueprint, request, jsonify
 from applic.database import db
 from ${ obj.application }.common import fieldConversion
 from ${ obj.application }.${ obj.name }.model import ${ obj.cls }
 from ${ obj.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
-import sqlalchemy.sql.sqltypes
+from ${ obj.application }.common import fieldConversion
+try:
+    from ${ obj.application }.${ obj.name }.entry_points import ${ obj.name }EntryPointApi
+
+except:
+    ${ obj.name }EntryPointApi = None
 
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
 
@@ -45,6 +49,10 @@ def registerApi( app, cors ):
 
     logger.info( 'Register ${ obj.cls } routes' )
     app.register_blueprint( ${ obj.name }Api )
+    if ${ obj.name }EntryPointApi is not None:
+        logger.info( 'Registering ${ obj.cls } entry points' )
+        app.register_blueprint( ${ obj.name }EntryPointApi )
+
     return
 
 

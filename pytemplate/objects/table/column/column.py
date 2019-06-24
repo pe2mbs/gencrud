@@ -4,7 +4,7 @@ from pytemplate.objects.table.column.listview import TemplateListView
 from pytemplate.objects.table.column.relation import TemplateRelation
 from pytemplate.objects.table.column.ui import TemplateUi
 from pytemplate.objects.table.column.css import TemplateCss
-from pytemplate.util.utils import InvalidSetting
+from pytemplate.util.exceptions import InvalidSetting
 
 class TemplateColumn( object ):
     def __init__( self, no_columns, table_name, **cfg ):

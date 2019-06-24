@@ -165,6 +165,9 @@ def generatePython( templates, config ):
     modules = []
     for cfg in config:
         backupDone = False
+        modulePath = os.path.join( config.python.source,
+                                   cfg.application,
+                                   cfg.name )
         for templ in templates:
             if pytemplate.util.utils.verbose:
                 print( 'template    : {0}'.format( templ ) )
@@ -187,9 +190,6 @@ def generatePython( templates, config ):
             if not os.path.isdir( config.python.source ):
                 os.makedirs( config.python.source )
 
-            modulePath = os.path.join( config.python.source,
-                                   cfg.application,
-                                   cfg.name )
             if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
                 raise pytemplate.util.utils.ModuleExistsAlready( cfg, modulePath )
 
@@ -225,6 +225,16 @@ def generatePython( templates, config ):
 
             if pytemplate.util.utils.verbose:
                 print( '' )
+
+        entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
+        if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
+            # use the template from 'common-py'
+            templateFolder  = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py' ) )
+            templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
+
+            with open( entryPointsFile, pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
+                for line in Template( filename = templateFile ).render( obj = cfg ).split( '\n' ):
+                    stream.write( line + '\n' )
 
     updatePythonProject( config, '' )
     return

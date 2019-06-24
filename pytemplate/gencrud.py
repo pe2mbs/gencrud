@@ -29,53 +29,55 @@ from pytemplate.configuraton import TemplateConfiguration
 from pytemplate.generators.python import generatePython
 from pytemplate.generators.angular import generateAngular
 from pytemplate.version import __version__, __author__, __email__, __copyright__
+from pytemplate.util.exceptions import ( InvalidEnvironment,
+                                         EnvironmentInvalidMissing,
+                                         MissingAngularEnvironment,
+                                         FlaskEnvironmentNotFound,
+                                         ModuleExistsAlready,
+                                         InvalidSetting )
 
 
 def verifyLoadProject( env, config ):
     if env == 'angular':
-        configFile = os.path.join( '..', '..', 'angular.json' )
-        root = config.angular
+        configFile  = os.path.join( '..', '..', 'angular.json' )
+        root        = config.angular
 
     elif env == 'python':
-        configFile = 'config.json'
+        configFile  = 'config.json'
         root = config.python
 
     else:
-        raise Exception( 'Invalid environment {0} in verifyLoadProject'.format( env ) )
+        raise InvalidEnvironment( env )
 
     if os.path.isdir( root.source ) and os.path.isfile( os.path.join( root.source, configFile ) ):
         with open( os.path.join( root.source, configFile ), pytemplate.util.utils.C_FILEMODE_READ ) as stream:
             data = json.load( stream )
 
         if data is None:
-            raise Exception( 'Error: {1} environment invalid, missing {0}'
-                         .format( os.path.join( config.angular.source, configFile ),
-                                  env ) )
+            raise EnvironmentInvalidMissing( env, root.source, configFile )
 
     else:
-        raise Exception( 'Error: {1} environment not found, missing {0}'
-                         .format( os.path.join( config.angular.source, configFile ),
-                                  env ) )
+        raise EnvironmentInvalidMissing( env, root.source, configFile )
 
     if env == 'angular':
         # Check if we have a valid Angular environment
         if 'defaultProject' in data and 'projects' in data:
             if data[ 'defaultProject' ] not in data[ 'projects' ]:
-                raise Exception( 'Error: Angular environment not found, missing {} projects'.format( data[ 'defaultProject' ] ) )
+                raise MissingAngularEnvironment( '{} projects'.format( data[ 'defaultProject' ] ) )
 
             else:
                 data = data[ 'projects' ][ data[ 'defaultProject' ] ]
 
         else:
-            raise Exception( 'Error: Angular environment not found, missing tag defaultProject' )
+            raise MissingAngularEnvironment( 'tag defaultProject' )
 
     elif env == 'python':
         # Check if we have a valid Python-Flask environment
         if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
-            raise Exception( 'Error: Python Flask environment not found' )
+            raise FlaskEnvironmentNotFound()
 
         if data[ 'COMMON' ][ 'API_MODULE' ] != config.objects[ 0 ].application:
-            raise Exception( 'Error: Not correct Python Flask environment not found' )
+            raise FlaskEnvironmentNotFound()
 
     return data
 
@@ -176,11 +178,11 @@ def main():
         for arg in args:
             doWork( arg )
 
-    except pytemplate.util.utils.ModuleExistsAlready as exc:
+    except ModuleExistsAlready as exc:
         print( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
         print( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
 
-    except pytemplate.util.utils.InvalidSetting as exc:
+    except InvalidSetting as exc:
         print( str( exc ) )
 
     except FileNotFoundError as exc:

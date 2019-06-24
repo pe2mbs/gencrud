@@ -28,8 +28,12 @@ import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatPaginator, MatSort } from '@angular/material';
 import { fromEvent } from 'rxjs';
 import { ${ obj.cls }Record } from './model';
+% if obj.actions.get( 'new' ).position != 'none' or obj.actions.get( 'edit' ).position != 'none':
 import { AddEdit${ obj.cls }Dialog } from './addedit.dialog';
+% endif
+% if obj.actions.get( 'delete' ).position != 'none':
 import { Delete${ obj.cls }Dialog } from './delete.dialog';
+% endif
 import { ${ obj.cls }DataService } from './service';
 import { ${ obj.cls }DataSource } from './datasource';
 % for field in obj.table.columns:
@@ -68,19 +72,20 @@ ${ obj.externalService } )
     @ViewChild( MatSort )       sort: MatSort;
     @ViewChild( 'filter' )      filter: ElementRef;
 
-    ngOnInit() 
+    public ngOnInit(): void
     {
         this.loadData();
         return;
     }
 
-    refresh() 
+    public refresh(): void
     {
         this.dataSource.connect();
         return;
     }
 
-    addNew() 
+% if obj.actions.get( 'new' ).position != 'none':
+    public addNew(): void
     {
         let record: ${ obj.cls }Record = new ${ obj.cls }Record;
         console.log( 'addNew ', record );
@@ -103,7 +108,9 @@ ${ obj.externalService } )
         return;
     }
 
-    startEdit( i: number, record: ${ obj.cls}Record )
+% endif
+% if obj.actions.get( 'edit' ).position != 'none':
+    public startEdit( i: number, record: ${ obj.cls}Record ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
@@ -137,7 +144,9 @@ ${ obj.externalService } )
         return;
     }
 
-    deleteItem( i: number, record: ${ obj.cls }Record )
+% endif
+% if obj.actions.get( 'delete' ).position != 'none':
+    public deleteItem( i: number, record: ${ obj.cls }Record ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
@@ -167,13 +176,14 @@ ${ obj.externalService } )
         return;
     }
 
-    private refreshTable() 
+% endif
+    private refreshTable(): void
     {
         this.paginator._changePageSize( this.paginator.pageSize );
         return;
     }
 
-    public loadData() 
+    public loadData(): void
     {
         this.dataSource = new ${ obj.cls }DataSource( this.dataService
                                                 , this.paginator

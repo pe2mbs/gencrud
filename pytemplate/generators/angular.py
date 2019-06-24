@@ -1,4 +1,3 @@
-import hashlib
 import json
 import os
 import shutil
@@ -7,6 +6,7 @@ from mako.template import Template
 import pytemplate.util.utils
 from pytemplate.generators.typescript_obj import TypeScript
 from pytemplate.util.positon import PositionInterface
+from pytemplate.util.sha import sha256sum
 
 LABEL_APP_ROUTES    = 'const appRoutes: Routes ='
 LABEL_NG_MODULE     = '@NgModule('
@@ -17,6 +17,7 @@ NG_IMPORTS          = 'imports'
 NG_PROVIDERS        = 'providers'
 NG_DECLARATIONS     = 'declarations'
 
+
 def makeAngularModule( root_path, *args ):
     if len( args ) > 0:
         modulePath = os.path.join( root_path, args[ 0 ] )
@@ -26,19 +27,6 @@ def makeAngularModule( root_path, *args ):
         makeAngularModule( modulePath, *args[ 1: ] )
 
     return
-
-def sha256sum( filename ):
-    # BUF_SIZE is totally arbitrary, change for your app!
-    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-    sha256 = hashlib.sha256()
-    with open( filename, 'rb' ) as f:
-        while True:
-            data = f.read( BUF_SIZE )
-            if not data:
-                break
-            sha256.update( data )
-
-    return sha256.hexdigest()
 
 
 def updateImportSection( lines, files ):
@@ -74,6 +62,7 @@ def updateImportSection( lines, files ):
 def updateAngularAppModuleTs( config, app_module, exportsModules ):
     if pytemplate.util.utils.verbose:
         print( config.angular.source )
+
     # File to edit 'app.module.ts'
     # inject the following;
     #   inport
@@ -86,7 +75,6 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
 
     pytemplate.util.utils.backupFile( os.path.join( config.angular.source, APP_MODULE ) )
     rangePos        = PositionInterface()
-
     sectionLines    = pytemplate.util.utils.searchSection( lines,
                                                            rangePos,
                                                            LABEL_NG_MODULE + '{',
@@ -204,6 +192,32 @@ def generateAngular( templates, config ):
 
         makeAngularModule( config.angular.source, cfg.application, cfg.name )
         for templ in templates:
+            templateFilename = os.path.join( config.angular.source,
+                                             cfg.application,
+                                             cfg.name,
+                                             pytemplate.util.utils.sourceName( templ ) )
+            if os.path.isfile( templateFilename ):
+                # First remove the old file
+                os.remove( templateFilename )
+
+            if 'dialog' in templ:
+                if 'addedit' in templ:
+                    if not ( cfg.actions.valid( 'new', 'dialog' ) or cfg.actions.valid( 'edit', 'dialog' ) ):
+                        continue
+
+                elif 'delete' in templ:
+                    if not cfg.actions.valid( 'delete', 'dialog' ):
+                        continue
+
+            elif 'screen' in templ:
+                if 'addedit' in templ:
+                    if not ( cfg.actions.valid( 'new', 'screen' ) or cfg.actions.valid( 'edit', 'screen' ) ):
+                        continue
+
+                elif 'delete' in templ:
+                    if not cfg.actions.valid( 'delete', 'screen' ):
+                        continue
+
             if pytemplate.util.utils.verbose:
                 print( 'template    : {0}'.format( templ ) )
                 print( 'application : {0}'.format( cfg.application ) )
@@ -222,9 +236,8 @@ def generateAngular( templates, config ):
                 print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
                 print( 'uri         : {0}'.format( cfg.uri ) )
 
-            with open( os.path.join( config.angular.source,
-                                     cfg.application,
-                                     cfg.name, pytemplate.util.utils.sourceName( templ ) ),
+
+            with open( templateFilename,
                        pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
 
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
@@ -264,12 +277,27 @@ def generateAngular( templates, config ):
             os.remove( app_module_json_file )
 
         exportsModules.append( { 'application':   app,
-                                         'modules':       mod,
-                                         'source':        source,
-                                         'export':        export } )
+                                 'modules':       mod,
+                                 'source':        source,
+                                 'export':        export } )
 
     with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
+
+    if pytemplate.util.utils.verbose:
+        print( 'exportsModules' )
+
+    for mod in exportsModules:
+        if pytemplate.util.utils.verbose:
+            print( mod )
+
+    if pytemplate.util.utils.verbose:
+        print( 'appModule' )
+
+    for mod in appModule:
+        if pytemplate.util.utils.verbose:
+            print( mod )
+
 
     updateAngularAppModuleTs( config, appModule, exportsModules )
     updateAngularAppRoutingModuleTs( config, appModule )

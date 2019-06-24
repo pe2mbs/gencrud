@@ -134,22 +134,3 @@ def check_nltk():
         download( 'punkt' )
 
     return
-
-
-class ModuleExistsAlready( Exception ):
-    def __init__( self, obj, path ):
-        self.__obj = obj
-        super( ModuleExistsAlready, self ).__init__( path )
-        return
-
-
-class InvalidSetting( Exception ):
-    def __init__( self, prop, entity, name ):
-        self.__property = prop
-        self.__entity   = entity
-        self.__name     = name
-        super( InvalidSetting, self ).__init__( '{prop} in {entity} with name {name} has an invalid value.'.format( prop = prop,
-                                                           entity = entity,
-                                                           name = name ) )
-        return
-

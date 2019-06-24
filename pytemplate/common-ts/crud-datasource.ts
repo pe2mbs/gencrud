@@ -103,4 +103,20 @@ export class CrudDataSource<T> extends DataSource<T>
             return (valueA < valueB ? -1 : 1) * ( this._sort.direction === 'asc' ? 1 : -1 );
         } );
     }
+
+    public resolveListItem( list: any, id: any ): string
+    {
+        let result: string;
+        console.log( 'resolveListItem', list, id );
+        list.forEach( function ( value )
+        {
+            console.log( value[ 'value' ], id );
+            if ( value[ 'value' ] === id )
+            {
+                result = value[ 'label' ];
+                return;
+            }
+        } );
+        return ( result );
+    }
 }

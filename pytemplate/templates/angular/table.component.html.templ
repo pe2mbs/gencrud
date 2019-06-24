@@ -36,7 +36,9 @@
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header>${ field.label }</mat-header-cell>
         <mat-cell *matCellDef="let row"
-                  (click)="startEdit( i, row )"
+% if obj.actions.getRowAction() is not None:
+                  (click)="${ obj.actions.getRowAction().function }"
+% endif
                   id='${ obj.cls }.${ field.name }'>
 % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
             {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
@@ -54,23 +56,15 @@
     <ng-container matColumnDef="actions">
         <!-- Header buttons -->
         <mat-header-cell *matHeaderCellDef>
-            <span class="spacer"></span>
-            <button mat-icon-button
-                    color="primary"
-                    (click)="addNew()"
-                    id="${ obj.cls }.add">
-                <mat-icon aria-label="Add a new record">add</mat-icon>
-            </button>
+% for action in obj.actions.getHeaderButtons():
+            ${ action.buttonObject() }
+% endfor
         </mat-header-cell>
         <!-- Row buttons -->
         <mat-cell *matCellDef="let row; let i=index;" >
-            <span class="spacer"></span>
-            <button mat-icon-button
-                    color="accent"
-                    (click)="deleteItem( i, row )"
-                    id='${ obj.cls }.delete'>
-                <mat-icon aria-label="Delete">delete</mat-icon>
-            </button>
+% for action in obj.actions.getCellButtons():
+            ${ action.buttonObject() }
+% endfor
         </mat-cell>
     </ng-container>
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
@@ -81,6 +75,11 @@
     No results
 </div>
 <div class="navigator-row">
+    <span>
+% for action in obj.actions.getFooterButtons():
+    ${ action.buttonObject() }
+% endfor
+    </span>
     <span class="spacer"></span>
     <span id="${ obj.cls }.paginator">
         <mat-paginator #paginator

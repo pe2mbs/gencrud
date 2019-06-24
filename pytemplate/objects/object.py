@@ -1,6 +1,8 @@
 from pytemplate.objects.menuitem import TemplateMenuItem
 from pytemplate.objects.table import TemplateTable
-from pytemplate.util.utils import InvalidSetting
+from pytemplate.objects.actions.actions import TemplateActions
+from pytemplate.util.exceptions import InvalidSetting
+
 
 class TemplateObject( object ):
     def __init__( self, **cfg ):
@@ -19,7 +21,9 @@ class TemplateObject( object ):
         else:
             self.__menuItem = None
 
-        self.__table        = TemplateTable( **cfg[ 'table' ] )
+        self.__actions      = TemplateActions( self.name,
+                                               self.__config.get( 'actions', [] ) )
+        self.__table        = TemplateTable( **self.__config.get( 'table', {} ) )
         return
 
     @property
@@ -39,20 +43,8 @@ class TemplateObject( object ):
         return self.__config.get( 'uri', '' )
 
     @property
-    def addedit( self ):
-        result = self.__config.get( 'addedit', 'dialog' )
-        if result not in ( 'dialog', 'screen', 'no', 'none' ):
-            raise InvalidSetting( 'edit', 'object', self.name )
-
-        return result
-
-    @property
-    def delete( self ):
-        result = self.__config.get( 'delete', 'dialog' )
-        if result not in ( 'dialog', 'screen', 'no', 'none' ):
-            raise InvalidSetting( 'edit', 'object', self.name )
-
-        return result
+    def actions( self ):
+        return self.__actions
 
     @property
     def menu( self ):

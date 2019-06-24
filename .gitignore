@@ -4,6 +4,8 @@
 # some working folders
 output/
 templates.old/
+test_prg/
+
 
 # general things to ignore
 build/
