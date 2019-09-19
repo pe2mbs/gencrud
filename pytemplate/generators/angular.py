@@ -202,20 +202,20 @@ def generateAngular( templates, config ):
 
             if 'dialog' in templ:
                 if 'addedit' in templ:
-                    if not ( cfg.actions.valid( 'new', 'dialog' ) or cfg.actions.valid( 'edit', 'dialog' ) ):
+                    if cfg.actions.valid( 'new', 'none' ) and cfg.actions.valid( 'edit', 'none' ):
                         continue
 
                 elif 'delete' in templ:
-                    if not cfg.actions.valid( 'delete', 'dialog' ):
+                    if cfg.actions.valid( 'delete', 'none' ):
                         continue
 
             elif 'screen' in templ:
                 if 'addedit' in templ:
-                    if not ( cfg.actions.valid( 'new', 'screen' ) or cfg.actions.valid( 'edit', 'screen' ) ):
+                    if cfg.actions.valid( 'new', 'none' ) and cfg.actions.valid( 'edit', 'none' ):
                         continue
 
                 elif 'delete' in templ:
-                    if not cfg.actions.valid( 'delete', 'screen' ):
+                    if cfg.actions.valid( 'delete', 'none' ):
                         continue
 
             if pytemplate.util.utils.verbose:
