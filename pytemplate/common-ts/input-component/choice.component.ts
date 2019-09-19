@@ -52,7 +52,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 export class PytChoiceInputComponent extends PytBaseComponent
 {
     @Input() items;
-
+    public selected: any;
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

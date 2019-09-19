@@ -76,13 +76,13 @@ class TemplateUi( object ):
         return self.uiObject.lower() == 'combobox' or self.uiObject.lower() == 'combo'
 
     def isDate( self ):
-        return self.uiObject.lower() == 'datepicker'
+        return self.uiObject.lower() == 'datepicker' or self.uiObject.lower() == 'date'
 
     def isDateTime( self ):
-        return self.uiObject.lower() == 'datetimepicker'
+        return self.uiObject.lower() == 'datetimepicker' or self.uiObject.lower() == 'datetime'
 
     def isTime( self ):
-        return self.uiObject.lower() == 'timepicker'
+        return self.uiObject.lower() == 'timepicker' or self.uiObject.lower() == 'time'
 
     def isLabel( self ):
         return self.uiObject.lower() == 'label'

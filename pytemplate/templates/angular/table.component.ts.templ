@@ -59,6 +59,8 @@ export class ${ obj.cls }TableComponent implements OnInit
     dataSource:       ${ obj.cls }DataSource  | null;
     index:            number;
     id:               number;
+    // The pageSize must be retrived from the user profile
+    public pageSize:  number = 25;
 
     constructor( public httpClient: HttpClient
                  , public dialog: MatDialog

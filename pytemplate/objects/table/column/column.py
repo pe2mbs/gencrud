@@ -286,6 +286,12 @@ class TemplateColumn( object ):
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
+    def isNumericField( self ):
+        return self.__sqlType in ( "INT", "BIGINT", "FLOAT", "REAL", "INTERVAL", "NUMERIC", "DECIMAL" )
+
+    def isBooleanField( self ):
+        return self.__sqlType in ( "BOOLEAN", "INT" )
+
     def sqlAlchemyDef( self ):
         '''
 
@@ -312,7 +318,19 @@ class TemplateColumn( object ):
                 result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
 
             elif attr.startswith( 'DEFAULT' ):
-                result += ', default = "{0}"'.format( attr.split( ' ' )[ 1 ] )
+                value = attr.split( ' ' )[ 1 ]
+                if self.isNumericField():
+                    result += ', default = {0}'.format( value )
+
+                elif self.isBooleanField():
+                    if value.lower() == ( "true", "1", "yes" ):
+                        result += ', default = True'
+
+                    else:
+                        result += ', default = False'
+
+                else:
+                    result += ', default = "{0}"'.format( value )
 
             else:
                 print( 'Extra unknown attributes found: {0}'.format( attr ),

@@ -32,9 +32,6 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
         <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
         <mat-hint *ngIf="hint != ''">{{ hint }}</mat-hint>
-        <mat-error *ngIf="error_message != ''">
-            {{ error_message }}
-        </mat-error>
     </mat-form-field>
 </div>`,
   styles: [ 'custom-input__input{ width: 100%; }',

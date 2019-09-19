@@ -46,6 +46,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytTextareaInputComponent extends PytBaseComponent
 {
+    public rows = 4;
+    public cols = 80;
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

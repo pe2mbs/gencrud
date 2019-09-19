@@ -37,7 +37,7 @@
                          mat-sort-header>${ field.label }</mat-header-cell>
         <mat-cell *matCellDef="let row"
 % if obj.actions.getRowAction() is not None:
-                  (click)="${ obj.actions.getRowAction().function }"
+                  (dblclick)="${ obj.actions.getRowAction().function }"
 % endif
                   id='${ obj.cls }.${ field.name }'>
 % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
@@ -46,6 +46,8 @@
  %if field.hasResolveList():
             {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
  % endif
+% elif field.ui.isDateTime() or field.ui.isDate() or field.ui.isTime():
+            {{ row.${ field.name } | date:'short' }}
 % else:
             {{ row.${ field.name } }}
 % endif
@@ -85,7 +87,7 @@
         <mat-paginator #paginator
                [length]="dataSource.filteredData.length"
                [pageIndex]="0"
-               [pageSize]="10"
+               [pageSize]="pageSize"
                [pageSizeOptions]="[5, 10, 25, 100]">
         </mat-paginator>
     </span>

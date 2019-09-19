@@ -91,7 +91,6 @@ export class CrudDataSource<T> extends DataSource<T>
         {
             return data;
         }
-
         return data.sort( ( a, b ) => {
             let propertyA: number | string = '';
             let propertyB: number | string = '';
@@ -107,10 +106,10 @@ export class CrudDataSource<T> extends DataSource<T>
     public resolveListItem( list: any, id: any ): string
     {
         let result: string;
-        console.log( 'resolveListItem', list, id );
+        // console.log( 'resolveListItem', list, id );
         list.forEach( function ( value )
         {
-            console.log( value[ 'value' ], id );
+            // console.log( value[ 'value' ], id );
             if ( value[ 'value' ] === id )
             {
                 result = value[ 'label' ];
