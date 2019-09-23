@@ -79,6 +79,16 @@ class TemplateActions( object ):
 
         return result
 
+    def invalid( self, name ):
+        for action in self.__actions:
+            if action.name == name:
+                if action.type == 'none':
+                    return True
+
+                return action.position == 'none'
+
+        return False
+
     def valid( self, name, _type ):
         for action in self.__actions:
             if action.name == name and action.type == _type:

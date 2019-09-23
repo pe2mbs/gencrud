@@ -1,5 +1,6 @@
 import sys
 from nltk.tokenize import word_tokenize
+import pytemplate.util.utils
 from pytemplate.objects.table.column.listview import TemplateListView
 from pytemplate.objects.table.column.relation import TemplateRelation
 from pytemplate.objects.table.column.ui import TemplateUi
@@ -97,7 +98,8 @@ class TemplateColumn( object ):
     @property
     def autoUpdate( self ):
         if 'autoupdate' in self.__config:
-            print( "AUTO UPDATE ", self.__config[ 'autoupdate' ] )
+            if pytemplate.util.utils.verbose:
+                print( "AUTO UPDATE ", self.__config[ 'autoupdate' ] )
             autoValue = self.__config[ 'autoupdate' ]
             if '(' in autoValue:
                 # Python callable
@@ -112,8 +114,9 @@ class TemplateColumn( object ):
             else:
                 # A scalar
                 pass
+            if pytemplate.util.utils.verbose:
+                print("AUTO UPDATE ", autoValue )
 
-            print("AUTO UPDATE ", autoValue )
             return autoValue
 
         return None

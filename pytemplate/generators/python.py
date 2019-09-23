@@ -5,6 +5,7 @@ import sys
 from mako.template import Template
 
 import pytemplate.util.utils
+import pytemplate.util.exceptions
 from pytemplate.util.positon import PositionInterface
 
 MENU_CHILDEREN_LABEL    = 'childeren'
@@ -191,7 +192,7 @@ def generatePython( templates, config ):
                 os.makedirs( config.python.source )
 
             if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
-                raise pytemplate.util.utils.ModuleExistsAlready( cfg, modulePath )
+                raise pytemplate.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
             makePythonModules( config.python.source, cfg.application, cfg.name )
 

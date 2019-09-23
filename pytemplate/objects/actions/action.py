@@ -37,7 +37,7 @@ class TemplateAction( object ):
     @property
     def position( self ):
         result = self.__cfg.get( 'position', 'cell' )
-        if result not in ( 'cell', 'header', 'footer', 'row' ):
+        if result not in ( 'cell', 'header', 'footer', 'row', 'none' ):
             raise InvalidSetting( 'position', 'action', self.name )
 
         return result
@@ -50,9 +50,8 @@ class TemplateAction( object ):
     def icon( self ):
         return self.__cfg.get( 'icon', '' )
 
-    @property
-    def position( self ):
-        return self.__cfg.get( 'position', 'row' )
+    def hasApiFunction( self ):
+        return 'function' in self.__cfg
 
     @property
     def function( self ):
@@ -66,6 +65,13 @@ class TemplateAction( object ):
     def uri( self ):
         return self.__cfg.get( 'uri', '' )
 
+    def isAngularRoute( self ):
+        return 'route' in self.__cfg
+
+    @property
+    def route( self ):
+        return self.__cfg.get( 'route', '' )
+
     @property
     def param( self ):
         return self.__cfg.get( 'param', [] )
@@ -74,13 +80,13 @@ class TemplateAction( object ):
         if self.type == 'none':
             return ''
 
-        button = 'mat-raised-button'
+        button_type = 'mat-raised-button'
         content = self.label
         if self.icon != '':
-            button = 'mat-icon-button'
+            button_type = 'mat-icon-button'
             content = '<mat-icon aria-label="{label}">{icon}</mat-icon>'.format( label = self.label,
                                                                                  icon = self.icon )
-        function = self.function
+        function = ''
         if self.function == '' and self.uri != '':
             params = []
             for key, value in self.param:
@@ -92,19 +98,22 @@ class TemplateAction( object ):
 
             function = "dataService.genericPut( '{uri}', '{param}' )".format( uri = self.uri,
                                                                    param = param )
-
-        button = '''<span class="spacer"></span>
-            <button {button}
-                    color="primary"
-                    (click)="{function}"
-                    id="{objname}.{name}">
-                {content}
-            </button>'''.format( button = button,
-                                 function = function,
-                                 objname = self.__name,
-                                 name = self.name,
-                                 content = content )
-
+        button = '<span class="spacer"></span>'
+        if function != '':
+            button += '''<button {button} color="primary" (click)="{function}" id="{objname}.{name}">{content}</button>'''.\
+                            format( button = button_type,
+                                     function = function,
+                                     objname = self.__name,
+                                     name = self.name,
+                                     content = content )
+        else:
+            button += '''<a {button} color="primary" href="#{route}" id="{objname}.{name}">{content}</a>'''.\
+                            format( button = button_type,
+                                            route = self.route,
+                                            objname = self.__name,
+                                            name = self.name,
+                                            content = content )
+            
         return button
 
 

@@ -183,9 +183,11 @@ def main():
         print( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
 
     except InvalidSetting as exc:
+        print( "Invalid setting" )
         print( str( exc ) )
 
     except FileNotFoundError as exc:
+        print( "File not found" )
         if exc.filename in args:
             print( "Input file '{0}' is not found.".format( exc.filename ), file = sys.stderr )
 
@@ -196,6 +198,7 @@ def main():
             print( exc, file = sys.stderr )
 
     except Exception as exc:
+        print( "Exception" )
         if pytemplate.util.utils.verbose:
             traceback.print_exc()
 

@@ -4,6 +4,7 @@ import shutil
 import sys
 from mako.template import Template
 import pytemplate.util.utils
+import pytemplate.util.exceptions
 from pytemplate.generators.typescript_obj import TypeScript
 from pytemplate.util.positon import PositionInterface
 from pytemplate.util.sha import sha256sum
@@ -188,7 +189,7 @@ def generateAngular( templates, config ):
     for cfg in config:
         modulePath = os.path.join( config.angular.source, cfg.application, cfg.name )
         if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
-            raise pytemplate.util.utils.ModuleExistsAlready( cfg, modulePath )
+            raise pytemplate.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
         makeAngularModule( config.angular.source, cfg.application, cfg.name )
         for templ in templates:
@@ -200,22 +201,15 @@ def generateAngular( templates, config ):
                 # First remove the old file
                 os.remove( templateFilename )
 
-            if 'dialog' in templ:
+            if 'dialog' in templ or 'screen' in templ:
                 if 'addedit' in templ:
-                    if cfg.actions.valid( 'new', 'none' ) and cfg.actions.valid( 'edit', 'none' ):
+                    if cfg.actions.invalid( 'new' ) and cfg.actions.invalid( 'edit' ):
+                        print( "No new/edit added to the dialog/screen" )
                         continue
 
                 elif 'delete' in templ:
-                    if cfg.actions.valid( 'delete', 'none' ):
-                        continue
-
-            elif 'screen' in templ:
-                if 'addedit' in templ:
-                    if cfg.actions.valid( 'new', 'none' ) and cfg.actions.valid( 'edit', 'none' ):
-                        continue
-
-                elif 'delete' in templ:
-                    if cfg.actions.valid( 'delete', 'none' ):
+                    if cfg.actions.invalid( 'delete' ):
+                        print( "No delete added to the dialog/screen" )
                         continue
 
             if pytemplate.util.utils.verbose:
@@ -236,16 +230,15 @@ def generateAngular( templates, config ):
                 print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
                 print( 'uri         : {0}'.format( cfg.uri ) )
 
-
             with open( templateFilename,
                        pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
 
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
                     if line.startswith( 'export ' ):
-                        modules.append( (cfg.application,
-                                         cfg.name,
-                                         pytemplate.util.utils.sourceName( templ ),
-                                         exportAndType( line ) ) )
+                        modules.append( ( cfg.application,
+                                          cfg.name,
+                                          pytemplate.util.utils.sourceName( templ ),
+                                          exportAndType( line ) ) )
 
                     stream.write( line )
                     if sys.platform.startswith( 'linux' ):

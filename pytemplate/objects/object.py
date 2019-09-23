@@ -21,6 +21,10 @@ class TemplateObject( object ):
         else:
             self.__menuItem = None
 
+        self.__actionWidth  = '5%'
+        if 'action-width' in cfg:
+            self.__actionWidth = cfg[ 'action-width' ]
+
         self.__actions      = TemplateActions( self.name,
                                                self.__config.get( 'actions', [] ) )
         self.__table        = TemplateTable( **self.__config.get( 'table', {} ) )
@@ -57,6 +61,10 @@ class TemplateObject( object ):
     @property
     def table( self ):
         return self.__table
+
+    @property
+    def actionWidth( self ):
+        return self.__actionWidth
 
     def orderBy( self ):
         orderList = []
