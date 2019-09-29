@@ -12,9 +12,10 @@ class InvalidSetting( Exception ):
         self.__property = prop
         self.__entity   = entity
         self.__name     = name
-        super( InvalidSetting, self ).__init__( '{prop} in {entity} with name {name} has an invalid value.'.format( prop = prop,
-                                                           entity = entity,
-                                                           name = name ) )
+        super( InvalidSetting, self ).__init__( '{prop} in {entity} with name {name} has an invalid value.'.format(
+            prop = prop,
+            entity = entity,
+            name = name ) )
         return
 
 

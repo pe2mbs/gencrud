@@ -1,12 +1,14 @@
 import json
 import os
 import sys
-
+import logging
 from mako.template import Template
 
 import pytemplate.util.utils
 import pytemplate.util.exceptions
 from pytemplate.util.positon import PositionInterface
+
+logger = logging.getLogger()
 
 MENU_CHILDEREN_LABEL    = 'childeren'
 MENU_DISPLAY_NAME       = 'displayName'
@@ -40,8 +42,7 @@ def makePythonModules( root_path, *args ):
 
 
 def updatePythonProject( config, app_module ):
-    if pytemplate.util.utils.verbose:
-        print( config.python.source )
+    logger.debug( config.python.source )
 
     lines = []
     filename = os.path.join( config.python.source, config.application, 'main.py' )
@@ -170,23 +171,22 @@ def generatePython( templates, config ):
                                    cfg.application,
                                    cfg.name )
         for templ in templates:
-            if pytemplate.util.utils.verbose:
-                print( 'template    : {0}'.format( templ ) )
-                print( 'application : {0}'.format( cfg.application ) )
-                print( 'name        : {0}'.format( cfg.name ) )
-                print( 'class       : {0}'.format( cfg.cls ) )
-                print( 'table       : {0}'.format( cfg.table.tableName ) )
-                for col in cfg.table.columns:
-                    print( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
+            logger.info( 'template    : {0}'.format( templ ) )
+            logger.info( 'application : {0}'.format( cfg.application ) )
+            logger.info( 'name        : {0}'.format( cfg.name ) )
+            logger.info( 'class       : {0}'.format( cfg.cls ) )
+            logger.info( 'table       : {0}'.format( cfg.table.tableName ) )
+            for col in cfg.table.columns:
+                logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
 
-                for imp in cfg.table.tsInports:
-                    print( '  {0}  {1}'.format( imp.module, imp.name ) )
+            for imp in cfg.table.tsInports:
+                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
 
-                for imp in cfg.table.pyInports:
-                    print( '  {0}  {1}'.format( imp.module, imp.name ) )
+            for imp in cfg.table.pyInports:
+                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
 
-                print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
-                print( 'uri         : {0}'.format( cfg.uri ) )
+            logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
+            logger.info( 'uri         : {0}'.format( cfg.uri ) )
 
             if not os.path.isdir( config.python.source ):
                 os.makedirs( config.python.source )
@@ -209,11 +209,9 @@ def generatePython( templates, config ):
                     lines = open( filename, pytemplate.util.utils.C_FILEMODE_READ ).readlines( )
 
                 except:
-                    print( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
+                    logger.error( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
 
-                if pytemplate.util.utils.verbose:
-                    print( lines, file = sys.stdout )
-
+                logger.info( lines )
                 pytemplate.util.utils.insertLinesUnique( lines,
                                                          PositionInterface( end = len( lines ) ),
                                                          importStr )
@@ -223,9 +221,6 @@ def generatePython( templates, config ):
                     backupDone = True
 
                 open( filename, pytemplate.util.utils.C_FILEMODE_WRITE ).writelines( lines )
-
-            if pytemplate.util.utils.verbose:
-                print( '' )
 
         entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
         if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):

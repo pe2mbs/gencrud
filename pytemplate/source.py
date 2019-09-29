@@ -1,7 +1,10 @@
 import os
+import logging
 import pytemplate.util.utils
 import pathlib
 from pytemplate.util.exceptions import MissingTemplate
+
+logger = logging.getLogger()
 
 
 class TemplateSource( object ):
@@ -16,9 +19,7 @@ class TemplateSource( object ):
         else:
             self.__template = os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'templates', type ) )
 
-        if pytemplate.util.utils.verbose:
-            print( 'Template folder: {0}'.format( self.__template ) )
-
+        logger.info( 'Template folder: {0}'.format( self.__template ) )
         cnt = 0
         for templ_file in os.listdir( self.__template ):
             if os.path.splitext( templ_file )[ 1 ] == '.templ':

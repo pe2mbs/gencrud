@@ -1,16 +1,19 @@
 import os
+import logging
 import shutil
 
 from pytemplate.util.positon import PositionInterface
 
 sslVerify       = True
-verbose         = False
 backupFiles     = False
 overWriteFiles  = False
+lowerCaseDbIds  = False
 
 C_FILEMODE_UPDATE = 'r+'
 C_FILEMODE_WRITE  = 'w'
 C_FILEMODE_READ   = 'r'
+
+logger = logging.getLogger()
 
 
 def backupFile( file_name ):
@@ -57,23 +60,20 @@ def findImportSection( lines ):
 
 def insertLinesUnique( lines, rangeObj, line ):
     found = False
-    if verbose:
-        print( "insertLinesUnique from line {} to line {}".format( rangeObj.start, rangeObj.end ) )
+    logger.debug( "insertLinesUnique from line {} to line {}".format( rangeObj.start, rangeObj.end ) )
 
     end = rangeObj.end
     if end + 1 < len( lines ):
         end += 1
 
     for idx in range( rangeObj.start, end ):
-        if verbose:
-            print( "Check line {} of {} => '{}'".format( idx, rangeObj.end, lines[ idx ].strip( '\r\n') ) )
+        logger.debug( "Check line {} of {} => '{}'".format( idx, rangeObj.end, lines[ idx ].strip( '\r\n') ) )
 
         if line in lines[ idx ].strip( '\n' ):
             found = True
 
     if not found:
-        if verbose:
-            print( 'inject files [{0}] @ {1}'.format( line, rangeObj.end ) )
+        logger.debug( 'inject files [{0}] @ {1}'.format( line, rangeObj.end ) )
 
         lines.insert( rangeObj.end+1, line + '\n' )
         rangeObj.end += 1

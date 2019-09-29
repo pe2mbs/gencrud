@@ -1,4 +1,8 @@
+import logging
 import json
+
+logger = logging.getLogger()
+
 
 class TemplateListView( object ):
     def __init__( self, parent, **cfg ):

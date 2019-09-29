@@ -30,6 +30,13 @@ objects:
       label:              Users
       ui:                 label
       inport:             User            ../../testrun/user/model
+    viewSort:
+      # This applies only to columns in the list view
+      field:              D_ROLE
+      order:              desc
+    viewSize:             25
+    # tsImport:           User            ../../testrun/user
+    # viewSize:           User
 - name:                   user
   class:                  User
   application:            testrun

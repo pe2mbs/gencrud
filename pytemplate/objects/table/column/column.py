@@ -1,4 +1,5 @@
 import sys
+import logging
 from nltk.tokenize import word_tokenize
 import pytemplate.util.utils
 from pytemplate.objects.table.column.listview import TemplateListView
@@ -6,6 +7,9 @@ from pytemplate.objects.table.column.relation import TemplateRelation
 from pytemplate.objects.table.column.ui import TemplateUi
 from pytemplate.objects.table.column.css import TemplateCss
 from pytemplate.util.exceptions import InvalidSetting
+
+logger = logging.getLogger()
+
 
 class TemplateColumn( object ):
     def __init__( self, no_columns, table_name, **cfg ):
@@ -25,17 +29,17 @@ class TemplateColumn( object ):
         self.__attrs        = []
         self.__ui           = None
         self.__leadIn       = []
-
+        self.__dbField      = ''
         if 'field' in cfg:
             tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
-            self.__field = tokens[ 0 ]
+            self.__dbField  = self.__field = tokens[ 0 ]
             self.__sqlType  = tokens[ 1 ]
             if self.__sqlType not in ( 'INT', 'BIGINT', 'CHAR', 'VARCHAR',
                                        'TEXT', 'CLOB',
                                        'BOOLEAN', 'DATE', 'TIME', 'TIMESTAMP',
                                        'FLOAT', 'REAL',  'INTERVAL', 'BLOB',
                                        'DECIMAL', 'NUMERIC' ):
-                raise InvalidSetting( 'field', 'column', self.__field )
+                raise InvalidSetting( 'field', self.__tableName, self.__field )
 
             offset = 2
             if offset < len( tokens ) and tokens[ offset ] == '(':
@@ -85,6 +89,13 @@ class TemplateColumn( object ):
 
             self.__relationShip = TemplateRelation( self, **self.__config.get( 'relationship', {} ) )
             self.__listview     = TemplateListView( self, **self.__config.get( 'listview', {} ) )
+
+        if pytemplate.util.utils.lowerCaseDbIds:
+            self.__dbField = self.__dbField.lower()
+
+        if 'index' in cfg:
+            logger.warning( "'index' in the 'field' defintion is OBSOLETE, use 'listview' -> 'index' in the 'field' definition." )
+
         return
 
     @property
@@ -98,8 +109,8 @@ class TemplateColumn( object ):
     @property
     def autoUpdate( self ):
         if 'autoupdate' in self.__config:
-            if pytemplate.util.utils.verbose:
-                print( "AUTO UPDATE ", self.__config[ 'autoupdate' ] )
+            logger.debug( "AUTO UPDATE ", self.__config[ 'autoupdate' ] )
+
             autoValue = self.__config[ 'autoupdate' ]
             if '(' in autoValue:
                 # Python callable
@@ -114,9 +125,8 @@ class TemplateColumn( object ):
             else:
                 # A scalar
                 pass
-            if pytemplate.util.utils.verbose:
-                print("AUTO UPDATE ", autoValue )
 
+            logger.debug("AUTO UPDATE ", autoValue )
             return autoValue
 
         return None
@@ -303,7 +313,7 @@ class TemplateColumn( object ):
         :return:
         '''
         result = ''
-        result = 'db.Column( {0}'.format( self.pType )
+        result = 'db.Column( "{}", {0}'.format( self.__dbField, self.pType )
         if self.__length != 0:
             result += '( {0} )'.format( self.__length )
 
@@ -336,8 +346,7 @@ class TemplateColumn( object ):
                     result += ', default = "{0}"'.format( value )
 
             else:
-                print( 'Extra unknown attributes found: {0}'.format( attr ),
-                       file = sys.stderr )
+                logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
 
             defValue = self.DefaultValue()
             if defValue is not None:

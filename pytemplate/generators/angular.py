@@ -2,12 +2,15 @@ import json
 import os
 import shutil
 import sys
+import logging
 from mako.template import Template
 import pytemplate.util.utils
 import pytemplate.util.exceptions
 from pytemplate.generators.typescript_obj import TypeScript
 from pytemplate.util.positon import PositionInterface
 from pytemplate.util.sha import sha256sum
+
+logger = logging.getLogger()
 
 LABEL_APP_ROUTES    = 'const appRoutes: Routes ='
 LABEL_NG_MODULE     = '@NgModule('
@@ -61,8 +64,7 @@ def updateImportSection( lines, files ):
 
 
 def updateAngularAppModuleTs( config, app_module, exportsModules ):
-    if pytemplate.util.utils.verbose:
-        print( config.angular.source )
+    logger.debug( config.angular.source )
 
     # File to edit 'app.module.ts'
     # inject the following;
@@ -106,8 +108,7 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     with open( os.path.join( config.angular.source, APP_MODULE ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
-            if pytemplate.util.utils.verbose:
-                print( line, end = '' )
+            logger.debug( line.strip( '\n' ) )
 
     return
 
@@ -120,11 +121,10 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
         lines = stream.readlines()
 
     pytemplate.util.utils.backupFile( os.path.join( config.angular.source, APP_ROUTING_MODULE ) )
-
     imports = []
     entries = []
     for cfg in config:
-        print( cfg.application, cfg.name, cfg.cls )
+        logger.info( "{} {} {}".format( cfg.application, cfg.name, cfg.cls ) )
         imports.append( "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
                                                                                                          app = cfg.application,
                                                                                                          mod = cfg.name ) )
@@ -148,8 +148,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     ts = TypeScript()
     appRoutes = ts.parse( ''.join( sectionLines ) )
     for entry in entries:
-        if pytemplate.util.utils.verbose:
-            print( entry )
+        logger.debug( entry )
 
         found = False
         for route in appRoutes:
@@ -160,9 +159,6 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
         if not found:
             appRoutes.insert( -1, entry )
 
-    if pytemplate.util.utils.verbose:
-        print( '' )
-
     buffer = LABEL_APP_ROUTES + ' ' + ts.build( appRoutes, 2 ) + ';'
     bufferLines = [ '{}\n'.format( x ) for x in buffer.split( '\n' ) ]
     pytemplate.util.utils.replaceInList( lines, rangePos, bufferLines )
@@ -171,8 +167,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     with open( os.path.join( config.angular.source, APP_ROUTING_MODULE ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
-            if pytemplate.util.utils.verbose:
-                print( line, end = '' )
+            logger.debug( line )
 
     return
 
@@ -204,31 +199,30 @@ def generateAngular( templates, config ):
             if 'dialog' in templ or 'screen' in templ:
                 if 'addedit' in templ:
                     if cfg.actions.invalid( 'new' ) and cfg.actions.invalid( 'edit' ):
-                        print( "No new/edit added to the dialog/screen" )
+                        logger.info( "No new/edit added to the dialog/screen" )
                         continue
 
                 elif 'delete' in templ:
                     if cfg.actions.invalid( 'delete' ):
-                        print( "No delete added to the dialog/screen" )
+                        logger.info( "No delete added to the dialog/screen" )
                         continue
 
-            if pytemplate.util.utils.verbose:
-                print( 'template    : {0}'.format( templ ) )
-                print( 'application : {0}'.format( cfg.application ) )
-                print( 'name        : {0}'.format( cfg.name ) )
-                print( 'class       : {0}'.format( cfg.cls ) )
-                print( 'table       : {0}'.format( cfg.table.name ) )
-                for col in cfg.table.columns:
-                    print( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
+            logger.info( 'template    : {0}'.format( templ ) )
+            logger.info( 'application : {0}'.format( cfg.application ) )
+            logger.info( 'name        : {0}'.format( cfg.name ) )
+            logger.info( 'class       : {0}'.format( cfg.cls ) )
+            logger.info( 'table       : {0}'.format( cfg.table.name ) )
+            for col in cfg.table.columns:
+                logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
 
-                for imp in cfg.table.tsInports:
-                    print( '  {0}  {1}'.format( imp.module, imp.name ) )
+            for imp in cfg.table.tsInports:
+                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
 
-                for imp in cfg.table.pyInports:
-                    print( '  {0}  {1}'.format( imp.module, imp.name ) )
+            for imp in cfg.table.pyInports:
+                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
 
-                print( 'primary key : {0}'.format( cfg.table.primaryKey ) )
-                print( 'uri         : {0}'.format( cfg.uri ) )
+            logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
+            logger.info( 'uri         : {0}'.format( cfg.uri ) )
 
             with open( templateFilename,
                        pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
@@ -244,9 +238,6 @@ def generateAngular( templates, config ):
                     if sys.platform.startswith( 'linux' ):
                         stream.write( '\n' )
 
-            if pytemplate.util.utils.verbose:
-                print( '' )
-
     appModule = None
     exportsModules = []
     for app, mod, source, export in modules:
@@ -258,7 +249,7 @@ def generateAngular( templates, config ):
                     data = json.load( stream )
 
                 except:
-                    print( "Error in file: {0}".format( app_module_json_file ) )
+                    logger.error( "Error in file: {0}".format( app_module_json_file ) )
                     raise
 
                 if appModule is None:
@@ -277,20 +268,15 @@ def generateAngular( templates, config ):
     with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
 
-    if pytemplate.util.utils.verbose:
-        print( 'exportsModules' )
+    logger.info( 'exportsModules' )
 
     for mod in exportsModules:
-        if pytemplate.util.utils.verbose:
-            print( mod )
+        logger.info( mod )
 
-    if pytemplate.util.utils.verbose:
-        print( 'appModule' )
 
+    logger.info( 'appModule' )
     for mod in appModule:
-        if pytemplate.util.utils.verbose:
-            print( mod )
-
+        logger.info( mod.strip( '\n' ) )
 
     updateAngularAppModuleTs( config, appModule, exportsModules )
     updateAngularAppRoutingModuleTs( config, appModule )
@@ -305,23 +291,21 @@ def copyAngularCommon( source, destination ):
     for filename in files:
         if not os.path.isfile( os.path.join( destination, filename ) ) and \
                os.path.isfile( os.path.join( source, filename ) ):
-            if pytemplate.util.utils.verbose:
-                print( "Copy new file {0} => {1}".format( os.path.join( source, filename ),
-                                                          os.path.join( destination, filename ) ) )
+            logger.debug( "Copy new file {0} => {1}".format( os.path.join( source, filename ),
+                                                      os.path.join( destination, filename ) ) )
             shutil.copy( os.path.join( source, filename ),
                          os.path.join( destination, filename ) )
 
         elif os.path.isfile( os.path.join( destination, filename ) ):
             if sha256sum( os.path.join( destination, filename ) ) != sha256sum( os.path.join( source, filename ) ):
                 # Hash differs, therefore replace the file
-                if pytemplate.util.utils.verbose:
-                    print( "Hash differs, therefore replace the file {0} => {1}".format( os.path.join( source, filename ),
+                logger.debug( "Hash differs, therefore replace the file {0} => {1}".format( os.path.join( source, filename ),
                                                                                      os.path.join( destination, filename ) ) )
                 shutil.copy( os.path.join( source, filename ),
                              os.path.join( destination, filename ) )
 
-            elif pytemplate.util.utils.verbose:
-                print( "{0} is the same {1}".format( os.path.join( source, filename ),
+            else:
+                logger.debug( "{0} is the same {1}".format( os.path.join( source, filename ),
                                                      os.path.join( destination, filename ) ) )
 
         elif os.path.isdir( os.path.join( destination, filename ) ):

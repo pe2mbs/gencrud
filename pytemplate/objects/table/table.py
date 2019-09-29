@@ -1,21 +1,65 @@
+import logging
 from pytemplate.objects.table._inports import SourceImport
 from pytemplate.objects.table.column import TemplateColumn
+import pytemplate.util.utils
+
+logger = logging.getLogger()
+
+
+class SortInfo( object ):
+    def __init__( self, data ):
+        self.__field    = data[ 'field' ]
+
+        # 'asc'
+        # 'desc'
+        # ''
+        if data[ 'order' ] in ( 'asc', 'desc', '' ):
+            self.__order    = data[ 'order' ]
+
+        else:
+            raise Exception( "Sorting order must be one of the following: 'asc', 'desc' or ''")
+
+        return
+
+    @property
+    def Field( self ):
+        return self.__field
+
+    @property
+    def Order( self ):
+        return self.__order
+
+    def AngularInject( self ):
+        return "this.sort.sort( ({ id: '{field}', start: '{order}' }) as MatSortable);".format( field = self.__field,
+                                                                                                order = self.__order )
 
 
 class TemplateTable( object ):
     def __init__( self, **table ):
-        self.__table        = table
-        self.__columns      = []
-        self.__primaryKey   = ''
-        self.__inports      = SourceImport()
-        noColumns           = len( self.__table[ 'columns' ] )
+        self.__table            = table
+        self.__columns          = []
+        self.__primaryKey       = ''
+        self.__viewSize         = None
+        self.__defaultViewSize  = 10
+        self.__inports          = SourceImport()
+        noColumns               = len( self.__table[ 'columns' ] )
         for col in self.__table[ 'columns' ]:
             column = TemplateColumn( noColumns,
-                                     self.__table[ 'name' ],
+                                     self.name,
                                      **col )
             self.__columns.append( column )
             if column.isPrimaryKey():
                 self.__primaryKey = column.name
+
+        if 'viewSort' in table:
+            self.__viewSize = SortInfo( table[ 'viewSort' ] )
+
+        if 'viewSize' in table:
+            if isinstance( table[ 'viewSize' ], ( int, str ) ):
+                self.__viewSize = table[ 'viewSize' ]
+
+            else:
+                raise Exception( "Invalid parameter 'defaultViewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
 
         if 'tsInport' in table:
             source = 'tsInport'
@@ -43,10 +87,16 @@ class TemplateTable( object ):
 
     @property
     def tableName( self ):
+        if pytemplate.util.utils.lowerCaseDbIds:
+            return self.__table.get( 'name', '' ).lower()
+
         return self.__table.get( 'name', '' )
 
     @property
     def name( self ):
+        if pytemplate.util.utils.lowerCaseDbIds:
+            return self.__table.get( 'name', '' ).lower()
+
         return self.__table.get( 'name', '' )
 
     @property
@@ -107,3 +157,16 @@ class TemplateTable( object ):
 
         return (' + \r\n                   '.join( result ))
 
+    @property
+    def viewSort( self ):
+        return self.__viewSize
+
+    def hasViewSizeService( self ):
+        return isinstance( self.__viewSize, str )
+
+    def hasViewSizeValue( self ):
+        return isinstance( self.__viewSize, int )
+
+    @property
+    def viewSize( self ):
+        return self.__viewSize

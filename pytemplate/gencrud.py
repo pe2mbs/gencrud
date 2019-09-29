@@ -24,6 +24,7 @@ import yaml
 import os
 import sys
 import traceback
+import logging
 import pytemplate.util.utils
 from pytemplate.configuraton import TemplateConfiguration
 from pytemplate.generators.python import generatePython
@@ -35,6 +36,8 @@ from pytemplate.util.exceptions import ( InvalidEnvironment,
                                          FlaskEnvironmentNotFound,
                                          ModuleExistsAlready,
                                          InvalidSetting )
+
+logger = logging.getLogger()
 
 
 def verifyLoadProject( env, config ):
@@ -88,15 +91,12 @@ def doWork( inputFile ):
 
     verifyLoadProject( 'angular', config )
     verifyLoadProject( 'python', config )
-
     generatePython( [ os.path.abspath( os.path.join( config.python.template, t ) )
                                    for t in os.listdir( config.python.template ) ],
                     config )
-
     generateAngular( [ os.path.abspath( os.path.join( config.angular.template, t ) )
                                     for t in os.listdir( config.angular.template ) ],
                      config )
-
     return
 
 
@@ -130,14 +130,17 @@ Options:
 
 
 def main():
+    FORMAT = '%(levelname)s %(message)s'
+    logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hi:s:obvV', [ 'help',
-                                                   'input=',
-                                                   'sslverify=',
-                                                   'overwrite',
-                                                   'backup'
-                                                   'version' ] )
+                                    'hi:s:obvVc', [ 'help',
+                                                    'input=',
+                                                    'sslverify=',
+                                                    'overwrite',
+                                                    'backup'
+                                                    'version',
+                                                    'case-insensitive-db-ids' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -147,7 +150,11 @@ def main():
     try:
         for o, a in opts:
             if o == '-v':
-                pytemplate.util.utils.verbose = True
+                if logger.level == logging.WARNING:
+                    logger.setLevel( logging.INFO )
+
+                else:
+                    logger.setLevel( logging.DEBUG )
 
             elif o in ( '-h', '--help' ):
                 usage()
@@ -155,6 +162,9 @@ def main():
 
             elif o in ( '-b', '--backup' ):
                 pytemplate.util.utils.backupFiles = True
+
+            elif o in ( '-c', '--case-insensitive-db-ids' ):
+                pytemplate.util.utils.lowerCaseDbIds = True
 
             elif o in ( '-o', '--overwrite' ):
                 pytemplate.util.utils.overWriteFiles = True
@@ -178,31 +188,29 @@ def main():
         for arg in args:
             doWork( arg )
 
+        print( "Done" )
+
     except ModuleExistsAlready as exc:
-        print( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
-        print( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
+        logger.error( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
+        logger.error( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
 
     except InvalidSetting as exc:
-        print( "Invalid setting" )
-        print( str( exc ) )
+        logger.error( "Invalid setting" )
+        logger.error( str( exc ) )
 
     except FileNotFoundError as exc:
-        print( "File not found" )
+        logger.error( "File not found" )
         if exc.filename in args:
-            print( "Input file '{0}' is not found.".format( exc.filename ), file = sys.stderr )
+            logger.error( "Input file '{0}' is not found.".format( exc.filename ), file = sys.stderr )
 
         else:
-            if pytemplate.util.utils.verbose:
-                traceback.print_exc()
-
-            print( exc, file = sys.stderr )
+            logger.debug( traceback.format_exc() )
+            logger.error( exc )
 
     except Exception as exc:
-        print( "Exception" )
-        if pytemplate.util.utils.verbose:
-            traceback.print_exc()
-
-        print( exc, file = sys.stderr )
+        logger.error( "Exception" )
+        logger.debug( traceback.format_exc() )
+        logger.error( exc )
 
     return
 
