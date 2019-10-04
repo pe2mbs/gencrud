@@ -39,6 +39,7 @@ class TemplateTable( object ):
         self.__table            = table
         self.__columns          = []
         self.__primaryKey       = ''
+        self.__viewSort         = None
         self.__viewSize         = None
         self.__defaultViewSize  = 10
         self.__inports          = SourceImport()
@@ -52,14 +53,14 @@ class TemplateTable( object ):
                 self.__primaryKey = column.name
 
         if 'viewSort' in table:
-            self.__viewSize = SortInfo( table[ 'viewSort' ] )
+            self.__viewSort = SortInfo( table[ 'viewSort' ] )
 
         if 'viewSize' in table:
             if isinstance( table[ 'viewSize' ], ( int, str ) ):
                 self.__viewSize = table[ 'viewSize' ]
 
             else:
-                raise Exception( "Invalid parameter 'defaultViewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
+                raise Exception( "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
 
         if 'tsInport' in table:
             source = 'tsInport'
@@ -159,7 +160,7 @@ class TemplateTable( object ):
 
     @property
     def viewSort( self ):
-        return self.__viewSize
+        return self.__viewSort
 
     def hasViewSizeService( self ):
         return isinstance( self.__viewSize, str )
