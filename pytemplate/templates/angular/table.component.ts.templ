@@ -69,7 +69,7 @@ export class ${ obj.cls }TableComponent implements OnInit
 % endif
 ${ obj.externalService } )
     {
-% if obj.table.viewSize is not None:
+% if obj.table.hasViewSizeValue:
         this.pageSize = ${ obj.table.viewSize }
 % endif
         return;
