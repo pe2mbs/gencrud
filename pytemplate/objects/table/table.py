@@ -162,12 +162,14 @@ class TemplateTable( object ):
     def viewSort( self ):
         return self.__viewSort
 
+    @property
     def hasViewSizeService( self ):
         if self.__viewSize is not None:
             return isinstance( self.__viewSize, str )
 
         return False
 
+    @property
     def hasViewSizeValue( self ):
         if self.__viewSize is not None:
             return isinstance( self.__viewSize, int )
