@@ -56,7 +56,7 @@ class TemplateTable( object ):
             self.__viewSort = SortInfo( table[ 'viewSort' ] )
 
         if 'viewSize' in table:
-            if isinstance( table[ 'viewSize' ], ( int, str ) ):
+            if type( table[ 'viewSize' ] ) in ( int, str ):
                 self.__viewSize = table[ 'viewSize' ]
 
             else:
@@ -165,14 +165,14 @@ class TemplateTable( object ):
     @property
     def hasViewSizeService( self ):
         if self.__viewSize is not None:
-            return isinstance( self.__viewSize, str )
+            return type( self.__viewSize ) is str
 
         return False
 
     @property
     def hasViewSizeValue( self ):
         if self.__viewSize is not None:
-            return isinstance( self.__viewSize, int )
+            return type( self.__viewSize ) is int
 
         return False
 
