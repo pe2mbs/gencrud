@@ -328,7 +328,11 @@ class TemplateColumn( object ):
                 result += ', nullable = False'
 
             elif attr.startswith( 'FOREIGN KEY' ):
-                result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
+                if pytemplate.util.utils.lowerCaseDbIds:
+                    result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ].lower() )
+
+                else:
+                    result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
 
             elif attr.startswith( 'DEFAULT' ):
                 value = attr.split( ' ' )[ 1 ]

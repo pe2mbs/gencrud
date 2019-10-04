@@ -1,1 +1,3 @@
 - dynamic viewSize
+- screen design
+- click to Angular Component with parameters 
