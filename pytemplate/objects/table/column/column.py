@@ -313,7 +313,7 @@ class TemplateColumn( object ):
         :return:
         '''
         result = ''
-        result = 'db.Column( "{}", {0}'.format( self.__dbField, self.pType )
+        result = 'db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
         if self.__length != 0:
             result += '( {0} )'.format( self.__length )
 
