@@ -191,8 +191,8 @@ def main():
         print( "Done" )
 
     except ModuleExistsAlready as exc:
-        logger.error( 'Module already exists: {}'.format( str( exc ) ), file = sys.stderr )
-        logger.error( 'You can use the --overwrite option to avoid this error.', file = sys.stderr )
+        logger.error( 'Module already exists: {}'.format( str( exc ) ) )
+        logger.error( 'You can use the --overwrite option to avoid this error.' )
 
     except InvalidSetting as exc:
         logger.error( "Invalid setting" )
@@ -201,7 +201,7 @@ def main():
     except FileNotFoundError as exc:
         logger.error( "File not found" )
         if exc.filename in args:
-            logger.error( "Input file '{0}' is not found.".format( exc.filename ), file = sys.stderr )
+            logger.error( "Input file '{0}' is not found.".format( exc.filename ) )
 
         else:
             logger.debug( traceback.format_exc() )

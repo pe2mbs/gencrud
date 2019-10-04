@@ -349,6 +349,9 @@ class TemplateColumn( object ):
                 else:
                     result += ', default = "{0}"'.format( value )
 
+            elif attr.startswith( 'NULL' ):
+                result += ', nullable = True'
+
             else:
                 logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
 

@@ -35,6 +35,11 @@ class TemplateListView( object ):
           value:          false
         - label:          Enabled
           value:          true
+        OR
+        - label:          Disabled
+          value:          0
+        - label:          Enabled      
+          value:          1
         '''
         if isinstance( resolveList[ 0 ], dict ):
             result = {}
