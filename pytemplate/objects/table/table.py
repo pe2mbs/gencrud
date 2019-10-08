@@ -33,6 +33,48 @@ class SortInfo( object ):
         return "this.sort.sort( ({ id: '{field}', start: '{order}' }) as MatSortable);".format( field = self.__field,
                                                                                                 order = self.__order )
 
+class PythonObject( object ):
+    def __init__( self, obj ):
+        self.__object   = obj
+        self.__module   = None
+        self.__class    = None
+        if obj is not None and '.' in obj:
+            self.__module, self.__class = obj.splitr( '.', 1 )
+
+        return
+
+    @property
+    def Available( self ):
+        return self.__object is not None
+
+    @property
+    def Class( self ):
+        return self.__class
+
+    @property
+    def Module( self ):
+        return self.__module
+
+
+class TemplateMixin( object ):
+    def __init__( self, mixin ):
+        self.__model    = PythonObject( mixin[ 'model' ] if 'model' in mixin else None )
+        self.__schema   = PythonObject( mixin[ 'schema' ] if 'schema' in mixin else None )
+        self.__view     = PythonObject( mixin[ 'view' ] if 'view' in mixin else None )
+        return
+
+    @property
+    def Model( self ):
+        return self.__model
+
+    @property
+    def Schema( self ):
+        return self.__schema
+
+    @property
+    def View( self ):
+        return self.__view
+
 
 class TemplateTable( object ):
     def __init__( self, **table ):
@@ -62,6 +104,9 @@ class TemplateTable( object ):
             else:
                 raise Exception( "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
 
+        if 'mixin' in table:
+            self.__mixin = TemplateMixin( table[ 'mixin' ] )
+
         if 'tsInport' in table:
             source = 'tsInport'
 
@@ -75,6 +120,10 @@ class TemplateTable( object ):
         return
 
     @property
+    def Mixin( self ):
+        return self.__mixin
+
+    @property
     def leadIn( self ):
         result = []
         for column in self.__columns:
@@ -83,8 +132,6 @@ class TemplateTable( object ):
                     result.append( leadin )
 
         return '\n'.join( result )
-
-    # TODO: Add 'unique-key' property to YAML
 
     @property
     def tableName( self ):

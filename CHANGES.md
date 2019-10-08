@@ -60,5 +60,9 @@
     - Added the field identifier to the python model.
     - Adding option to select lowercase datebase identifiers.  
     - Version bump to 1.1  
-      
-              
+    
+1.2.186     08-10-2019      Marc Bertens-Nguyen
+    - Adding mixin for model and is implemented in model.py
+    - Adding mixin for schema, but needs implemented in schema.py       
+    - Adding mixin for view, but needs implemented in view.py
+    - Version bump to 1.2
