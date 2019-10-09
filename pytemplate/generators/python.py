@@ -222,15 +222,15 @@ def generatePython( templates, config ):
 
                 open( filename, pytemplate.util.utils.C_FILEMODE_WRITE ).writelines( lines )
 
-        entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
-        if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
-            # use the template from 'common-py'
-            templateFolder  = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py' ) )
-            templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
-
-            with open( entryPointsFile, pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
-                for line in Template( filename = templateFile ).render( obj = cfg ).split( '\n' ):
-                    stream.write( line + '\n' )
+        # entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
+        # if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
+        #     # use the template from 'common-py'
+        #     templateFolder  = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py' ) )
+        #     templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
+        #
+        #     with open( entryPointsFile, pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
+        #         for line in Template( filename = templateFile ).render( obj = cfg ).split( '\n' ):
+        #             stream.write( line + '\n' )
 
     updatePythonProject( config, '' )
     return

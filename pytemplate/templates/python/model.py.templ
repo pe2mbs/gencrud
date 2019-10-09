@@ -58,6 +58,7 @@ class ${obj.cls}( db.Model
  % endfor
 % endif
 
+% if obj.table.hasAutoUpdate:
 # standard decorator style
 @event.listens_for(  ${obj.cls}, 'before_update')
 def receive_before_commit( mapper, connection, record ):
@@ -67,3 +68,4 @@ def receive_before_commit( mapper, connection, record ):
 % endif
 % endfor
     return
+% endif

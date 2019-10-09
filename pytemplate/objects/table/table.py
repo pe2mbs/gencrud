@@ -170,6 +170,14 @@ class TemplateTable( object ):
         return False
 
     @property
+    def hasAutoUpdate( self ):
+        for field in self.__columns:
+            if field.hasAutoUpdate:
+                return True
+
+        return False
+
+    @property
     def columns( self ):
         return self.__columns
 
