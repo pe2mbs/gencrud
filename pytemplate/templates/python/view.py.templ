@@ -31,14 +31,9 @@ from ${ obj.application }.common import fieldConversion
 % if obj.table.Mixin.View.Available:
 from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
 % endif
-try:
-    from ${ obj.application }.${ obj.name }.entry_points import ${ obj.name }EntryPointApi
 
-except:
-    ${ obj.name }EntryPointApi = None
 
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
-
 logger = logging.getLogger()
 
 
@@ -56,10 +51,6 @@ def registerApi( app, cors ):
     logger.info( 'Registering ${ obj.cls } view mixin' )
     app.register_blueprint( ${obj.table.Mixin.View.Class} )
 % endif
-    if ${ obj.name }EntryPointApi is not None:
-        logger.info( 'Registering ${ obj.cls } entry points' )
-        app.register_blueprint( ${ obj.name }EntryPointApi )
-
     return
 
 
