@@ -29,9 +29,12 @@ class SortInfo( object ):
     def Order( self ):
         return self.__order
 
+    def injectAngular( self ):
+        return self.AngularInject()
+
     def AngularInject( self ):
-        return "this.sort.sort( ({ id: '{field}', start: '{order}' }) as MatSortable);".format( field = self.__field,
-                                                                                                order = self.__order )
+        return "this.sort.sort( {{ id: '{field}', start: '{order}' }} as MatSortable );".format( field = self.__field,
+                                                                                                 order = self.__order )
 
 class PythonObject( object ):
     def __init__( self, obj ):
@@ -39,7 +42,7 @@ class PythonObject( object ):
         self.__module   = None
         self.__class    = None
         if obj is not None and '.' in obj:
-            self.__module, self.__class = obj.splitr( '.', 1 )
+            self.__module, self.__class = obj.rsplit( '.', 1 )
 
         return
 
@@ -58,9 +61,9 @@ class PythonObject( object ):
 
 class TemplateMixin( object ):
     def __init__( self, mixin ):
-        self.__model    = PythonObject( mixin[ 'model' ] if 'model' in mixin else None )
-        self.__schema   = PythonObject( mixin[ 'schema' ] if 'schema' in mixin else None )
-        self.__view     = PythonObject( mixin[ 'view' ] if 'view' in mixin else None )
+        self.__model    = PythonObject( mixin[ 'model' ] if mixin is not None and 'model' in mixin else None )
+        self.__schema   = PythonObject( mixin[ 'schema' ] if mixin is not None and 'schema' in mixin else None )
+        self.__view     = PythonObject( mixin[ 'view' ] if mixin is not None and 'view' in mixin else None )
         return
 
     @property
@@ -104,8 +107,7 @@ class TemplateTable( object ):
             else:
                 raise Exception( "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
 
-        if 'mixin' in table:
-            self.__mixin = TemplateMixin( table[ 'mixin' ] )
+        self.__mixin = TemplateMixin( table[ 'mixin' ] if 'mixin' in table else None )
 
         if 'tsInport' in table:
             source = 'tsInport'
