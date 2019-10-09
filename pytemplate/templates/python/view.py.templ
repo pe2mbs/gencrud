@@ -28,6 +28,9 @@ from ${ obj.application }.common import fieldConversion
 from ${ obj.application }.${ obj.name }.model import ${ obj.cls }
 from ${ obj.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
 from ${ obj.application }.common import fieldConversion
+% if obj.table.Mixin.View.Available:
+from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
+% endif
 try:
     from ${ obj.application }.${ obj.name }.entry_points import ${ obj.name }EntryPointApi
 
@@ -49,6 +52,10 @@ def registerApi( app, cors ):
 
     logger.info( 'Register ${ obj.cls } routes' )
     app.register_blueprint( ${ obj.name }Api )
+% if obj.table.Mixin.View.Available:
+    logger.info( 'Registering ${ obj.cls } view mixin' )
+    app.register_blueprint( ${obj.table.Mixin.View.Class} )
+% endif
     if ${ obj.name }EntryPointApi is not None:
         logger.info( 'Registering ${ obj.cls } entry points' )
         app.register_blueprint( ${ obj.name }EntryPointApi )
