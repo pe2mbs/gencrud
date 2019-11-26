@@ -118,13 +118,14 @@ Parameters:
 
 
 Options:
-    -h / --help         This help information.
-    -b / --backup       Make backup of the orginal project files files.
-    -o / --overwrite    Force overwriting the files.
-    -s / --sslverify    Disable the verification of ssl certificate when
-                        retrieving some external profile data.
-    -v                  Verbose option, prints what the tool is doing.
-    -V / --version      Print the version of the tool.
+    -h / --help                         This help information.
+    -b / --backup                       Make backup of the orginal project files files.
+    -o / --overwrite                    Force overwriting the files.
+    -c / --case-insensitive-db-ids      All database names shall be in lower case. 
+    -s / --sslverify                    Disable the verification of ssl certificate when    
+                                        retrieving some external profile data.
+    -v                                  Verbose option, prints what the tool is doing.
+    -V / --version                      Print the version of the tool.
 ''' )
     return
 

@@ -9,6 +9,7 @@ class TemplateObject( object ):
         self.__config       = cfg
         self.__columns      = []
         self.__primaryKey   = ''
+        self.__title        = None
         if 'menu' in cfg:
             self.__menuRoot = TemplateMenuItem( 'menu', **cfg )
 
@@ -29,6 +30,10 @@ class TemplateObject( object ):
                                                self.__config.get( 'actions', [] ) )
         self.__table        = TemplateTable( **self.__config.get( 'table', {} ) )
         return
+
+    @property
+    def title( self ):
+        return self.__config.get( 'title', self.__config.get( 'class', '<-Unknown->' ) )
 
     @property
     def application( self ):
@@ -79,10 +84,17 @@ class TemplateObject( object ):
         FILLER_LF = '\r\n                 , '
         result = []
         for field in self.__table.columns:
-            if field.ui is not None and ( field.ui.isCombobox() or field.ui.isChoice() ):
-                result.append( 'public {name}Service: {cls}'.format(
-                                name = field.ui.service.name,
-                                cls = field.ui.service.cls ) )
+            if field.ui is not None:
+                if field.ui.isCombobox() or field.ui.isChoice():
+                    if field.ui.service is not None:
+                        result.append( 'public {name}Service: {cls}'.format(
+                                        name = field.ui.service.name,
+                                        cls = field.ui.service.cls ) )
+                    elif field.ui.hasResolveList():
+                        pass
+
+                    else:
+                        raise Exception( "service missing in {} in field {}".format( self.__table.name, field.name )  )
 
         return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
 

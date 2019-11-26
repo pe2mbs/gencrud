@@ -85,7 +85,7 @@ class TemplateColumn( object ):
 
             self.__css = TemplateCss( no_columns, **self.__config.get( 'css', {} ) )
             if 'ui' in cfg and type( cfg[ 'ui' ] ) is dict:
-                self.__ui = TemplateUi( **cfg.get( 'ui', {} ) )
+                self.__ui = TemplateUi( self, **cfg.get( 'ui', {} ) )
 
             self.__relationShip = TemplateRelation( self, **self.__config.get( 'relationship', {} ) )
             self.__listview     = TemplateListView( self, **self.__config.get( 'listview', {} ) )
@@ -109,7 +109,7 @@ class TemplateColumn( object ):
     @property
     def autoUpdate( self ):
         if 'autoupdate' in self.__config:
-            logger.debug( "AUTO UPDATE ", self.__config[ 'autoupdate' ] )
+            logger.debug( "AUTO UPDATE {}".format( self.__config[ 'autoupdate' ] ) )
 
             autoValue = self.__config[ 'autoupdate' ]
             if '(' in autoValue:
@@ -126,7 +126,7 @@ class TemplateColumn( object ):
                 # A scalar
                 pass
 
-            logger.debug("AUTO UPDATE ", autoValue )
+            logger.debug("AUTO UPDATE {}".format( autoValue ) )
             return autoValue
 
         return None
@@ -136,7 +136,7 @@ class TemplateColumn( object ):
         return self.__listview
 
     def hasResolveList( self ):
-        return self.__listview.hasResolveList()
+        return self.__ui.hasResolveList()
 
     @property
     def tableName( self ):
@@ -210,6 +210,7 @@ class TemplateColumn( object ):
             Float               = FLOAT or REAL.
             Integer             = INT
             Interval            = INTERVAL
+            CLOB
             LargeBinary         = BLOB or BYTEA
             MatchType
             Numeric             = NUMERIC or DECIMAL.
@@ -313,7 +314,12 @@ class TemplateColumn( object ):
         :return:
         '''
         result = ''
-        result = 'db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
+        if pytemplate.util.utils.lowerCaseDbIds:
+            result = 'db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
+
+        else:
+            result = 'db.Column( {0}'.format( self.pType )
+
         if self.__length != 0:
             result += '( {0} )'.format( self.__length )
 

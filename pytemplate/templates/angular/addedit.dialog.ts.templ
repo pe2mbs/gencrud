@@ -38,7 +38,9 @@ import { PytSelectList } from '../../common/crud-dataservice';
 % endfor
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+   % if field.ui.service is not None:
 import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
+   % endif
  % endif
 % endfor
 
@@ -54,8 +56,12 @@ export class AddEdit${ obj.cls }Dialog extends BaseDialog
  % if field.ui is not None:
   % if field.ui.isPassword():
     public hide_${ field.name }: boolean  = true;
-  % elif field.ui.isChoice() or field.ui.isCombobox():
-    public ${ field.ui.service.name }List: PytSelectList[];
+  % elif field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+    % if field.ui.service is not None:
+      public ${ field.ui.service.name }List: PytSelectList[];
+    % elif field.ui.hasResolveList():
+      public ${ field.name }List = ${ field.ui.typescriptResolveList() }
+    % endif
   % endif
  % endif
 % endfor
@@ -78,10 +84,12 @@ ${ obj.externalService } )
         } );
 % for field in obj.table.columns:
   % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+    % if field.ui.service is not None:
         ${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( dataList => {
             console.log( '${ field.ui.service.name }Service.getSelectList => ', dataList );
             this.${ field.ui.service.name }List = dataList;
         } );
+    % endif
  % endif
 % endfor
         return;

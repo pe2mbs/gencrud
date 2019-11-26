@@ -23,35 +23,3 @@ class TemplateListView( object ):
             return self.__parent.index
 
         return self.__cfg.get( 'index', None )
-
-    def hasResolveList( self ):
-        return 'resolve-list' in self.__cfg
-
-    @property
-    def resolveList( self ):
-        resolveList = self.__cfg.get( 'resolve-list', {} )
-        '''
-        - label:          Disabled
-          value:          false
-        - label:          Enabled
-          value:          true
-        OR
-        - label:          Disabled
-          value:          0
-        - label:          Enabled      
-          value:          1
-        '''
-        if isinstance( resolveList[ 0 ], dict ):
-            result = {}
-
-        else:
-            result = []
-
-        for item in resolveList:
-            if isinstance( item, dict ):
-                result[ item[ 'value' ] ] = item[ 'label' ]
-
-            else:
-                result.append( item )
-
-        return json.dumps( result ).replace( "'", "\'" ).replace( '"', "'" )

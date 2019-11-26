@@ -1,8 +1,9 @@
-
+import json
 from pytemplate.objects.table.column.service import TemplateService
 
 class TemplateUi( object ):
-    def __init__( self, **cfg ):
+    def __init__( self, parent, **cfg ):
+        self.__parent   = parent
         self.__cfg = cfg
         if 'service' in cfg:
             self.__service = TemplateService( **cfg[ 'service' ] )
@@ -130,7 +131,11 @@ class TemplateUi( object ):
             options.append( 'suffix="{0}" prefix-type="{1}"'.format( self.suffix, self.suffixType ) )
 
         if self.isCombobox() or self.isChoice():
-            options.append( '[items]="{}List"'.format( self.__service.name ) )
+            if self.__service is None:
+                options.append( '[items]="{}List"'.format( self.__parent.name ) )
+
+            else:
+                options.append( '[items]="{}List"'.format( self.__service.name ) )
 
         elif self.isTextArea():
             options.append( 'rows="{0}" cols="{1}"'.format( self.rows, self.cols ) )
@@ -210,3 +215,40 @@ class TemplateUi( object ):
     @property
     def error( self ):
         return str( self.__cfg.get( 'error', True ) ).lower()
+
+    def hasResolveList( self ):
+        return 'resolve-list' in self.__cfg
+
+    def typescriptResolveList( self ):
+        resolveList = self.__cfg.get( 'resolve-list', [] )
+        result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
+        return "[ {} ]".format( ", ".join( result ) )
+
+    @property
+    def resolveList( self ):
+        resolveList = self.__cfg.get( 'resolve-list', [] )
+        '''
+        - label:          Disabled
+          value:          false
+        - label:          Enabled
+          value:          true
+        OR
+        - label:          Disabled
+          value:          0
+        - label:          Enabled      
+          value:          1
+        '''
+        if isinstance( resolveList[ 0 ], dict ):
+            result = {}
+
+        else:
+            result = []
+
+        for item in resolveList:
+            if isinstance( item, dict ):
+                result[ item[ 'value' ] ] = item[ 'label' ]
+
+            else:
+                result.append( item )
+
+        return json.dumps( result ).replace( "'", "\'" ).replace( '"', "'" )

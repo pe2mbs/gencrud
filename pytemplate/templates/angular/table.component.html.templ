@@ -23,9 +23,10 @@
 *   the table from the configuration.
 *
 -->
+<h2>${ obj.title }</h2>
 <div class="form">
     <mat-form-field floatPlaceholder="never" color="accent">
-        <input matInput #filter placeholder="Filter ${ obj.name }">
+        <input matInput #filter placeholder="Filter ${ obj.title }">
     </mat-form-field>
 </div>
 <mat-table #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell">

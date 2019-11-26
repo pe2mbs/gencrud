@@ -4,6 +4,7 @@ import shutil
 import sys
 import logging
 from mako.template import Template
+from mako import exceptions
 import pytemplate.util.utils
 import pytemplate.util.exceptions
 from pytemplate.generators.typescript_obj import TypeScript
@@ -108,7 +109,7 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     with open( os.path.join( config.angular.source, APP_MODULE ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
-            logger.debug( line.strip( '\n' ) )
+            logger.debug( line.replace( '\n', '' ) )
 
     return
 
@@ -167,7 +168,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     with open( os.path.join( config.angular.source, APP_ROUTING_MODULE ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
-            logger.debug( line )
+            logger.debug( line.replace( '\n', '' ) )
 
     return
 
@@ -226,17 +227,30 @@ def generateAngular( templates, config ):
 
             with open( templateFilename,
                        pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
+                def errorHandler( context, error, *args, **kwargs ):
+                    print( context )
+                    print( error )
+                    print( args )
+                    print( kwargs )
+                    return
+                try:
+                    for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
+                        if line.startswith( 'export ' ):
+                            modules.append( ( cfg.application,
+                                              cfg.name,
+                                              pytemplate.util.utils.sourceName( templ ),
+                                              exportAndType( line ) ) )
 
-                for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
-                    if line.startswith( 'export ' ):
-                        modules.append( ( cfg.application,
-                                          cfg.name,
-                                          pytemplate.util.utils.sourceName( templ ),
-                                          exportAndType( line ) ) )
+                        stream.write( line )
+                        if sys.platform.startswith( 'linux' ):
+                            stream.write( '\n' )
 
-                    stream.write( line )
-                    if sys.platform.startswith( 'linux' ):
-                        stream.write( '\n' )
+                except Exception as exc:
+                    print( "Mako exception:" )
+                    for line in exceptions.text_error_template().render_unicode().encode('ascii').split(b'\n'):
+                        print( line )
+                    print( "Mako done" )
+                    raise
 
     appModule = None
     exportsModules = []

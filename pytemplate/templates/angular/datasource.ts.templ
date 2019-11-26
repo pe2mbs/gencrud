@@ -30,7 +30,9 @@ import { MatPaginator, MatSort } from '@angular/material';
 import { ${ obj.cls }Record } from './model';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+   % if field.ui.service is not None:
 import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
+   % endif
  % endif
 % endfor
 
@@ -51,9 +53,11 @@ ${ obj.externalService } )
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
         this.${ field.name }_List = new Array<PytSelectList>();
+   % if field.ui.service is not None:
         this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( data => {
             this.${ field.name }_List = data
         } );
+   % endif
  % endif
 % endfor
         return;
@@ -90,7 +94,7 @@ ${ obj.externalService } )
  % elif field.ui is not None and field.hasResolveList():
     public ${ field.name }_Label( id )
     {
-        let values = ${ field.listview.resolveList }
+        let values = ${ field.ui.resolveList }
         return ( values[ id ] );
     }
 

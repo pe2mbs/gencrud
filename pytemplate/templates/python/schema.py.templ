@@ -34,7 +34,7 @@ from ${ obj.application }.${ field.relationship.name }.schema import ${ field.re
 
 
 class ${ obj.cls }Schema( mm.ModelSchema
-% if obj.table.Mixin.Model.Available:
+% if obj.table.Mixin.Schema.Available:
                 , ${obj.table.Mixin.Schema.Class}
 % endif
                         ):
