@@ -2,3 +2,4 @@
 -   screen design
 -   click to Angular Component with parameters 
 -   support for Mixin classes 
+-   support for tabs with angular components

@@ -17,6 +17,16 @@ objects:
     index:                2
   table:
     name:                 WA_TESTER
+    mixin:
+      model:
+        python:           test/user_model.py
+        class:            UserModelMixin
+      schema:
+        python:           test/user_schema.py
+        class:            UserSchemaMixin
+      view:
+        python:           test/user_view.py
+        class:            UserViewMixin
     columns:
     - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification

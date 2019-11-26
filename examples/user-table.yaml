@@ -167,3 +167,10 @@ objects:
         interval:         1
         step:             1
         thumbLabel:       true
+  tabs:
+  - caption:              Test runs
+    component:            tr
+  - caption:              Test plans
+    component:            tp
+  - caption:              Test cases
+    component:            tc
