@@ -245,7 +245,7 @@ class TemplateUi( object ):
     def typescriptResolveList( self ):
         resolveList = self.__cfg.get( 'resolve-list', [] )
         result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
-        return "[ {} ]".format( ", ".join( result ) )
+        return "{{ {} }}".format( ", ".join( result ) )
 
     @property
     def resolveList( self ):

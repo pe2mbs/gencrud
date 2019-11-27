@@ -156,7 +156,10 @@ class TemplateColumn( object ):
         return self.__listview
 
     def hasResolveList( self ):
-        return self.__ui.hasResolveList()
+        return self.__ui is not None and self.__ui.hasResolveList()
+
+    def hasService( self ):
+        return self.__ui is not None and self.__ui.hasService()
 
     @property
     def tableName( self ):
