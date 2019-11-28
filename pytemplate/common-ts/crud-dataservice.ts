@@ -27,7 +27,7 @@ import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 
 export interface PytSelectList
 {
-    value:  number;
+    value:  any;
     label:  string;
 }
 

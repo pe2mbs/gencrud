@@ -436,6 +436,8 @@ class TemplateColumn( object ):
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
                                             self.__config.get( 'label', '' ),
-                                            [ 'readonly' if self.isPrimaryKey() else '' ] )
+                                            [ 'readonly' if self.isPrimaryKey() or self.readonly else '' ] )
 
-
+    @property
+    def readonly( self ):
+        return self.__config.get( 'readonly', False )

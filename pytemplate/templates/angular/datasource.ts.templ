@@ -27,7 +27,7 @@ import { MatPaginator, MatSort } from '@angular/material';
 import { ${ obj.cls }Record } from './model';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-   % if field.ui.service is not None:
+   % if field.hasService():
 import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
    % endif
  % endif
@@ -37,7 +37,7 @@ import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
 export class ${ obj.cls }DataSource extends CrudDataSource<${ obj.cls }Record>
 {
 % for field in obj.table.columns:
- % if field.hasService() and ( field.ui.isChoice() or field.ui.isCombobox() ):
+ % if ( field.hasService() or field.hasResolveList() ) and ( field.ui.isChoice() or field.ui.isCombobox() ):
     ${ field.name }_List:  Array<PytSelectList>;
  % endif
 % endfor
@@ -48,13 +48,16 @@ ${ obj.externalService } )
     {
         super( _databaseTable, _paginator, _sort );
 % for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+ % if ( field.hasService() or field.hasResolveList() ) and ( field.ui.isChoice() or field.ui.isCombobox() ):
         this.${ field.name }_List = new Array<PytSelectList>();
-   % if field.hasService()::
+   % if field.hasService():
         this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( data => {
             this.${ field.name }_List = data
         } );
+   % elif field.hasResolveList():
+        this.${ field.name }_List = ${ field.ui.typescriptResolveList() }
    % endif
+
  % endif
 % endfor
         return;

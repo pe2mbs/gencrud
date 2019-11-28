@@ -67,7 +67,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     )
   ]
 } )
-export class PytTextareaInputComponent extends PytBaseComponent
+export class PytTextareaInputComponent extends PytBaseComponent implements OnInit
 {
     public rows = 4;
     public cols = 80;
@@ -76,4 +76,11 @@ export class PytTextareaInputComponent extends PytBaseComponent
         super( formGroupDir );
         return;
     }
+
+    ngOnInit()
+    {
+        super.ngOnInit()
+        return;
+    }
+
 }

@@ -145,7 +145,7 @@ class TemplateUi( object ):
         if 'hint' in  self.__cfg:
             options.append( 'hint="{0}"'.format( self.__cfg[ 'hint' ] ) )
 
-        options.append( 'error="{0}"'.format( self.error ) )
+        options.append( 'error="{0}"'.format( self.error.lower() ) )
 
         if self.hasPrefix():
             options.append( 'prefix="{0}" prefix-type="{1}"'.format( self.prefix, self.prefixType ) )
@@ -181,10 +181,9 @@ class TemplateUi( object ):
         if 'color' in self.__cfg:
             options.append( 'color="{0}"'.format( self.color ) )
 
-        if 'debug' in self.__cfg:
-            options.append( 'debug="{0}"'.format( self.__cfg[ 'debug' ] ) )
+        options.append( 'debug="{0}"'.format( str( self.__cfg.get( 'debug', False ) ) ).lower() )
 
-        return '''<{tag} id="{table}.{id}" placeholder="{placeholder}"{option} formControlName="{field}"></{tag}>'''.\
+        return '''<{tag} id="{table}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
                 format( tag = type2component[ self.__cfg.get( 'type', 'textbox' ) ],
                         id = field,
                         table = table,
@@ -240,16 +239,26 @@ class TemplateUi( object ):
         return str( self.__cfg.get( 'error', True ) ).lower()
 
     def hasResolveList( self ):
-        return 'resolve-list' in self.__cfg
+        return 'resolve-list' in self.__cfg or 'resolveList' in self.__cfg
 
     def typescriptResolveList( self ):
-        resolveList = self.__cfg.get( 'resolve-list', [] )
-        result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
-        return "{{ {} }}".format( ", ".join( result ) )
+        if 'resolveList' in self.__cfg:
+            resolveList = self.__cfg[ 'resolveList' ]
+
+        else:
+            resolveList = self.__cfg.get( 'resolve-list',[ ] )
+
+        ## result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
+        return "{}".format( json.dumps( resolveList ) )
 
     @property
     def resolveList( self ):
-        resolveList = self.__cfg.get( 'resolve-list', [] )
+        if 'resolveList' in self.__cfg:
+            resolveList = self.__cfg[ 'resolveList' ]
+
+        else:
+            resolveList = self.__cfg.get( 'resolve-list', [] )
+
         '''
         - label:          Disabled
           value:          false

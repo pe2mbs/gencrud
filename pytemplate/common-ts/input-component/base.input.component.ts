@@ -36,7 +36,8 @@ export const CUSTOM_ANIMATIONS_CONTROLE: any = [ trigger(
 
 export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit, AfterViewInit
 {
-    @Input()                debug:              boolean = false;
+    @Input( 'debug' )       debug:              boolean = true;
+    @Input( 'error' )       error:              boolean = false;
     // ID attribute for the field and for attribute for the label
     @Input()                id:                 string;
     // placeholder input
@@ -44,7 +45,7 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
     // formControlName fieldname
     @Input()                formControlName:    string;
     // is the control readonly
-    @Input()                readonly:           string;
+    @Input( 'readonly' )    readonly:           boolean = false;
     // Field prefix
     @Input()                prefix:             string;
     @Input( 'prefix-type' ) prefixType:         string = 'text';
@@ -54,7 +55,6 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
 
     @Input()                color;
     @Input()                hint;
-    @Input()                error:              string = 'false';
 
     public                  control:            FormControl;
     public                  formGroupDir:       FormGroupDirective;
@@ -100,6 +100,12 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
 
     ngOnInit() 
     {
+        /*
+        console.log( 'debug', this.debug )
+        console.log( 'error', this.error )
+        console.log( 'readonly', this.readonly )
+        */
+
         if ( this.debug )
         {
             console.log( 'base-ngOnInit', this.formControlName );
@@ -113,13 +119,13 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
         {
             this.placeholder = 'Enter text';
         }
-        if ( this.color === '' || this.color === null ||
-                  this.color === undefined )
+        if ( this.color === '' || this.color === null || this.color === undefined )
         {
             this.color = 'primary';
         }
-        if ( this.readonly !== undefined )
+        if ( this.readonly )
         {
+            console.log( 'base-ngOnInit disable the control', this.formControlName )
             this.control.disable();
         }
         if ( this.debug )
