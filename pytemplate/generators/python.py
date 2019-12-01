@@ -21,6 +21,7 @@
 #   gencrud.py module. When modifing the file make sure that you remove
 #   the table from the configuration.
 #
+import platform
 import json
 import os
 import sys
@@ -65,10 +66,10 @@ def makePythonModules( root_path, *args ):
 
 
 def updatePythonProject( config, app_module ):
-    logger.debug( config.python.source )
+    logger.debug( config.python.sourceFolder )
 
     lines = []
-    filename = os.path.join( config.python.source, config.application, 'main.py' )
+    filename = os.path.join( config.python.sourceFolder, config.application, 'main.py' )
     if os.path.isfile( filename ):
         lines = open( filename, 'r' ).readlines()
         pytemplate.util.utils.backupFile( filename )
@@ -84,9 +85,10 @@ def updatePythonProject( config, app_module ):
     # update import section
     modules = []
     for table in config:
-        line = 'import {0}.{1}   # import maintained by gencrud.py'.format( table.application, table.name )
+        line = 'import {0}.{1}   # import maintained by gencrud.py'.format( config.application,
+                                                                            table.name )
         pytemplate.util.utils.insertLinesUnique( lines, rangePos, line )
-        modules.append( '{0}.{1}'.format( table.application, table.name ) )
+        modules.append( '{0}.{1}'.format( config.application, table.name ) )
 
     sectionLines = pytemplate.util.utils.searchSection( lines,
                                                         rangePos,
@@ -190,12 +192,12 @@ def generatePython( templates, config ):
     modules = []
     for cfg in config:
         backupDone = False
-        modulePath = os.path.join( config.python.source,
-                                   cfg.application,
+        modulePath = os.path.join( config.python.sourceFolder,
+                                   config.application,
                                    cfg.name )
         for templ in templates:
             logger.info( 'template    : {0}'.format( templ ) )
-            logger.info( 'application : {0}'.format( cfg.application ) )
+            logger.info( 'application : {0}'.format( config.application ) )
             logger.info( 'name        : {0}'.format( cfg.name ) )
             logger.info( 'class       : {0}'.format( cfg.cls ) )
             logger.info( 'table       : {0}'.format( cfg.table.tableName ) )
@@ -211,39 +213,42 @@ def generatePython( templates, config ):
             logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
             logger.info( 'uri         : {0}'.format( cfg.uri ) )
 
-            if not os.path.isdir( config.python.source ):
-                os.makedirs( config.python.source )
+            if not os.path.isdir( config.python.sourceFolder ):
+                os.makedirs( config.python.sourceFolder )
 
             if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
                 raise pytemplate.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
-            makePythonModules( config.python.source, cfg.application, cfg.name )
+            makePythonModules( config.python.sourceFolder, config.application, cfg.name )
 
-            with open( os.path.join( modulePath, pytemplate.util.utils.sourceName( templ ) ), pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
-                for line in Template( filename=os.path.abspath( templ ) ).render( obj = cfg ).split('\n'):
-                    stream.write( line )
+            with open( os.path.join( modulePath,
+                                     pytemplate.util.utils.sourceName( templ ) ),
+                       pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
+                stream.write( Template( filename = os.path.abspath( templ ) ).render( obj = cfg ) )
 
-                # Open the __init__.py
-                filename = os.path.join( modulePath, '__init__.py' )
-                moduleName, _ = os.path.splitext( pytemplate.util.utils.sourceName( templ ) )
-                importStr = 'from {0}.{1}.{2} import *'.format( cfg.application, cfg.name, moduleName )
-                lines = []
-                try:
-                    lines = open( filename, pytemplate.util.utils.C_FILEMODE_READ ).readlines( )
+            # Open the __init__.py
+            filename = os.path.join( modulePath, '__init__.py' )
+            moduleName, _ = os.path.splitext( pytemplate.util.utils.sourceName( templ ) )
+            importStr = 'from {0}.{1}.{2} import *'.format( config.application,
+                                                            cfg.name,
+                                                            moduleName )
+            lines = []
+            try:
+                lines = open( filename, pytemplate.util.utils.C_FILEMODE_READ ).readlines()
 
-                except:
-                    logger.error( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
+            except:
+                logger.error( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
 
-                logger.info( lines )
-                pytemplate.util.utils.insertLinesUnique( lines,
-                                                         PositionInterface( end = len( lines ) ),
-                                                         importStr )
-                if not backupDone:
-                    pytemplate.util.utils.backupFile( filename )
-                    modules.append( ( cfg.application, cfg.name ) )
-                    backupDone = True
+            logger.info( lines )
+            pytemplate.util.utils.insertLinesUnique( lines,
+                                                     PositionInterface( end = len( lines ) ),
+                                                     importStr )
+            if not backupDone:
+                pytemplate.util.utils.backupFile( filename )
+                modules.append( ( config.application, cfg.name ) )
+                backupDone = True
 
-                open( filename, pytemplate.util.utils.C_FILEMODE_WRITE ).writelines( lines )
+            open( filename, pytemplate.util.utils.C_FILEMODE_WRITE ).writelines( lines )
 
         # entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
         # if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):

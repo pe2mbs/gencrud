@@ -57,6 +57,9 @@ class ${obj.cls}( db.Model
     db.UniqueConstraint( ${ fields }, name='${ index }' )
  % endfor
 % endif
+    def __repr__( self ):
+        return ${ "<{} {}>".format( self.__tablename__, ",\n".join( [ "{}( {} ) = '{{}}'".format( field.name, field.pType ) for field in obj.table.columns ] ) ) }
+
 
 % if obj.table.hasAutoUpdate:
 # standard decorator style

@@ -27,11 +27,18 @@ class MissingTemplate( Exception ):
 
 
 class MissingSourceFolder( Exception ):
-    def __init__( self, python, angular ):
-        self.__python = python
-        self.__angular = angular
-        super( MissingSourceFolder, self ).__init__( 'Could find the source folders, please be at the project root or {} or {}'.
-                                                     format( python, angular ) )
+    def __init__( self, path ):
+        self.__path = path
+        super( MissingSourceFolder, self ).__init__( 'Could find the source folders, please be at the project root or {}'.
+                                                     format( path ) )
+
+
+class MissingTemplateFolder( Exception ):
+    def __init__( self, path ):
+        self.__path = path
+        super( MissingTemplateFolder, self ).__init__( 'Could find the template folders, please be at the project root or {}'.
+                                                     format( path ) )
+
 
 
 class InvalidEnvironment( Exception ):
@@ -70,3 +77,14 @@ class TypeScriptInvalidStartDataType( Exception ):
     def __init__( self, data_type ):
         super( TypeScriptInvalidStartDataType, self ).__init__( 'invalid starting data type for {}'.format( data_type ) )
 
+
+class PathNotFoundException( Exception ):
+    def __init__( self, path ):
+        super( PathNotFoundException, self ).__init__( '{} not found.'.format( path ) )
+        return
+
+
+class KeyNotFoundException( Exception ):
+    def __init__( self, path ):
+        super( KeyNotFoundException, self ).__init__( 'key {} not found.'.format( path ) )
+        return

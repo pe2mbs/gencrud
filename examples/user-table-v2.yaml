@@ -1,0 +1,155 @@
+version:                2
+linux:
+  source:
+    base:               /home/mbertens/src/angular/angular-mat-table-crud
+    python:             backend
+    angular:            src/app
+windows:
+  source:
+    base:               c:\src\angular\angular-mat-table-crud
+    python:             backend
+    angular:            src\app
+application:            testrun
+menu:
+  displayName:          Database
+  iconName:             settings
+menuItem:
+  displayName:          Users table
+  iconName:             verified_user
+  route:                /users
+name:                   user
+class:                  User
+uri:                    /api/user
+table:
+  name:                 WA_USERS
+  columns:
+  - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
+  - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
+  - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
+  - field:              D_FIRST_NAME    CHAR(30)    NOT NULL
+  - field:              D_MIDDLE_NAME   CHAR( 30 )  NULL
+  - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
+  - field:              D_LAST_CHANGED  TIMESTAMP   NOT NULL
+    auto-update:        datetime.datetime.now()
+  - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
+  - field:              D_ENABLED       BOOLEAN     DEFAULT 0
+  - field:              D_SLIDER        INT         DEFAULT 0
+  - field:              D_ROLE_COMMENT   CLOB       NULL
+  - field:              D_ROLE_ID_REL
+    relationship:
+      name:             role
+      class:            Role
+listview:
+  actions:
+  - name:               new
+    label:              New
+    type:               dialog
+    icon:               add
+    position:           header
+    function:           addNew()
+  - name:               delete
+    label:              Delete
+    icon:               delete
+    type:               dialog
+    position:           cell
+    function:           deleteItem( D_USER_ID, row )
+  - name:               edit
+    type:               dialog
+    position:           row
+    function:           startEdit( D_USER_ID, row )
+  columns:
+  - field:              D_ENABLED
+    label:              Enabled
+    width:              5%
+    resolve:
+      staticlist:
+      - value:            true
+        label:            Yes
+      - value:            false
+        label:            No
+  - field:              D_USER_NAME
+    label:              Username
+    width:              20%
+  - field:              D_FIRST_NAME
+    label:              First name
+    width:              20
+  - field:              D_LAST_NAME
+    label:              Sur name
+    width:              20
+  - field:              D_ROLE_ID
+    label:              Role
+    width:              20
+    service:
+      name:             role
+      class:            Role
+      path:             ../role/service
+      value:            D_ROLE_ID
+      label:            D_ROLE_NAME
+add:
+  actions:
+  type:                   dialog
+  tabs:
+    grouptag:             mat-tab-group
+    tabtag:               mat-tab
+    contenttag:           mat-card
+    tabs:
+    - label:              General
+      columns:
+      - label:            Active
+        field:            D_ENABLED
+        type:             slidertoggle
+        color:            primary
+        checked:          false
+        labelPosition:    after
+      - label:            Username
+        field:            D_USER_NAME
+        type:             textbox
+        hint:             Enter a unique username
+      - label:            Password
+        field:            D_PASSWORD
+        type:             password
+        hint:             Enter a password of at least 8 characters, digits and punctations
+      - label:            Role
+        field:            D_ROLE_ID
+        type:             choice
+        hint:             The Role within the team
+        service:
+          name:           role
+          class:          Role
+          path:           ../role/service
+          value:          D_ROLE_ID
+          label:          D_ROLE_NAME
+      - label:            Slider
+        field:            D_SLIDER
+        hint:             Set the value of something
+        min:              0
+        max:              100
+        interval:         1
+        step:             1
+        thumbLabel:       true
+    - label:              Personal
+      columns:
+      - label:            First name
+        field:            D_FIRST_NAME
+        type:             textbox
+      - label:            Middle name
+        field:            D_MIDDLE_NAME
+        type:             textbox
+      - label:            Surname
+        field:            D_LAST_NAME
+        type:             textbox
+    - label:              Remark
+      columns:
+      - label:            Comment
+        field:            D_ROLE_COMMENT
+        hint:             Free text area
+        type:             textarea
+        rows:             4
+        cols:             80
+    - label:            Roles
+      component:        app-role-table
+delete:
+  type:                 dialog:
+  field:                D_USER_NAME
+
+

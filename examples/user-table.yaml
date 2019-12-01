@@ -1,72 +1,81 @@
-source:
-  python:   /home/mbertens/src/angular/angular-mat-table-crud/backend
-  angular:  /home/mbertens/src/angular/angular-mat-table-crud/src/app
+version:                1
+linux:
+  source:
+    base:               /home/mbertens/src/angular/angular-mat-table-crud
+    python:             backend
+    angular:            src/app
+windows:
+  source:
+    base:               c:\src\angular\angular-mat-table-crud
+    python:             backend
+    angular:            src\app
+
+application:            testrun
 objects:
-- name:                   user
-  class:                  User
-  application:            testrun
-  uri:                    /api/user
-  actions:
-  - name:                 new
-    label:                New
-    type:                 dialog
-    icon:                 add
-    position:             footer
-    function:             addNew()
+- name:                 user
+  class:                User
+  uri:                  /api/user
+  actionsa:
+  - name:               new
+    label:              New
+    type:               dialog
+    icon:               add
+    position:           footer
+    function:           addNew()
 
-  - name:                 runall
-    label:                Run All
-    type:                 list
-    icon:                 play_arrow
-    position:             header
-    uri:                  /runall
-    source:               testrun/testruns/run.py
+  - name:               runall
+    label:              Run All
+    type:               list
+    icon:               play_arrow
+    position:           header
+    uri:                /runall
+    source:             testrun/testruns/run.py
 
-  - name:                 stopall
-    label:                Stop All
-    type:                 list
-    icon:                 stop
-    position:             header
-    uri:                  /stopall
-    source:               testrun/testruns/run.py
+  - name:               stopall
+    label:              Stop All
+    type:               list
+    icon:               stop
+    position:           header
+    uri:                /stopall
+    source:             testrun/testruns/run.py
 
-  - name:                 delete
-    label:                Delete
-    icon:                 delete
-    type:                 dialog
-    position:             none
-    function:             deleteItem( i, row )
+  - name:               delete
+    label:              Delete
+    icon:               delete
+    type:               dialog
+    position:           none
+    function:           deleteItem( i, row )
 
-  - name:                 edit
-    label:                Edit
-    type:                 dialog
-    position:             none
-    function:             startEdit( i, row )
+  - name:               edit
+    label:              Edit
+    type:               dialog
+    position:           none
+    function:           startEdit( i, row )
 
-  - name:                 run
-    label:                Run
-    type:                 list
-    icon:                 play_arrow
-    position:             cell
-    uri:                  /run
+  - name:               run
+    label:              Run
+    type:               list
+    icon:               play_arrow
+    position:           cell
+    uri:                /run
     params:
-    - id: row.D_TESTRUN_ID
-    source:               testrun/testruns/run.py
+    - id:               row.D_TESTRUN_ID
+    source:             testrun/testruns/run.py
 
-  - name:                 stop
-    label:                Stop
-    type:                 list
-    icon:                 stop
-    position:             cell
-    uri:                  /stop
+  - name:               stop
+    label:              Stop
+    type:               list
+    icon:               stop
+    position:           cell
+    uri:                /stop
     params:
-    - id: row.D_TESTRUN_ID
-    source:               testrun/testruns/run.py
+    - id:               row.D_TESTRUN_ID
+    source:             testrun/testruns/run.py
 
   menu:
-    displayName:          Database
-    iconName:             settings
-    index:                -2
+    displayName:        Database
+    iconName:           settings
+    index:              -2
   menuItem:
     displayName:          Users table
     iconName:             verified_user
@@ -74,12 +83,19 @@ objects:
     index:                0
   table:
     name:                 WA_USERS
+    dialogtabs:
+      labels:
+      - General
+      - Personal
+      - Remark
+      - Roles
+      grouptag:           mat-tab-group
+      tabtag:             mat-tab
+      contenttag:         mat-card
+      tab:
+      - label:            Roles
+        component:        app-role-table
     order-by:             [ D_LAST_NAME, D_FIRST_NAME ]
-    pyInport:
-    - RoleSchema          testrun.role.schema
-    tsInport:
-    - Role                ../role/model
-    - RoleDataService     ../role/service
     columns:
     - field:              D_USER_ID       INT         AUTO NUMBER  PRIMARY KEY
       label:              Identification
@@ -88,6 +104,7 @@ objects:
         width:            5%
       ui:
         type:             textbox
+
     - field:              D_USER_NAME     CHAR( 20 )  NOT NULL
       label:              User name
       listview:
@@ -96,10 +113,19 @@ objects:
       ui:
         type:             textbox
         hint:             Enter a unique username
+      tab:
+        label:            General
+        index:            1
+
     - field:              D_PASSWORD      CHAR( 64 )  NOT NULL
       label:              Password
       ui:
         type:             password
+        hint:             Enter a password of at least 8 characters, digits and punctations
+      tab:
+        label:            General
+        index:            2
+
     - field:              D_FIRST_NAME    CHAR(30)    NOT NULL
       label:              First name
       listview:
@@ -107,13 +133,21 @@ objects:
         width:            25%
       ui:
         type:             textbox
+        hint:             Enter the persons given name (also known as a first name, forename)
         error:            false
-    - field:              D_MIDDLE_NAME   CHAR( 30 )  NOT NULL
+      tab:
+        label:            Personal
+        index:            0
+
+    - field:              D_MIDDLE_NAME   CHAR( 30 )  NULL
       label:              Middle name
       ui:
-        type:             textarea
-        rows:             4
-        cols:             80
+        type:             textbox
+        hint:             Enter the persons middle name(s)
+      tab:
+        label:            Personal
+        index:            1
+
     - field:              D_LAST_NAME     CHAR( 30 )  NOT NULL
       label:              Last name
       auto-update:        current_user.username
@@ -122,11 +156,17 @@ objects:
         width:            20%
       ui:
         type:             textbox
+        hint:             Enter the persons surname (also known as a family name)
+      tab:
+        label:            Personal
+        index:            2
+
     - field:              D_LAST_CHANGED  TIMESTAMP   NOT NULL
       label:              Last changed
       auto-update:        datetime.datetime.now()
       ui:
         type:             datetime
+
     - field:              D_ROLE_ID       INT         FOREIGN KEY WA_ROLES.D_ROLE_ID
       label:              Role
       relationship:
@@ -135,12 +175,16 @@ objects:
         field-name:       D_ROLE_ID_REL
       ui:
         type:             choice
+        hint:             The Role within the team
         service:
-          name:             role
-          class:            RoleDataService
-          path:             ../role/service
-          value:            D_ROLE_ID
-          label:            D_ROLE_NAME
+          name:           role
+          class:          Role
+          path:           ../role/service
+          value:          D_ROLE_ID
+          label:          D_ROLE_NAME
+      tab:
+        label:            General
+        index:            3
 
     - field:              D_ENABLED   BOOLEAN       DEFAULT 0
       label:              Active
@@ -149,28 +193,37 @@ objects:
         color:            primary
         checked:          false
         labelPosition:    after
-      listview:
-        index:            6
-        width:            10%
         resolve-list:
         - label:          Disabled
           value:          false
         - label:          Enabled
           value:          true
-
+      listview:
+        index:            6
+        width:            10%
+      tab:
+        label:            General
+        index:            0
     - field:              D_SLIDER    INT       DEFAULT 0
       label:              Slider
       ui:
         type:             slider
+        hint:             Set the value of something
         min:              0
-        max:              500
+        max:              100
         interval:         1
         step:             1
         thumbLabel:       true
-  tabs:
-  - caption:              Test runs
-    component:            tr
-  - caption:              Test plans
-    component:            tp
-  - caption:              Test cases
-    component:            tc
+      tab:
+        label:            General
+        index:            4
+    - field:              D_ROLE_COMMENT   CLOB       NULL
+      label:              Comment
+      ui:
+        type:             textarea
+        hint:             Free text area
+        rows:             4
+        cols:             80
+      tab:
+        label:            Remark
+        index:            1

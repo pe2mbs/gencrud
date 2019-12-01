@@ -24,6 +24,7 @@
 import logging
 from pytemplate.objects.table._inports import SourceImport
 from pytemplate.objects.table.column import TemplateColumn
+from pytemplate.objects.table.column.tab import TemplateTabs
 import pytemplate.util.utils
 
 logger = logging.getLogger()
@@ -143,6 +144,12 @@ class TemplateTable( object ):
 
         self.__inports.append( source, table[ source ] )
         return
+
+    def hasTabs( self, tp = 'dialog' ):
+        return len( self.__table.get( tp + 'tabs', [] ) ) > 0
+
+    def tabs( self, tp = 'dialog' ):
+        return TemplateTabs( self, **self.__table.get( tp + 'tabs', [] ) )
 
     @property
     def Mixin( self ):

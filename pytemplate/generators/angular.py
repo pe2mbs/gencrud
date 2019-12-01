@@ -88,7 +88,7 @@ def updateImportSection( lines, files ):
 
 
 def updateAngularAppModuleTs( config, app_module, exportsModules ):
-    logger.debug( config.angular.source )
+    logger.debug( config.angular.sourceFolder )
 
     # File to edit 'app.module.ts'
     # inject the following;
@@ -97,10 +97,10 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     #   imports:            search for 'imports: ['
     #   providers:          search for 'providers: ['
     #   entryComponents:    search for 'entryComponents: ['
-    with open( os.path.join( config.angular.source, APP_MODULE ), 'r' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder, APP_MODULE ), 'r' ) as stream:
         lines = stream.readlines()
 
-    pytemplate.util.utils.backupFile( os.path.join( config.angular.source, APP_MODULE ) )
+    pytemplate.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_MODULE ) )
     rangePos        = PositionInterface()
     sectionLines    = pytemplate.util.utils.searchSection( lines,
                                                            rangePos,
@@ -129,7 +129,7 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     pytemplate.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, app_module[ 'files' ] )
-    with open( os.path.join( config.angular.source, APP_MODULE ), 'w' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder, APP_MODULE ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
             logger.debug( line.replace( '\n', '' ) )
@@ -138,19 +138,19 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
 
 
 def updateAngularAppRoutingModuleTs( config, app_module ):
-    if not os.path.isfile( os.path.join( config.angular.source, APP_ROUTING_MODULE ) ):
+    if not os.path.isfile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) ):
         return
 
-    with open( os.path.join( config.angular.source, APP_ROUTING_MODULE ), 'r' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ), 'r' ) as stream:
         lines = stream.readlines()
 
-    pytemplate.util.utils.backupFile( os.path.join( config.angular.source, APP_ROUTING_MODULE ) )
+    pytemplate.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) )
     imports = []
     entries = []
     for cfg in config:
-        logger.info( "{} {} {}".format( cfg.application, cfg.name, cfg.cls ) )
+        logger.info( "{} {} {}".format( config.application, cfg.name, cfg.cls ) )
         imports.append( "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
-                                                                                                         app = cfg.application,
+                                                                                                         app = config.application,
                                                                                                          mod = cfg.name ) )
         if cfg.menuItem is not None:
             entries.append( {
@@ -188,7 +188,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     pytemplate.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, imports )
-    with open( os.path.join( config.angular.source, APP_ROUTING_MODULE ), 'w' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
             logger.debug( line.replace( '\n', '' ) )
@@ -202,18 +202,22 @@ def exportAndType( line ):
 
 def generateAngular( templates, config ):
     modules = []
-    if not os.path.isdir( config.angular.source ):
-        os.makedirs( config.angular.source )
+    if not os.path.isdir( config.angular.sourceFolder ):
+        os.makedirs( config.angular.sourceFolder )
 
     for cfg in config:
-        modulePath = os.path.join( config.angular.source, cfg.application, cfg.name )
+        modulePath = os.path.join( config.angular.sourceFolder,
+                                   config.application,
+                                   cfg.name )
         if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
             raise pytemplate.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
-        makeAngularModule( config.angular.source, cfg.application, cfg.name )
+        makeAngularModule( config.angular.sourceFolder,
+                           config.application,
+                           cfg.name )
         for templ in templates:
-            templateFilename = os.path.join( config.angular.source,
-                                             cfg.application,
+            templateFilename = os.path.join( config.angular.sourceFolder,
+                                             config.application,
                                              cfg.name,
                                              pytemplate.util.utils.sourceName( templ ) )
             if os.path.isfile( templateFilename ):
@@ -232,7 +236,7 @@ def generateAngular( templates, config ):
                         continue
 
             logger.info( 'template    : {0}'.format( templ ) )
-            logger.info( 'application : {0}'.format( cfg.application ) )
+            logger.info( 'application : {0}'.format( config.application ) )
             logger.info( 'name        : {0}'.format( cfg.name ) )
             logger.info( 'class       : {0}'.format( cfg.cls ) )
             logger.info( 'table       : {0}'.format( cfg.table.name ) )
@@ -259,7 +263,7 @@ def generateAngular( templates, config ):
                 try:
                     for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
                         if line.startswith( 'export ' ):
-                            modules.append( ( cfg.application,
+                            modules.append( ( config.application,
                                               cfg.name,
                                               pytemplate.util.utils.sourceName( templ ),
                                               exportAndType( line ) ) )
@@ -278,7 +282,8 @@ def generateAngular( templates, config ):
     appModule = None
     exportsModules = []
     for app, mod, source, export in modules:
-        app_module_json_file = os.path.join( config.angular.source,
+        # Update 'app.module.json'
+        app_module_json_file = os.path.join( config.angular.sourceFolder,
                                            app, mod, 'app.module.json' )
         if os.path.isfile( app_module_json_file ):
             with open( app_module_json_file, 'r' ) as stream:
@@ -302,7 +307,8 @@ def generateAngular( templates, config ):
                                  'source':        source,
                                  'export':        export } )
 
-    with open( os.path.join( config.angular.source, 'app.module.json' ), 'w' ) as stream:
+    # Write update 'app.module.json'
+    with open( os.path.join( config.angular.sourceFolder, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
 
     logger.info( 'exportsModules' )
@@ -318,9 +324,11 @@ def generateAngular( templates, config ):
     updateAngularAppModuleTs( config, appModule, exportsModules )
     updateAngularAppRoutingModuleTs( config, appModule )
 
-    os.remove( os.path.join( config.angular.source, 'app.module.json' ) )
-    copyAngularCommon( os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-ts' ) ),
-                       os.path.join( config.angular.source, 'common' ) )
+    os.remove( os.path.join( config.angular.sourceFolder, 'app.module.json' ) )
+    copyAngularCommon( os.path.abspath( os.path.join( os.path.dirname( __file__ ),
+                                                      '..',
+                                                      'common-ts' ) ),
+                       os.path.join( config.angular.sourceFolder, 'common' ) )
     return
 
 def copyAngularCommon( source, destination ):

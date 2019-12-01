@@ -57,15 +57,15 @@ def verifyLoadProject( env, config ):
     else:
         raise InvalidEnvironment( env )
 
-    if os.path.isdir( root.source ) and os.path.isfile( os.path.join( root.source, configFile ) ):
-        with open( os.path.join( root.source, configFile ), pytemplate.util.utils.C_FILEMODE_READ ) as stream:
+    if os.path.isdir( root.sourceFolder ) and os.path.isfile( os.path.join( root.sourceFolder, configFile ) ):
+        with open( os.path.join( root.sourceFolder, configFile ), pytemplate.util.utils.C_FILEMODE_READ ) as stream:
             data = json.load( stream )
 
         if data is None:
-            raise EnvironmentInvalidMissing( env, root.source, configFile )
+            raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
     else:
-        raise EnvironmentInvalidMissing( env, root.source, configFile )
+        raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
     if env == 'angular':
         # Check if we have a valid Angular environment
@@ -84,7 +84,7 @@ def verifyLoadProject( env, config ):
         if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
             raise FlaskEnvironmentNotFound()
 
-        if data[ 'COMMON' ][ 'API_MODULE' ] != config.objects[ 0 ].application:
+        if data[ 'COMMON' ][ 'API_MODULE' ] != config.application:
             raise FlaskEnvironmentNotFound()
 
     return data
@@ -96,11 +96,11 @@ def doWork( inputFile ):
 
     verifyLoadProject( 'angular', config )
     verifyLoadProject( 'python', config )
-    generatePython( [ os.path.abspath( os.path.join( config.python.template, t ) )
-                                   for t in os.listdir( config.python.template ) ],
+    generatePython( [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
+                                   for t in os.listdir( config.python.templateFolder ) ],
                     config )
-    generateAngular( [ os.path.abspath( os.path.join( config.angular.template, t ) )
-                                    for t in os.listdir( config.angular.template ) ],
+    generateAngular( [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
+                                    for t in os.listdir( config.angular.templateFolder ) ],
                      config )
     return
 

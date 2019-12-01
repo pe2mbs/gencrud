@@ -28,8 +28,9 @@ from pytemplate.util.exceptions import InvalidSetting
 
 
 class TemplateObject( object ):
-    def __init__( self, **cfg ):
+    def __init__( self, parent, **cfg ):
         self.__config       = cfg
+        self.__parent       = parent
         self.__columns      = []
         self.__primaryKey   = ''
         self.__title        = None
@@ -60,7 +61,7 @@ class TemplateObject( object ):
 
     @property
     def application( self ):
-        return self.__config.get( 'application', '' )
+        return self.__config.get( 'application', self.__parent.application )
 
     @property
     def name( self ):

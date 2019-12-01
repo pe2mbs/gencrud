@@ -27,6 +27,7 @@ import pytemplate.util.utils
 from pytemplate.objects.table.column.listview import TemplateListView
 from pytemplate.objects.table.column.relation import TemplateRelation
 from pytemplate.objects.table.column.ui import TemplateUi
+from pytemplate.objects.table.column.tab import TemplateTab
 from pytemplate.util.exceptions import InvalidSetting
 
 logger = logging.getLogger()
@@ -165,10 +166,13 @@ class TemplateColumn( object ):
     def tableName( self ):
         return self.__tableName
 
-    # OBSOLETE: use the listview.index
     @property
-    def index( self ):
-        return self.__config.get( 'index', None )
+    def hasTab( self ):
+        return 'tab' in self.__config
+
+    @property
+    def tab( self ):
+        return TemplateTab( self, **self.__config.get( 'tab', {} ) )
 
     @property
     def uniqueKey( self ):

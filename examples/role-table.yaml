@@ -1,10 +1,10 @@
 source:
   python:   /home/mbertens/src/angular/angular-mat-table-crud/backend
   angular:  /home/mbertens/src/angular/angular-mat-table-crud/src/app
+application:              testrun
 objects:
 - name:                   role
   class:                  Role
-  application:            testrun
   uri:                    /api/role
   menu:
     displayName:          Database
@@ -17,21 +17,35 @@ objects:
     index:                1
   table:
     name:                 WA_ROLES
+    dialogtabs:
+      labels:
+      - General
+      - Remark
+      grouptag:           mat-tab-group
+      tabtag:             mat-tab
+      contenttag:         mat-card
     unique-key:
     - ID_NAME_IDX: [ D_ROLE_ID, D_ROLE_NAME ]
     - NAME_ID_IDX: [ D_ROLE_NAME, D_ROLE_ID ]
     columns:
     - field:              D_ROLE_ID       INT         AUTO NUMBER  PRIMARY KEY
-      label:              Identification
-      index:              0
-      css:
-        width:            5%
-      ui:
-        type:             textbox
     - field:              D_ROLE_NAME     CHAR(20)    NOT NULL
       label:              Role
-      index:              1
-      css:
-        width:            93%
+      listview:
+        width:            85%
+        index:            1
+      ui:
+        type:             textbox
+      tab:
+        label:            General
+        index:            0
+
+    - field:              D_ROLE_COMMENT   CLOB       NULL
+      label:              Comment
       ui:
         type:             textarea
+        rows:             -1
+        cols:             -1
+      tab:
+        label:            Remark
+        index:            1

@@ -35,13 +35,15 @@ class TemplateListView( object ):
     @property
     def width( self ):
         if 'width' not in self.__cfg:
-            return self.__parent.css.width
+            if hasattr( self.__parent, 'css' ):
+                return self.__parent.css.width
 
         return self.__cfg.get( 'width', None )
 
     @property
     def index( self ):
         if 'index' not in self.__cfg:
-            return self.__parent.index
+            if hasattr( self.__parent, 'index' ):
+                return self.__parent.index
 
         return self.__cfg.get( 'index', None )

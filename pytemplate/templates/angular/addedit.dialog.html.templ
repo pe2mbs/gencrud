@@ -24,11 +24,34 @@
 <div class="container">
     <h3 mat-dialog-title>${ obj.cls } Id: {{ data.record.${ obj.table.primaryKey } }}</h3>
     <form class="mat-dialog-content" (ngSubmit)="submit" [formGroup]="formGroup">
-% for field in obj.table.columns:
- % if field.hasLabel():
+% if obj.table.hasTabs( 'dialog' ):
+        <${ obj.table.tabs( 'dialog' ).groupTag }>
+% for label in obj.table.tabs( 'dialog' ).labels:
+            <${ obj.table.tabs( 'dialog' ).tabTag } label="${ label }">
+%   if obj.table.tabs( 'dialog' ).hasComponent( label ):
+                    <${obj.table.tabs( 'dialog' ).component( label )}>
+                    </${obj.table.tabs( 'dialog' ).component( label )}>
+%   else:
+%     if obj.table.tabs( 'dialog' ).contentTag is not None:
+                <${ obj.table.tabs( 'dialog' ).contentTag }>
+%     endif
+%     for field in obj.table.tabs( 'dialog' ).fieldsFor( label ):
+                    ${ field.angularUiInput() }
+%     endfor
+%     if obj.table.tabs( 'dialog' ).contentTag is not None:
+                </${ obj.table.tabs( 'dialog' ).contentTag }>
+%     endif
+%   endif
+            </${ obj.table.tabs( 'dialog' ).tabTag }>
+%  endfor
+        </${ obj.table.tabs( 'dialog' ).groupTag }>
+% else:
+ % for field in obj.table.columns:
+  % if field.hasLabel():
         ${ field.angularUiInput() }
- % endif
-% endfor
+  % endif
+ % endfor
+% endif
         <div mat-dialog-actions>
             <button mat-button
                     [type]="submit"
