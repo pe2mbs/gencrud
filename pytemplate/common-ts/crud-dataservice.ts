@@ -164,7 +164,7 @@ export class CrudDataService<T>
         return;
     }
 
-    public addRecord( record: T ): void 
+    public addRecord( record: T ): void
     {
         if ( this.debug )
         {
@@ -184,11 +184,20 @@ export class CrudDataService<T>
         return;
     }
 
+    public getRecordById( id )
+    {
+        if ( this.debug )
+        {
+            console.log( 'getRecordById', id );
+        }
+        return this.httpClient.get<T>( this._uri + '/get/' + id );
+    }
+
     public getRecord( record: T ): void 
     {
         if ( this.debug )
         {
-            console.log( 'addRecord', record );
+            console.log( 'getRecord', record );
         }
         this.dialogData = record;
         this.httpClient.get<T>( this._uri + '/get', record ).subscribe(result => {

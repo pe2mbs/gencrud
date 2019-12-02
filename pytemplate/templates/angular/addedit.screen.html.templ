@@ -21,13 +21,37 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 -->
-<h3>{ ${ obj.cls } - ${ obj.cls } Id: {{ data.record.${ obj.table.primaryKey } }}</h3>
+<h3>${ obj.cls } - ${ obj.cls } Id: {{ data.record.${ obj.table.primaryKey } }}</h3>
 <form class="" (ngSubmit)="submit" [formGroup]="formGroup">
 % for field in obj.table.columns:
- % if field.hasLabel():
+ % if field.hasLabel() and not field.hasTab:
     ${ field.angularUiInput() }
  % endif
 % endfor
+
+% if obj.table.hasTabs( 'screen' ):
+        <${ obj.table.tabs( 'screen' ).groupTag }>
+% for label in obj.table.tabs( 'screen' ).labels:
+            <${ obj.table.tabs( 'screen' ).tabTag } label="${ label }">
+%   if obj.table.tabs( 'dialog' ).hasComponent( label ):
+                    <${obj.table.tabs( 'screen' ).component( label )}>
+                    </${obj.table.tabs( 'screen' ).component( label )}>
+%   else:
+%     if obj.table.tabs( 'screen' ).contentTag is not None:
+                <${ obj.table.tabs( 'screen' ).contentTag }>
+%     endif
+%     for field in obj.table.tabs( 'screen' ).fieldsFor( label ):
+                    ${ field.angularUiInput() }
+%     endfor
+%     if obj.table.tabs( 'screen' ).contentTag is not None:
+                </${ obj.table.tabs( 'screen' ).contentTag }>
+%     endif
+%   endif
+            </${ obj.table.tabs( 'screen' ).tabTag }>
+%  endfor
+        </${ obj.table.tabs( 'screen' ).groupTag }>
+% endif
+
     <div>
         <button mat-button
                 [type]="submit"

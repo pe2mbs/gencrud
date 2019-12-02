@@ -24,6 +24,11 @@
 <div class="container">
     <h3 mat-dialog-title>${ obj.cls } Id: {{ data.record.${ obj.table.primaryKey } }}</h3>
     <form class="mat-dialog-content" (ngSubmit)="submit" [formGroup]="formGroup">
+% for field in obj.table.columns:
+ % if field.hasLabel() and not field.hasTab:
+        ${ field.angularUiInput() }
+ % endif
+% endfor
 % if obj.table.hasTabs( 'dialog' ):
         <${ obj.table.tabs( 'dialog' ).groupTag }>
 % for label in obj.table.tabs( 'dialog' ).labels:
@@ -45,12 +50,6 @@
             </${ obj.table.tabs( 'dialog' ).tabTag }>
 %  endfor
         </${ obj.table.tabs( 'dialog' ).groupTag }>
-% else:
- % for field in obj.table.columns:
-  % if field.hasLabel():
-        ${ field.angularUiInput() }
-  % endif
- % endfor
 % endif
         <div mat-dialog-actions>
             <button mat-button

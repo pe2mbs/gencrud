@@ -27,12 +27,19 @@ import { Component,
          AfterViewInit, 
          OnChanges, 
          ViewEncapsulation, 
-         OnInit} from '@angular/core';
+         OnInit,
+         EventEmitter,
+         Output } from '@angular/core';
 import { NG_VALUE_ACCESSOR, 
          ControlValueAccessor, 
-         FormGroupDirective} from '@angular/forms';
+         FormGroupDirective,
+         FormGroup,
+         FormControl } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { PytBaseComponent } from './base.input.component';
+import { DateAdapter } from '@angular/material';
+import * as moment_ from 'moment';
+
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -40,24 +47,59 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     multi: true
 };
 
+class DateConfig
+{
+    startView: 'month' | 'year' | 'multi-year';
+    touchUi: boolean;
+    minDate: moment_.Moment;
+    maxDate: moment_.Moment;
+}
+
 @Component( {
   selector: 'pyt-datetime-input-box',
-  template: `<div class="form">
-    <mat-form-field color="accent">
-        <input  matInput 
-                class="custom-input__input" 
-                id="{{ id }}"
-                placeholder="{{ placeholder }}"
-                [formControl]="control"/>
-        <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
-        <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
-        <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
-        <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
-    
-    </mat-form-field>
+  template: `<div class="form" [formGroup]="timeFormGroup">
+    <div fxLayout="row">
+        <mat-form-field color="accent" fxFlex="45">
+            <input id="{{ id }}_DATE"
+                matInput [matDatepicker]="datepicker"
+                placeholder="{{placeholderDate}}"
+                formControlName="dateControl"
+                [min]="config.minDate"
+                [max]="config.maxDate"
+                (dateChange)="dateChange( $event )">
+            <mat-datepicker-toggle matSuffix [for]="datepicker">
+            </mat-datepicker-toggle>
+            <mat-datepicker #datepicker
+                        [disabled]="disabled"
+                        [touchUi]="config.touchUi"
+                        startView="{{config.startView}}">
+            </mat-datepicker>
+            <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
+            <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
+            <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
+            <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
+        </mat-form-field>
+        <span  fxFlex="10"></span>
+        <mat-form-field color="accent" fxFlex="45">
+            <input [ngxTimepicker]="timePicker"
+                matInput
+
+                [format]="24"
+                placeholder="{{placeholderTime}}"
+                formControlName="timeControl">
+            <ngx-material-timepicker #timePicker
+                (timeSet)="timeChange( $event )"
+            ></ngx-material-timepicker>
+            <ngx-material-timepicker-toggle matSuffix [for]="timePicker">
+            </ngx-material-timepicker-toggle>
+            <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
+            <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
+            <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
+            <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
+        </mat-form-field>
+    <div>
 </div>`,
-  styles: [ 'custom-input__input{ width: 100%; }',
-            'mat-form-field { width: 100%; }' ],
+  styles: [ 'custom-input__input{ width: 40%; float: left; }' ],
   encapsulation: ViewEncapsulation.None,
   providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
   animations: [ trigger(
@@ -71,9 +113,63 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytDateTimeInputComponent extends PytBaseComponent
 {
-    constructor( formGroupDir: FormGroupDirective ) 
+    @Input() disabled: boolean;
+    @Input() placeholderDate: string;
+    @Input() placeholderTime: string;
+    @Input() model: Date;
+    @Input() purpose: string;
+    @Input() dateOnly: boolean;
+
+    @Output() dateUpdate = new EventEmitter<Date>();
+    public timeFormGroup: FormGroup;
+    public momentDate: moment_.Moment;
+    public config: DateConfig;
+    constructor( formGroupDir: FormGroupDirective,
+                 private adapter : DateAdapter<any> )
     {
         super( formGroupDir );
+        this.placeholderDate = "Select Date";
+        this.placeholderTime = "Select Time";
+        this.timeFormGroup = new FormGroup(
+            { dateControl: new FormControl(),
+              timeControl: new FormControl() }
+        );
+        this.adapter.setLocale("nl-NL");//todo: configurable
+        this.config = new DateConfig();
+        this.config.startView = 'month';
+        this.config.maxDate = moment_().add('year', -5);
+        this.config.minDate = moment_().add('year', +5);
+        this.dateOnly = false;
+        return;
+    }
+
+    ngOnInit()
+    {
+        super.ngOnInit();
+        console.log( "ngOnInit PytDateTimeInputComponent" )
+        console.log( '2019-11-29T16:12:00Z' )
+        let dt:Date = new Date( '2019-11-29T16:12:00+00:00');
+        console.log( "UtcDate:" + dt.toString() );
+        let time:string = dt.toTimeString().substring( 0, 5 );
+        console.log( "LocalDate NL:" + dt.toLocaleString( 'nl-NL' ) );
+        console.log( "LocalDate:" + time );
+        this.timeFormGroup.patchValue({ dateControl: dt,
+                                        timeControl: time
+        } );
+        console.log( "Control", this.control.value );
+    }
+
+    timeChange( event )
+    {
+        console.log( "timeChange", this.timeFormGroup.get('timeControl') );
+        console.log( "event", event );
+        return;
+    }
+
+    dateChange( event )
+    {
+        console.log( "dateChange", this.timeFormGroup.get('dateControl') );
+        console.log( "event", event );
         return;
     }
 }
