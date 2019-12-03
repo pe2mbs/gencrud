@@ -52,9 +52,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         {{ placeholder }}
     </mat-checkbox>
 </div><br/>`,
-    styles: [   'custom-input__input{ width: 100%; }',
+    styles: [   'custom-input { width: 100%; }',
                 'mat-form-field { width: 100%; }' ],
-    encapsulation: ViewEncapsulation.None,
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
     animations: CUSTOM_ANIMATIONS_CONTROLE
 } )

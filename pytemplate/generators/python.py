@@ -224,7 +224,12 @@ def generatePython( templates, config ):
             with open( os.path.join( modulePath,
                                      pytemplate.util.utils.sourceName( templ ) ),
                        pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
-                stream.write( Template( filename = os.path.abspath( templ ) ).render( obj = cfg ) )
+                # stream.write( Template( filename = os.path.abspath( templ ) ).render( obj = cfg ) )
+                for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
+                    stream.write( line )
+                    if sys.platform.startswith( 'linux' ):
+                        stream.write( '\n' )
+
 
             # Open the __init__.py
             filename = os.path.join( modulePath, '__init__.py' )

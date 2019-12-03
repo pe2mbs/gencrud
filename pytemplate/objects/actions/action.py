@@ -119,7 +119,11 @@ class TemplateAction( object ):
                 param = '?' + param
 
             function = "dataService.genericPut( '{uri}', '{param}' )".format( uri = self.uri,
-                                                                   param = param )
+                                                                              param = param )
+
+        else:
+            function = self.function
+
         button = '<span class="spacer"></span>'
         if function != '':
             button += '''<button {button} color="primary" (click)="{function}" id="{objname}.{name}">{content}</button>'''.\

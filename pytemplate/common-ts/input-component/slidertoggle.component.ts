@@ -43,7 +43,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 @Component( {
     selector: 'pyt-slidertoggle-input-box',
     template: `<div class="form">
-    <mat-slide-toggle class="custom-input__input"
+    <mat-slide-toggle class="custom-input"
                   id="{{ id }}"
                   [color]="color"
                   [labelPosition]="labelPosition"
@@ -51,9 +51,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         {{ placeholder }}
     </mat-slide-toggle>
 </div><br/>`,
-    styles: [   'custom-input__input{ width: 100%; }',
-                'mat-form-field { width: 100%; }' ],
-    encapsulation: ViewEncapsulation.None,
+    styles: [  'custom-input { width: 100%; }' ],
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
     animations: CUSTOM_ANIMATIONS_CONTROLE
 } )

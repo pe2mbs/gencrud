@@ -21,7 +21,9 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 */
+import { EventEmitter } from '@angular/core';
 import { DataSource } from '@angular/cdk/collections';
+import { PageEvent } from '@angular/material';
 import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { MatPaginator, MatSort } from '@angular/material';
 import { map } from 'rxjs/operators';
@@ -46,7 +48,8 @@ export class CrudDataSource<T> extends DataSource<T>
 
     constructor( public _databaseTable: CrudDataService<T>,
                  public _paginator: MatPaginator,
-                 public _sort: MatSort ) 
+                 public _sort: MatSort,
+                 public pageEvent: EventEmitter<PageEvent> )
     {
         super();
         // Reset to the first page when the user changes the filter.
@@ -76,7 +79,7 @@ export class CrudDataSource<T> extends DataSource<T>
             this._databaseTable.dataChange,
             this._sort.sortChange,
             this._filterChange,
-            this._paginator.page
+            this.pageEvent
         ];
 
         this._databaseTable.getAll();

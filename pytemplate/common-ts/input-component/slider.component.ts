@@ -42,10 +42,10 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 
 @Component( {
     selector: 'pyt-slider-input-box',
-    template: `<div class="form custom-input__input">
+    template: `<div class="form custom-">
     {{ placeholder }}
     <mat-slider id="{{ id }}"
-                class="custom-input__input"
+                class="custom-input"
                 [thumbLabel]="thumbLabel"
                 [vertical]="vertical"
                 [disabled]="disabled"
@@ -58,11 +58,9 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
                 [formControl]="control">
     </mat-slider>
 </div><br/>`,
-    styles: [   'custom-input__input{ width: 100%; }',
-                'mat-form-field { width: 100%; }',
+    styles: [   'custom-input{ width: 100%; }',
                 '.mat-slider-horizontal { width: 100%; }',
                 '.mat-slider-vertical { height: 300px; }' ],
-    encapsulation: ViewEncapsulation.None,
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
     animations: CUSTOM_ANIMATIONS_CONTROLE
 } )

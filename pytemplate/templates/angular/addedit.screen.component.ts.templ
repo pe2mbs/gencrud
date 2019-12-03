@@ -1,0 +1,182 @@
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { ${obj.cls}DataService } from './service';
+import { ActivatedRoute, RouterLink } from "@angular/router";
+import { Location } from '@angular/common';
+import { ${obj.cls}Record } from './model';
+% for field in obj.table.columns:
+ % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+import { PytSelectList } from '../../common/crud-dataservice';
+<%
+    break
+%>
+ % endif
+% endfor
+% for field in obj.table.columns:
+ % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+   % if field.ui.service is not None:
+import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
+   % endif
+ % endif
+% endfor
+
+
+@Component({
+    selector: 'app-addedit-screen-${obj.name}-component',
+    templateUrl: './addedit.screen.html',
+    styleUrls: ['./addedit.screen.css']
+})
+export class AddEditScreen${obj.cls}Component implements OnInit, OnDestroy
+{
+    // Base component
+    public formControl: FormControl;
+    public formGroup: FormGroup;
+    public mode: string;
+    protected debug: boolean = false;
+% for field in obj.table.columns:
+ % if field.ui is not None:
+  % if field.ui.isPassword():
+    public hide_${ field.name }: boolean  = true;
+  % elif field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+    % if field.ui.service is not None:
+      public ${ field.ui.service.name }List: PytSelectList[];
+    % elif field.ui.hasResolveList():
+      public ${ field.name }List = ${ field.ui.typescriptResolveList() }
+    % endif
+  % endif
+ % endif
+% endfor
+    public isEditMode(): boolean
+    {
+        return ( this.mode === 'edit' );
+    }
+
+    public getErrorMessage( ctrl_name: any ) : string
+    {
+        let ctrl = null;
+        if ( typeof ctrl_name === 'string' )
+        {
+            ctrl = this.formGroup.get( ctrl_name );
+        }
+        else
+        {
+            ctrl = ctrl_name;
+        }
+        if ( ctrl == null || ctrl.valid )
+        {
+            return ( '' );
+        }
+        if ( this.debug )
+        {
+            console.log( 'getErrorMessage( ctrl_name = "' + ctrl_name + '" )' );
+        }
+        let result = 'Unknown error';
+        if ( ctrl.hasError( 'required' ) )
+        {
+            result = 'Required field';
+        }
+        else if ( ctrl.hasError( 'email' ) )
+        {
+            result = 'Not a valid email';
+        }
+        else if ( ctrl.hasError( 'maxlength' ) )
+        {
+            result = 'The data is too long, allowed (' + ctrl.errors.maxlength.requiredLength + ')';
+        }
+        else if ( ctrl.invalid )
+        {
+            console.log( result, ctrl );
+        }
+        if ( this.debug )
+        {
+            console.log( "getErrorMessage() => " + result );
+        }
+        return ( result );
+    }
+
+    // Specific to component
+    private sub: any;
+    id: string;
+    record: ${obj.cls}Record;
+    constructor( private route: ActivatedRoute
+               , private location: Location
+               , public dataService: ${obj.cls}DataService
+${ obj.externalService }  )
+    {
+        this.record = new ${obj.cls}Record();
+        this.formGroup = new FormGroup( {
+% for field in obj.table.columns:
+            ${ field.name }: new FormControl( this.record.${ field.name },
+                                              ${ field.validators } ),
+% endfor
+        } );
+
+        return;
+    }
+
+    ngOnInit()
+    {
+        this.sub = this.route.params.subscribe( params => {
+            // (+) converts string 'id' to a number
+            this.id = params[ 'id' ];
+            this.mode = params[ 'mode' ];
+            this.record = params[ 'id' ];
+            // In a real app: dispatch action to load the details here.
+        } );
+        this.dataService.getRecordById( this.id ).subscribe( record => {
+            this.record = record
+            this.formGroup.patchValue( {
+% for field in obj.table.columns:
+                ${ field.name }: this.record.${ field.name },
+% endfor
+            } );
+            this.dataService.lockRecord( record );
+        } );
+% for field in obj.table.columns:
+  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+    % if field.ui.service is not None:
+        ${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( dataList => {
+            console.log( '${ field.ui.service.name }Service.getSelectList => ', dataList );
+            this.${ field.ui.service.name }List = dataList;
+        } );
+    % endif
+ % endif
+% endfor
+        return;
+    }
+
+    ngOnDestroy()
+    {
+        this.sub.unsubscribe();
+        this.dataService.unlockRecord( this.record );
+    }
+
+% for field in obj.table.columns:
+    public get ${ field.name }()
+    {
+        return ( this.formGroup.get( '${ field.name }' ) );
+    }
+
+% endfor
+
+    onSaveClick(): void
+    {
+        console.log( 'AddEdit${obj.cls}Dialog.onSaveClick() => ', this.formGroup.value );
+        if ( !this.isEditMode() )
+        {
+            this.dataService.addRecord( this.formGroup.value );
+        }
+        else
+        {
+            this.dataService.updateRecord( this.formGroup.value );
+        }
+        this.location.back();
+        return;
+    }
+
+    onCancelClick(): void
+    {
+        this.location.back();
+        return;
+    }
+}

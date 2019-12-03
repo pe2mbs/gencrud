@@ -21,7 +21,7 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 -->
-<h3>${ obj.cls } - ${ obj.cls } Id: {{ data.record.${ obj.table.primaryKey } }}</h3>
+<h3>{{ mode }} ${ obj.cls }</h3>
 <form class="" (ngSubmit)="submit" [formGroup]="formGroup">
 % for field in obj.table.columns:
  % if field.hasLabel() and not field.hasTab:
@@ -57,7 +57,6 @@
                 [type]="submit"
                 id="${ obj.cls }.submit"
                 [disabled]="!formGroup.valid"
-                [mat-dialog-close]="1"
                 (click)="onSaveClick()">Save</button>
         <button mat-button
                 (click)="onCancelClick()"

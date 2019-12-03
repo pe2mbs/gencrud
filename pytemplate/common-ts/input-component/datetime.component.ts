@@ -47,14 +47,6 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     multi: true
 };
 
-class DateConfig
-{
-    startView: 'month' | 'year' | 'multi-year';
-    touchUi: boolean;
-    minDate: moment_.Moment;
-    maxDate: moment_.Moment;
-}
-
 @Component( {
   selector: 'pyt-datetime-input-box',
   template: `<div class="form" [formGroup]="timeFormGroup">
@@ -64,15 +56,15 @@ class DateConfig
                 matInput [matDatepicker]="datepicker"
                 placeholder="{{placeholderDate}}"
                 formControlName="dateControl"
-                [min]="config.minDate"
-                [max]="config.maxDate"
+                [min]="minDate"
+                [max]="maxDate"
                 (dateChange)="dateChange( $event )">
             <mat-datepicker-toggle matSuffix [for]="datepicker">
             </mat-datepicker-toggle>
             <mat-datepicker #datepicker
                         [disabled]="disabled"
-                        [touchUi]="config.touchUi"
-                        startView="{{config.startView}}">
+                        [touchUi]="touchUi"
+                        startView="{{startView}}">
             </mat-datepicker>
             <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
             <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
@@ -99,8 +91,7 @@ class DateConfig
         </mat-form-field>
     <div>
 </div>`,
-  styles: [ 'custom-input__input{ width: 40%; float: left; }' ],
-  encapsulation: ViewEncapsulation.None,
+  styles: [ 'custom-input{ width: 40%; float: left; }' ],
   providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
   animations: [ trigger(
       'visibilityChanged', [
@@ -113,7 +104,7 @@ class DateConfig
 } )
 export class PytDateTimeInputComponent extends PytBaseComponent
 {
-    @Input() disabled: boolean;
+    @Input() disabled: boolean = false;
     @Input() placeholderDate: string;
     @Input() placeholderTime: string;
     @Input() model: Date;
@@ -123,9 +114,12 @@ export class PytDateTimeInputComponent extends PytBaseComponent
     @Output() dateUpdate = new EventEmitter<Date>();
     public timeFormGroup: FormGroup;
     public momentDate: moment_.Moment;
-    public config: DateConfig;
-    constructor( formGroupDir: FormGroupDirective,
-                 private adapter : DateAdapter<any> )
+    public maxDate: number;
+    public minDate: number;
+    public startView: string = 'month'; // | 'year' | 'multi-year';;
+    public touchUi: boolean = false;
+    protected localDate: Date;
+    constructor( formGroupDir: FormGroupDirective )
     {
         super( formGroupDir );
         this.placeholderDate = "Select Date";
@@ -134,42 +128,40 @@ export class PytDateTimeInputComponent extends PytBaseComponent
             { dateControl: new FormControl(),
               timeControl: new FormControl() }
         );
-        this.adapter.setLocale("nl-NL");//todo: configurable
-        this.config = new DateConfig();
-        this.config.startView = 'month';
-        this.config.maxDate = moment_().add('year', -5);
-        this.config.minDate = moment_().add('year', +5);
-        this.dateOnly = false;
+        this.startView = 'month';
+        this.maxDate = +moment_().add('year', -5);
+        this.minDate = +moment_().add('year', +5);
         return;
     }
 
     ngOnInit()
     {
         super.ngOnInit();
-        console.log( "ngOnInit PytDateTimeInputComponent" )
-        console.log( '2019-11-29T16:12:00Z' )
-        let dt:Date = new Date( '2019-11-29T16:12:00+00:00');
-        console.log( "UtcDate:" + dt.toString() );
-        let time:string = dt.toTimeString().substring( 0, 5 );
-        console.log( "LocalDate NL:" + dt.toLocaleString( 'nl-NL' ) );
-        console.log( "LocalDate:" + time );
-        this.timeFormGroup.patchValue({ dateControl: dt,
+        this.localDate = new Date( this.control.value );
+        let time:string = this.localDate.toTimeString().substring( 0, 5 );
+        this.timeFormGroup.patchValue({ dateControl: this.localDate,
                                         timeControl: time
         } );
-        console.log( "Control", this.control.value );
+        return
     }
 
     timeChange( event )
     {
-        console.log( "timeChange", this.timeFormGroup.get('timeControl') );
-        console.log( "event", event );
+        let time: string = event.toString();
+        this.localDate.setHours( +time.substr( 0, 2 ) );
+        this.localDate.setMinutes( +time.substr( 3, 5 ) );
+        this.localDate.setSeconds( 0 );
+        this.control.setValue( this.localDate );
         return;
     }
 
     dateChange( event )
     {
-        console.log( "dateChange", this.timeFormGroup.get('dateControl') );
-        console.log( "event", event );
+        let dt:Date = new Date( this.timeFormGroup.get('dateControl').value );
+        this.localDate.setHours( dt.getHours() );
+        this.localDate.setMinutes( dt.getMinutes() );
+        this.localDate.setSeconds( dt.getSeconds() );
+        this.control.setValue( this.localDate.toUTCString() );
         return;
     }
 }

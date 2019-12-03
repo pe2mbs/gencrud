@@ -46,7 +46,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   <mat-form-field color="accent">
     <textarea matInput
            rows="{{ rows }}" cols="{{ cols }}" 
-           class="custom-input__input" 
+           class="custom-input"
            id="{{ id }}"
            placeholder="{{ placeholder }}"
            [formControl]="control">
@@ -54,9 +54,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     </textarea>
   </mat-form-field>
 </div>`,
-  styles: [ 'custom-input__input{ width: 100%; }',
-            'mat-form-field { width: 100%; }' ],
-  encapsulation: ViewEncapsulation.None,
+  styles: [   'custom-input { width: 100%; }',
+                'mat-form-field { width: 100%; }' ],
   providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
   animations: [ trigger(
       'visibilityChanged', [

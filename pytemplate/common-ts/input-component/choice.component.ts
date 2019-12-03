@@ -59,9 +59,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
     </mat-form-field>
 </div>`,
-  styles: [ 'custom-input__input{ width: 100%; }',
-            'mat-form-field { width: 100%; }' ],
-  encapsulation: ViewEncapsulation.None,
+  styles: [   'custom-input { width: 100%; }',
+                'mat-form-field { width: 100%; }' ],
   providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
   animations: [ trigger(
       'visibilityChanged', [

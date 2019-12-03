@@ -21,9 +21,10 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 */
+import { EventEmitter } from '@angular/core';
 import { CrudDataSource } from '../../common/crud-datasource';
 import { CrudDataService, PytSelectList } from '../../common/crud-dataservice';
-import { MatPaginator, MatSort } from '@angular/material';
+import { MatPaginator, MatSort, PageEvent } from '@angular/material';
 import { ${ obj.cls }Record } from './model';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
@@ -44,9 +45,10 @@ export class ${ obj.cls }DataSource extends CrudDataSource<${ obj.cls }Record>
     constructor(   _databaseTable: CrudDataService<${ obj.cls }Record>
                  , _paginator: MatPaginator
                  , _sort: MatSort
+                 , _event: EventEmitter<PageEvent>
 ${ obj.externalService } )
     {
-        super( _databaseTable, _paginator, _sort );
+        super( _databaseTable, _paginator, _sort, _event );
 % for field in obj.table.columns:
  % if ( field.hasService() or field.hasResolveList() ) and ( field.ui.isChoice() or field.ui.isCombobox() ):
         this.${ field.name }_List = new Array<PytSelectList>();

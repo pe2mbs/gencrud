@@ -27,18 +27,17 @@
         <input matInput #filter placeholder="Filter User">
     </mat-form-field>
     <span class="spacer-search"></span>
-    <span>
 % for action in obj.actions.getHeaderButtons():
-        ${ action.buttonObject() }
+    ${ action.buttonObject() }
 % endfor
-    </span>
     <span class="spacer-search"></span>
     <span id="User.paginator">
-        <mat-paginator #paginator
+        <mat-paginator #top_paginator
                [length]="dataSource.filteredData.length"
                [pageIndex]="0"
                [pageSize]="pageSize"
-               [pageSizeOptions]="[5, 10, 25, 100]">
+               [pageSizeOptions]="[5, 10, 25, 100]"
+               (page)="pageEvent = topPageEvent( $event )">
         </mat-paginator>
     </span>
     <span>
@@ -80,9 +79,7 @@
     <ng-container matColumnDef="actions">
         <!-- Header buttons -->
         <mat-header-cell *matHeaderCellDef>
-% for action in obj.actions.getHeaderButtons():
-            ${ action.buttonObject() }
-% endfor
+            Options
         </mat-header-cell>
         <!-- Row buttons -->
         <mat-cell *matCellDef="let row; let i=index;" >
@@ -110,7 +107,8 @@
                [length]="dataSource.filteredData.length"
                [pageIndex]="0"
                [pageSize]="pageSize"
-               [pageSizeOptions]="[5, 10, 25, 100]">
+               [pageSizeOptions]="[5, 10, 25, 100]"
+               (page)="pageEvent = bottomPageEvent( $event )">
         </mat-paginator>
     </span>
     <span>

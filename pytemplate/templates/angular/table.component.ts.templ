@@ -21,9 +21,10 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 */
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, EventEmitter } from '@angular/core';
+import { Router } from  '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { MatDialog, MatPaginator, MatSort } from '@angular/material';
+import { MatDialog, MatPaginator, MatSort, PageEvent } from '@angular/material';
 import { fromEvent } from 'rxjs';
 import { ${ obj.cls }Record } from './model';
 % if obj.actions.get( 'new' ).position != 'none' or obj.actions.get( 'edit' ).position != 'none':
@@ -60,9 +61,11 @@ export class ${ obj.cls }TableComponent implements OnInit
     index:            number;
     id:               number;
     public pageSize:  number = 10;
+    public paginatorEvent: EventEmitter<PageEvent>;
 
     constructor( public httpClient: HttpClient
                  , public dialog: MatDialog
+                 , public router: Router
                  , public dataService: ${ obj.cls }DataService
 % if obj.table.hasViewSizeService:
                  , public viewSizeService: ${ obj.table.viewSize }
@@ -72,10 +75,12 @@ ${ obj.externalService } )
 % if obj.table.hasViewSizeValue:
         this.pageSize = ${ obj.table.viewSize }
 % endif
+        this.paginatorEvent = new EventEmitter<PageEvent>();
         return;
     }
 
-    @ViewChild( MatPaginator )  paginator: MatPaginator;
+    @ViewChild( MatPaginator )  bot_paginator: MatPaginator;
+    @ViewChild( MatPaginator )  top_paginator: MatPaginator;
     @ViewChild( MatSort )       sort: MatSort;
     @ViewChild( 'filter' )      filter: ElementRef;
 
@@ -97,8 +102,21 @@ ${ obj.externalService } )
         return;
     }
 
-% if obj.actions.get( 'new' ).position != 'none':
+% if obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'screen':
+    public screenAddNew(): void
+    {
+        this.router.navigate( [ 'addedit${obj.name}', { id: 0, mode: 'new' } ] );
+        return;
+    }
+% endif
+% if obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'dialog':
     public addNew(): void
+    {
+        console.log("function addNew() deprecated use dialogAddNew()" )
+        this.dialogAddNew()
+    }
+
+    public dialogAddNew(): void
     {
         let record: ${ obj.cls }Record = new ${ obj.cls }Record;
         console.log( 'addNew ', record );
@@ -122,8 +140,23 @@ ${ obj.externalService } )
     }
 
 % endif
-% if obj.actions.get( 'edit' ).position != 'none':
-    public startEdit( i: number, record: ${ obj.cls}Record ): void
+% if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'screen':
+    public screenEditRecord( i: number, row: ${obj.cls}Record ): void
+    {
+        this.router.navigate( [ 'addedit${obj.name}', { id: row.${obj.table.primaryKey}, mode: 'edit' } ] );
+        return;
+    }
+% endif
+% if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'dialog':
+    public startEdit( i: number, record: ${obj.cls}Record ): void
+    {
+        // Downwards compatility
+        console.log("function startEdit() deprecated use dialogEditRecord()" )
+        this.dialogEditRecord( i, record );
+        return
+    }
+
+    public dialogEditRecord( i: number, record: ${ obj.cls}Record ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
@@ -158,8 +191,16 @@ ${ obj.externalService } )
     }
 
 % endif
-% if obj.actions.get( 'delete' ).position != 'none':
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
     public deleteItem( i: number, record: ${ obj.cls }Record ): void
+    {
+        // Downwards compatility
+        console.log("function deleteItem() deprecated use deleteRecord()" )
+        this.dialogDeleteRecord( i, record );
+        return
+    }
+
+    public dialogDeleteRecord( i: number, record: ${ obj.cls }Record ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
@@ -190,17 +231,39 @@ ${ obj.externalService } )
     }
 
 % endif
+
+    public topPageEvent( $event )
+    {
+        this.pageSize = $event.pageSize;
+        this.bot_paginator.length = $event.length;
+        this.bot_paginator.pageSize = $event.pageSize;
+        this.bot_paginator.pageIndex = $event.pageIndex;
+        this.paginatorEvent.emit( $event );
+        return ( $event );
+    }
+
+    public bottomPageEvent( $event )
+    {
+        this.pageSize = $event.pageSize;
+        this.top_paginator.length = $event.length;
+        this.top_paginator.pageSize = $event.pageSize;
+        this.top_paginator.pageIndex = $event.pageIndex;
+        this.paginatorEvent.emit( $event );
+        return ( $event );
+    }
+
     private refreshTable(): void
     {
-        this.paginator._changePageSize( this.paginator.pageSize );
+        this.bot_paginator._changePageSize( this.bot_paginator.pageSize );
         return;
     }
 
     public loadData(): void
     {
         this.dataSource = new ${ obj.cls }DataSource( this.dataService
-                                                , this.paginator
+                                                , this.bot_paginator
                                                 , this.sort
+                                                , this.paginatorEvent
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
    % if field.ui.service is not None:
