@@ -164,4 +164,10 @@ export class PytDateTimeInputComponent extends PytBaseComponent
         this.control.setValue( this.localDate.toUTCString() );
         return;
     }
+
+    public getDefaultValue(): string
+    {
+        var today = new Date();
+        return ( today.toString() );
+    }
 }

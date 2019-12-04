@@ -100,12 +100,6 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
 
     ngOnInit() 
     {
-        /*
-        console.log( 'debug', this.debug )
-        console.log( 'error', this.error )
-        console.log( 'readonly', this.readonly )
-        */
-
         if ( this.debug )
         {
             console.log( 'base-ngOnInit', this.formControlName );
@@ -184,6 +178,15 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
         return;
     }
 
+    public getDefaultValue()
+    {
+        if ( this.debug )
+        {
+            console.log( 'base-getDefaultValue()' )
+        }
+        return '';
+    }
+
     //Lifecycle hook. angular.io for more info
     ngAfterViewInit()
     {
@@ -194,10 +197,9 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
         // RESET the custom input form control UI when the form control is RESET
         this.control.valueChanges.subscribe( () => {
             // check condition if the form control is RESET
-            if ( this.control.value === '' ||
-                  this.control.value === null ||
-                  this.control.value === undefined ) {
-                this.value = '';
+            if ( this.control.value === '' || this.control.value === null || this.control.value === undefined )
+            {
+                this.control.setValue( this.getDefaultValue(), { emitEvent: false } );
             }
         } );
     }

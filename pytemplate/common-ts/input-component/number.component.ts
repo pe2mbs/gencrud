@@ -75,4 +75,9 @@ export class PytNumberInputComponent extends PytBaseComponent
         super( formGroupDir );
         return;
     }
+
+    public getDefaultValue(): string
+    {
+        return ( "0" );
+    }
 }
