@@ -68,8 +68,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytTextareaInputComponent extends PytBaseComponent implements OnInit
 {
-    public rows = 4;
-    public cols = 80;
+    @Input( 'rows' )        rows = 4;
+    @Input( 'rows' )        cols = 80;
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );
