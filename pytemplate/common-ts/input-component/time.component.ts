@@ -22,14 +22,8 @@
 *   the table from the configuration.
 */
 import { Component,
-         Input, 
-         forwardRef, 
-         AfterViewInit, 
-         OnChanges, 
-         ViewEncapsulation, 
-         OnInit} from '@angular/core';
+         forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR, 
-         ControlValueAccessor, 
          FormGroupDirective} from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { PytBaseComponent } from './base.input.component';
@@ -44,11 +38,17 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   selector: 'pyt-time-input-box',
   template: `<div class="form">
     <mat-form-field color="accent">
-        <input  matInput 
+        <input [ngxTimepicker]="timePicker"
                 class="custom-input"
                 id="{{ id }}"
+                matInput
+                [format]="24"
                 placeholder="{{ placeholder }}"
-                [formControl]="control"/>
+                [formControl]="control">
+        <ngx-material-timepicker #timePicker (timeSet)="timeChange( $event )">
+        </ngx-material-timepicker>
+        <ngx-material-timepicker-toggle matSuffix [for]="timePicker">
+        </ngx-material-timepicker-toggle>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
@@ -73,5 +73,14 @@ export class PytTimeInputComponent extends PytBaseComponent
     {
         super( formGroupDir );
         return;
+    }
+
+    public getDefaultValue()
+    {
+        if ( this.debug )
+        {
+            console.log( 'time-getDefaultValue()' )
+        }
+        return '00:00';
     }
 }

@@ -22,17 +22,12 @@
 *   the table from the configuration.
 */
 import { Component,
-         Input, 
-         forwardRef, 
-         AfterViewInit, 
-         OnChanges, 
-         ViewEncapsulation, 
-         OnInit} from '@angular/core';
+         forwardRef } from '@angular/core';
 import { NG_VALUE_ACCESSOR, 
-         ControlValueAccessor, 
          FormGroupDirective} from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { PytBaseComponent } from './base.input.component';
+import * as moment_ from 'moment';
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -44,11 +39,22 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   selector: 'pyt-date-input-box',
   template: `<div class="form">
     <mat-form-field color="accent">
-        <input  matInput 
-                class="custom-input__input" 
+        <input id="{{ id }}_DATE"
+                class="custom-input"
+                matInput [matDatepicker]="datepicker"
                 id="{{ id }}"
                 placeholder="{{ placeholder }}"
-                [formControl]="control"/>
+                [formControl]="control"
+                [min]="minDate"
+                [max]="maxDate"
+                (dateChange)="dateChange( $event )">
+        <mat-datepicker-toggle matSuffix [for]="datepicker">
+        </mat-datepicker-toggle>
+        <mat-datepicker #datepicker
+                        [disabled]="disabled"
+                        [touchUi]="touchUi"
+                        startView="{{startView}}">
+        </mat-datepicker>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
@@ -69,9 +75,24 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytDateInputComponent extends PytBaseComponent
 {
+    public maxDate: number;
+    public minDate: number;
+    public startView: string = 'month'; // | 'year' | 'multi-year';;
+    public touchUi: boolean = false;
+
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );
+        return;
+    }
+
+    public getDefaultValue(): any
+    {
+        return new Date();
+    }
+
+    public dateChange( $event )
+    {
         return;
     }
 }
