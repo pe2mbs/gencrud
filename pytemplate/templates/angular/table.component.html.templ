@@ -34,7 +34,7 @@
     <span id="User.paginator">
         <mat-paginator #top_paginator
                [length]="dataSource.filteredData.length"
-               [pageIndex]="0"
+               [pageIndex]="pageIndex"
                [pageSize]="pageSize"
                [pageSizeOptions]="[5, 10, 25, 100]"
                (page)="pageEvent = pagingEvent( $event )">
@@ -105,7 +105,7 @@
     <span id="${ obj.cls }.paginator">
         <mat-paginator #bot_paginator
                [length]="dataSource.filteredData.length"
-               [pageIndex]="0"
+               [pageIndex]="pageIndex"
                [pageSize]="pageSize"
                [pageSizeOptions]="[5, 10, 25, 100]"
                (page)="pageEvent = pagingEvent( $event )">

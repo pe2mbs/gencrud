@@ -57,10 +57,11 @@ export class ${ obj.cls }TableComponent implements OnInit
                             'actions'
                         ];
 
-    dataSource:       ${ obj.cls }DataSource  | null;
-    index:            number;
-    id:               number;
-    public pageSize:  number = 10;
+    dataSource:         ${ obj.cls }DataSource  | null;
+    index:              number;
+    id:                 number;
+    public pageSize:    number = 10;
+    public pageIndex:   number = 0;
     public paginatorEvent: EventEmitter<PageEvent>;
     @ViewChild( 'bot_paginator' )   bot_paginator: MatPaginator;
     @ViewChild( 'top_paginator' )   top_paginator: MatPaginator;
