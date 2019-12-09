@@ -54,6 +54,16 @@ def registerApi( app, cors ):
     return
 
 
+@${ obj.name }Api.route( '${ obj.uri }/list/<str:id>/<str:value>', methods=[ 'GET' ] )
+def get${ obj.cls }List( id, value ):
+    recordList = db.session.query( ${ obj.cls } ). \
+                 filter_by( { id: value } ).\
+                 ${ obj.orderBy() }.all()
+    result = ${ obj.name }sSchema.jsonify( recordList )
+    logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
+    return result
+
+
 @${ obj.name }Api.route( '${ obj.uri }/list', methods=[ 'GET' ] )
 def get${ obj.cls }List():
     recordList = db.session.query( ${ obj.cls } ).${ obj.orderBy() }.all()

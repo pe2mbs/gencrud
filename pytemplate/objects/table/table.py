@@ -149,7 +149,7 @@ class TemplateTable( object ):
         return len( self.__table.get( tp + 'tabs', [] ) ) > 0
 
     def tabs( self, tp = 'dialog' ):
-        return TemplateTabs( self, **self.__table.get( tp + 'tabs', [] ) )
+        return TemplateTabs( self, **self.__table.get( tp + 'tabs', {} ) )
 
     @property
     def Mixin( self ):

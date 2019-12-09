@@ -153,11 +153,29 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                                                                                                          app = config.application,
                                                                                                          mod = cfg.name ) )
         if cfg.menuItem is not None:
-            entries.append( {
+            routeItem = {
                 'path': "'{}'".format( cfg.menuItem.route[1:] ),
                 'component': '{cls}TableComponent'.format( cls = cfg.cls ),
-                'data': { 'title': "'{cls} table'".format( cls = cfg.cls ) }
-            } )
+                'data': { 'title': "'{cls} table'".format( cls = cfg.cls ),
+                          'breadcrum': "'{}'".format( cfg.cls ) }
+            }
+            # Do we have child pages for new and edit?
+            children = []
+            for action in cfg.actions:
+                if action.type == 'screen' and action.isAngularRoute():
+                    children.append( {  'path': action.route.name,
+                                        'component': "'{}'".format( action.route.cls ),
+                                        'data': {
+                                            'title': "'{cls} {label}'".format( cls = cfg.cls,
+                                                                               label = action.route.label ),
+                                            'breadcrum': "'{}'".format( action.route.label )
+                                        }
+                                      } )
+
+            if len( children ) > 0:
+                routeItem[ 'children' ] = children
+
+            entries.append( routeItem )
 
     rangePos = PositionInterface()
     sectionLines = pytemplate.util.utils.searchSection( lines,

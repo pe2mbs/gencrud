@@ -60,6 +60,8 @@ export class ${ obj.cls }TableComponent implements OnInit
     dataSource:         ${ obj.cls }DataSource  | null;
     index:              number;
     id:                 number;
+    private sub:        any;
+    private backendFilter: any = null;
     public pageSize:    number = 10;
     public pageIndex:   number = 0;
     public paginatorEvent: EventEmitter<PageEvent>;
@@ -69,6 +71,8 @@ export class ${ obj.cls }TableComponent implements OnInit
     @ViewChild( 'filter' )      filter: ElementRef;
 
     constructor( public httpClient: HttpClient
+                 , private route: ActivatedRoute
+                 , private location: Location
                  , public dialog: MatDialog
                  , public router: Router
                  , public dataService: ${ obj.cls }DataService
@@ -86,6 +90,16 @@ ${ obj.externalService } )
 
     public ngOnInit(): void
     {
+        this.sub = this.route.params.subscribe( params => {
+            // (+) converts string 'id' to a number
+            this.mode = params[ 'mode' ];
+            this.backendFilter = {
+                id: params[ 'id' ],
+                value: params[ 'value' ]
+            }
+            // In a real app: dispatch action to load the details here.
+        } );
+        console.log( 'ngOnInit: backendFilter', this.backendFilter );
         this.loadData();
 % if obj.table.hasViewSizeService:
         this.pageSize = viewSizeService.getViewSize();
@@ -260,12 +274,13 @@ ${ obj.externalService } )
                                                 , this.bot_paginator
                                                 , this.sort
                                                 , this.paginatorEvent
+                                                , this.backendFilter
 % for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-   % if field.ui.service is not None:
+  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+    % if field.ui.service is not None:
                                                 , this.${field.ui.service.name}Service
-   % endif
- % endif
+    % endif
+  % endif
 % endfor
                                                 );
         fromEvent( this.filter.nativeElement, 'keyup' ).subscribe( () => {

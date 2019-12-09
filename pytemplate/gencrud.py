@@ -67,6 +67,7 @@ def verifyLoadProject( env, config ):
     else:
         raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
+    logger.info( 'Configuration for {}: {}'.format( env, json.dumps( data, indent = 4 ) ) )
     if env == 'angular':
         # Check if we have a valid Angular environment
         if 'defaultProject' in data and 'projects' in data:
@@ -84,6 +85,7 @@ def verifyLoadProject( env, config ):
         if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
             raise FlaskEnvironmentNotFound()
 
+        logging.info( "Application: {} target application: {}".format( config.application, data[ 'COMMON' ][ 'API_MODULE' ] ) )
         if data[ 'COMMON' ][ 'API_MODULE' ] != config.application:
             raise FlaskEnvironmentNotFound()
 

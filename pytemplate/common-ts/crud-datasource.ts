@@ -49,7 +49,8 @@ export class CrudDataSource<T> extends DataSource<T>
     constructor( public _databaseTable: CrudDataService<T>,
                  public _paginator: MatPaginator,
                  public _sort: MatSort,
-                 public pageEvent: EventEmitter<PageEvent> )
+                 public pageEvent: EventEmitter<PageEvent>,
+                 protected _backend_filter: any )
     {
         super();
         // Reset to the first page when the user changes the filter.
@@ -82,7 +83,7 @@ export class CrudDataSource<T> extends DataSource<T>
             this.pageEvent
         ];
 
-        this._databaseTable.getAll();
+        this._databaseTable.getAll( _backend_filter );
 
         return merge(...displayDataChanges).pipe(map( () => {
             // Filter data

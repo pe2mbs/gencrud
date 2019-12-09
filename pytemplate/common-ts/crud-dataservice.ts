@@ -67,14 +67,22 @@ export class CrudDataService<T>
     }
 
     /** CRUD METHODS */
-    public getAll(): void 
+    public getAll( _backend_filter: any ): void
     {
-        this.httpClient.get<T[]>( this._uri + '/list' ).subscribe(data => {
-            this.dataChange.next( data );
-        },
-        (error: HttpErrorResponse) => {
-            console.log (error.name + ' ' + error.message);
-        });
+        let uri = '/list'
+        if ( _backend_filter !== none )
+        {
+            uri += '?id=' + _backend_filter.id + '&value=' + _backend_filter.value
+        }
+        this.httpClient.get<T[]>( this._uri + uri ).subscribe(
+            data => {
+                this.dataChange.next( data );
+            },
+            (error: HttpErrorResponse) => {
+                console.log (error.name + ' ' + error.message);
+            }
+        );
+        return;
     }
 
     public getSelectList( value: string, label: string ): Observable<PytSelectList[]>

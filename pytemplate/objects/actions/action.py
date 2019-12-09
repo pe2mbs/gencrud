@@ -22,6 +22,7 @@
 #   the table from the configuration.
 #
 from pytemplate.util.exceptions import InvalidSetting
+from pytemplate.objects.actions.route import RouteTemplate
 
 
 class TemplateAction( object ):
@@ -92,7 +93,7 @@ class TemplateAction( object ):
 
     @property
     def route( self ):
-        return self.__cfg.get( 'route', '' )
+        return RouteTemplate( self, **self.__cfg.get( 'route', None ) ) if self.isAngularRoute() else {}
 
     @property
     def param( self ):
