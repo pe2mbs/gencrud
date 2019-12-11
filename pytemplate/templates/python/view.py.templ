@@ -54,8 +54,8 @@ def registerApi( app, cors ):
     return
 
 
-@${ obj.name }Api.route( '${ obj.uri }/list/<str:id>/<str:value>', methods=[ 'GET' ] )
-def get${ obj.cls }List( id, value ):
+@${ obj.name }Api.route( '${ obj.uri }/list/<id>/<value>', methods=[ 'GET' ] )
+def get${ obj.cls }ListFiltered( id, value ):
     recordList = db.session.query( ${ obj.cls } ). \
                  filter_by( { id: value } ).\
                  ${ obj.orderBy() }.all()

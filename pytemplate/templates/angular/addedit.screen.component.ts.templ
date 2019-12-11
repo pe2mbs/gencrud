@@ -23,7 +23,7 @@ import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
 
 @Component({
     selector: 'app-addedit-screen-${obj.name}-component',
-    templateUrl: './addedit.screen.html' ]
+    templateUrl: './addedit.screen.html'
 })
 export class AddEditScreen${obj.cls}Component implements OnInit, OnDestroy
 {
@@ -119,14 +119,13 @@ ${ obj.externalService }  )
             // (+) converts string 'id' to a number
             this.id = params[ 'id' ];
             this.mode = params[ 'mode' ];
-            this.record = params[ 'id' ];
             // In a real app: dispatch action to load the details here.
         } );
         this.dataService.getRecordById( this.id ).subscribe( record => {
-            this.record = record
+            this.record = record;
             this.formGroup.patchValue( {
 % for field in obj.table.columns:
-                ${ field.name }: this.record.${ field.name },
+                ${ field.name }: record.${ field.name },
 % endfor
             } );
             this.dataService.lockRecord( record );

@@ -24,12 +24,18 @@
 <div class="container">
     <h3 mat-dialog-title>Delete: Are you sure?</h3>
     <div mat-dialog-content>
+        <div *ngIf="data.field" >
+            ${ obj.cls }: {{ data.field }}
+            <p></p>
+        </div>
+        <div *ngIf="!data.field">
 % for field in obj.table.columns:
  % if field.listview.index == 0:
-        ${ field.label }: {{ data.record.${ field.name } }}
-        <p></p>
+            ${ field.label }: {{ data.record.${ field.name } }}
+            <p></p>
  % endif
 % endfor
+        </div>
     </div>
     <div mat-dialog-actions>
         <button mat-button

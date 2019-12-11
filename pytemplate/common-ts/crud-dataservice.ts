@@ -36,6 +36,7 @@ export class CrudDataService<T>
 {
     protected debug: boolean = false;
     protected _uri: string;
+    protected _backend_filter: string = null;
     dataChange: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
     // Temporarily stores data from dialogs
     dialogData: T;
@@ -70,8 +71,9 @@ export class CrudDataService<T>
     public getAll( _backend_filter: any ): void
     {
         let uri = '/list'
-        if ( _backend_filter !== none )
+        if ( _backend_filter !== null )
         {
+            this._backend_filter = _backend_filter;
             uri += '?id=' + _backend_filter.id + '&value=' + _backend_filter.value
         }
         this.httpClient.get<T[]>( this._uri + uri ).subscribe(
@@ -184,7 +186,7 @@ export class CrudDataService<T>
             {
                 console.log( result );
             }
-            this.getAll();
+            this.getAll( this._backend_filter );
         },
         (error: HttpErrorResponse) => {
             console.log( error.name + ' ' + error.message );

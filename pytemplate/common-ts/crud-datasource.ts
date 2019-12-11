@@ -83,7 +83,7 @@ export class CrudDataSource<T> extends DataSource<T>
             this.pageEvent
         ];
 
-        this._databaseTable.getAll( _backend_filter );
+        this._databaseTable.getAll( this._backend_filter );
 
         return merge(...displayDataChanges).pipe(map( () => {
             // Filter data

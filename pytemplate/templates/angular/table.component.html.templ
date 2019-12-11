@@ -57,9 +57,7 @@
         <mat-header-cell *matHeaderCellDef
                          mat-sort-header>${ field.label }</mat-header-cell>
         <mat-cell *matCellDef="let row"
-% if obj.actions.getRowAction() is not None:
-                  (dblclick)="${ obj.actions.getRowAction().function }"
-% endif
+                  ${ obj.actions.getRowDblClick() } ${ obj.actions.getRowRouterLink() }
                   id="${ obj.cls }.${ field.name }">
 % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
             {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}

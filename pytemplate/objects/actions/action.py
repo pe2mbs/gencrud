@@ -21,18 +21,23 @@
 #   gencrud.py module. When modifing the file make sure that you remove
 #   the table from the configuration.
 #
+import logging
 from pytemplate.util.exceptions import InvalidSetting
 from pytemplate.objects.actions.route import RouteTemplate
 
+logger = logging.getLogger()
+
 
 class TemplateAction( object ):
-    def __init__( self, obj_name, **cfg ):
+    def __init__( self, parent, obj_name, **cfg ):
+        self.__parent = parent
         self.__name = obj_name
         self.__cfg = cfg
         return
 
     def clone( self, obj_name ):
-        return TemplateAction( obj_name,
+        return TemplateAction( self.__parent,
+                               obj_name,
                                name = self.name,
                                label = self.label,
                                type = self.type,
@@ -52,7 +57,7 @@ class TemplateAction( object ):
     @property
     def type( self ):
         result = self.__cfg.get( 'type', 'dialog' )
-        if result not in ( 'dialog', 'screen', 'list', 'none' ):
+        if result not in ( 'dialog', 'screen', 'list', 'api', 'none' ):
             raise InvalidSetting( 'name', 'action', self.name )
 
         return result
@@ -60,7 +65,7 @@ class TemplateAction( object ):
     @property
     def position( self ):
         result = self.__cfg.get( 'position', 'cell' )
-        if result not in ( 'cell', 'header', 'footer', 'row', 'none' ):
+        if result not in ( 'cell', 'header', 'footer', 'api', 'row', 'none' ):
             raise InvalidSetting( 'position', 'action', self.name )
 
         return result
@@ -79,6 +84,13 @@ class TemplateAction( object ):
     @property
     def function( self ):
         return self.__cfg.get( 'function', '' )
+
+    def set( self, attr, value ):
+        if attr not in ( 'function', 'name', 'label', 'icon', 'source', 'position', 'type', 'uri', 'route', 'param' ):
+            raise Exception( "Invalid attribute '{}' for Action with value '{}'".format( attr, value ) )
+
+        self.__cfg[ attr ] = value
+        return
 
     @property
     def source( self ):
@@ -126,6 +138,8 @@ class TemplateAction( object ):
             function = self.function
 
         button = '<span class="spacer"></span>'
+        logger.info( "function: {}\nroute: {}".format( function, "/".join( [ self.__parent.name if self.__parent is not None else '',
+                                                                             self.route.name if isinstance( self.route, RouteTemplate ) else '?' ] ) ) )
         if function != '':
             button += '''<button {button} color="primary" (click)="{function}" id="{objname}.{name}">{content}</button>'''.\
                             format( button = button_type,
@@ -134,33 +148,40 @@ class TemplateAction( object ):
                                      name = self.name,
                                      content = content )
         else:
-            button += '''<a {button} color="primary" href="#{route}" id="{objname}.{name}">{content}</a>'''.\
+            button += '''<a {button} color="primary" routerLink="#/{route}" {params} id="{objname}.{name}">{content}</a>'''.\
                             format( button = button_type,
-                                            route = self.route,
-                                            objname = self.__name,
-                                            name = self.name,
-                                            content = content )
+                                    route = "/".join( [ self.__parent.name, self.route.name ] ),
+                                    params = self.route.routeParams(),
+                                    objname = self.__name,
+                                    name = self.name,
+                                    content = content )
             
         return button
 
+    def __repr__(self):
+        return "<TemplateAction name = '{}', label = '{}', type = {}, icon = {}, position = {}, function = '{}' route = {}>".format(
+            self.name, self.label, self.type, self.icon, self.position, self.function, self.route
+        )
 
 
-
-DEFAULT_NEW_ACTION      = TemplateAction( 'internal_action',
+DEFAULT_NEW_ACTION      = TemplateAction( None,
+                                          'internal_action',
                                           name = 'new',
                                           label = 'Add a new record',
                                           type = 'dialog',
                                           icon = 'add',
                                           position = 'header',
                                           function = 'addNew()' )
-DEFAULT_DELETE_ACTION   = TemplateAction( 'internal_action',
+DEFAULT_DELETE_ACTION   = TemplateAction( None,
+                                          'internal_action',
                                           name = 'delete',
                                           label = 'Delete a record',
                                           type = 'dialog',
                                           icon = 'delete',
                                           position = 'cell',
                                           function = 'deleteItem( i, row )' )
-DEFAULT_EDIT_ACTION     = TemplateAction( 'internal_action',
+DEFAULT_EDIT_ACTION     = TemplateAction( None,
+                                          'internal_action',
                                           name = 'edit',
                                           label = 'Edit a record',
                                           type = 'dialog',

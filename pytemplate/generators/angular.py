@@ -21,6 +21,7 @@
 #   gencrud.py module. When modifing the file make sure that you remove
 #   the table from the configuration.
 #
+import copy
 import json
 import os
 import shutil
@@ -148,7 +149,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     imports = []
     entries = []
     for cfg in config:
-        logger.info( "{} {} {}".format( config.application, cfg.name, cfg.cls ) )
+        logger.info( "Inports: {} {} {}".format( config.application, cfg.name, cfg.cls ) )
         imports.append( "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
                                                                                                          app = config.application,
                                                                                                          mod = cfg.name ) )
@@ -162,18 +163,30 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
             # Do we have child pages for new and edit?
             children = []
             for action in cfg.actions:
+                logger.info( "Action: {} {} {}".format( config.application, cfg.name, action ) )
                 if action.type == 'screen' and action.isAngularRoute():
-                    children.append( {  'path': action.route.name,
-                                        'component': "'{}'".format( action.route.cls ),
+                    logger.info( "Screen {} {} {}".format( config.application, cfg.name, action ) )
+                    children.append( {  'path': "'{}'".format( action.route.name ),
+                                        'component': "{}".format( action.route.cls ),
                                         'data': {
                                             'title': "'{cls} {label}'".format( cls = cfg.cls,
                                                                                label = action.route.label ),
                                             'breadcrum': "'{}'".format( action.route.label )
                                         }
                                       } )
+                    component = "import {{ AddEditScreen{cls}Component }} from './{app}/{mod}/addedit.screen.component';".format( cls = cfg.cls,
+                                                                                                                         app = config.application,
+                                                                                                                         mod = cfg.name )
+                    if component not in imports:
+                        imports.append( component )
 
+            path = routeItem.get( 'path',"''" )
+            logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), path ) )
             if len( children ) > 0:
-                routeItem[ 'children' ] = children
+                routeTmp = copy.deepcopy( routeItem )
+                routeTmp[ 'path' ] = "''"
+                children.insert( 0, routeTmp )
+                routeItem = { 'path': path, 'children': children }
 
             entries.append( routeItem )
 
@@ -190,16 +203,21 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     ts = TypeScript()
     appRoutes = ts.parse( ''.join( sectionLines ) )
     for entry in entries:
-        logger.debug( entry )
+        logger.debug( "Route: {}".format( json.dumps( entry ) ) )
 
-        found = False
-        for route in appRoutes:
+        routeIdx = -1
+        for idx, route in enumerate( appRoutes ):
             if route[ 'path' ] == entry[ 'path' ]:
-                found = True
+                logger.info( "Found route: {}".format( route[ 'path' ] ) )
+                logger.info( json.dumps( route ) )
+                routeIdx = idx
                 break
 
-        if not found:
+        if routeIdx == -1:
             appRoutes.insert( -1, entry )
+
+        else:
+            appRoutes[ routeIdx ] = entry
 
     buffer = LABEL_APP_ROUTES + ' ' + ts.build( appRoutes, 2 ) + ';'
     bufferLines = [ '{}\n'.format( x ) for x in buffer.split( '\n' ) ]
@@ -211,7 +229,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
             stream.write( line )
             logger.debug( line.replace( '\n', '' ) )
 
-    return
+    return imports
 
 
 def exportAndType( line ):
@@ -242,16 +260,28 @@ def generateAngular( templates, config ):
                 # First remove the old file
                 os.remove( templateFilename )
 
-            if 'dialog' in templ or 'screen' in templ:
-                if 'addedit' in templ:
-                    if cfg.actions.invalid( 'new' ) and cfg.actions.invalid( 'edit' ):
-                        logger.info( "No new/edit added to the dialog/screen" )
-                        continue
+            logger.info( 'template    : {0}'.format( templ ) )
+            if 'addedit' in templ:
+                logger.info( 'Action new  : {0}'.format( cfg.actions.get( 'new' ).type ) )
+                logger.info( 'Action edit : {0}'.format( cfg.actions.get( 'edit' ).type ) )
+                if 'dialog' in templ and 'dialog' in ( cfg.actions.get( 'new' ).type, cfg.actions.get( 'edit' ).type ):
+                    logger.info( "Adding dialog for {}".format( templ ) )
 
-                elif 'delete' in templ:
-                    if cfg.actions.invalid( 'delete' ):
-                        logger.info( "No delete added to the dialog/screen" )
-                        continue
+                elif 'screen' in templ and 'screen' in ( cfg.actions.get( 'new' ).type, cfg.actions.get( 'edit' ).type ):
+                    logger.info( "Adding screen for {}".format( templ ) )
+
+                else:
+                    logger.info( "Not adding {}".format( templ ) )
+                    continue
+
+            elif 'delete' in templ:
+                logger.info( 'Action delete  : {0}'.format( cfg.actions.get( 'delete' ).type ) )
+                if cfg.actions.get( 'delete' ).type != 'dialog':
+                    logger.info( "No delete added to the dialog/screen" )
+                    continue
+
+            else:
+                pass
 
             logger.info( 'template    : {0}'.format( templ ) )
             logger.info( 'application : {0}'.format( config.application ) )
@@ -269,7 +299,6 @@ def generateAngular( templates, config ):
 
             logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
             logger.info( 'uri         : {0}'.format( cfg.uri ) )
-
             with open( templateFilename,
                        pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
                 def errorHandler( context, error, *args, **kwargs ):
@@ -278,6 +307,7 @@ def generateAngular( templates, config ):
                     print( args )
                     print( kwargs )
                     return
+
                 try:
                     for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
                         if line.startswith( 'export ' ):
@@ -294,6 +324,7 @@ def generateAngular( templates, config ):
                     print( "Mako exception:" )
                     for line in exceptions.text_error_template().render_unicode().encode('ascii').split(b'\n'):
                         print( line )
+
                     print( "Mako done" )
                     raise
 
@@ -302,7 +333,9 @@ def generateAngular( templates, config ):
     for app, mod, source, export in modules:
         # Update 'app.module.json'
         app_module_json_file = os.path.join( config.angular.sourceFolder,
-                                           app, mod, 'app.module.json' )
+                                             app,
+                                             mod,
+                                             'app.module.json' )
         if os.path.isfile( app_module_json_file ):
             with open( app_module_json_file, 'r' ) as stream:
                 try:
@@ -339,8 +372,13 @@ def generateAngular( templates, config ):
     for mod in appModule:
         logger.info( mod.strip( '\n' ) )
 
+    imports = updateAngularAppRoutingModuleTs( config,appModule )
+    for imp in imports:
+        if imp not in appModule[ 'files' ]:
+            appModule[ 'files' ].append( imp )
+
+    logger.info( "appModule: {}".format( json.dumps( appModule, indent = 4 ) ) )
     updateAngularAppModuleTs( config, appModule, exportsModules )
-    updateAngularAppRoutingModuleTs( config, appModule )
 
     os.remove( os.path.join( config.angular.sourceFolder, 'app.module.json' ) )
     copyAngularCommon( os.path.abspath( os.path.join( os.path.dirname( __file__ ),

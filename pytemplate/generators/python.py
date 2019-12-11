@@ -26,6 +26,7 @@ import json
 import os
 import sys
 import logging
+import shutil
 from mako.template import Template
 
 import pytemplate.util.utils
@@ -81,6 +82,12 @@ def updatePythonProject( config, app_module ):
                                     'main.py' ), 'r' ).readlines()
 
     rangePos            = pytemplate.util.utils.findImportSection( lines )
+    # Copy the following files from the common-py folder to the source folder of the project
+    for src_filename in ( 'common.py', ):
+        fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py', src_filename ) )
+        fnd = os.path.abspath( os.path.join( config.python.sourceFolder, config.application, src_filename ) )
+        logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
+        shutil.copy( fns, fnd )
 
     # update import section
     modules = []

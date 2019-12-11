@@ -22,15 +22,16 @@
 *   the table from the configuration.
 */
 import { Component, ElementRef, OnInit, ViewChild, EventEmitter } from '@angular/core';
-import { Router } from  '@angular/router';
+import { Router, ActivatedRoute } from  '@angular/router';
+import { Location } from  '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatPaginator, MatSort, PageEvent } from '@angular/material';
 import { fromEvent } from 'rxjs';
 import { ${ obj.cls }Record } from './model';
-% if obj.actions.get( 'new' ).position != 'none' or obj.actions.get( 'edit' ).position != 'none':
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
 import { AddEdit${ obj.cls }Dialog } from './addedit.dialog';
 % endif
-% if obj.actions.get( 'delete' ).position != 'none':
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
 import { Delete${ obj.cls }Dialog } from './delete.dialog';
 % endif
 import { ${ obj.cls }DataService } from './service';
@@ -61,6 +62,7 @@ export class ${ obj.cls }TableComponent implements OnInit
     index:              number;
     id:                 number;
     private sub:        any;
+    public mode:        string;
     private backendFilter: any = null;
     public pageSize:    number = 10;
     public pageIndex:   number = 0;
@@ -116,14 +118,16 @@ ${ obj.externalService } )
         return;
     }
 
-% if obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'screen':
+% if obj.actions.get( 'new' ).position != 'none':
+%   if obj.actions.get( 'new' ).type == 'screen':
     public screenAddNew(): void
     {
-        this.router.navigate( [ 'addedit${obj.name}', { id: 0, mode: 'new' } ] );
+        this.router.navigate( [ '${obj.name}\add', { id: 0, mode: 'new' } ] );
         return;
     }
-% endif
-% if obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'dialog':
+
+%   endif
+%   if obj.actions.get( 'new' ).type == 'dialog':
     public addNew(): void
     {
         console.log("function addNew() deprecated use dialogAddNew()" )
@@ -153,21 +157,23 @@ ${ obj.externalService } )
         return;
     }
 
+%   endif
 % endif
-% if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'screen':
+% if obj.actions.get( 'edit' ).position != 'none':
+%   if obj.actions.get( 'edit' ).type == 'screen':
     public screenEditRecord( i: number, row: ${obj.cls}Record ): void
     {
-        this.router.navigate( [ 'addedit${obj.name}', { id: row.${obj.table.primaryKey}, mode: 'edit' } ] );
+        this.router.navigate( [ '${obj.name}\edit', { id: row.${obj.table.primaryKey}, mode: 'edit' } ] );
         return;
     }
-% endif
-% if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'dialog':
+
+%   elif obj.actions.get( 'edit' ).type == 'dialog':
     public startEdit( i: number, record: ${obj.cls}Record ): void
     {
         // Downwards compatility
-        console.log("function startEdit() deprecated use dialogEditRecord()" )
+        console.log("function startEdit() deprecated use dialogEditRecord()" );
         this.dialogEditRecord( i, record );
-        return
+        return;
     }
 
     public dialogEditRecord( i: number, record: ${ obj.cls}Record ): void
@@ -204,25 +210,27 @@ ${ obj.externalService } )
         return;
     }
 
+%   endif
 % endif
 % if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
-    public deleteItem( i: number, record: ${ obj.cls }Record ): void
+    public deleteItem( i: number, record: ${ obj.cls }Record, field_name: string ): void
     {
         // Downwards compatility
         console.log("function deleteItem() deprecated use deleteRecord()" )
-        this.dialogDeleteRecord( i, record );
+        this.dialogDeleteRecord( i, record, field_name );
         return
     }
 
-    public dialogDeleteRecord( i: number, record: ${ obj.cls }Record ): void
+    public dialogDeleteRecord( i: number, record: ${ obj.cls }Record, field_name: string ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
         console.log( 'deleteItem ', record );
         const dialogRef = this.dialog.open( Delete${ obj.cls }Dialog,
         {
-            data: { record: record, 
-                    mode: 'delete' }
+            data: { record: record,
+                     field: record[ field_name ] || null,
+                     mode: 'delete' }
         } );
 
         dialogRef.afterClosed().subscribe( result => 
@@ -245,12 +253,9 @@ ${ obj.externalService } )
     }
 
 % endif
-
     public pagingEvent( $event )
     {
         this.pageSize = $event.pageSize;
-
-
         this.bot_paginator.length = $event.length;
         this.bot_paginator.pageSize = $event.pageSize;
         this.bot_paginator.pageIndex = $event.pageIndex;

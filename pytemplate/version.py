@@ -21,7 +21,7 @@
 #   gencrud.py module. When modifing the file make sure that you remove
 #   the table from the configuration.
 #
-__version__     = '1.3.266'
+__version__     = '1.3.302'
 __author__      = 'Marc Bertens-Nguyen'
 __email__       = 'm.bertens@pe2mbs.nl'
 __copyright__   = '2018 - 2019'

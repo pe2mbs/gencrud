@@ -50,7 +50,8 @@ class TemplateObject( object ):
         if 'action-width' in cfg:
             self.__actionWidth = cfg[ 'action-width' ]
 
-        self.__actions      = TemplateActions( self.name,
+        self.__actions      = TemplateActions( self,
+                                               self.name,
                                                self.__config.get( 'actions', [] ) )
         self.__table        = TemplateTable( **self.__config.get( 'table', {} ) )
         return
