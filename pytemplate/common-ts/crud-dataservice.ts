@@ -74,7 +74,7 @@ export class CrudDataService<T>
         if ( _backend_filter !== null )
         {
             this._backend_filter = _backend_filter;
-            uri += '?id=' + _backend_filter.id + '&value=' + _backend_filter.value
+            uri += '/' + _backend_filter.id + '/' + _backend_filter.value
         }
         this.httpClient.get<T[]>( this._uri + uri ).subscribe(
             data => {

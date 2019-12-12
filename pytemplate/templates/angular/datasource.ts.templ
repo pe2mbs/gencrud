@@ -63,6 +63,14 @@ ${ obj.externalService } )
 
  % endif
 % endfor
+        let tmp = localStorage.getItem( '${ obj.cls }DataSource.filter' );
+        if ( tmp !== null )
+        {
+            this.filter = tmp;
+        }
+        this._filterChange.subscribe( value => {
+            localStorage.setItem( '${ obj.cls }DataSource.filter', value );
+        } );
         return;
     }
 

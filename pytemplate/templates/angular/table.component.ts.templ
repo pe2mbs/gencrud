@@ -21,11 +21,12 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 */
-import { Component, ElementRef, OnInit, ViewChild, EventEmitter } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild, EventEmitter, Input } from '@angular/core';
 import { Router, ActivatedRoute } from  '@angular/router';
 import { Location } from  '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { MatDialog, MatPaginator, MatSort, PageEvent } from '@angular/material';
+import { MatDialog, MatPaginator, MatSort, PageEvent, MatSortable } from '@angular/material';
+import { Subscribers } from 'src/app/common/subcribers';
 import { fromEvent } from 'rxjs';
 import { ${ obj.cls }Record } from './model';
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
@@ -49,7 +50,7 @@ import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss']
 })
-export class ${ obj.cls }TableComponent implements OnInit
+export class ${ obj.cls }TableComponent extends Subscribers implements OnInit, OnDestroy
 {
     displayedColumns = [
 % for field in obj.table.listViewColumns:
@@ -60,7 +61,8 @@ export class ${ obj.cls }TableComponent implements OnInit
 
     dataSource:         ${ obj.cls }DataSource  | null;
     index:              number;
-    id:                 number;
+    @Input( 'id' )      id: any;
+    @Input( 'value' )   value: any;
     private sub:        any;
     public mode:        string;
     private backendFilter: any = null;
@@ -74,15 +76,15 @@ export class ${ obj.cls }TableComponent implements OnInit
 
     constructor( public httpClient: HttpClient
                  , private route: ActivatedRoute
-                 , private location: Location
                  , public dialog: MatDialog
-                 , public router: Router
+                 , private router: Router
                  , public dataService: ${ obj.cls }DataService
 % if obj.table.hasViewSizeService:
                  , public viewSizeService: ${ obj.table.viewSize }
 % endif
 ${ obj.externalService } )
     {
+        super();
 % if obj.table.hasViewSizeValue:
         this.pageSize = ${ obj.table.viewSize }
 % endif
@@ -92,15 +94,30 @@ ${ obj.externalService } )
 
     public ngOnInit(): void
     {
-        this.sub = this.route.params.subscribe( params => {
-            // (+) converts string 'id' to a number
-            this.mode = params[ 'mode' ];
-            this.backendFilter = {
-                id: params[ 'id' ],
-                value: params[ 'value' ]
-            }
-            // In a real app: dispatch action to load the details here.
-        } );
+        let tmp = localStorage.getItem( '${ obj.cls }Table.size' );
+        if ( tmp !== null )
+        {
+            this.pageSize = +tmp;
+        }
+        if ( this.id !== undefined && this.id !== null )
+        {
+            this.backendFilter = { id: this.id, value: this.value }
+            this.mode = 'filter';
+        }
+        else
+        {
+            this.registerSubscription( this.route.queryParams.subscribe( params => {
+                console.log( params );
+                if ( params.id !== undefined && params.id !== null )
+                {
+                    this.backendFilter = {
+                        id:     params.id,      // Contains the key field.
+                        value:  params.value    // Contains val value for the key field.
+                    }
+                    this.mode = params.mode // filter, edit or new only supported on the screen component
+                }
+            } ) );
+        }
         console.log( 'ngOnInit: backendFilter', this.backendFilter );
         this.loadData();
 % if obj.table.hasViewSizeService:
@@ -109,6 +126,17 @@ ${ obj.externalService } )
 % if obj.table.viewSort is not None:
         ${ obj.table.viewSort.injectAngular() }
 % endif
+        tmp = localStorage.getItem( '${ obj.cls }Table.index' );
+        if ( tmp !== null )
+        {
+            this.bot_paginator.pageIndex = +tmp;
+        }
+        return;
+    }
+
+    ngOnDestroy()
+    {
+        super.ngOnDestroy();
         return;
     }
 
@@ -119,22 +147,8 @@ ${ obj.externalService } )
     }
 
 % if obj.actions.get( 'new' ).position != 'none':
-%   if obj.actions.get( 'new' ).type == 'screen':
-    public screenAddNew(): void
-    {
-        this.router.navigate( [ '${obj.name}\add', { id: 0, mode: 'new' } ] );
-        return;
-    }
-
-%   endif
 %   if obj.actions.get( 'new' ).type == 'dialog':
-    public addNew(): void
-    {
-        console.log("function addNew() deprecated use dialogAddNew()" )
-        this.dialogAddNew()
-    }
-
-    public dialogAddNew(): void
+    public addRecord(): void
     {
         let record: ${ obj.cls }Record = new ${ obj.cls }Record;
         console.log( 'addNew ', record );
@@ -160,23 +174,8 @@ ${ obj.externalService } )
 %   endif
 % endif
 % if obj.actions.get( 'edit' ).position != 'none':
-%   if obj.actions.get( 'edit' ).type == 'screen':
-    public screenEditRecord( i: number, row: ${obj.cls}Record ): void
-    {
-        this.router.navigate( [ '${obj.name}\edit', { id: row.${obj.table.primaryKey}, mode: 'edit' } ] );
-        return;
-    }
-
-%   elif obj.actions.get( 'edit' ).type == 'dialog':
-    public startEdit( i: number, record: ${obj.cls}Record ): void
-    {
-        // Downwards compatility
-        console.log("function startEdit() deprecated use dialogEditRecord()" );
-        this.dialogEditRecord( i, record );
-        return;
-    }
-
-    public dialogEditRecord( i: number, record: ${ obj.cls}Record ): void
+%   if obj.actions.get( 'edit' ).type == 'dialog':
+    public editRecord( i: number, record: ${ obj.cls}Record ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
@@ -189,13 +188,13 @@ ${ obj.externalService } )
         dialogRef.updateSize( '85%', height.toString() + 'px' );
         dialogRef.afterClosed().subscribe( result => 
         {
-            console.log( 'startEdit() dialog result ', result );
+            console.log( 'editRecord() dialog result ', result );
             if ( result === 1 ) 
             {
                 // When using an edit things are little different,
                 // firstly we find record inside DataService by id
                 const foundIndex = this.dataService.dataChange.value.findIndex( x => x.${ obj.table.primaryKey } === this.id );
-                console.log( 'startEdit() updating index ', foundIndex );
+                console.log( 'editRecord() updating index ', foundIndex );
                 // Then you update that record using data from
                 // dialogData (values you entered)
                 this.dataService.dataChange.value[ foundIndex ] = this.dataService.getDialogData();
@@ -213,19 +212,11 @@ ${ obj.externalService } )
 %   endif
 % endif
 % if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
-    public deleteItem( i: number, record: ${ obj.cls }Record, field_name: string ): void
-    {
-        // Downwards compatility
-        console.log("function deleteItem() deprecated use deleteRecord()" )
-        this.dialogDeleteRecord( i, record, field_name );
-        return
-    }
-
-    public dialogDeleteRecord( i: number, record: ${ obj.cls }Record, field_name: string ): void
+    public deleteRecord( i: number, record: ${ obj.cls }Record, field_name: string ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
-        console.log( 'deleteItem ', record );
+        console.log( 'deleteRecord() ', record );
         const dialogRef = this.dialog.open( Delete${ obj.cls }Dialog,
         {
             data: { record: record,
@@ -256,6 +247,8 @@ ${ obj.externalService } )
     public pagingEvent( $event )
     {
         this.pageSize = $event.pageSize;
+        localStorage.setItem( '${ obj.cls }Table.size', $event.pageSize );
+        localStorage.setItem( '${ obj.cls }Table.index', $event.pageIndex );
         this.bot_paginator.length = $event.length;
         this.bot_paginator.pageSize = $event.pageSize;
         this.bot_paginator.pageIndex = $event.pageIndex;

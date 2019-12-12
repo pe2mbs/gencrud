@@ -33,8 +33,9 @@
         <${ obj.table.tabs( 'screen' ).groupTag }>
 % for label in obj.table.tabs( 'screen' ).labels:
             <${ obj.table.tabs( 'screen' ).tabTag } label="${ label }">
-%   if obj.table.tabs( 'dialog' ).hasComponent( label ):
-                    <${obj.table.tabs( 'screen' ).component( label )}>
+
+%   if obj.table.tabs( 'screen' ).hasComponent( label ):
+                    <${obj.table.tabs( 'screen' ).component( label )} ${obj.table.tabs( 'screen' ).params( label ) }>
                     </${obj.table.tabs( 'screen' ).component( label )}>
 %   else:
 %     if obj.table.tabs( 'screen' ).contentTag is not None:

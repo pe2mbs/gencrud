@@ -33,15 +33,16 @@ logger = logging.getLogger()
 class SortInfo( object ):
     def __init__( self, data ):
         self.__field    = data[ 'field' ]
-
+        self.__direction = 'asc'
         # 'asc'
         # 'desc'
         # ''
-        if data[ 'order' ] in ( 'asc', 'desc', '' ):
-            self.__order    = data[ 'order' ]
+        if 'direction' in data:
+            if data[ 'direction' ] in ( 'asc', 'desc', '' ):
+                self.__direction    = data[ 'direction' ]
 
-        else:
-            raise Exception( "Sorting order must be one of the following: 'asc', 'desc' or ''")
+            else:
+                raise Exception( "Sorting order must be one of the following: 'asc', 'desc' or ''")
 
         return
 
@@ -50,15 +51,18 @@ class SortInfo( object ):
         return self.__field
 
     @property
-    def Order( self ):
-        return self.__order
+    def Direction( self ):
+        return self.__direction
+
+    def htmlMaterialSorting( self ):
+        return 'matSortActive="{}" matSortDirection="{}"'.format( self.__field, self.__direction )
 
     def injectAngular( self ):
         return self.AngularInject()
 
     def AngularInject( self ):
         return "this.sort.sort( {{ id: '{field}', start: '{order}' }} as MatSortable );".format( field = self.__field,
-                                                                                                 order = self.__order )
+                                                                                                 order = self.__direction )
 
 class PythonObject( object ):
     def __init__( self, obj ):
@@ -154,6 +158,13 @@ class TemplateTable( object ):
     @property
     def Mixin( self ):
         return self.__mixin
+
+
+    def sortedInfo( self ):
+        if self.__viewSort is not None:
+            return self.__viewSort.htmlMaterialSorting()
+
+        return ''
 
     @property
     def leadIn( self ):

@@ -154,12 +154,6 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                                                                                                          app = config.application,
                                                                                                          mod = cfg.name ) )
         if cfg.menuItem is not None:
-            routeItem = {
-                'path': "'{}'".format( cfg.menuItem.route[1:] ),
-                'component': '{cls}TableComponent'.format( cls = cfg.cls ),
-                'data': { 'title': "'{cls} table'".format( cls = cfg.cls ),
-                          'breadcrum': "'{}'".format( cfg.cls ) }
-            }
             # Do we have child pages for new and edit?
             children = []
             for action in cfg.actions:
@@ -174,19 +168,29 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                                             'breadcrum': "'{}'".format( action.route.label )
                                         }
                                       } )
-                    component = "import {{ AddEditScreen{cls}Component }} from './{app}/{mod}/addedit.screen.component';".format( cls = cfg.cls,
+                    component = "import {{ Screen{cls}Component }} from './{app}/{mod}/screen.component';".format( cls = cfg.cls,
                                                                                                                          app = config.application,
                                                                                                                          mod = cfg.name )
                     if component not in imports:
                         imports.append( component )
 
-            path = routeItem.get( 'path',"''" )
-            logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), path ) )
+            logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), cfg.menuItem.route[ 1: ] ) )
             if len( children ) > 0:
-                routeTmp = copy.deepcopy( routeItem )
-                routeTmp[ 'path' ] = "''"
-                children.insert( 0, routeTmp )
-                routeItem = { 'path': path, 'children': children }
+                children.insert( 0, {
+                    'path':      "''",
+                    'component': '{cls}TableComponent'.format( cls = cfg.cls ),
+                    'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
+                                   'breadcrum': "'{}'".format( cfg.cls ) }
+                } )
+                routeItem = { 'path': "'{}'".format( cfg.menuItem.route[ 1: ] ), 'children': children }
+
+            else:
+                routeItem = {
+                    'path':      "'{}'".format( cfg.menuItem.route[ 1: ] ),
+                    'component': '{cls}TableComponent'.format( cls = cfg.cls ),
+                    'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
+                                   'breadcrum': "'{}'".format( cfg.cls ) }
+                }
 
             entries.append( routeItem )
 

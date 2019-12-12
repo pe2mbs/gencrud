@@ -22,6 +22,7 @@ class TemplateTabs( object ):
         self.__cfg      = cfg
         self.__fields   = { l: [] for l in self.labels }
         self.__comps    = { l: None for l in self.labels }
+        self.__params   = { l: None for l in self.labels }
         for col in self.__parent.columns:
             if col.hasTab:
                 self.__fields[ col.tab.label ].append( col )
@@ -31,6 +32,7 @@ class TemplateTabs( object ):
 
         for tab in self.__cfg.get( 'tab', [] ):
             self.__comps[ tab.get( 'label', None ) ] = tab.get( 'component', None )
+            self.__params[ tab.get( 'label', None ) ] = tab.get( 'params', {} )
 
         return
 
@@ -65,4 +67,12 @@ class TemplateTabs( object ):
         value = self.__comps.get( label, '' )
         return value
 
+    def params( self, label ):
+        result = ''
+        for key, value in self.__params[ label ].items():
+            result += '[{}]="{}" '.format( key, value )
+            if key == 'value':
+                result += '*ngIf="{}" '.format( value )
+
+        return result
 

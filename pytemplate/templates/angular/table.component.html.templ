@@ -24,7 +24,7 @@
 <h2>${ obj.title }</h2>
 <div class="navigator-row form">
     <mat-form-field floatPlaceholder="never" color="accent">
-        <input matInput #filter placeholder="Filter User">
+        <input matInput #filter placeholder="Filter User" [value]="dataSource.filter">
     </mat-form-field>
     <span class="spacer-search"></span>
 % for action in obj.actions.getHeaderButtons():
@@ -49,7 +49,7 @@
         </button>
     </span>
 </div>
-<mat-table #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell">
+<mat-table #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell" ${obj.table.sortedInfo()}>
 % for field in obj.table.listViewColumns:
     <!-- ${ field.name } Column -->
     <ng-container matColumnDef="${ field.name }"

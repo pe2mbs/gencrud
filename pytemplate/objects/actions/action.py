@@ -148,7 +148,7 @@ class TemplateAction( object ):
                                      name = self.name,
                                      content = content )
         else:
-            button += '''<a {button} color="primary" routerLink="#/{route}" {params} id="{objname}.{name}">{content}</a>'''.\
+            button += '''<a {button} color="primary" routerLink="/{route}" {params} id="{objname}.{name}">{content}</a>'''.\
                             format( button = button_type,
                                     route = "/".join( [ self.__parent.name, self.route.name ] ),
                                     params = self.route.routeParams(),
@@ -171,7 +171,7 @@ DEFAULT_NEW_ACTION      = TemplateAction( None,
                                           type = 'dialog',
                                           icon = 'add',
                                           position = 'header',
-                                          function = 'addNew()' )
+                                          function = 'addRecord()' )
 DEFAULT_DELETE_ACTION   = TemplateAction( None,
                                           'internal_action',
                                           name = 'delete',
@@ -179,11 +179,11 @@ DEFAULT_DELETE_ACTION   = TemplateAction( None,
                                           type = 'dialog',
                                           icon = 'delete',
                                           position = 'cell',
-                                          function = 'deleteItem( i, row )' )
+                                          function = 'deleteRecord( i, row )' )
 DEFAULT_EDIT_ACTION     = TemplateAction( None,
                                           'internal_action',
                                           name = 'edit',
                                           label = 'Edit a record',
                                           type = 'dialog',
                                           position = 'row',
-                                          function = 'startEdit( i, row )' )
+                                          function = 'editRecord( i, row )' )
