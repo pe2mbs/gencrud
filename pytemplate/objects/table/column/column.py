@@ -206,6 +206,9 @@ class TemplateColumn( object ):
     def isPrimaryKey( self ):
         return 'PRIMARY KEY' in self.__attrs
 
+    def hasForeign( self ):
+        return 'FOREIGN KEY' in self.__attrs
+
     @property
     def ui( self ):
         return self.__ui
@@ -426,15 +429,15 @@ class TemplateColumn( object ):
 
     @property
     def validators( self ):
-        result = '[ '
-        if 'NOT NULL' in self.__attrs:
-            result += 'Validators.required, '
+        result = ""
+        if not self.isPrimaryKey():
+            if 'NOT NULL' in self.__attrs or self.hasForeign():
+                result += 'Validators.required, '
 
-        if self.__length > 0:
-            result += 'Validators.maxLength( {0} ), '.format( self.__length )
+            if self.__length > 0:
+                result += 'Validators.maxLength( {0} ), '.format( self.__length )
 
-        result += ' ]'
-        return result
+        return '[ {} ] '.format( result )
 
     def angularUiInput( self ):
         return self.__ui.buildInputElement( self.__tableName,

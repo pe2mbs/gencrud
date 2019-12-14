@@ -76,8 +76,10 @@ ${ obj.externalService } )
         }
         this.formGroup = new FormGroup( {
 % for field in obj.table.columns:
+  % if field.hasLabel():
             ${ field.name }: new FormControl( data.record.${ field.name },
                                               ${ field.validators } ),
+  % endif
 % endfor
         } );
 % for field in obj.table.columns:
