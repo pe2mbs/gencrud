@@ -24,6 +24,7 @@
 import copy
 import json
 import os
+import posixpath
 import shutil
 import sys
 import logging
@@ -149,10 +150,6 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     imports = []
     entries = []
     for cfg in config:
-        logger.info( "Inports: {} {} {}".format( config.application, cfg.name, cfg.cls ) )
-        imports.append( "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
-                                                                                                         app = config.application,
-                                                                                                         mod = cfg.name ) )
         if cfg.menuItem is not None:
             # Do we have child pages for new and edit?
             children = []
@@ -168,9 +165,12 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                                             'breadcrum': "'{}'".format( action.route.label )
                                         }
                                       } )
-                    component = "import {{ Screen{cls}Component }} from './{app}/{mod}/screen.component';".format( cls = cfg.cls,
-                                                                                                                         app = config.application,
-                                                                                                                         mod = cfg.name )
+                    filename = 'table.component' if action.route.cls.endswith( 'TableComponent' ) else 'screen.component'
+                    clsmod = cfg.name if action.route.module is None else action.route.module
+                    component = "import {{ {cls} }} from './{app}/{module}/{filename}';".format( cls = action.route.cls,
+                                                                                                 app = config.application,
+                                                                                                 module = clsmod,
+                                                                                                 filename = filename )
                     if component not in imports:
                         imports.append( component )
 
@@ -193,6 +193,13 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                 }
 
             entries.append( routeItem )
+
+        logger.info( "Inports: {} {} {}".format( config.application, cfg.name, cfg.cls ) )
+        component = "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
+                                                                                                     app = config.application,
+                                                                                                     mod = cfg.name )
+        if component not in imports:
+            imports.append( component )
 
     rangePos = PositionInterface()
     sectionLines = pytemplate.util.utils.searchSection( lines,
@@ -265,23 +272,27 @@ def generateAngular( templates, config ):
                 os.remove( templateFilename )
 
             logger.info( 'template    : {0}'.format( templ ) )
-            if 'addedit' in templ:
+            if 'screen' in templ:
                 logger.info( 'Action new  : {0}'.format( cfg.actions.get( 'new' ).type ) )
                 logger.info( 'Action edit : {0}'.format( cfg.actions.get( 'edit' ).type ) )
-                if 'dialog' in templ and 'dialog' in ( cfg.actions.get( 'new' ).type, cfg.actions.get( 'edit' ).type ):
-                    logger.info( "Adding dialog for {}".format( templ ) )
-
-                elif 'screen' in templ and 'screen' in ( cfg.actions.get( 'new' ).type, cfg.actions.get( 'edit' ).type ):
+                if 'screen' in templ and 'screen' in (cfg.actions.get( 'new' ).type,cfg.actions.get( 'edit' ).type):
                     logger.info( "Adding screen for {}".format( templ ) )
 
                 else:
                     logger.info( "Not adding {}".format( templ ) )
                     continue
 
-            elif 'delete' in templ:
-                logger.info( 'Action delete  : {0}'.format( cfg.actions.get( 'delete' ).type ) )
-                if cfg.actions.get( 'delete' ).type != 'dialog':
-                    logger.info( "No delete added to the dialog/screen" )
+            elif 'dialog' in templ:
+                logger.info( 'Action new  : {0}'.format( cfg.actions.get( 'new' ).type ) )
+                logger.info( 'Action edit : {0}'.format( cfg.actions.get( 'edit' ).type ) )
+                if 'component' in templ and 'dialog' in ( cfg.actions.get( 'new' ).type, cfg.actions.get( 'edit' ).type ):
+                    logger.info( "Adding dialog for {}".format( templ ) )
+
+                elif 'delete' in templ and cfg.actions.get( 'delete' ).type == 'dialog':
+                    logger.info( "Adding dialog for {}".format( templ ) )
+
+                else:
+                    logger.info( "Not adding {}".format( templ ) )
                     continue
 
             else:

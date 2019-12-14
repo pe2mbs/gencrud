@@ -19,6 +19,10 @@ class RouteTemplate( object ):
     def cls( self ):
         return self.__config.get( 'class', None )
 
+    @property
+    def module( self ):
+        return self.__config.get( 'module', None )
+
     def params( self ):
         return self.__config.get( 'params', [] )
 
@@ -32,7 +36,7 @@ class RouteTemplate( object ):
         if len( params ) > 0:
             items = {}
             for key, value in params.items():
-               items[ key ] = value
+                items[ key ] = value
 
             return '[queryParams]="{}"'.format( TypeScript().build( items ) )
 

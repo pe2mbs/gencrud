@@ -59,8 +59,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytCheckboxInputComponent extends PytBaseComponent
 {
-    @Input() labelPosition;
-    @Input() indeterminate;
+    @Input( 'labelPosition' ) labelPosition = 'after';
+    @Input( 'indeterminate' ) indeterminate = false;
 
     constructor( formGroupDir: FormGroupDirective ) 
     {

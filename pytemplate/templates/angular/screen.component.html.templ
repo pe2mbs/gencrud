@@ -22,7 +22,7 @@
 *   the table from the configuration.
 -->
 <h3>{{ mode }} ${ obj.cls }</h3>
-<form class="" (ngSubmit)="submit" [formGroup]="formGroup">
+<form class="" (ngSubmit)="onSaveClick" [formGroup]="formGroup">
 % for field in obj.table.columns:
  % if field.hasLabel() and not field.hasTab:
     ${ field.angularUiInput() }
@@ -55,7 +55,6 @@
 
     <div>
         <button mat-button
-                [type]="submit"
                 id="${ obj.cls }.submit"
                 [disabled]="!formGroup.valid"
                 (click)="onSaveClick()">Save</button>

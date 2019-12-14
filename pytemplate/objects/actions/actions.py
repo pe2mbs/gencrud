@@ -118,6 +118,13 @@ class TemplateActions( object ):
 
         return ''
 
+    def hasRowButtons( self ):
+        for action in self.__actions:
+            if action.position == 'row' and action.type != 'none':
+                return True
+
+        return False
+
     def getFooterButtons( self ):
         result = []
         for action in self.__actions:

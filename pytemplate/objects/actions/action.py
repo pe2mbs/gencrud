@@ -45,7 +45,6 @@ class TemplateAction( object ):
                                position = self.position,
                                function = self.function )
 
-
     @property
     def name( self ):
         result = self.__cfg.get( 'name', None )
@@ -56,7 +55,7 @@ class TemplateAction( object ):
 
     @property
     def type( self ):
-        result = self.__cfg.get( 'type', 'dialog' )
+        result = self.__cfg.get( 'type', 'none' )
         if result not in ( 'dialog', 'screen', 'list', 'api', 'none' ):
             raise InvalidSetting( 'name', 'action', self.name )
 
@@ -64,7 +63,7 @@ class TemplateAction( object ):
 
     @property
     def position( self ):
-        result = self.__cfg.get( 'position', 'cell' )
+        result = self.__cfg.get( 'position', 'none' )
         if result not in ( 'cell', 'header', 'footer', 'api', 'row', 'none' ):
             raise InvalidSetting( 'position', 'action', self.name )
 

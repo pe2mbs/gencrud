@@ -30,7 +30,7 @@ import { Subscribers } from 'src/app/common/subcribers';
 import { fromEvent } from 'rxjs';
 import { ${ obj.cls }Record } from './model';
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
-import { AddEdit${ obj.cls }Dialog } from './addedit.dialog';
+import { Dialog${ obj.cls }Component } from './dialog.component';
 % endif
 % if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
 import { Delete${ obj.cls }Dialog } from './delete.dialog';
@@ -56,14 +56,16 @@ export class ${ obj.cls }TableComponent extends Subscribers implements OnInit, O
 % for field in obj.table.listViewColumns:
                             '${ field.name }',
 % endfor
+% if obj.actions.hasRowButtons():
                             'actions'
+% endif
                         ];
 
     dataSource:         ${ obj.cls }DataSource  | null;
     index:              number;
     @Input( 'id' )      id: any;
     @Input( 'value' )   value: any;
-    private sub:        any;
+    @Input( 'caption' ) caption: boolean;
     public mode:        string;
     private backendFilter: any = null;
     public pageSize:    number = 10;
@@ -95,6 +97,10 @@ ${ obj.externalService } )
     public ngOnInit(): void
     {
         let tmp = localStorage.getItem( '${ obj.cls }Table.size' );
+        if ( this.caption === undefined && this.caption === null )
+        {
+            this.caption = true;
+        }
         if ( tmp !== null )
         {
             this.pageSize = +tmp;
@@ -152,7 +158,7 @@ ${ obj.externalService } )
     {
         let record: ${ obj.cls }Record = new ${ obj.cls }Record;
         console.log( 'addNew ', record );
-        const dialogRef = this.dialog.open( AddEdit${ obj.cls }Dialog,
+        const dialogRef = this.dialog.open( Dialog${ obj.cls }Component,
         {
             data: { record: record,
                     mode: 'add' },
@@ -180,7 +186,7 @@ ${ obj.externalService } )
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
         let height: number = ( 6 * 72 ) + 190;
-        const dialogRef = this.dialog.open( AddEdit${ obj.cls }Dialog,
+        const dialogRef = this.dialog.open( Dialog${ obj.cls }Component,
         {
             data: { record:     record, 
                     mode:       'edit' },

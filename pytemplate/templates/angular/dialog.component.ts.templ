@@ -44,11 +44,11 @@ import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
 
 
 @Component({
-    selector: 'app-${ obj.name }-addedit-dialog',
-    templateUrl: './addedit.dialog.html',
+    selector: 'app-${ obj.name }-dialog',
+    templateUrl: './dialog.component.html',
     styleUrls: ['../../common/dialog.scss']
 })
-export class AddEdit${ obj.cls }Dialog extends BaseDialog
+export class Dialog${ obj.cls }Component extends BaseDialog
 {
 % for field in obj.table.columns:
  % if field.ui is not None:
@@ -64,7 +64,7 @@ export class AddEdit${ obj.cls }Dialog extends BaseDialog
  % endif
 % endfor
 
-    constructor( dialogRef: MatDialogRef<AddEdit${ obj.cls }Dialog>
+    constructor( dialogRef: MatDialogRef<Dialog${ obj.cls }Component>
                  , @Inject( MAT_DIALOG_DATA ) public data: any
                  , dataService: ${ obj.cls }DataService
 ${ obj.externalService } )
@@ -102,7 +102,7 @@ ${ obj.externalService } )
 % endfor
     onSaveClick(): void
     {
-        console.log( 'AddEdit${ obj.cls }Dialog.onSaveClick() => ', this.formGroup.value );
+        console.log( 'Dialog${ obj.cls }Component.onSaveClick() => ', this.formGroup.value );
         if ( !this.isEditMode() )
         {
             this.dataService.addRecord( this.formGroup.value );

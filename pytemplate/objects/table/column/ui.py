@@ -232,7 +232,7 @@ class TemplateUi( object ):
 
     @property
     def labelPosition( self ):
-        return str( self.__cfg.get( 'labelPosition', 'before' ) ).lower()
+        return str( self.__cfg.get( 'labelPosition', 'after' ) ).lower()
 
     @property
     def error( self ):

@@ -21,10 +21,10 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 -->
-<h2>${ obj.title }</h2>
+<h2 *ngIf="caption">${ obj.title }</h2>
 <div class="navigator-row form">
     <mat-form-field floatPlaceholder="never" color="accent">
-        <input matInput #filter placeholder="Filter User" [value]="dataSource.filter">
+        <input matInput #filter placeholder="Filter ${ obj.title }" [value]="dataSource.filter">
     </mat-form-field>
     <span class="spacer-search"></span>
 % for action in obj.actions.getHeaderButtons():
@@ -37,7 +37,7 @@
                [pageIndex]="pageIndex"
                [pageSize]="pageSize"
                [pageSizeOptions]="[5, 10, 25, 100]"
-               (page)="pageEvent = pagingEvent( $event )">
+               (page)="pagingEvent( $event )">
         </mat-paginator>
     </span>
     <span>
@@ -106,7 +106,7 @@
                [pageIndex]="pageIndex"
                [pageSize]="pageSize"
                [pageSizeOptions]="[5, 10, 25, 100]"
-               (page)="pageEvent = pagingEvent( $event )">
+               (page)="pagingEvent( $event )">
         </mat-paginator>
     </span>
     <span>

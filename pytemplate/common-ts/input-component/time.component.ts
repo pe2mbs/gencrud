@@ -83,4 +83,9 @@ export class PytTimeInputComponent extends PytBaseComponent
         }
         return '00:00';
     }
+
+    public timeChange( $event )
+    {
+        return;
+    }
 }
