@@ -131,59 +131,13 @@ def updatePythonProject( config, app_module ):
 
         raise
 
-    def createMenuItem( cfg ):
-        return { MENU_DISPLAY_NAME: cfg.menuItem.displayName,
-                 MENU_ICON_NAME: cfg.menuItem.iconName,
-                 MENU_ROUTE: cfg.menuItem.route }
-
-    def createRootMenuItem( cfg ):
-        return { MENU_DISPLAY_NAME: cfg.menu.displayName,
-                 MENU_ICON_NAME: cfg.menu.iconName,
-                 MENU_CHILDEREN_LABEL: [ createMenuItem( cfg ) ] }
-
-    def processOldMenuStructure( cfg ):
-        foundMenu = False
-        for menuItem in menuItems:
-            if menuItem[ MENU_DISPLAY_NAME ] == cfg.menu.displayName:
-                foundMenu = True
-                # Found the menu
-                subMenuItems = menuItem[ MENU_CHILDEREN_LABEL ]
-                foundSubMenu = False
-                for subMenuItem in subMenuItems:
-                    if subMenuItem[ MENU_DISPLAY_NAME ] == cfg.menuItem.displayName:
-                        foundSubMenu = True
-                        # update the route and icon information
-                        subMenuItem[ MENU_ICON_NAME ]   = cfg.menuItem.iconName
-                        subMenuItem[ MENU_ROUTE ]       = cfg.menuItem.route
-                        subMenuItem[ MENU_INDEX ]       = cfg.menuItem.index
-                        # don't bother, its already there
-                        break
-
-                if not foundSubMenu:
-                    # Add /insert the sub-menu
-                    if cfg.menuItem.index < 0:
-                        idx = ( len( subMenuItems ) + cfg.menuItem.index ) + 1
-
-                    else:
-                        idx = cfg.menuItem.index
-
-                    subMenuItems.insert( idx, createMenuItem( cfg ) )
-                    break
-
-        if not foundMenu:
-            if cfg.menu.index < 0:
-                # from the end
-                pos = ( len( menuItems ) + cfg.menu.index + 1 )
-
-            else:
-                pos = cfg.menu.index
-
-            # insert at
-            menuItems.insert( cfg.menu.index, createRootMenuItem( cfg ) )
-
-        return
-
     def processNewMenuStructure( menu_items, menu ):
+        """This is needed for reverse calling
+
+        :param menu_items:
+        :param menu:
+        :return:
+        """
         foundMenu = False
         for menuItem in menu_items:
             if menuItem[ MENU_DISPLAY_NAME ] == menu.displayName:
@@ -227,11 +181,7 @@ def updatePythonProject( config, app_module ):
         if cfg.menu is None:
             continue
 
-        if cfg.menuItem is None:
-            processNewMenuStructure( menuItems, cfg.menu )
-
-        else:
-            processOldMenuStructure( cfg )
+        processNewMenuStructure( menuItems, cfg.menu )
 
     for idx, menuItem in enumerate( menuItems ):
         menuItem[ MENU_INDEX ] = idx

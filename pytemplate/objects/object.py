@@ -85,10 +85,6 @@ class TemplateObject( object ):
         return self.__menuRoot
 
     @property
-    def menuItem( self ):
-        return self.__menuItem
-
-    @property
     def table( self ):
         return self.__table
 

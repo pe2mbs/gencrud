@@ -150,7 +150,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     imports = []
     entries = []
     for cfg in config:
-        if cfg.menuItem is not None:
+        if cfg.menu.menu is not None:
             # Do we have child pages for new and edit?
             children = []
             for action in cfg.actions:
@@ -174,7 +174,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                     if component not in imports:
                         imports.append( component )
 
-            logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), cfg.menuItem.route[ 1: ] ) )
+            logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), cfg.menu.menu.route[ 1: ] ) )
             if len( children ) > 0:
                 children.insert( 0, {
                     'path':      "''",
@@ -182,11 +182,11 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                     'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
                                    'breadcrum': "'{}'".format( cfg.cls ) }
                 } )
-                routeItem = { 'path': "'{}'".format( cfg.menuItem.route[ 1: ] ), 'children': children }
+                routeItem = { 'path': "'{}'".format( cfg.menu.menu.route[ 1: ] ), 'children': children }
 
             else:
                 routeItem = {
-                    'path':      "'{}'".format( cfg.menuItem.route[ 1: ] ),
+                    'path':      "'{}'".format( cfg.menu.menu.route[ 1: ] ),
                     'component': '{cls}TableComponent'.format( cls = cfg.cls ),
                     'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
                                    'breadcrum': "'{}'".format( cfg.cls ) }
