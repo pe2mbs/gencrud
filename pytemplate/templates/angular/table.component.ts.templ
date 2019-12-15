@@ -65,7 +65,7 @@ export class ${ obj.cls }TableComponent extends Subscribers implements OnInit, O
     index:              number;
     @Input( 'id' )      id: any;
     @Input( 'value' )   value: any;
-    @Input( 'caption' ) caption: boolean;
+    @Input( 'caption' ) caption: boolean = true;
     public mode:        string;
     private backendFilter: any = null;
     public pageSize:    number = 10;
