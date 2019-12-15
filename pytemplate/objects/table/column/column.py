@@ -428,6 +428,19 @@ class TemplateColumn( object ):
         return None
 
     @property
+    def initValue( self ):
+        def initValueDefault():
+            if self.isNumericField():
+                return "0"
+
+            elif self.isBooleanField():
+                return "false"
+
+            return "''"
+
+        return self.__config.get( 'initialValue', initValueDefault() )
+
+    @property
     def validators( self ):
         result = ""
         if not self.isPrimaryKey():

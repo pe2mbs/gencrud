@@ -108,7 +108,7 @@ ${ obj.externalService }  )
         this.formGroup = new FormGroup( {
 % for field in obj.table.columns:
 %   if field.hasLabel():
-            ${ field.name }: new FormControl( this.record.${ field.name },
+            ${ field.name }: new FormControl( this.record.${ field.name } || ${ field.initValue },
                                               ${ field.validators } ),
 %   endif
 % endfor
