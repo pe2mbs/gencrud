@@ -46,3 +46,10 @@ class TemplateMenuItem( object ):
             return self.__item[ 'route' ]
 
         return self.__item[ 'displayName' ]
+
+    @property
+    def menu( self ):
+        if 'menu' in self.__item:
+            return TemplateMenuItem( 'menu', **self.__item )
+
+        return None

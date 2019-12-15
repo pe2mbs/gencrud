@@ -139,10 +139,7 @@ def updatePythonProject( config, app_module ):
                  MENU_ICON_NAME: cfg.menu.iconName,
                  MENU_CHILDEREN_LABEL: [ createMenuItem( cfg ) ] }
 
-    for cfg in config:
-        if cfg.menu is None:
-            continue
-
+    def processOldMenuStructure( cfg ):
         foundMenu = False
         for menuItem in menuItems:
             if menuItem[ MENU_DISPLAY_NAME ] == cfg.menu.displayName:
@@ -180,6 +177,56 @@ def updatePythonProject( config, app_module ):
 
             # insert at
             menuItems.insert( cfg.menu.index, createRootMenuItem( cfg ) )
+
+        return
+
+    def processNewMenuStructure( menu_items, menu ):
+        foundMenu = False
+        for menuItem in menu_items:
+            if menuItem[ MENU_DISPLAY_NAME ] == menu.displayName:
+                foundMenu = True
+                if menu.menu is not None:
+                    # sub menu
+                    if MENU_CHILDEREN_LABEL not in menuItem:
+                        menuItem[ MENU_CHILDEREN_LABEL ] = []
+
+                    processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                else:
+                    menuItem[ MENU_DISPLAY_NAME ]   = menu.displayName
+                    menuItem[ MENU_ICON_NAME ]      = menu.iconName
+                    if menu.route is not None:
+                        menuItem[ MENU_ROUTE ]          = menu.route
+
+                    elif menu.menu is not None:
+                        if MENU_CHILDEREN_LABEL not in menuItem:
+                            menuItem[ MENU_CHILDEREN_LABEL ] = []
+
+                        processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+
+        if not foundMenu:
+            menuItem = {   MENU_DISPLAY_NAME:  menu.displayName,
+                           MENU_ICON_NAME:     menu.iconName }
+            if menu.route is not None:
+                menuItem[ MENU_ROUTE ] = menu.route
+
+            elif menu.menu is not None:
+                menuItem[ MENU_CHILDEREN_LABEL ] = []
+                processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ],menu.menu )
+
+            menu_items.insert( menu.index if menu.index >= 0 else ( len( menu_items ) + menu.index + 1 ),
+                               menuItem )
+
+        return
+
+    for cfg in config:
+        if cfg.menu is None:
+            continue
+
+        if cfg.menuItem is None:
+            processNewMenuStructure( menuItems, cfg.menu )
+
+        else:
+            processOldMenuStructure( cfg )
 
     for idx, menuItem in enumerate( menuItems ):
         menuItem[ MENU_INDEX ] = idx
