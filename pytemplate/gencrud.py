@@ -28,6 +28,7 @@ import json
 import yaml
 import os
 import sys
+import glob
 import traceback
 import logging
 import pytemplate.util.utils
@@ -194,7 +195,16 @@ def main():
 
         banner()
         for arg in args:
-            doWork( arg )
+            if '*' in arg:
+                # Wild card handling
+                for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
+                    if filename.lower().endswith( '.yaml' ):
+                        print( filename )
+                        doWork( filename )
+
+
+            else:
+                doWork( arg )
 
         print( "Done" )
 
