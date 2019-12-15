@@ -126,7 +126,9 @@ def updatePythonProject( config, app_module ):
         menuItems = json.loads( ''.join( sectionLines ) )
 
     except:
-        print( ''.join( sectionLines ) )
+        for line_no, line in enumerate( sectionLines ):
+            print( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
+
         raise
 
     def createMenuItem( cfg ):
@@ -153,6 +155,7 @@ def updatePythonProject( config, app_module ):
                         # update the route and icon information
                         subMenuItem[ MENU_ICON_NAME ]   = cfg.menuItem.iconName
                         subMenuItem[ MENU_ROUTE ]       = cfg.menuItem.route
+                        subMenuItem[ MENU_INDEX ]       = cfg.menuItem.index
                         # don't bother, its already there
                         break
 
@@ -194,6 +197,7 @@ def updatePythonProject( config, app_module ):
                 else:
                     menuItem[ MENU_DISPLAY_NAME ]   = menu.displayName
                     menuItem[ MENU_ICON_NAME ]      = menu.iconName
+                    menuItem[ MENU_INDEX ]          = menu.index
                     if menu.route is not None:
                         menuItem[ MENU_ROUTE ]          = menu.route
 
@@ -204,8 +208,9 @@ def updatePythonProject( config, app_module ):
                         processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
 
         if not foundMenu:
-            menuItem = {   MENU_DISPLAY_NAME:  menu.displayName,
-                           MENU_ICON_NAME:     menu.iconName }
+            menuItem = {   MENU_DISPLAY_NAME:   menu.displayName,
+                           MENU_ICON_NAME:      menu.iconName,
+                           MENU_INDEX:          menu.index }
             if menu.route is not None:
                 menuItem[ MENU_ROUTE ] = menu.route
 
