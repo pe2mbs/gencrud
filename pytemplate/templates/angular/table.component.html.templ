@@ -22,11 +22,9 @@
 *   the table from the configuration.
 -->
 <mat-card>
-    <mat-card-header color="primary">
-        <mat-card-title *ngIf="caption">
-            ${ obj.title }
-        </mat-card-title>
-    </mat-card-header>
+    <mat-card-title *ngIf="caption">
+        ${ obj.title }
+    </mat-card-title>
     <mat-card-content>
         <div class="navigator-row form">
             <mat-form-field floatPlaceholder="never" color="accent">

@@ -22,11 +22,9 @@
 *   the table from the configuration.
 -->
 <mat-card>
-    <mat-card-header>
-        <mat-card-title>
-            {{ mode }} ${ obj.title }
-        </mat-card-title>
-    </mat-card-header>
+    <mat-card-title>
+        {{ mode }} ${ obj.title }
+    </mat-card-title>
     <mat-card-content>
         <form class="" (ngSubmit)="onSaveClick" [formGroup]="formGroup">
 % for field in obj.table.columns:
