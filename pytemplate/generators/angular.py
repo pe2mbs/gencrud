@@ -150,7 +150,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     imports = []
     entries = []
     for cfg in config:
-        if cfg.menu.menu is not None:
+        if cfg.menu is not None and cfg.menu.menu is not None:
             # Do we have child pages for new and edit?
             children = []
             for action in cfg.actions:
