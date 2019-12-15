@@ -24,28 +24,31 @@
 class TemplateMenuItem( object ):
     def __init__( self, key, **cfg ):
         self.__item = cfg[ key ]
+        return
 
     @property
     def index( self ):
-        if 'index' in self.__item:
-            return self.__item[ 'index' ]
-
-        return -1
+        return self.__item.get( 'index', -1 )
 
     @property
     def displayName( self ):
-        return self.__item[ 'displayName' ]
+        return self.caption
+
+    @property
+    def caption( self ):
+        return self.__item.get( 'caption', self.__item.get( 'displayName', '' ) )
 
     @property
     def iconName( self ):
-        return self.__item[ 'iconName' ]
+        return self.icon
+
+    @property
+    def icon( self ):
+        return self.__item.get( 'icon', self.__item.get( 'iconName', '' ) )
 
     @property
     def route( self ):
-        if 'route' in self.__item:
-            return self.__item[ 'route' ]
-
-        return self.__item[ 'displayName' ]
+        return self.__item.get( 'route', self.caption )
 
     @property
     def menu( self ):

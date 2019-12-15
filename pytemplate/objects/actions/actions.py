@@ -149,3 +149,6 @@ class TemplateActions( object ):
                 return action.position != 'none'
 
         return False
+
+    def __repr__( self ):
+        return "<TemplateActions {}>".format( ", ".join( action.name for action in self.__actions ) )

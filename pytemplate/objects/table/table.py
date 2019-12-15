@@ -25,86 +25,11 @@ import logging
 from pytemplate.objects.table._inports import SourceImport
 from pytemplate.objects.table.column import TemplateColumn
 from pytemplate.objects.table.column.tab import TemplateTabs
+from pytemplate.objects.table.sort import SortInfo
+from pytemplate.objects.table.mixin import TemplateMixin
 import pytemplate.util.utils
 
 logger = logging.getLogger()
-
-
-class SortInfo( object ):
-    def __init__( self, data ):
-        self.__field    = data[ 'field' ]
-        self.__direction = 'asc'
-        # 'asc'
-        # 'desc'
-        # ''
-        if 'direction' in data:
-            if data[ 'direction' ] in ( 'asc', 'desc', '' ):
-                self.__direction    = data[ 'direction' ]
-
-            else:
-                raise Exception( "Sorting order must be one of the following: 'asc', 'desc' or ''")
-
-        return
-
-    @property
-    def Field( self ):
-        return self.__field
-
-    @property
-    def Direction( self ):
-        return self.__direction
-
-    def htmlMaterialSorting( self ):
-        return 'matSortActive="{}" matSortDirection="{}"'.format( self.__field, self.__direction )
-
-    def injectAngular( self ):
-        return self.AngularInject()
-
-    def AngularInject( self ):
-        return "this.sort.sort( {{ id: '{field}', start: '{order}' }} as MatSortable );".format( field = self.__field,
-                                                                                                 order = self.__direction )
-
-class PythonObject( object ):
-    def __init__( self, obj ):
-        self.__object   = obj
-        self.__module   = None
-        self.__class    = None
-        if obj is not None and '.' in obj:
-            self.__module, self.__class = obj.rsplit( '.', 1 )
-
-        return
-
-    @property
-    def Available( self ):
-        return self.__object is not None
-
-    @property
-    def Class( self ):
-        return self.__class
-
-    @property
-    def Module( self ):
-        return self.__module
-
-
-class TemplateMixin( object ):
-    def __init__( self, mixin ):
-        self.__model    = PythonObject( mixin[ 'model' ] if mixin is not None and 'model' in mixin else None )
-        self.__schema   = PythonObject( mixin[ 'schema' ] if mixin is not None and 'schema' in mixin else None )
-        self.__view     = PythonObject( mixin[ 'view' ] if mixin is not None and 'view' in mixin else None )
-        return
-
-    @property
-    def Model( self ):
-        return self.__model
-
-    @property
-    def Schema( self ):
-        return self.__schema
-
-    @property
-    def View( self ):
-        return self.__view
 
 
 class TemplateTable( object ):
@@ -158,7 +83,6 @@ class TemplateTable( object ):
     @property
     def Mixin( self ):
         return self.__mixin
-
 
     def sortedInfo( self ):
         if self.__viewSort is not None:
@@ -277,3 +201,6 @@ class TemplateTable( object ):
     @property
     def viewSize( self ):
         return self.__viewSize
+
+    def __repr__(self):
+        return "<TemplateTable >"

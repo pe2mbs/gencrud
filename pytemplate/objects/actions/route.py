@@ -26,11 +26,6 @@ class RouteTemplate( object ):
     def params( self ):
         return self.__config.get( 'params', [] )
 
-    def __repr__(self):
-        return "<RouteTemplate name = '{}', label = '{}', class = {}, params = {}>".format(
-                self.name, self.label, self.cls, self.params()
-        )
-
     def routeParams( self ):
         params = self.params()
         if len( params ) > 0:
@@ -41,3 +36,8 @@ class RouteTemplate( object ):
             return '[queryParams]="{}"'.format( TypeScript().build( items ) )
 
         return ''
+
+    def __repr__(self):
+        return "<RouteTemplate name = '{}', label = '{}', class = {}, params = {}>".format(
+                self.name, self.label, self.cls, self.params()
+        )

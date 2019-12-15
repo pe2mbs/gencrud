@@ -27,6 +27,9 @@ from pytemplate.objects.actions.route import RouteTemplate
 
 logger = logging.getLogger()
 
+TYPES       = ( 'dialog', 'screen', 'list', 'api', 'none' )
+POSITIONS   = ( 'cell', 'header', 'footer', 'api', 'row', 'none' )
+ATTRIBUTES  = ( 'function', 'name', 'label', 'icon', 'source', 'position', 'type', 'uri', 'route', 'param' )
 
 class TemplateAction( object ):
     def __init__( self, parent, obj_name, **cfg ):
@@ -55,16 +58,16 @@ class TemplateAction( object ):
 
     @property
     def type( self ):
-        result = self.__cfg.get( 'type', 'none' )
-        if result not in ( 'dialog', 'screen', 'list', 'api', 'none' ):
+        result = self.__cfg.get( 'type', TYPES[ -1 ] )
+        if result not in TYPES:
             raise InvalidSetting( 'name', 'action', self.name )
 
         return result
 
     @property
     def position( self ):
-        result = self.__cfg.get( 'position', 'none' )
-        if result not in ( 'cell', 'header', 'footer', 'api', 'row', 'none' ):
+        result = self.__cfg.get( 'position', POSITIONS[ -1 ] )
+        if result not in POSITIONS:
             raise InvalidSetting( 'position', 'action', self.name )
 
         return result
@@ -85,7 +88,7 @@ class TemplateAction( object ):
         return self.__cfg.get( 'function', '' )
 
     def set( self, attr, value ):
-        if attr not in ( 'function', 'name', 'label', 'icon', 'source', 'position', 'type', 'uri', 'route', 'param' ):
+        if attr not in ATTRIBUTES:
             raise Exception( "Invalid attribute '{}' for Action with value '{}'".format( attr, value ) )
 
         self.__cfg[ attr ] = value
