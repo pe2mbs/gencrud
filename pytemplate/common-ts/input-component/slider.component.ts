@@ -48,7 +48,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
                 class="custom-input"
                 [thumbLabel]="thumbLabel"
                 [vertical]="vertical"
-                [disabled]="disabled"
+                [disabled]="readonly"
                 [invert]="invert"
                 [step]="step"
                 [tickInterval]="interval"
@@ -69,9 +69,8 @@ export class PytSliderInputComponent extends PytBaseComponent
     @Input()    min;
     @Input()    max;
     @Input()    interval;
-    @Input()    thumbLabel;
+    @Input()    thumbLabel: boolean = true;
     @Input()    vertical;
-    @Input()    disabled;
     @Input()    invert;
     @Input()    step;
 
@@ -111,11 +110,6 @@ export class PytSliderInputComponent extends PytBaseComponent
         {
             this.vertical = false;
         }
-        if ( this.disabled === '' || this.disabled === null ||
-                  this.disabled === undefined )
-        {
-            this.disabled = false;
-        }
         if ( this.invert === '' || this.invert === null ||
                   this.invert === undefined )
         {
@@ -125,11 +119,6 @@ export class PytSliderInputComponent extends PytBaseComponent
                   this.step === undefined )
         {
             this.step = 1;
-        }
-        if ( this.thumbLabel === '' || this.thumbLabel === null ||
-                  this.thumbLabel === undefined )
-        {
-            this.thumbLabel = true;
         }
         if ( this.debug )
         {

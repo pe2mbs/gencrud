@@ -46,6 +46,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     <mat-checkbox class="custom-input__input"
                   id="{{ id }}"
                   [color]="color"
+                  [disabled]="readonly"
                   [labelPosition]="labelPosition"
                   [(indeterminate)]="indeterminate"
                   [formControl]="control">

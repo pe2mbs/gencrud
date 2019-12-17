@@ -47,6 +47,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     <textarea matInput
            rows="{{ rows }}" cols="{{ cols }}" 
            class="custom-input"
+           [disabled]="readonly"
            id="{{ id }}"
            placeholder="{{ placeholder }}"
            [formControl]="control">

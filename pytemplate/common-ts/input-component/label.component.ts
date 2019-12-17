@@ -30,9 +30,12 @@ import { Component,
          OnInit} from '@angular/core';
 import { NG_VALUE_ACCESSOR, 
          ControlValueAccessor, 
-         FormGroupDirective} from '@angular/forms';
+         FormGroupDirective,
+         FormControl } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { PytBaseComponent } from './base.input.component';
+import * as moment from 'moment';
+
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
@@ -49,7 +52,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
                 readonly
                 id="{{ id }}"
                 placeholder="{{ placeholder }}"
-                [formControl]="control"/>
+                [formControl]="labelControl"/>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
@@ -71,9 +74,45 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytLabelComponent extends PytBaseComponent
 {
+    @Input( 'pipe' )        pipe:   string = '';
+    @Input( 'format' )      format: string = '';
+    public labelControl: FormControl;
+
     constructor( fGD: FormGroupDirective ) 
     {
         super( fGD );
+        this.labelControl = new FormControl()
+        return;
+    }
+
+    onControlChange()
+    {
+        super.onControlChange();
+        let value = this.control.value;
+        if ( value != '' && this.pipe !== '' )
+        {
+            if ( this.pipe === 'datetime' )
+            {
+                let defFormat = "YYYY-MM-DD HH:mm:ss";
+                var splitted = this.format.split(";", 2);
+                if ( splitted.length > 0 )
+                {
+                    let idx = 0;
+                    if ( splitted[ 0 ].length == 2 || splitted[ 0 ].length == 5 )
+                    {
+                        moment.locale( splitted[ 0 ] );
+                        idx++;
+                    }
+                    if ( idx < splitted.length )
+                    {
+                        defFormat = splitted[ idx ]
+                    }
+                }
+                let dt = moment( value );
+                value = dt.format( defFormat );
+            }
+        }
+        this.labelControl.setValue( value );
         return;
     }
 }

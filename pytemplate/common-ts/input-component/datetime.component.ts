@@ -55,6 +55,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
             <input id="{{ id }}_DATE"
                 matInput [matDatepicker]="datepicker"
                 placeholder="{{placeholderDate}}"
+                [disabled]="readonly"
                 formControlName="dateControl"
                 [min]="minDate"
                 [max]="maxDate"

@@ -70,7 +70,9 @@
                     {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
  % endif
 % elif field.ui.isDateTime() or field.ui.isDate() or field.ui.isTime():
-                    {{ row.${ field.name } | date:"yyyy-MM-dd HH:mm:ss" }}
+                    {{ row.${ field.name } | date: "yyyy-MM-dd HH:mm:ss" }}
+% elif field.ui.pipe != '':
+                    {{ dataSource.reFormat( row.${ field.name }, '${ field.ui.pipe }', '${ field.ui.format }' ) }}
 % else:
                     {{ row.${ field.name } }}
 % endif

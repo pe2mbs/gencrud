@@ -46,7 +46,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     <mat-form-field color="accent">
         <input  matInput 
                 type="email"
-                class="custom-input__input" 
+                class="custom-input__input"
+                [disabled]="readonly"
                 id="{{ id }}"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"/>
