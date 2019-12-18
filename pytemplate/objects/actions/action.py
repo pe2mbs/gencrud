@@ -22,6 +22,7 @@
 #   the table from the configuration.
 #
 import logging
+from pytemplate.util.typescript import TypeScript
 from pytemplate.util.exceptions import InvalidSetting
 from pytemplate.objects.actions.route import RouteTemplate
 
@@ -125,15 +126,8 @@ class TemplateAction( object ):
                                                                                  icon = self.icon )
         function = ''
         if self.function == '' and self.uri != '':
-            params = []
-            for key, value in self.param:
-                params.append( "'{}=' + {}".format( key, value ) )
-
-            param = '&'.join( params )
-            if len( param ) > 0:
-                param = '?' + param
-
-            function = "dataService.genericPut( '{uri}', '{param}' )".format( uri = self.uri,
+            param = TypeScript().build( self.param )
+            function = "dataService.genericPut( '{uri}', {param} )".format( uri = self.uri,
                                                                               param = param )
 
         else:

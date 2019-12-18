@@ -22,6 +22,7 @@
 #   the table from the configuration.
 #
 import logging
+import traceback
 from flask import Blueprint, request, jsonify
 from applic.database import db
 from ${ obj.application }.common import fieldConversion
@@ -31,8 +32,6 @@ from ${ obj.application }.common import fieldConversion
 % if obj.table.Mixin.View.Available:
 from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
 % endif
-
-
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
 logger = logging.getLogger()
 
@@ -47,6 +46,14 @@ def registerApi( app, cors ):
 
     logger.info( 'Register ${ obj.cls } routes' )
     app.register_blueprint( ${ obj.name }Api )
+    try:
+        import ${ obj.application }.${ obj.name }.entry_points  as EP
+        logger.info( 'Register ${ obj.cls } entrypoint routes' )
+        app.register_blueprint( EP.entryPointApi )
+
+    except:
+        pass
+
 % if obj.table.Mixin.View.Available:
     logger.info( 'Registering ${ obj.cls } view mixin' )
     app.register_blueprint( ${obj.table.Mixin.View.Class} )

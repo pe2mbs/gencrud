@@ -264,7 +264,7 @@ export class CrudDataService<T>
         return;
     }
 
-    public genericPut( uri: string, params: string ): void
+    public genericPut( uri: string, params: any ): void
     {
         console.log( 'genericPut', uri, params );
         this.httpClient.put( this._uri + uri, params ).subscribe( result => {
@@ -277,5 +277,11 @@ export class CrudDataService<T>
             console.log ( error.name + ' ' + error.message );
         });
         return;
+    }
+
+    public genericGet( uri: string, params: any ): Observable<any>
+    {
+        console.log( 'genericGet', uri, params );
+        return this.httpClient.get( this._uri + uri, params );
     }
 }

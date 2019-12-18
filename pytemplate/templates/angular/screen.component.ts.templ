@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ${obj.cls}DataService } from './service';
 import { ActivatedRoute, RouterLink, Router } from "@angular/router";
-import { Subscribers } from 'src/app/common/subcribers';
+import { Subscribers } from 'src/app/common/subscribers';
 import { ${obj.cls}Record } from './model';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
