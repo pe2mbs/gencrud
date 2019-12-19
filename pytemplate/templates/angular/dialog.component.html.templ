@@ -22,7 +22,7 @@
 *   the table from the configuration.
 -->
 <div class="container">
-    <h3 mat-dialog-title>{{ mode }} ${ obj.cls }</h3>
+    <h3 mat-dialog-title>{{ mode }} ${ obj.title }</h3>
     <form class="mat-dialog-content" (ngSubmit)="submit" [formGroup]="formGroup">
 % for field in obj.table.columns:
  % if field.hasLabel() and not field.hasTab:

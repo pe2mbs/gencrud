@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ${obj.cls}DataService } from './service';
-import { ActivatedRoute, RouterLink } from "@angular/router";
-import { Location } from '@angular/common';
+import { ActivatedRoute, RouterLink, Router } from "@angular/router";
+import { Subscribers } from 'src/app/common/subscribers';
 import { ${obj.cls}Record } from './model';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
@@ -20,17 +20,19 @@ import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
  % endif
 % endfor
 
-
 @Component({
-    selector: 'app-addedit-screen-${obj.name}-component',
-    templateUrl: './addedit.screen.html' ]
+    selector: 'app-${obj.name}-screen',
+    templateUrl: './screen.component.html'
 })
-export class AddEditScreen${obj.cls}Component implements OnInit, OnDestroy
+export class Screen${obj.cls}Component extends Subscribers implements OnInit, OnDestroy
 {
     // Base component
     public formControl: FormControl;
     public formGroup: FormGroup;
     public mode: string;
+    public sub: any;
+    @Input( 'id' )      id: any;
+    @Input( 'value' )   value: any;
     protected debug: boolean = false;
 % for field in obj.table.columns:
  % if field.ui is not None:
@@ -94,18 +96,18 @@ export class AddEditScreen${obj.cls}Component implements OnInit, OnDestroy
     }
 
     // Specific to component
-    private sub: any;
-    id: string;
-    record: ${obj.cls}Record;
+    public record: ${obj.cls}Record;
+
     constructor( private route: ActivatedRoute
-               , private location: Location
+               , private router: Router
                , public dataService: ${obj.cls}DataService
 ${ obj.externalService }  )
     {
+        super();
         this.record = new ${obj.cls}Record();
         this.formGroup = new FormGroup( {
 % for field in obj.table.columns:
-            ${ field.name }: new FormControl( this.record.${ field.name },
+            ${ field.name }: new FormControl( this.record.${ field.name } || ${ field.initValue },
                                               ${ field.validators } ),
 % endfor
         } );
@@ -115,29 +117,31 @@ ${ obj.externalService }  )
 
     ngOnInit()
     {
-        this.sub = this.route.params.subscribe( params => {
-            // (+) converts string 'id' to a number
-            this.id = params[ 'id' ];
-            this.mode = params[ 'mode' ];
-            this.record = params[ 'id' ];
-            // In a real app: dispatch action to load the details here.
-        } );
-        this.dataService.getRecordById( this.id ).subscribe( record => {
-            this.record = record
+        if ( this.id === undefined || this.id === null )
+        {
+            this.registerSubscription( this.route.queryParams.subscribe( params => {
+                console.log( params );
+                this.id     = params.id;    // Contains the key field, currently only the primary key is supported.
+                this.value  = params.value; // Contains val value for the key field.
+                this.mode   = params.mode;  // edit or new, filter only supported on the table component.
+            } ) );
+        }
+        this.registerSubscription( this.dataService.getRecordById( this.value ).subscribe( record => {
+            this.record = record;
             this.formGroup.patchValue( {
 % for field in obj.table.columns:
-                ${ field.name }: this.record.${ field.name },
+                ${ field.name }: record.${ field.name },
 % endfor
             } );
             this.dataService.lockRecord( record );
-        } );
+        } ) );
 % for field in obj.table.columns:
   % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
     % if field.ui.service is not None:
-        this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( dataList => {
+        this.registerSubscription( this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( dataList => {
             console.log( '${ field.ui.service.name }Service.getSelectList => ', dataList );
             this.${ field.ui.service.name }List = dataList;
-        } );
+        } ) );
     % endif
  % endif
 % endfor
@@ -146,8 +150,9 @@ ${ obj.externalService }  )
 
     ngOnDestroy()
     {
-        this.sub.unsubscribe();
         this.dataService.unlockRecord( this.record );
+        super.ngOnDestroy();
+        return;
     }
 
 % for field in obj.table.columns:
@@ -160,7 +165,7 @@ ${ obj.externalService }  )
 
     onSaveClick(): void
     {
-        console.log( 'AddEdit${obj.cls}Dialog.onSaveClick() => ', this.formGroup.value );
+        console.log( 'Dialog${obj.cls}Component.onSaveClick() => ', this.formGroup.value );
         if ( !this.isEditMode() )
         {
             this.dataService.addRecord( this.formGroup.value );
@@ -169,13 +174,13 @@ ${ obj.externalService }  )
         {
             this.dataService.updateRecord( this.formGroup.value );
         }
-        this.location.back();
+        window.history.back();
         return;
     }
 
     onCancelClick(): void
     {
-        this.location.back();
+        window.history.back();
         return;
     }
 }

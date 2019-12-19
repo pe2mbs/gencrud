@@ -21,40 +21,44 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 -->
-<h3>{{ mode }} ${ obj.cls }</h3>
-<form class="" (ngSubmit)="submit" [formGroup]="formGroup">
+<mat-card>
+    <mat-card-title>
+        {{ mode }} ${ obj.title }
+    </mat-card-title>
+    <mat-card-content>
+        <form class="" (ngSubmit)="onSaveClick" [formGroup]="formGroup">
 % for field in obj.table.columns:
  % if field.hasLabel() and not field.hasTab:
-    ${ field.angularUiInput() }
+            ${ field.angularUiInput() }
  % endif
 % endfor
-
 % if obj.table.hasTabs( 'screen' ):
-        <${ obj.table.tabs( 'screen' ).groupTag }>
+            <${ obj.table.tabs( 'screen' ).groupTag }>
 % for label in obj.table.tabs( 'screen' ).labels:
-            <${ obj.table.tabs( 'screen' ).tabTag } label="${ label }">
-%   if obj.table.tabs( 'dialog' ).hasComponent( label ):
-                    <${obj.table.tabs( 'screen' ).component( label )}>
+                <${ obj.table.tabs( 'screen' ).tabTag } label="${ label }">
+
+%   if obj.table.tabs( 'screen' ).hasComponent( label ):
+                    <${obj.table.tabs( 'screen' ).component( label )} ${obj.table.tabs( 'screen' ).params( label ) }>
                     </${obj.table.tabs( 'screen' ).component( label )}>
 %   else:
 %     if obj.table.tabs( 'screen' ).contentTag is not None:
-                <${ obj.table.tabs( 'screen' ).contentTag }>
+                    <${ obj.table.tabs( 'screen' ).contentTag }>
 %     endif
 %     for field in obj.table.tabs( 'screen' ).fieldsFor( label ):
-                    ${ field.angularUiInput() }
+                        ${ field.angularUiInput() }
 %     endfor
 %     if obj.table.tabs( 'screen' ).contentTag is not None:
-                </${ obj.table.tabs( 'screen' ).contentTag }>
+                    </${ obj.table.tabs( 'screen' ).contentTag }>
 %     endif
 %   endif
-            </${ obj.table.tabs( 'screen' ).tabTag }>
+                </${ obj.table.tabs( 'screen' ).tabTag }>
 %  endfor
-        </${ obj.table.tabs( 'screen' ).groupTag }>
+            </${ obj.table.tabs( 'screen' ).groupTag }>
 % endif
-
-    <div>
+        </form>
+    </mat-card-content>
+    <mat-card-actions>
         <button mat-button
-                [type]="submit"
                 id="${ obj.cls }.submit"
                 [disabled]="!formGroup.valid"
                 (click)="onSaveClick()">Save</button>
@@ -62,5 +66,5 @@
                 (click)="onCancelClick()"
                 id="${ obj.cls }.cancel"
                 tabindex="-1">Cancel</button>
-    </div>
-</form>
+    </mat-card-actions>
+</mat-card>

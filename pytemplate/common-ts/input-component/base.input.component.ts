@@ -46,6 +46,7 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
     @Input()                formControlName:    string;
     // is the control readonly
     @Input( 'readonly' )    readonly:           boolean = false;
+    @Input( 'disabled' )    disabled:           boolean = false;
     // Field prefix
     @Input()                prefix:             string;
     @Input( 'prefix-type' ) prefixType:         string = 'text';
@@ -195,13 +196,18 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
             console.log( 'base-ngAfterViewInit', this.formControlName, this.control );
         }
         // RESET the custom input form control UI when the form control is RESET
-        this.control.valueChanges.subscribe( () => {
-            // check condition if the form control is RESET
-            if ( this.control.value === '' || this.control.value === null || this.control.value === undefined )
-            {
-                this.control.setValue( this.getDefaultValue(), { emitEvent: false } );
-            }
-        } );
+        this.control.valueChanges.subscribe( () => this.onControlChange() );
+    }
+
+    onControlChange()
+    {
+        console.log( 'base-onControlChange', this.formControlName, this.control );
+        // check condition if the form control is RESET
+        if ( this.control.value === '' || this.control.value === null || this.control.value === undefined )
+        {
+            this.control.setValue( this.getDefaultValue(), { emitEvent: false } );
+        }
+        return;
     }
 
     // event fired when input value is changed. later propagated up 

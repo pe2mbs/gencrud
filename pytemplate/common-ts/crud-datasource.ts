@@ -28,6 +28,8 @@ import { BehaviorSubject, merge, Observable } from 'rxjs';
 import { MatPaginator, MatSort } from '@angular/material';
 import { map } from 'rxjs/operators';
 import { CrudDataService } from './crud-dataservice';
+import * as moment from 'moment';
+
 
 export class CrudDataSource<T> extends DataSource<T> 
 {
@@ -49,7 +51,8 @@ export class CrudDataSource<T> extends DataSource<T>
     constructor( public _databaseTable: CrudDataService<T>,
                  public _paginator: MatPaginator,
                  public _sort: MatSort,
-                 public pageEvent: EventEmitter<PageEvent> )
+                 public pageEvent: EventEmitter<PageEvent>,
+                 protected _backend_filter: any )
     {
         super();
         // Reset to the first page when the user changes the filter.
@@ -82,7 +85,7 @@ export class CrudDataSource<T> extends DataSource<T>
             this.pageEvent
         ];
 
-        this._databaseTable.getAll();
+        this._databaseTable.getAll( this._backend_filter );
 
         return merge(...displayDataChanges).pipe(map( () => {
             // Filter data
@@ -144,4 +147,33 @@ export class CrudDataSource<T> extends DataSource<T>
         } );
         return ( result );
     }
+
+    public reFormat( value: string, pipe: string, format: string ): string
+    {
+        if ( value === undefined || value === null || value === '' )
+        {
+            return ( value )
+        }
+        if ( pipe === 'datetime' )
+        {
+            let defFormat = "YYYY-MM-DD HH:mm:ss";
+            var splitted = format.split(";", 2);
+            if ( splitted.length > 0 )
+            {
+                let idx = 0;
+                if ( splitted[ 0 ].length == 2 || splitted[ 0 ].length == 5 )
+                {
+                    moment.locale( splitted[ 0 ] );
+                    idx++;
+                }
+                if ( idx < splitted.length )
+                {
+                    defFormat = splitted[ idx ]
+                }
+            }
+            value = moment( value ).format( defFormat );
+        }
+        return ( value );
+    }
+
 }

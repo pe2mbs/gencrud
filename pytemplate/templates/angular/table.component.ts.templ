@@ -21,16 +21,18 @@
 *   gencrud.py module. When modifing the file make sure that you remove
 *   the table from the configuration.
 */
-import { Component, ElementRef, OnInit, ViewChild, EventEmitter } from '@angular/core';
-import { Router } from  '@angular/router';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild, EventEmitter, Input } from '@angular/core';
+import { Router, ActivatedRoute } from  '@angular/router';
+import { Location } from  '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { MatDialog, MatPaginator, MatSort, PageEvent } from '@angular/material';
+import { MatDialog, MatPaginator, MatSort, PageEvent, MatSortable } from '@angular/material';
+import { Subscribers } from 'src/app/common/subscribers';
 import { fromEvent } from 'rxjs';
 import { ${ obj.cls }Record } from './model';
-% if obj.actions.get( 'new' ).position != 'none' or obj.actions.get( 'edit' ).position != 'none':
-import { AddEdit${ obj.cls }Dialog } from './addedit.dialog';
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+import { Dialog${ obj.cls }Component } from './dialog.component';
 % endif
-% if obj.actions.get( 'delete' ).position != 'none':
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
 import { Delete${ obj.cls }Dialog } from './delete.dialog';
 % endif
 import { ${ obj.cls }DataService } from './service';
@@ -48,18 +50,24 @@ import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
     templateUrl: './table.component.html',
     styleUrls: ['./table.component.scss']
 })
-export class ${ obj.cls }TableComponent implements OnInit
+export class ${ obj.cls }TableComponent extends Subscribers implements OnInit, OnDestroy
 {
     displayedColumns = [
 % for field in obj.table.listViewColumns:
                             '${ field.name }',
 % endfor
+% if obj.actions.hasRowButtons():
                             'actions'
+% endif
                         ];
 
     dataSource:         ${ obj.cls }DataSource  | null;
     index:              number;
-    id:                 number;
+    @Input( 'id' )      id: any;
+    @Input( 'value' )   value: any;
+    @Input( 'caption' ) caption: boolean = true;
+    public mode:        string;
+    private backendFilter: any = null;
     public pageSize:    number = 10;
     public pageIndex:   number = 0;
     public paginatorEvent: EventEmitter<PageEvent>;
@@ -69,14 +77,16 @@ export class ${ obj.cls }TableComponent implements OnInit
     @ViewChild( 'filter' )      filter: ElementRef;
 
     constructor( public httpClient: HttpClient
+                 , private route: ActivatedRoute
                  , public dialog: MatDialog
-                 , public router: Router
+                 , private router: Router
                  , public dataService: ${ obj.cls }DataService
 % if obj.table.hasViewSizeService:
                  , public viewSizeService: ${ obj.table.viewSize }
 % endif
 ${ obj.externalService } )
     {
+        super();
 % if obj.table.hasViewSizeValue:
         this.pageSize = ${ obj.table.viewSize }
 % endif
@@ -86,6 +96,35 @@ ${ obj.externalService } )
 
     public ngOnInit(): void
     {
+        let tmp = localStorage.getItem( '${ obj.cls }Table.size' );
+        if ( this.caption === undefined && this.caption === null )
+        {
+            this.caption = true;
+        }
+        if ( tmp !== null )
+        {
+            this.pageSize = +tmp;
+        }
+        if ( this.id !== undefined && this.id !== null )
+        {
+            this.backendFilter = { id: this.id, value: this.value }
+            this.mode = 'filter';
+        }
+        else
+        {
+            this.registerSubscription( this.route.queryParams.subscribe( params => {
+                console.log( params );
+                if ( params.id !== undefined && params.id !== null )
+                {
+                    this.backendFilter = {
+                        id:     params.id,      // Contains the key field.
+                        value:  params.value    // Contains val value for the key field.
+                    }
+                    this.mode = params.mode // filter, edit or new only supported on the screen component
+                }
+            } ) );
+        }
+        console.log( 'ngOnInit: backendFilter', this.backendFilter );
         this.loadData();
 % if obj.table.hasViewSizeService:
         this.pageSize = viewSizeService.getViewSize();
@@ -93,6 +132,17 @@ ${ obj.externalService } )
 % if obj.table.viewSort is not None:
         ${ obj.table.viewSort.injectAngular() }
 % endif
+        tmp = localStorage.getItem( '${ obj.cls }Table.index' );
+        if ( tmp !== null )
+        {
+            this.bot_paginator.pageIndex = +tmp;
+        }
+        return;
+    }
+
+    ngOnDestroy()
+    {
+        super.ngOnDestroy();
         return;
     }
 
@@ -102,25 +152,13 @@ ${ obj.externalService } )
         return;
     }
 
-% if obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'screen':
-    public screenAddNew(): void
-    {
-        this.router.navigate( [ 'addedit${obj.name}', { id: 0, mode: 'new' } ] );
-        return;
-    }
-% endif
-% if obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'dialog':
-    public addNew(): void
-    {
-        console.log("function addNew() deprecated use dialogAddNew()" )
-        this.dialogAddNew()
-    }
-
-    public dialogAddNew(): void
+% if obj.actions.get( 'new' ).position != 'none':
+%   if obj.actions.get( 'new' ).type == 'dialog':
+    public addRecord(): void
     {
         let record: ${ obj.cls }Record = new ${ obj.cls }Record;
         console.log( 'addNew ', record );
-        const dialogRef = this.dialog.open( AddEdit${ obj.cls }Dialog,
+        const dialogRef = this.dialog.open( Dialog${ obj.cls }Component,
         {
             data: { record: record,
                     mode: 'add' },
@@ -139,29 +177,16 @@ ${ obj.externalService } )
         return;
     }
 
+%   endif
 % endif
-% if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'screen':
-    public screenEditRecord( i: number, row: ${obj.cls}Record ): void
-    {
-        this.router.navigate( [ 'addedit${obj.name}', { id: row.${obj.table.primaryKey}, mode: 'edit' } ] );
-        return;
-    }
-% endif
-% if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'dialog':
-    public startEdit( i: number, record: ${obj.cls}Record ): void
-    {
-        // Downwards compatility
-        console.log("function startEdit() deprecated use dialogEditRecord()" )
-        this.dialogEditRecord( i, record );
-        return
-    }
-
-    public dialogEditRecord( i: number, record: ${ obj.cls}Record ): void
+% if obj.actions.get( 'edit' ).position != 'none':
+%   if obj.actions.get( 'edit' ).type == 'dialog':
+    public editRecord( i: number, record: ${ obj.cls}Record ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
         let height: number = ( 6 * 72 ) + 190;
-        const dialogRef = this.dialog.open( AddEdit${ obj.cls }Dialog,
+        const dialogRef = this.dialog.open( Dialog${ obj.cls }Component,
         {
             data: { record:     record, 
                     mode:       'edit' },
@@ -169,13 +194,13 @@ ${ obj.externalService } )
         dialogRef.updateSize( '85%', height.toString() + 'px' );
         dialogRef.afterClosed().subscribe( result => 
         {
-            console.log( 'startEdit() dialog result ', result );
+            console.log( 'editRecord() dialog result ', result );
             if ( result === 1 ) 
             {
                 // When using an edit things are little different,
                 // firstly we find record inside DataService by id
                 const foundIndex = this.dataService.dataChange.value.findIndex( x => x.${ obj.table.primaryKey } === this.id );
-                console.log( 'startEdit() updating index ', foundIndex );
+                console.log( 'editRecord() updating index ', foundIndex );
                 // Then you update that record using data from
                 // dialogData (values you entered)
                 this.dataService.dataChange.value[ foundIndex ] = this.dataService.getDialogData();
@@ -190,25 +215,19 @@ ${ obj.externalService } )
         return;
     }
 
+%   endif
 % endif
 % if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
-    public deleteItem( i: number, record: ${ obj.cls }Record ): void
-    {
-        // Downwards compatility
-        console.log("function deleteItem() deprecated use deleteRecord()" )
-        this.dialogDeleteRecord( i, record );
-        return
-    }
-
-    public dialogDeleteRecord( i: number, record: ${ obj.cls }Record ): void
+    public deleteRecord( i: number, record: ${ obj.cls }Record, field_name: string ): void
     {
         this.dataService.lockRecord( record );
         this.id = record.${ obj.table.primaryKey };
-        console.log( 'deleteItem ', record );
+        console.log( 'deleteRecord() ', record );
         const dialogRef = this.dialog.open( Delete${ obj.cls }Dialog,
         {
-            data: { record: record, 
-                    mode: 'delete' }
+            data: { record: record,
+                     field: record[ field_name ] || null,
+                     mode: 'delete' }
         } );
 
         dialogRef.afterClosed().subscribe( result => 
@@ -231,12 +250,11 @@ ${ obj.externalService } )
     }
 
 % endif
-
     public pagingEvent( $event )
     {
         this.pageSize = $event.pageSize;
-
-
+        localStorage.setItem( '${ obj.cls }Table.size', $event.pageSize );
+        localStorage.setItem( '${ obj.cls }Table.index', $event.pageIndex );
         this.bot_paginator.length = $event.length;
         this.bot_paginator.pageSize = $event.pageSize;
         this.bot_paginator.pageIndex = $event.pageIndex;
@@ -260,12 +278,13 @@ ${ obj.externalService } )
                                                 , this.bot_paginator
                                                 , this.sort
                                                 , this.paginatorEvent
+                                                , this.backendFilter
 % for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-   % if field.ui.service is not None:
+  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+    % if field.ui.service is not None:
                                                 , this.${field.ui.service.name}Service
-   % endif
- % endif
+    % endif
+  % endif
 % endfor
                                                 );
         fromEvent( this.filter.nativeElement, 'keyup' ).subscribe( () => {

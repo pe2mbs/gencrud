@@ -46,9 +46,10 @@ export class ${ obj.cls }DataSource extends CrudDataSource<${ obj.cls }Record>
                  , _paginator: MatPaginator
                  , _sort: MatSort
                  , _event: EventEmitter<PageEvent>
+                 , _backend_filter: any
 ${ obj.externalService } )
     {
-        super( _databaseTable, _paginator, _sort, _event );
+        super( _databaseTable, _paginator, _sort, _event, _backend_filter );
 % for field in obj.table.columns:
  % if ( field.hasService() or field.hasResolveList() ) and ( field.ui.isChoice() or field.ui.isCombobox() ):
         this.${ field.name }_List = new Array<PytSelectList>();
@@ -62,6 +63,14 @@ ${ obj.externalService } )
 
  % endif
 % endfor
+        let tmp = localStorage.getItem( '${ obj.cls }DataSource.filter' );
+        if ( tmp !== null )
+        {
+            this.filter = tmp;
+        }
+        this._filterChange.subscribe( value => {
+            localStorage.setItem( '${ obj.cls }DataSource.filter', value );
+        } );
         return;
     }
 

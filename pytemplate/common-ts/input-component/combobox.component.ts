@@ -47,6 +47,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         <input  matInput [matAutocomplete]="auto"
                 class="custom-input__input"
                 id="{{ id }}"
+                [disabled]="readonly"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"/>
         <mat-autocomplete #auto="matAutocomplete">

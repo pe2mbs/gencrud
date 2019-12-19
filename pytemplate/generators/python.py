@@ -26,6 +26,7 @@ import json
 import os
 import sys
 import logging
+import shutil
 from mako.template import Template
 
 import pytemplate.util.utils
@@ -81,6 +82,12 @@ def updatePythonProject( config, app_module ):
                                     'main.py' ), 'r' ).readlines()
 
     rangePos            = pytemplate.util.utils.findImportSection( lines )
+    # Copy the following files from the common-py folder to the source folder of the project
+    for src_filename in ( 'common.py', ):
+        fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py', src_filename ) )
+        fnd = os.path.abspath( os.path.join( config.python.sourceFolder, config.application, src_filename ) )
+        logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
+        shutil.copy( fns, fnd )
 
     # update import section
     modules = []
@@ -119,60 +126,62 @@ def updatePythonProject( config, app_module ):
         menuItems = json.loads( ''.join( sectionLines ) )
 
     except:
-        print( ''.join( sectionLines ) )
+        for line_no, line in enumerate( sectionLines ):
+            print( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
+
         raise
 
-    def createMenuItem( cfg ):
-        return { MENU_DISPLAY_NAME: cfg.menuItem.displayName,
-                 MENU_ICON_NAME: cfg.menuItem.iconName,
-                 MENU_ROUTE: cfg.menuItem.route }
+    def processNewMenuStructure( menu_items, menu ):
+        """This is needed for reverse calling
 
-    def createRootMenuItem( cfg ):
-        return { MENU_DISPLAY_NAME: cfg.menu.displayName,
-                 MENU_ICON_NAME: cfg.menu.iconName,
-                 MENU_CHILDEREN_LABEL: [ createMenuItem( cfg ) ] }
+        :param menu_items:
+        :param menu:
+        :return:
+        """
+        foundMenu = False
+        for menuItem in menu_items:
+            if menuItem[ MENU_DISPLAY_NAME ] == menu.displayName:
+                foundMenu = True
+                if menu.menu is not None:
+                    # sub menu
+                    if MENU_CHILDEREN_LABEL not in menuItem:
+                        menuItem[ MENU_CHILDEREN_LABEL ] = []
+
+                    processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                else:
+                    menuItem[ MENU_DISPLAY_NAME ]   = menu.displayName
+                    menuItem[ MENU_ICON_NAME ]      = menu.iconName
+                    menuItem[ MENU_INDEX ]          = menu.index
+                    if menu.route is not None:
+                        menuItem[ MENU_ROUTE ]          = menu.route
+
+                    elif menu.menu is not None:
+                        if MENU_CHILDEREN_LABEL not in menuItem:
+                            menuItem[ MENU_CHILDEREN_LABEL ] = []
+
+                        processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+
+        if not foundMenu:
+            menuItem = {   MENU_DISPLAY_NAME:   menu.displayName,
+                           MENU_ICON_NAME:      menu.iconName,
+                           MENU_INDEX:          menu.index }
+            if menu.route is not None:
+                menuItem[ MENU_ROUTE ] = menu.route
+
+            elif menu.menu is not None:
+                menuItem[ MENU_CHILDEREN_LABEL ] = []
+                processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ],menu.menu )
+
+            menu_items.insert( menu.index if menu.index >= 0 else ( len( menu_items ) + menu.index + 1 ),
+                               menuItem )
+
+        return
 
     for cfg in config:
         if cfg.menu is None:
             continue
 
-        foundMenu = False
-        for menuItem in menuItems:
-            if menuItem[ MENU_DISPLAY_NAME ] == cfg.menu.displayName:
-                foundMenu = True
-                # Found the menu
-                subMenuItems = menuItem[ MENU_CHILDEREN_LABEL ]
-                foundSubMenu = False
-                for subMenuItem in subMenuItems:
-                    if subMenuItem[ MENU_DISPLAY_NAME ] == cfg.menuItem.displayName:
-                        foundSubMenu = True
-                        # update the route and icon information
-                        subMenuItem[ MENU_ICON_NAME ]   = cfg.menuItem.iconName
-                        subMenuItem[ MENU_ROUTE ]       = cfg.menuItem.route
-                        # don't bother, its already there
-                        break
-
-                if not foundSubMenu:
-                    # Add /insert the sub-menu
-                    if cfg.menuItem.index < 0:
-                        idx = ( len( subMenuItems ) + cfg.menuItem.index ) + 1
-
-                    else:
-                        idx = cfg.menuItem.index
-
-                    subMenuItems.insert( idx, createMenuItem( cfg ) )
-                    break
-
-        if not foundMenu:
-            if cfg.menu.index < 0:
-                # from the end
-                pos = ( len( menuItems ) + cfg.menu.index + 1 )
-
-            else:
-                pos = cfg.menu.index
-
-            # insert at
-            menuItems.insert( cfg.menu.index, createRootMenuItem( cfg ) )
+        processNewMenuStructure( menuItems, cfg.menu )
 
     for idx, menuItem in enumerate( menuItems ):
         menuItem[ MENU_INDEX ] = idx

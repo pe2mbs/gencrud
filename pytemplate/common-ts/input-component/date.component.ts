@@ -22,7 +22,7 @@
 *   the table from the configuration.
 */
 import { Component,
-         forwardRef } from '@angular/core';
+         forwardRef, Input } from '@angular/core';
 import { NG_VALUE_ACCESSOR, 
          FormGroupDirective} from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -43,6 +43,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
                 class="custom-input"
                 matInput [matDatepicker]="datepicker"
                 id="{{ id }}"
+                [disabled]="readonly"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"
                 [min]="minDate"
@@ -75,11 +76,12 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytDateInputComponent extends PytBaseComponent
 {
-    public maxDate: number;
-    public minDate: number;
-    public startView: string = 'month'; // | 'year' | 'multi-year';;
-    public touchUi: boolean = false;
-
+    public                  maxDate: number;
+    public                  minDate: number;
+    public                  startView: string = 'month'; // | 'year' | 'multi-year';;
+    public                  touchUi: boolean = false;
+    // TODO: Check why thisis needed
+    @Input( 'disabled' )    disabled: boolean = false;
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

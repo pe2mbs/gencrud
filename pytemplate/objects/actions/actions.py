@@ -21,19 +21,24 @@
 #   gencrud.py module. When modifing the file make sure that you remove
 #   the table from the configuration.
 #
+import logging
+import json
 from pytemplate.objects.actions.action import ( TemplateAction,
                                                 DEFAULT_DELETE_ACTION,
                                                 DEFAULT_EDIT_ACTION,
                                                 DEFAULT_NEW_ACTION )
 
+logger = logging.getLogger()
+
 
 class TemplateActions( object ):
-    def __init__( self, objname, cfg ):
+    def __init__( self, parent, objname, cfg ):
+        self.__parent = parent
         self.__name = objname
         self.__actions = []
         self.__cfg = cfg
         for action in cfg:
-            self.__actions.append( TemplateAction( objname, **action ) )
+            self.__actions.append( TemplateAction( self.__parent, objname, **action ) )
 
         if not self.has( 'new' ):
             self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
@@ -87,12 +92,38 @@ class TemplateActions( object ):
 
         return result
 
-    def getRowAction( self ):
+    def getRowDblClick( self ):
         for action in self.__actions:
             if action.position == 'row' and action.type != 'none':
-                return action
+                logger.info( "getRowAction() => {}".format( action ) )
+                if action.function != '':
+                    return '(dblclick)="{}"'.format( action.function )
 
-        return None
+        return ''
+
+    def isRowActionFunction( self ):
+        for action in self.__actions:
+            if action.position == 'row' and action.type != 'none':
+                logger.info( "getRowAction() => {}".format( action ) )
+                return action.function != ''
+
+        return False
+
+    def getRowRouterLink( self ):
+        for action in self.__actions:
+            if action.position == 'row' and action.type != 'none':
+                logger.info( "getRowAction() => {}".format( action ) )
+                if action.function == '':
+                    return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
+
+        return ''
+
+    def hasRowButtons( self ):
+        for action in self.__actions:
+            if action.position == 'row' and action.type != 'none':
+                return True
+
+        return False
 
     def getFooterButtons( self ):
         result = []
@@ -118,3 +149,6 @@ class TemplateActions( object ):
                 return action.position != 'none'
 
         return False
+
+    def __repr__( self ):
+        return "<TemplateActions {}>".format( ", ".join( action.name for action in self.__actions ) )

@@ -24,33 +24,15 @@
 from pytemplate.objects.menuitem import TemplateMenuItem
 from pytemplate.objects.table import TemplateTable
 from pytemplate.objects.actions.actions import TemplateActions
-from pytemplate.util.exceptions import InvalidSetting
 
 
 class TemplateObject( object ):
     def __init__( self, parent, **cfg ):
         self.__config       = cfg
         self.__parent       = parent
-        self.__columns      = []
-        self.__primaryKey   = ''
-        self.__title        = None
-        if 'menu' in cfg:
-            self.__menuRoot = TemplateMenuItem( 'menu', **cfg )
-
-        else:
-            self.__menuRoot = None
-
-        if 'menuItem' in cfg:
-            self.__menuItem = TemplateMenuItem( 'menuItem', **cfg )
-
-        else:
-            self.__menuItem = None
-
-        self.__actionWidth  = '5%'
-        if 'action-width' in cfg:
-            self.__actionWidth = cfg[ 'action-width' ]
-
-        self.__actions      = TemplateActions( self.name,
+        self.__menu         = TemplateMenuItem( 'menu', **cfg ) if 'menu' in cfg else None
+        self.__actions      = TemplateActions( self,
+                                               self.name,
                                                self.__config.get( 'actions', [] ) )
         self.__table        = TemplateTable( **self.__config.get( 'table', {} ) )
         return
@@ -81,11 +63,7 @@ class TemplateObject( object ):
 
     @property
     def menu( self ):
-        return self.__menuRoot
-
-    @property
-    def menuItem( self ):
-        return self.__menuItem
+        return self.__menu
 
     @property
     def table( self ):
@@ -93,7 +71,7 @@ class TemplateObject( object ):
 
     @property
     def actionWidth( self ):
-        return self.__actionWidth
+        return self.__config.get( 'action-width', '5%' )
 
     def orderBy( self ):
         orderList = []
@@ -121,4 +99,3 @@ class TemplateObject( object ):
                         raise Exception( "service missing in {} in field {}".format( self.__table.name, field.name )  )
 
         return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
-

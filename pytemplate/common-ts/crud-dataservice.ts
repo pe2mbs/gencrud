@@ -36,6 +36,7 @@ export class CrudDataService<T>
 {
     protected debug: boolean = false;
     protected _uri: string;
+    protected _backend_filter: string = null;
     dataChange: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
     // Temporarily stores data from dialogs
     dialogData: T;
@@ -67,14 +68,23 @@ export class CrudDataService<T>
     }
 
     /** CRUD METHODS */
-    public getAll(): void 
+    public getAll( _backend_filter: any ): void
     {
-        this.httpClient.get<T[]>( this._uri + '/list' ).subscribe(data => {
-            this.dataChange.next( data );
-        },
-        (error: HttpErrorResponse) => {
-            console.log (error.name + ' ' + error.message);
-        });
+        let uri = '/list'
+        if ( _backend_filter !== null )
+        {
+            this._backend_filter = _backend_filter;
+            uri += '/' + _backend_filter.id + '/' + _backend_filter.value
+        }
+        this.httpClient.get<T[]>( this._uri + uri ).subscribe(
+            data => {
+                this.dataChange.next( data );
+            },
+            (error: HttpErrorResponse) => {
+                console.log (error.name + ' ' + error.message);
+            }
+        );
+        return;
     }
 
     public getSelectList( value: string, label: string ): Observable<PytSelectList[]>
@@ -176,7 +186,7 @@ export class CrudDataService<T>
             {
                 console.log( result );
             }
-            this.getAll();
+            this.getAll( this._backend_filter );
         },
         (error: HttpErrorResponse) => {
             console.log( error.name + ' ' + error.message );
@@ -254,7 +264,7 @@ export class CrudDataService<T>
         return;
     }
 
-    public genericPut( uri: string, params: string ): void
+    public genericPut( uri: string, params: any ): void
     {
         console.log( 'genericPut', uri, params );
         this.httpClient.put( this._uri + uri, params ).subscribe( result => {
@@ -267,5 +277,11 @@ export class CrudDataService<T>
             console.log ( error.name + ' ' + error.message );
         });
         return;
+    }
+
+    public genericGet( uri: string, params: any ): Observable<any>
+    {
+        console.log( 'genericGet', uri, params );
+        return this.httpClient.get( this._uri + uri, params );
     }
 }

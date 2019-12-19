@@ -47,6 +47,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     <textarea matInput
            rows="{{ rows }}" cols="{{ cols }}" 
            class="custom-input"
+           [disabled]="readonly"
            id="{{ id }}"
            placeholder="{{ placeholder }}"
            [formControl]="control">
@@ -68,8 +69,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class PytTextareaInputComponent extends PytBaseComponent implements OnInit
 {
-    @Input( 'rows' )        rows = 4;
-    @Input( 'rows' )        cols = 80;
+    @Input( 'rows' )        rows;
+    @Input( 'cols' )        cols;
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );
@@ -79,7 +80,14 @@ export class PytTextareaInputComponent extends PytBaseComponent implements OnIni
     ngOnInit()
     {
         super.ngOnInit()
+        if ( this.rows === undefined || this.rows == null )
+        {
+            this.rows = 4;
+        }
+        if ( this.cols === undefined || this.cols == null )
+        {
+            this.cols = 4;
+        }
         return;
     }
-
 }

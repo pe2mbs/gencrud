@@ -48,6 +48,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
            type="password"
            class="custom-input__input" 
            id="{{ id }}"
+           [disabled]="readonly"
            placeholder="{{ placeholder }}"
            [type]="hide ? 'password' : 'text'"
            [formControl]="control"/>

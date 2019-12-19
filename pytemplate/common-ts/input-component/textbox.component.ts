@@ -47,10 +47,11 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         <input  matInput 
                 class="custom-input"
                 id="{{ id }}"
+                [disabled]="readonly"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"/>
         <mat-hint *ngIf="hint !== undefined">{{ hint }} </mat-hint>
-        <mat-error *ngIf="error !== undefined && error === 'true'"> {{ GetErrorMessage() }} </mat-error>
+        <mat-error *ngIf="error !== undefined && error === true"> {{ GetErrorMessage() }} </mat-error>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>

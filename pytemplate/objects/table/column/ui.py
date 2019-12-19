@@ -181,6 +181,10 @@ class TemplateUi( object ):
         if 'color' in self.__cfg:
             options.append( 'color="{0}"'.format( self.color ) )
 
+        if self.isLabel():
+            options.append( 'format="{0}"'.format( self.format ) )
+            options.append( 'pipe="{0}"'.format( self.pipe ) )
+
         options.append( 'debug="{0}"'.format( str( self.__cfg.get( 'debug', False ) ) ).lower() )
 
         return '''<{tag} id="{table}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
@@ -211,6 +215,14 @@ class TemplateUi( object ):
         return str( self.__cfg.get( 'disabled', False ) ).lower()
 
     @property
+    def pipe( self ):
+        return str( self.__cfg.get( 'pipe', '' ) ).lower()
+
+    @property
+    def format( self ):
+        return str( self.__cfg.get( 'format', 'text' ) )
+
+    @property
     def invert( self ):
         return str( self.__cfg.get( 'invert', False ) ).lower()
 
@@ -232,7 +244,7 @@ class TemplateUi( object ):
 
     @property
     def labelPosition( self ):
-        return str( self.__cfg.get( 'labelPosition', 'before' ) ).lower()
+        return str( self.__cfg.get( 'labelPosition', 'after' ) ).lower()
 
     @property
     def error( self ):

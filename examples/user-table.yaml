@@ -18,50 +18,44 @@ objects:
   actionsa:
   - name:               new
     label:              New
-    type:               dialog
+    type:               screen
     icon:               add
     position:           footer
     function:           addNew()
-
-  - name:               runall
-    label:              Run All
-    type:               list
-    icon:               play_arrow
-    position:           header
-    uri:                /runall
-    source:             testrun/testruns/run.py
-
-  - name:               stopall
-    label:              Stop All
-    type:               list
-    icon:               stop
-    position:           header
-    uri:                /stopall
-    source:             testrun/testruns/run.py
-
+    route:
+        name:           add
+        params:
+        -   id:         0
+        -   mode:       new
   - name:               delete
     label:              Delete
     icon:               delete
     type:               dialog
     position:           none
     function:           deleteItem( i, row )
-
   - name:               edit
     label:              Edit
     type:               dialog
     position:           none
     function:           startEdit( i, row )
+    route:
+        name:           edit
+        params:
+        -   id:         row.USR_ID
+        -   mode:       edit
 
-  - name:               run
-    label:              Run
-    type:               list
+  - name:               profile
+    label:              Profile
+    type:               screen
     icon:               play_arrow
     position:           cell
-    uri:                /run
-    params:
-    - id:               row.D_TESTRUN_ID
-    source:             testrun/testruns/run.py
-
+    route:
+        name:           profile
+        class:          RoleTableComponent
+        params:
+        -   id:         row.USR_ID
+        -   value:      row.USR_ROL_ID
+        -   mode:       filter
   - name:               stop
     label:              Stop
     type:               list

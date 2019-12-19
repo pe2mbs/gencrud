@@ -28,6 +28,7 @@ import json
 import yaml
 import os
 import sys
+import glob
 import traceback
 import logging
 import pytemplate.util.utils
@@ -67,6 +68,7 @@ def verifyLoadProject( env, config ):
     else:
         raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
+    logger.info( 'Configuration for {}: {}'.format( env, json.dumps( data, indent = 4 ) ) )
     if env == 'angular':
         # Check if we have a valid Angular environment
         if 'defaultProject' in data and 'projects' in data:
@@ -84,6 +86,7 @@ def verifyLoadProject( env, config ):
         if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
             raise FlaskEnvironmentNotFound()
 
+        logging.info( "Application: {} target application: {}".format( config.application, data[ 'COMMON' ][ 'API_MODULE' ] ) )
         if data[ 'COMMON' ][ 'API_MODULE' ] != config.application:
             raise FlaskEnvironmentNotFound()
 
@@ -192,7 +195,16 @@ def main():
 
         banner()
         for arg in args:
-            doWork( arg )
+            if '*' in arg:
+                # Wild card handling
+                for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
+                    if filename.lower().endswith( '.yaml' ):
+                        print( filename )
+                        doWork( filename )
+
+
+            else:
+                doWork( arg )
 
         print( "Done" )
 

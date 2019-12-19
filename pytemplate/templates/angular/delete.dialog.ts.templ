@@ -33,11 +33,13 @@ import { ${ obj.cls }DataService } from './service'
 })
 export class Delete${ obj.cls }Dialog extends BaseDialog
 {
+
     constructor( dialogRef: MatDialogRef<Delete${ obj.cls }Dialog>,
                  @Inject( MAT_DIALOG_DATA ) public data: any, 
                  dataService: ${ obj.cls }DataService )
     { 
         super( dialogRef, dataService )
+
         return;
     }
 
