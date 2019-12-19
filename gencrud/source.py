@@ -1,9 +1,9 @@
 import os
-from pytemplate.util.exceptions import ( MissingTemplate,
-                                         MissingSourceFolder,
-                                         KeyNotFoundException,
-                                         MissingTemplateFolder,
-                                         PathNotFoundException )
+from gencrud.util.exceptions import (MissingTemplate,
+                                     MissingSourceFolder,
+                                     KeyNotFoundException,
+                                     MissingTemplateFolder,
+                                     PathNotFoundException)
 from platform import system
 
 class TemplateSource( object ):
@@ -93,7 +93,7 @@ DATA2 = {   'source': {
                 'python':   'backend',
                 'angular':  'src/app'
             },
-            'template': '/home/mbertens/src/python/pytemplate/pytemplate/templates'
+            'template': '/home/mbertens/src/python/gencrud/gencrud/templates'
         }
 
 DATA3 = {   'linux': {

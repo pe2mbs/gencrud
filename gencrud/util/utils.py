@@ -2,7 +2,7 @@ import os
 import logging
 import shutil
 
-from pytemplate.util.positon import PositionInterface
+from gencrud.util.positon import PositionInterface
 
 sslVerify       = True
 backupFiles     = False

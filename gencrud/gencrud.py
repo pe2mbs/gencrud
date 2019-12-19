@@ -31,17 +31,17 @@ import sys
 import glob
 import traceback
 import logging
-import pytemplate.util.utils
-from pytemplate.configuraton import TemplateConfiguration
-from pytemplate.generators.python import generatePython
-from pytemplate.generators.angular import generateAngular
-from pytemplate.version import __version__, __author__, __email__, __copyright__
-from pytemplate.util.exceptions import ( InvalidEnvironment,
-                                         EnvironmentInvalidMissing,
-                                         MissingAngularEnvironment,
-                                         FlaskEnvironmentNotFound,
-                                         ModuleExistsAlready,
-                                         InvalidSetting )
+import gencrud.util.utils
+from gencrud.configuraton import TemplateConfiguration
+from gencrud.generators.python import generatePython
+from gencrud.generators.angular import generateAngular
+from gencrud.version import __version__, __author__, __email__, __copyright__
+from gencrud.util.exceptions import (InvalidEnvironment,
+                                     EnvironmentInvalidMissing,
+                                     MissingAngularEnvironment,
+                                     FlaskEnvironmentNotFound,
+                                     ModuleExistsAlready,
+                                     InvalidSetting)
 
 logger = logging.getLogger()
 
@@ -59,7 +59,7 @@ def verifyLoadProject( env, config ):
         raise InvalidEnvironment( env )
 
     if os.path.isdir( root.sourceFolder ) and os.path.isfile( os.path.join( root.sourceFolder, configFile ) ):
-        with open( os.path.join( root.sourceFolder, configFile ), pytemplate.util.utils.C_FILEMODE_READ ) as stream:
+        with open( os.path.join( root.sourceFolder, configFile ), gencrud.util.utils.C_FILEMODE_READ ) as stream:
             data = json.load( stream )
 
         if data is None:
@@ -170,25 +170,25 @@ def main():
                 sys.exit()
 
             elif o in ( '-b', '--backup' ):
-                pytemplate.util.utils.backupFiles = True
+                gencrud.util.utils.backupFiles = True
 
             elif o in ( '-c', '--case-insensitive-db-ids' ):
-                pytemplate.util.utils.lowerCaseDbIds = True
+                gencrud.util.utils.lowerCaseDbIds = True
 
             elif o in ( '-o', '--overwrite' ):
-                pytemplate.util.utils.overWriteFiles = True
+                gencrud.util.utils.overWriteFiles = True
 
             elif o in ('-V', '--version'):
                 print( '{0}'.format( __version__ ) )
                 sys.exit()
 
             elif o.lower() in ( '-s', '--sslverify' ):
-                pytemplate.util.utils.sslVerify = a.lower( ) == 'true'
+                gencrud.util.utils.sslVerify = a.lower() == 'true'
 
             else:
                 assert False, 'unhandled option'
 
-        pytemplate.util.utils.check_nltk( )
+        gencrud.util.utils.check_nltk()
         if len( args ) == 0:
             usage( 'Missing input file(s)' )
             sys.exit( 1 )

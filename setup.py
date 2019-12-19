@@ -30,7 +30,7 @@ from os import path
 # and accepts an argument to specify the text encoding
 # Python 3 only projects can skip this import
 from io import open
-from pytemplate.version import __version__, __author__, __email__, __copyright__
+from gencrud.version import __version__, __author__, __email__, __copyright__
 
 template_list   = [ 'templates/angular/*.templ',
                     'templates/python/*.templ',
@@ -62,7 +62,7 @@ setup(
     # There are some restrictions on what makes a valid project name
     # specification here:
     # https://packaging.python.org/specifications/core-metadata/#name
-    name = 'pytemplate',  # Required
+    name = 'gencrud',  # Required
 
     # Versions should comply with PEP 440:
     # https://www.python.org/dev/peps/pep-0440/
@@ -203,7 +203,7 @@ setup(
     # executes the function `main` from this package when invoked:
     entry_points={  # Optional
         'console_scripts': [
-            'gencrud=pytemplate.gencrud:main',
+            'gencrud=gencrud.gencrud:main',
         ],
     },
 

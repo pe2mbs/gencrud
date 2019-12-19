@@ -23,12 +23,12 @@
 #
 import logging
 from nltk.tokenize import word_tokenize
-import pytemplate.util.utils
-from pytemplate.objects.table.column.listview import TemplateListView
-from pytemplate.objects.table.column.relation import TemplateRelation
-from pytemplate.objects.table.column.ui import TemplateUi
-from pytemplate.objects.table.column.tab import TemplateTab
-from pytemplate.util.exceptions import InvalidSetting
+import gencrud.util.utils
+from gencrud.objects.table.column.listview import TemplateListView
+from gencrud.objects.table.column.relation import TemplateRelation
+from gencrud.objects.table.column.ui import TemplateUi
+from gencrud.objects.table.column.tab import TemplateTab
+from gencrud.util.exceptions import InvalidSetting
 
 logger = logging.getLogger()
 
@@ -111,7 +111,7 @@ class TemplateColumn( object ):
             self.__relationShip = TemplateRelation( self, **self.__config.get( 'relationship', {} ) )
             self.__listview     = TemplateListView( self, **self.__config.get( 'listview', {} ) )
 
-        if pytemplate.util.utils.lowerCaseDbIds:
+        if gencrud.util.utils.lowerCaseDbIds:
             self.__dbField = self.__dbField.lower()
 
         if 'index' in cfg:
@@ -340,7 +340,7 @@ class TemplateColumn( object ):
         :return:
         '''
         result = ''
-        if pytemplate.util.utils.lowerCaseDbIds:
+        if gencrud.util.utils.lowerCaseDbIds:
             result = 'db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
 
         else:
@@ -360,7 +360,7 @@ class TemplateColumn( object ):
                 result += ', nullable = False'
 
             elif attr.startswith( 'FOREIGN KEY' ):
-                if pytemplate.util.utils.lowerCaseDbIds:
+                if gencrud.util.utils.lowerCaseDbIds:
                     result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ].lower() )
 
                 else:

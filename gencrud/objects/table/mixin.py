@@ -1,4 +1,4 @@
-from pytemplate.objects.table.python import PythonObject
+from gencrud.objects.table.python import PythonObject
 
 class TemplateMixin( object ):
     def __init__( self, mixin ):

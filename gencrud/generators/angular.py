@@ -30,11 +30,11 @@ import sys
 import logging
 from mako.template import Template
 from mako import exceptions
-import pytemplate.util.utils
-import pytemplate.util.exceptions
-from pytemplate.generators.typescript_obj import TypeScript
-from pytemplate.util.positon import PositionInterface
-from pytemplate.util.sha import sha256sum
+import gencrud.util.utils
+import gencrud.util.exceptions
+from gencrud.generators.typescript_obj import TypeScript
+from gencrud.util.positon import PositionInterface
+from gencrud.util.sha import sha256sum
 
 logger = logging.getLogger()
 
@@ -102,11 +102,11 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     with open( os.path.join( config.angular.sourceFolder, APP_MODULE ), 'r' ) as stream:
         lines = stream.readlines()
 
-    pytemplate.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_MODULE ) )
+    gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_MODULE ) )
     rangePos        = PositionInterface()
-    sectionLines    = pytemplate.util.utils.searchSection( lines,
-                                                           rangePos,
-                                                           LABEL_NG_MODULE + '{',
+    sectionLines    = gencrud.util.utils.searchSection( lines,
+                                                        rangePos,
+                                                        LABEL_NG_MODULE + '{',
                                                       '})' )
     pos = sectionLines[0].find( '{' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
@@ -128,7 +128,7 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
 
     buffer = LABEL_NG_MODULE + ts.build( NgModule, 2 ) + ')'
     bufferLines = [ '{}\n'.format ( x ) for x in buffer.split( '\n' ) ]
-    pytemplate.util.utils.replaceInList( lines, rangePos, bufferLines )
+    gencrud.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, app_module[ 'files' ] )
     with open( os.path.join( config.angular.sourceFolder, APP_MODULE ), 'w' ) as stream:
@@ -146,7 +146,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     with open( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ), 'r' ) as stream:
         lines = stream.readlines()
 
-    pytemplate.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) )
+    gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) )
     imports = []
     entries = []
     for cfg in config:
@@ -202,9 +202,9 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
             imports.append( component )
 
     rangePos = PositionInterface()
-    sectionLines = pytemplate.util.utils.searchSection( lines,
-                                                        rangePos,
-                                                        LABEL_APP_ROUTES,
+    sectionLines = gencrud.util.utils.searchSection( lines,
+                                                     rangePos,
+                                                     LABEL_APP_ROUTES,
                                                    ']' )
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
@@ -232,7 +232,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
 
     buffer = LABEL_APP_ROUTES + ' ' + ts.build( appRoutes, 2 ) + ';'
     bufferLines = [ '{}\n'.format( x ) for x in buffer.split( '\n' ) ]
-    pytemplate.util.utils.replaceInList( lines, rangePos, bufferLines )
+    gencrud.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, imports )
     with open( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ), 'w' ) as stream:
@@ -256,8 +256,8 @@ def generateAngular( templates, config ):
         modulePath = os.path.join( config.angular.sourceFolder,
                                    config.application,
                                    cfg.name )
-        if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
-            raise pytemplate.util.exceptions.ModuleExistsAlready( cfg, modulePath )
+        if os.path.isdir( modulePath ) and not gencrud.util.utils.overWriteFiles:
+            raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
         makeAngularModule( config.angular.sourceFolder,
                            config.application,
@@ -266,7 +266,7 @@ def generateAngular( templates, config ):
             templateFilename = os.path.join( config.angular.sourceFolder,
                                              config.application,
                                              cfg.name,
-                                             pytemplate.util.utils.sourceName( templ ) )
+                                             gencrud.util.utils.sourceName( templ ) )
             if os.path.isfile( templateFilename ):
                 # First remove the old file
                 os.remove( templateFilename )
@@ -315,7 +315,7 @@ def generateAngular( templates, config ):
             logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
             logger.info( 'uri         : {0}'.format( cfg.uri ) )
             with open( templateFilename,
-                       pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
+                       gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 def errorHandler( context, error, *args, **kwargs ):
                     print( context )
                     print( error )
@@ -326,10 +326,10 @@ def generateAngular( templates, config ):
                 try:
                     for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
                         if line.startswith( 'export ' ):
-                            modules.append( ( config.application,
-                                              cfg.name,
-                                              pytemplate.util.utils.sourceName( templ ),
-                                              exportAndType( line ) ) )
+                            modules.append( (config.application,
+                                             cfg.name,
+                                             gencrud.util.utils.sourceName( templ ),
+                                             exportAndType( line ) ) )
 
                         stream.write( line )
                         if sys.platform.startswith( 'linux' ):
@@ -364,7 +364,7 @@ def generateAngular( templates, config ):
                     appModule = data
 
                 else:
-                    appModule = pytemplate.util.utils.joinJson( appModule, data )
+                    appModule = gencrud.util.utils.joinJson( appModule, data )
 
             os.remove( app_module_json_file )
 

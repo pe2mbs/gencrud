@@ -23,7 +23,7 @@
 #
 import json
 import unittest
-from pytemplate.util.exceptions import TypeScriptFormatError, TypeScriptInvalidStartDataType
+from gencrud.util.exceptions import TypeScriptFormatError, TypeScriptInvalidStartDataType
 
 class TypeScript( object ):
     def __init__( self ):

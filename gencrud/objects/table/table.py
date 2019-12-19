@@ -22,12 +22,12 @@
 #   the table from the configuration.
 #
 import logging
-from pytemplate.objects.table._inports import SourceImport
-from pytemplate.objects.table.column import TemplateColumn
-from pytemplate.objects.table.column.tab import TemplateTabs
-from pytemplate.objects.table.sort import SortInfo
-from pytemplate.objects.table.mixin import TemplateMixin
-import pytemplate.util.utils
+from gencrud.objects.table._inports import SourceImport
+from gencrud.objects.table.column import TemplateColumn
+from gencrud.objects.table.column.tab import TemplateTabs
+from gencrud.objects.table.sort import SortInfo
+from gencrud.objects.table.mixin import TemplateMixin
+import gencrud.util.utils
 
 logger = logging.getLogger()
 
@@ -102,14 +102,14 @@ class TemplateTable( object ):
 
     @property
     def tableName( self ):
-        if pytemplate.util.utils.lowerCaseDbIds:
+        if gencrud.util.utils.lowerCaseDbIds:
             return self.__table.get( 'name', '' ).lower()
 
         return self.__table.get( 'name', '' )
 
     @property
     def name( self ):
-        if pytemplate.util.utils.lowerCaseDbIds:
+        if gencrud.util.utils.lowerCaseDbIds:
             return self.__table.get( 'name', '' ).lower()
 
         return self.__table.get( 'name', '' )

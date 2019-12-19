@@ -29,9 +29,9 @@ import logging
 import shutil
 from mako.template import Template
 
-import pytemplate.util.utils
-import pytemplate.util.exceptions
-from pytemplate.util.positon import PositionInterface
+import gencrud.util.utils
+import gencrud.util.exceptions
+from gencrud.util.positon import PositionInterface
 
 logger = logging.getLogger()
 
@@ -73,7 +73,7 @@ def updatePythonProject( config, app_module ):
     filename = os.path.join( config.python.sourceFolder, config.application, 'main.py' )
     if os.path.isfile( filename ):
         lines = open( filename, 'r' ).readlines()
-        pytemplate.util.utils.backupFile( filename )
+        gencrud.util.utils.backupFile( filename )
 
     if len( lines ) <= 2:
         lines = open( os.path.join( os.path.dirname( __file__ ),
@@ -81,7 +81,7 @@ def updatePythonProject( config, app_module ):
                                     'common-py',
                                     'main.py' ), 'r' ).readlines()
 
-    rangePos            = pytemplate.util.utils.findImportSection( lines )
+    rangePos            = gencrud.util.utils.findImportSection( lines )
     # Copy the following files from the common-py folder to the source folder of the project
     for src_filename in ( 'common.py', ):
         fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py', src_filename ) )
@@ -94,13 +94,13 @@ def updatePythonProject( config, app_module ):
     for table in config:
         line = 'import {0}.{1}   # import maintained by gencrud.py'.format( config.application,
                                                                             table.name )
-        pytemplate.util.utils.insertLinesUnique( lines, rangePos, line )
+        gencrud.util.utils.insertLinesUnique( lines, rangePos, line )
         modules.append( '{0}.{1}'.format( config.application, table.name ) )
 
-    sectionLines = pytemplate.util.utils.searchSection( lines,
-                                                        rangePos,
-                                                        LABEL_LIST_MODULES,
-                                                        LABEL_END_LIST )
+    sectionLines = gencrud.util.utils.searchSection( lines,
+                                                     rangePos,
+                                                     LABEL_LIST_MODULES,
+                                                     LABEL_END_LIST )
     del sectionLines[ 0 ]
     del sectionLines[ -1 ]
     for line in sectionLines:
@@ -114,12 +114,12 @@ def updatePythonProject( config, app_module ):
                                                     '' if len( modules )-1 == idx else ',' ) )
 
     sectionLines.append( LABEL_END_LIST + '\n' )
-    pytemplate.util.utils.replaceInList( lines, rangePos, sectionLines )
+    gencrud.util.utils.replaceInList( lines, rangePos, sectionLines )
 
-    sectionLines = pytemplate.util.utils.searchSection( lines,
-                                                        rangePos,
-                                                        LABEL_MENU_ITEMS,
-                                                        LABEL_END_LIST )
+    sectionLines = gencrud.util.utils.searchSection( lines,
+                                                     rangePos,
+                                                     LABEL_MENU_ITEMS,
+                                                     LABEL_END_LIST )
     pos = sectionLines[ 0 ].find( '[' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
     try:
@@ -191,7 +191,7 @@ def updatePythonProject( config, app_module ):
                 subMenuItem[ MENU_INDEX ] = idx
 
     menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
-    pytemplate.util.utils.replaceInList( lines, rangePos, menuItemsBlock )
+    gencrud.util.utils.replaceInList( lines, rangePos, menuItemsBlock )
 
     open( filename, 'w' ).writelines( lines )
     return
@@ -225,14 +225,14 @@ def generatePython( templates, config ):
             if not os.path.isdir( config.python.sourceFolder ):
                 os.makedirs( config.python.sourceFolder )
 
-            if os.path.isdir( modulePath ) and not pytemplate.util.utils.overWriteFiles:
-                raise pytemplate.util.exceptions.ModuleExistsAlready( cfg, modulePath )
+            if os.path.isdir( modulePath ) and not gencrud.util.utils.overWriteFiles:
+                raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
             makePythonModules( config.python.sourceFolder, config.application, cfg.name )
 
             with open( os.path.join( modulePath,
-                                     pytemplate.util.utils.sourceName( templ ) ),
-                       pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
+                                     gencrud.util.utils.sourceName( templ ) ),
+                       gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 # stream.write( Template( filename = os.path.abspath( templ ) ).render( obj = cfg ) )
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
                     stream.write( line )
@@ -242,27 +242,27 @@ def generatePython( templates, config ):
 
             # Open the __init__.py
             filename = os.path.join( modulePath, '__init__.py' )
-            moduleName, _ = os.path.splitext( pytemplate.util.utils.sourceName( templ ) )
+            moduleName, _ = os.path.splitext( gencrud.util.utils.sourceName( templ ) )
             importStr = 'from {0}.{1}.{2} import *'.format( config.application,
                                                             cfg.name,
                                                             moduleName )
             lines = []
             try:
-                lines = open( filename, pytemplate.util.utils.C_FILEMODE_READ ).readlines()
+                lines = open( filename, gencrud.util.utils.C_FILEMODE_READ ).readlines()
 
             except:
                 logger.error( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
 
             logger.info( lines )
-            pytemplate.util.utils.insertLinesUnique( lines,
-                                                     PositionInterface( end = len( lines ) ),
-                                                     importStr )
+            gencrud.util.utils.insertLinesUnique( lines,
+                                                  PositionInterface( end = len( lines ) ),
+                                                  importStr )
             if not backupDone:
-                pytemplate.util.utils.backupFile( filename )
+                gencrud.util.utils.backupFile( filename )
                 modules.append( ( config.application, cfg.name ) )
                 backupDone = True
 
-            open( filename, pytemplate.util.utils.C_FILEMODE_WRITE ).writelines( lines )
+            open( filename, gencrud.util.utils.C_FILEMODE_WRITE ).writelines( lines )
 
         # entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
         # if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
@@ -270,7 +270,7 @@ def generatePython( templates, config ):
         #     templateFolder  = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py' ) )
         #     templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
         #
-        #     with open( entryPointsFile, pytemplate.util.utils.C_FILEMODE_WRITE ) as stream:
+        #     with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
         #         for line in Template( filename = templateFile ).render( obj = cfg ).split( '\n' ):
         #             stream.write( line + '\n' )
 

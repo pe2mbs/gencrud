@@ -21,9 +21,9 @@
 #   gencrud.py module. When modifing the file make sure that you remove
 #   the table from the configuration.
 #
-from pytemplate.objects.menuitem import TemplateMenuItem
-from pytemplate.objects.table import TemplateTable
-from pytemplate.objects.actions.actions import TemplateActions
+from gencrud.objects.menuitem import TemplateMenuItem
+from gencrud.objects.table import TemplateTable
+from gencrud.objects.actions.actions import TemplateActions
 
 
 class TemplateObject( object ):

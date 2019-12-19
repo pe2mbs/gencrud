@@ -23,10 +23,10 @@
 #
 import logging
 import json
-from pytemplate.objects.actions.action import ( TemplateAction,
-                                                DEFAULT_DELETE_ACTION,
-                                                DEFAULT_EDIT_ACTION,
-                                                DEFAULT_NEW_ACTION )
+from gencrud.objects.actions.action import (TemplateAction,
+                                            DEFAULT_DELETE_ACTION,
+                                            DEFAULT_EDIT_ACTION,
+                                            DEFAULT_NEW_ACTION)
 
 logger = logging.getLogger()
 

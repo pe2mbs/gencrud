@@ -21,36 +21,6 @@
 #   gencrud.py module. When modifing the file make sure that you remove
 #   the table from the configuration.
 #
-from pytemplate.objects.object import TemplateObject
-from pytemplate.source import TemplateSourcePython, TemplateSourceAngular
+from gencrud.gencrud import main
 
-
-class TemplateConfiguration( object ):
-    def __init__( self, **cfg ):
-        self.__config   = cfg
-        self.__python   = TemplateSourcePython( **self.__config )
-        self.__angular  = TemplateSourceAngular( **self.__config )
-        self.__objects  = []
-        for obj in cfg[ 'objects' ]:
-            self.__objects.append( TemplateObject( self, **obj ) )
-
-        return
-
-    @property
-    def python( self ):
-        return self.__python
-
-    @property
-    def angular( self ):
-        return self.__angular
-
-    @property
-    def objects( self ):
-        return self.__objects
-
-    def __iter__( self ):
-        return iter( self.__objects )
-
-    @property
-    def application( self ):
-        return self.__config.get( 'application', None )
+main()

@@ -1,4 +1,4 @@
-from pytemplate.util.typescript import TypeScript
+from gencrud.util.typescript import TypeScript
 
 
 class RouteTemplate( object ):

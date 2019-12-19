@@ -22,7 +22,7 @@
 #   the table from the configuration.
 #
 import json
-from pytemplate.objects.table.column.service import TemplateService
+from gencrud.objects.table.column.service import TemplateService
 
 class TemplateUi( object ):
     def __init__( self, parent, **cfg ):

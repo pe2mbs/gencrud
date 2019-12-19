@@ -22,9 +22,9 @@
 #   the table from the configuration.
 #
 import logging
-from pytemplate.util.typescript import TypeScript
-from pytemplate.util.exceptions import InvalidSetting
-from pytemplate.objects.actions.route import RouteTemplate
+from gencrud.util.typescript import TypeScript
+from gencrud.util.exceptions import InvalidSetting
+from gencrud.objects.actions.route import RouteTemplate
 
 logger = logging.getLogger()
 
