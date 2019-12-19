@@ -2,6 +2,8 @@
 This tool generates the Python backend and Angular frontend code for 
 CRUD interfaces.
 
+see `MANUAL.md` about usage.  
+
 # Licencing
 Python backend and Angular frontend code generation by gencrud
 Copyright (C) 2018 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
