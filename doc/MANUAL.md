@@ -174,6 +174,41 @@ When you are behind a proxy that uses it own certificates, you may need to enabl
 
 > -V / --version      Print the version of the tool.
 
+
+# 4. Requirements
+For the default templates there are requirements to the Python and Angular project setup.
+  
+## 4.1. Python
+### 4.1.1. Packages
+The following packages are a minimal requirement;
+* Flask, version 1.0.2 or higher
+* SQLAlchemy, version 1.2.12 or higher
+* marshmallow, version 2.15.6 or higher
+* flask-marshmallow, version 0.10.1 or higher 
+* Flask-SQLAlchemy, version 2.3.2, or higher
+* marshmallow-sqlalchemy, version 0.19.0 or higher
+
+## 4.1.2. modules
+In the root of the project the following modules and variables must be present; 
+* from applic.database import db
+* from applic.extensions import mm
+* import common
+
+## 4.2. Angular
+### 4.1.1. Packages
+The following packages are a minimal requirement;
+* @angular, version 6 or higher (tested with 6 and 7). 
+* @angular/material, version 6 or higher (tested with 6 and 7).
+* @angular/flex-layout, version 7.0.0-beta.24
+* ngx-material-timepicker, version 2.13.0
+* html2canvas, version 1.0.0-rc.1
+* core-js, version 2.4.1
+* zone.js, version 0.8.26
+
+## 4.1.2. modules
+
+
+
 # 4. Example files
 The folowing example files use the templates that where installed with the
  package.

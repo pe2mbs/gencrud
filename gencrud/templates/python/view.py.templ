@@ -52,7 +52,7 @@ def registerApi( app, cors ):
 
 % if obj.table.Mixin.View.Available:
     logger.info( 'Registering ${ obj.cls } view mixin' )
-    app.register_blueprint( ${obj.table.Mixin.View.Class} )
+    app.register_blueprint( ${obj.table.Mixin.View.Class}.blueprint )
 % endif
     return
 
