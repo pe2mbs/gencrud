@@ -50,11 +50,14 @@ def verifyLoadProject( env, config ):
 
     elif env == 'python':
         root = config.python
-        if os.path.isfile( os.path.join( config.python, 'config.yaml' ) ):
+        if os.path.isfile( os.path.join( root.sourceFolder, 'config.yaml' ) ):
             configFile = 'config.yaml'
 
-        else:
+        elif os.path.isfile( os.path.join( root.sourceFolder, 'config.json' ) ):
             configFile = 'config.json'
+
+        else:
+            raise Exception( "Could not fint the Python Flask configuation file."  )
 
     else:
         raise InvalidEnvironment( env )
@@ -131,7 +134,8 @@ def usage( msg = '' ):
 
     print( '''
 Syntax:
-    gencrud [options] [input-file1 ... input-fileN]
+    gencrud [options] { input-file1 [ input-fileN] }
+                      { [<yaml-template-folder>/]* }
 
 Parameters:
 

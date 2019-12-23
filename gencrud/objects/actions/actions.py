@@ -88,14 +88,14 @@ class TemplateActions( object ):
 
         return result
 
-    def getRowDblClick( self ):
-        for action in self.__actions:
-            if action.position == 'row' and action.type != 'none':
-                logger.info( "getRowAction() => {}".format( action ) )
-                if action.function != '':
-                    return '(dblclick)="{}"'.format( action.function )
-
-        return ''
+    # def getRowDblClick( self ):
+    #     for action in self.__actions:
+    #         if action.position == 'row' and action.type != 'none':
+    #             logger.info( "getRowAction() => {}".format( action ) )
+    #             if action.function != '':
+    #                 return '(dblclick)="{}"'.format( action.function )
+    #
+    #     return ''
 
     def isRowActionFunction( self ):
         for action in self.__actions:
@@ -109,8 +109,25 @@ class TemplateActions( object ):
         for action in self.__actions:
             if action.position == 'row' and action.type != 'none':
                 logger.info( "getRowAction() => {}".format( action ) )
-                if action.function == '':
-                    return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
+                if action.isAngularRoute():
+                    # return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
+                    route = "/".join( [ self.__name, action.name ] )
+                    ACTION_STR = '''({on})="router.navigate( [ '/{route}', {params} ] )"'''
+                    params = action.route.routeParams()
+
+                elif action.function != '':
+                    ACTION_STR = '({on})="{function}"'
+                    route = ''
+                    params = ''
+
+                else:
+                    raise Exception( "Missing function or route declaration" )
+
+
+                return ACTION_STR.format( function = action.function,
+                                          on = action.on,
+                                          route = route,
+                                          params = params )
 
         return ''
 

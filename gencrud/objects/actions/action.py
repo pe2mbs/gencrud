@@ -62,9 +62,11 @@ class TemplateAction( object ):
 
     @property
     def on( self ):
-        value = self.__cfg.get( 'on', 'dblclick' if self.type == 'row' else 'click' )
+        value = self.__cfg.get( 'on', 'dblclick' if self.position == 'row' else 'click' )
         if value not in ON_ACTIONS:
             raise Exception( "invalid 'on' value, must be one of {}".format( ', '.join( ON_ACTIONS ) ) )
+
+        return value
 
     @property
     def label( self ):
@@ -154,15 +156,21 @@ class TemplateAction( object ):
         logger.info( "function: {}\nroute: {}".format( function, "/".join( [ self.__parent.name if self.__parent is not None else '',
                                                                              self.route.name if isinstance( self.route, RouteTemplate ) else '?' ] ) ) )
         if function != '':
-            BUTTON_STR = '''<button {button} {tooltip}  color="primary" ({on})="{function}" id="{objname}.{name}">{content}</button>'''
+            BUTTON_STR = '''<button {button} {tooltip} color="primary" ({on})="{function}" id="{objname}.{name}">{content}</button>'''
+            route = ''
+            params = ''
+
+        elif self.isAngularRoute():
+            BUTTON_STR = '''<a {button} {tooltip} color="primary" ({on})="router.navigate( [ '/{route}', {params} ] )" id="{objname}.{name}">{content}</a>'''
+            route = "/".join( [ self.__parent.name, self.route.name ] )
+            params = self.route.routeParams()
 
         else:
-            # BUTTON_STR = '''<a {button} color="primary" routerLink="/{route}" {params} id="{objname}.{name}">{content}</a>'''
-            BUTTON_STR = '''<a {button} {tooltip}  color="primary" ({on})="router.navigate( [ '/{route}', {params} ] )" id="{objname}.{name}">{content}</a>'''
+            raise Exception( 'Missing function or route for {}'.format( self ) )
 
         return button + BUTTON_STR.format( button = button_type,
-                                           route = "/".join( [ self.__parent.name, self.route.name ] ),
-                                           params = self.route.routeParams(),
+                                           route = route,
+                                           params = params,
                                            function = function,
                                            tooltip = tooltip,
                                            on = self.on,
@@ -171,8 +179,8 @@ class TemplateAction( object ):
                                            content = content )
 
     def __repr__(self):
-        return "<TemplateAction name = '{}', label = '{}', type = {}, icon = {}, position = {}, function = '{}' route = {}>".format(
-            self.name, self.label, self.type, self.icon, self.position, self.function, self.route
+        return "<TemplateAction *{}* name = '{}', label = '{}', type = {}, icon = {}, position = {}, function = '{}' route = {}>".format(
+            self.__name, self.name, self.label, self.type, self.icon, self.position, self.function, self.route
         )
 
 

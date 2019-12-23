@@ -75,9 +75,9 @@ export class ${ obj.cls }TableComponent extends Subscribers implements OnInit, O
     @ViewChild( 'filter' )      filter: ElementRef;
 
     constructor( public httpClient: HttpClient
-                 , private route: ActivatedRoute
+                 , public route: ActivatedRoute
                  , public dialog: MatDialog
-                 , private router: Router
+                 , public router: Router
                  , public dataService: ${ obj.cls }DataService
 % if obj.table.hasViewSizeService:
                  , public viewSizeService: ${ obj.table.viewSize }
