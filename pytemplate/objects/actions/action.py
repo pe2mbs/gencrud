@@ -107,6 +107,10 @@ class TemplateAction( object ):
         return 'route' in self.__cfg
 
     @property
+    def hint( self ):
+        return self.__cfg.get( 'hint', '' )
+
+    @property
     def route( self ):
         return RouteTemplate( self, **self.__cfg.get( 'route', None ) ) if self.isAngularRoute() else {}
 
@@ -115,6 +119,7 @@ class TemplateAction( object ):
         return self.__cfg.get( 'param', [] )
 
     def buttonObject( self ):
+        tooltip = ''
         if self.type == 'none':
             return ''
 
@@ -124,6 +129,12 @@ class TemplateAction( object ):
             button_type = 'mat-icon-button'
             content = '<mat-icon aria-label="{label}">{icon}</mat-icon>'.format( label = self.label,
                                                                                  icon = self.icon )
+
+            tooltip = 'matTooltip = "{}"'.format( self.label )
+        else:
+            if self.hint != '':
+                tooltip = 'matTooltip = "{}"'.format( self.hint )
+
         function = ''
         if self.function == '' and self.uri != '':
             param = TypeScript().build( self.param )
@@ -137,15 +148,17 @@ class TemplateAction( object ):
         logger.info( "function: {}\nroute: {}".format( function, "/".join( [ self.__parent.name if self.__parent is not None else '',
                                                                              self.route.name if isinstance( self.route, RouteTemplate ) else '?' ] ) ) )
         if function != '':
-            button += '''<button {button} color="primary" (click)="{function}" id="{objname}.{name}">{content}</button>'''.\
+            button += '''<button {button} {tooltip} color="primary" (click)="{function}" id="{objname}.{name}">{content}</button>'''.\
                             format( button = button_type,
-                                     function = function,
-                                     objname = self.__name,
-                                     name = self.name,
-                                     content = content )
+                                    function = function,
+                                    tooltip = tooltip,
+                                    objname = self.__name,
+                                    name = self.name,
+                                    content = content )
         else:
-            button += '''<a {button} color="primary" routerLink="/{route}" {params} id="{objname}.{name}">{content}</a>'''.\
+            button += '''<a {button} {tooltip} color="primary" routerLink="/{route}" {params} id="{objname}.{name}">{content}</a>'''.\
                             format( button = button_type,
+                                    tooltip = tooltip,
                                     route = "/".join( [ self.__parent.name, self.route.name ] ),
                                     params = self.route.routeParams(),
                                     objname = self.__name,
