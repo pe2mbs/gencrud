@@ -1,1 +1,0 @@
-from pytemplate.objects.object import *

@@ -1,0 +1,204 @@
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2019 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+import logging
+import traceback
+from flask import Blueprint, request, jsonify
+from applic.database import db
+from ${ obj.application }.common import fieldConversion
+from ${ obj.application }.${ obj.name }.model import ${ obj.cls }
+from ${ obj.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
+from ${ obj.application }.common import fieldConversion
+% if obj.table.Mixin.View.Available:
+from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
+% endif
+${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
+logger = logging.getLogger()
+
+
+def registerApi( app, cors ):
+    # Set the logger for the users module
+    if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
+        app.logger.info( 'Allowing CORS' )
+        if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
+            origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' )
+            cors.init_app( '${ obj.name }Api', origins = origins )
+
+    logger.info( 'Register ${ obj.cls } routes' )
+    app.register_blueprint( ${ obj.name }Api )
+    try:
+        import ${ obj.application }.${ obj.name }.entry_points  as EP
+        logger.info( 'Register ${ obj.cls } entrypoint routes' )
+        app.register_blueprint( EP.entryPointApi )
+
+    except:
+        pass
+
+% if obj.table.Mixin.View.Available:
+    logger.info( 'Registering ${ obj.cls } view mixin' )
+    app.register_blueprint( ${obj.table.Mixin.View.Class}.blueprint )
+% endif
+    return
+
+
+@${ obj.name }Api.route( '${ obj.uri }/list/<id>/<value>', methods=[ 'GET' ] )
+def get${ obj.cls }ListFiltered( id, value ):
+    filter = { id: value }
+    recordList = db.session.query( ${ obj.cls } ). \
+                 filter_by( **filter ).\
+                 ${ obj.orderBy() }.all()
+    result = ${ obj.name }sSchema.jsonify( recordList )
+    logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/list', methods=[ 'GET' ] )
+def get${ obj.cls }List():
+    recordList = db.session.query( ${ obj.cls } ).${ obj.orderBy() }.all()
+    result = ${ obj.name }sSchema.jsonify( recordList )
+    logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/new', methods = [ 'POST' ] )
+def api${ obj.cls }New():
+    data    = request.json
+    if data is None:
+        return "Invalid request, missing ${ obj.cls }Record", 500
+    logging.info( 'POST: {0}'.format( repr( data ) ) )
+    if '${ obj.table.primaryKey }' in data:
+        del data[ '${ obj.table.primaryKey }' ]
+
+    record = ${ obj.cls }()
+    for key, value in request.json.items():
+        if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
+            setattr( record, key, fieldConversion( record, key, value ) )
+
+    db.session.add( record )
+    db.session.commit()
+    result = ${ obj.name }Schema.jsonify( record )
+    logger.debug( 'get${obj.cls}New() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/get', methods = [ 'GET' ] )
+def api${ obj.cls }Get():
+    data    = request.json
+    if data is None:
+        return "Invalid request, missing ${ obj.cls }Record", 500
+
+    logging.info( 'GET: {0}'.format( repr( data ) ) )
+    record = ${ obj.cls }.query.get( int( data[ '${ obj.table.primaryKey }' ] ) )
+    result = ${ obj.name }Schema.jsonify( record )
+    logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/get/<int:id>', methods = [ 'GET' ] )
+def api${ obj.cls }GetId( id ):
+    logging.info( 'GET: {0}'.format( id ) )
+    record = ${ obj.cls }.query.get( int( id ) )
+    result = ${ obj.name }Schema.jsonify( record )
+    logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/<int:id>', methods = [ 'DELETE' ] )
+def api${ obj.cls }Delete( id ):
+    logging.info( 'DELETE: {0}'.format( id ) )
+    record = ${ obj.cls }.query.get( int( id ) )
+    db.session.delete( record )
+    db.session.commit()
+    result = ${ obj.name }Schema.jsonify( record )
+    logger.debug( 'get${ obj.cls }Delete() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/put', methods=[ 'POST' ] )
+def api${ obj.cls }Put():
+    data    = request.json
+    if data is None:
+        return "Invalid request, missing ${ obj.cls }Record", 500
+    logging.info( 'PUT: {0}'.format( repr( data ) ) )
+    record = ${obj.cls}.query.get( data[ '${ obj.table.primaryKey }' ] )
+    for key, value in data.items():
+        if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
+            setattr( record, key, fieldConversion( record, key, value ) )
+
+    db.session.commit()
+    result = ${ obj.name }Schema.jsonify( record )
+    logger.debug( 'get${ obj.cls }Put() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/update', methods=[ 'POST' ] )
+def api${ obj.cls }Patch():
+    data    = request.json
+    logging.info( 'PATCH: {0}'.format( repr( data ) ) )
+    record = ${ obj.cls }.query.get( data[ '${ obj.table.primaryKey }' ] )
+    for key, value in data.items():
+        if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
+            setattr( record, key, fieldConversion( record, key, value ) )
+
+    db.session.commit()
+    result = ${ obj.name }Schema.jsonify( record )
+    logger.debug( 'get${ obj.cls }Patch() => {0}'.format( result ) )
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/select', methods=[ 'GET' ] )
+def api${ obj.cls }Select():
+    data    = request.json
+    logging.info( 'POST: {0}'.format( repr( data ) ) )
+    if data is not None:
+        value = data[ 'value' ]
+        label = data[ 'label' ]
+
+    else:
+        value = request.args.get( 'value', '${ obj.table.primaryKey }' )    # primary key
+        label = request.args.get( 'label', '${ obj.table.columns[ 1 ].name }' )  # first field name
+
+    result = []
+    recordList = db.session.query( ${ obj.cls } ).order_by( ${ obj.cls }.${ obj.table.primaryKey } ).all()
+    for record in recordList:
+        result.append( { 'value': getattr( record, value ),
+                         'label': getattr( record, label ) } )
+
+    logger.debug( 'api${ obj.cls }Select => {0}'.format( result ) )
+
+    return jsonify( result )
+
+
+@${ obj.name }Api.route( '${ obj.uri }/lock', methods=[ 'POST' ] )
+def api${ obj.cls }Lock():
+    data    = request.json
+    logging.info( 'LOCK: {0}'.format( repr( data ) ) )
+    # TODO: This needs to be implemented for correct multiuser support
+
+    return jsonify( { 'result': 'OK' } )
+
+
+@${ obj.name }Api.route( '${ obj.uri }/unlock', methods=[ 'POST' ] )
+def api${ obj.cls }Unlock():
+    data    = request.json
+    logging.info( 'UNLOCK: {0}'.format( repr( data ) ) )
+    # TODO: This needs to be implemented for correct multiuser support
+
+    return jsonify( { 'result': 'OK' } )
+

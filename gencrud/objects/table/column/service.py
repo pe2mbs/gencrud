@@ -1,0 +1,50 @@
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2019 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+class TemplateService( object ):
+    def __init__( self, **cfg ):
+        self.__cfg = cfg
+        return
+
+    @property
+    def name( self ):
+        return self.__cfg[ 'name' ]
+
+    @property
+    def value( self ):
+        return self.__cfg[ 'value' ]
+
+    @property
+    def label( self ):
+        return self.__cfg[ 'label' ]
+
+    @property
+    def cls( self ):
+        value = self.__cfg[ 'class' ]
+        if value.endswith( 'Service' ):
+            return value
+
+        return '{}DataService'.format( value )
+
+    @property
+    def path( self ):
+        if 'path' in self.__cfg:
+            return self.__cfg[ 'path' ]
+
+        return '../{}/service'.format( self.__cfg[ 'name' ] )

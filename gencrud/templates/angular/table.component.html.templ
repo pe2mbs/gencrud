@@ -1,0 +1,127 @@
+<!--
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2019 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+-->
+<mat-card>
+    <mat-card-title *ngIf="caption">
+        ${ obj.title }
+    </mat-card-title>
+    <mat-card-content>
+        <div class="navigator-row form">
+            <mat-form-field floatPlaceholder="never" color="accent">
+                <input matInput #filter placeholder="Filter ${ obj.title }" [value]="dataSource.filter">
+            </mat-form-field>
+            <span class="spacer-search"></span>
+% for action in obj.actions.getHeaderButtons():
+                ${ action.buttonObject() }
+% endfor
+            <span class="spacer-search"></span>
+            <span id="User.paginator">
+                <mat-paginator #top_paginator
+                       [length]="dataSource.filteredData.length"
+                       [pageIndex]="pageIndex"
+                       [pageSize]="pageSize"
+                       [pageSizeOptions]="[5, 10, 25, 100]"
+                       (page)="pagingEvent( $event )">
+                </mat-paginator>
+            </span>
+            <span>
+                <button mat-icon-button
+                        color="primary"
+                        (click)="refresh()"
+                        id="User.refresh">
+                    <mat-icon aria-label="Refresh the view">refresh</mat-icon>
+                </button>
+            </span>
+        </div>
+        <mat-table #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell" ${obj.table.sortedInfo()}>
+% for field in obj.table.listViewColumns:
+            <!-- ${ field.name } Column -->
+            <ng-container matColumnDef="${ field.name }" class="column_${ field.name }">
+                <mat-header-cell *matHeaderCellDef mat-sort-header>
+                    ${ field.label }
+                </mat-header-cell>
+                <mat-cell *matCellDef="let row"
+                          ${ obj.actions.getRowDblClick() } ${ obj.actions.getRowRouterLink() }
+                          id="${ obj.cls }.${ field.name }">
+% if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+                    {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
+% elif field.ui is not None and ( field.ui.isCheckbox() or field.ui.isSliderToggle() ):
+ %if field.hasResolveList():
+                    {{ dataSource.${ field.name }_Label( row.${ field.name } ) }}
+ % endif
+% elif field.ui.isDateTime() or field.ui.isDate() or field.ui.isTime():
+                    {{ row.${ field.name } | date: "yyyy-MM-dd HH:mm:ss" }}
+% elif field.ui.pipe != '':
+                    {{ dataSource.reFormat( row.${ field.name }, '${ field.ui.pipe }', '${ field.ui.format }' ) }}
+% else:
+                    {{ row.${ field.name } }}
+% endif
+                </mat-cell>
+            </ng-container>
+% endfor
+            <!-- actions -->
+            <ng-container matColumnDef="actions">
+                <!-- Header buttons -->
+                <mat-header-cell *matHeaderCellDef>
+                    Options
+                </mat-header-cell>
+                <!-- Row buttons -->
+                <mat-cell *matCellDef="let row; let i=index;" >
+% for action in obj.actions.getCellButtons():
+                    ${ action.buttonObject() }
+% endfor
+                </mat-cell>
+            </ng-container>
+            <mat-header-row *matHeaderRowDef="displayedColumns">
+            </mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;">
+            </mat-row>
+        </mat-table>
+        <div class="no-results" id="no-results" [style.display]="dataSource.renderedData.length == 0 ? '' : 'none'">
+            No results
+        </div>
+        <div class="navigator-row">
+            <span>
+% for action in obj.actions.getFooterButtons():
+                ${ action.buttonObject() }
+% endfor
+            </span>
+            <span class="spacer"></span>
+            <span id="${ obj.cls }.paginator">
+                <mat-paginator #bot_paginator
+                       [length]="dataSource.filteredData.length"
+                       [pageIndex]="pageIndex"
+                       [pageSize]="pageSize"
+                       [pageSizeOptions]="[5, 10, 25, 100]"
+                       (page)="pagingEvent( $event )">
+                </mat-paginator>
+            </span>
+            <span>
+                <button mat-icon-button
+                        color="primary"
+                        (click)="refresh()"
+                        id="${ obj.cls }.refresh">
+                    <mat-icon aria-label="Refresh the view">refresh</mat-icon>
+                </button>
+            </span>
+        </div>
+    </mat-card-content>
+</mat-card>
