@@ -111,8 +111,9 @@ class TemplateActions( object ):
                 logger.info( "getRowAction() => {}".format( action ) )
                 if action.isAngularRoute():
                     # return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
-                    route = "/".join( [ self.__name, action.name ] )
-                    ACTION_STR = '''({on})="router.navigate( [ '/{route}', {params} ] )"'''
+                    route = "/".join( [ self.__parent.name, action.name ] )
+
+                    ACTION_STR = '''({on})="router.navigate( [ '/{route}' ], {params} )"'''
                     params = action.route.routeParams()
 
                 elif action.function != '':
