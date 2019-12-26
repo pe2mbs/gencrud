@@ -111,6 +111,9 @@ def doWork( inputFile ):
         if version != 1:
             raise Exception( "Invalid configuration version: {}, must be 1".format( version ) )
 
+    # This override/set commandline options from the template defintion.
+    config.options()
+
     verifyLoadProject( 'angular', config )
     verifyLoadProject( 'python', config )
     generatePython( [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
@@ -145,6 +148,8 @@ Options:
     -b / --backup                       Make backup of the orginal project files files.
     -o / --overwrite                    Force overwriting the files.
     -c / --case-insensitive-db-ids      All database names shall be in lower case. 
+    -M / --module                       Create module component for template and use GenCrudModule.
+                                        instead of adding the components directly into app.module.ts   
     -s / --sslverify                    Disable the verification of ssl certificate when    
                                         retrieving some external profile data.
     -v                                  Verbose option, prints what the tool is doing.
@@ -158,13 +163,14 @@ def main():
     logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hi:s:obvVc', [ 'help',
-                                                    'input=',
-                                                    'sslverify=',
-                                                    'overwrite',
-                                                    'backup'
-                                                    'version',
-                                                    'case-insensitive-db-ids' ] )
+                                    'hi:s:obvVcM', [ 'help',
+                                                     'input=',
+                                                     'sslverify=',
+                                                     'overwrite',
+                                                     'backup'
+                                                     'module'
+                                                     'version',
+                                                     'case-insensitive-db-ids' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -183,6 +189,9 @@ def main():
             elif o in ( '-h', '--help' ):
                 usage()
                 sys.exit()
+
+            elif o in ( '-M', '--module' ):
+                gencrud.util.utils.useModule = True
 
             elif o in ( '-b', '--backup' ):
                 gencrud.util.utils.backupFiles = True

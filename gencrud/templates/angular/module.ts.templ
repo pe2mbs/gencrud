@@ -1,0 +1,70 @@
+import { NgModule, ModuleWithProviders } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CustomMaterialModule } from '../material.module';
+import { GenCrudModule } from '../common/gencrud.module';
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+import { Dialog${ obj.cls }Component } from './${ obj.name }/dialog.component';
+% endif
+% if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
+import { Screen${ obj.cls }Component } from './${ obj.name }/screen.component';
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+import { Delete${ obj.cls }Dialog } from './${ obj.name }/delete.dialog';
+% endif
+import { ${ obj.cls }TableComponent } from './${ obj.name }/table.component';
+import { ${ obj.cls }DataService } from './${ obj.name }/service';
+
+
+
+@NgModule( {
+    declarations: [
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+        Dialog${ obj.cls }Component,
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+        Delete${ obj.cls }Dialog,
+% endif
+% if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
+        Screen{ obj.cls }Component,
+% endif
+        ${ obj.cls }TableComponent
+    ],
+    entryComponents: [
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+        Dialog${ obj.cls }Component,
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+        Delete${ obj.cls }Dialog,
+% endif
+    ],
+    providers: [
+        ${ obj.cls }DataService
+    ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        CustomMaterialModule,
+        GenCrudModule
+    ],
+    exports: [
+% if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
+        Screen{ obj.cls }Component,
+% endif
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+        Dialog${ obj.cls }Component,
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+        Delete${ obj.cls }Dialog,
+% endif
+        ${ obj.cls }TableComponent
+    ]
+} )
+export class RoleModule
+{
+    static forChild(): ModuleWithProviders
+    {
+        return { ngModule: RoleModule };
+    }
+}

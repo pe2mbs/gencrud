@@ -17,6 +17,7 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+import gencrud.util.utils
 from gencrud.objects.object import TemplateObject
 from gencrud.source import TemplateSourcePython, TemplateSourceAngular
 
@@ -50,3 +51,12 @@ class TemplateConfiguration( object ):
     @property
     def application( self ):
         return self.__config.get( 'application', None )
+
+    def options( self ):
+        opts = self.__config.get( 'options', None )
+        if opts is not None:
+            gencrud.util.utils.useModule = opts.get( 'use-module', False )
+            gencrud.util.utils.backupFiles = opts.get( 'backup', False )
+            gencrud.util.utils.lowerCaseDbIds = opts.get( 'case-insensitive-db-ids', False )
+
+        return

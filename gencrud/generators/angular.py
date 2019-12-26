@@ -263,6 +263,10 @@ def generateAngular( templates, config ):
                                              config.application,
                                              cfg.name,
                                              gencrud.util.utils.sourceName( templ ) )
+            if templ.endswith( 'module.ts.template' ):
+                # This handled by createAngularComponentModule()
+                continue
+
             if os.path.isfile( templateFilename ):
                 # First remove the old file
                 os.remove( templateFilename )
@@ -388,6 +392,9 @@ def generateAngular( templates, config ):
         if imp not in appModule[ 'files' ]:
             appModule[ 'files' ].append( imp )
 
+
+    appModule = createAngularComponentModuleTs( config, appModule )
+
     logger.info( "appModule: {}".format( json.dumps( appModule, indent = 4 ) ) )
     updateAngularAppModuleTs( config, appModule, exportsModules )
 
@@ -397,6 +404,50 @@ def generateAngular( templates, config ):
                                                       'common-ts' ) ),
                        os.path.join( config.angular.sourceFolder, 'common' ) )
     return
+
+
+def createAngularComponentModuleTs( config, appModule ):
+    if not gencrud.util.utils.useModule:
+        return appModule
+
+    templ = os.path.abspath( os.path.join( config.angular.templateFolder, 'module.ts.templ' ) )
+    imports = []
+    for cfg in config:
+        filename = os.path.join( config.application, '{}.module.ts.templ'.format( cfg.name ) )
+        # Create the '<name>-module.ts'
+        with open( filename, 'w' ) as stream:
+            for line in Template( filename = templ ).render( obj = cfg ).split( '\n' ):
+                stream.write( line )
+                if sys.platform.startswith( 'linux' ):
+                    stream.write( '\n' )
+
+        component = "import {{ {cls}Module }} from './{app}/{mod}.module';".format( cls = cfg.cls,
+                                                                                    app = config.application,
+                                                                                    mod = cfg.name )
+        imports.append( component )
+
+    appModule = {
+        "files": [ "import { CustomMaterialModule } from './material.module';",
+                   "import { GenCrudModule } from './common/gencrud.module';",
+                   ],
+        "imports": [ ],
+        "declarations": [ "BrowserModule",
+                          "BrowserAnimationsModule",
+                          "HttpClientModule",
+                          "FormsModule",
+                          "ReactiveFormsModule",
+                          "CustomMaterialModule",
+                          "GenCrudModule" ],
+
+        "entryComponents": [ ],
+        "providers": [ ],
+    }
+    for imp in imports:
+        if imp not in appModule[ 'files' ]:
+            appModule[ 'files' ].append( imp )
+
+    return appModule
+
 
 def copyAngularCommon( source, destination ):
     files = os.listdir( source )

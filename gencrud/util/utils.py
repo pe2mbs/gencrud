@@ -27,6 +27,7 @@ sslVerify       = True
 backupFiles     = False
 overWriteFiles  = False
 lowerCaseDbIds  = False
+useModule       = False
 
 C_FILEMODE_UPDATE = 'r+'
 C_FILEMODE_WRITE  = 'w'
