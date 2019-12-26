@@ -21,7 +21,7 @@ import logging
 from flask import Blueprint, jsonify
 
 ##
-#   Section maintained by gencrud.py
+#   Section maintained by generator.py
 ##
 listModules = [
 
@@ -32,7 +32,7 @@ menuItems = [
 ]
 
 ##
-#   End section maintained by gencrud.py
+#   End section maintained by generator.py
 ##
 menuApi = Blueprint( 'menuApi', __name__ )
 logger = logging.getLogger()

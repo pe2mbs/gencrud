@@ -43,7 +43,7 @@ class RouteTemplate( object ):
         return self.__config.get( 'module', None )
 
     def params( self ):
-        return self.__config.get( 'params', [] )
+        return self.__config.get( 'params', {} )
 
     def routeParams( self ):
         params = self.params()

@@ -120,7 +120,13 @@ class TemplateActions( object ):
                     route = ''
                     params = ''
 
+                elif action.type == 'screen':
+                    route = "/".join( [ self.__name, action.name ] )
+                    ACTION_STR = '''({on})="router.navigate( [ '/{route}', {params} ] )"'''
+                    params = action.routeParams()
+
                 else:
+
                     raise Exception( "Missing function or route declaration" )
 
 

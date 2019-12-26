@@ -137,7 +137,7 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
 
 def updateAngularAppRoutingModuleTs( config, app_module ):
     if not os.path.isfile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) ):
-        return
+        return []
 
     with open( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ), 'r' ) as stream:
         lines = stream.readlines()

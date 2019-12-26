@@ -87,7 +87,7 @@ def updatePythonProject( config, app_module ):
     # update import section
     modules = []
     for table in config:
-        line = 'import {0}.{1}   # import maintained by gencrud.py'.format( config.application,
+        line = 'import {0}.{1}   # import maintained by generator.py'.format( config.application,
                                                                             table.name )
         gencrud.util.utils.insertLinesUnique( lines, rangePos, line )
         modules.append( '{0}.{1}'.format( config.application, table.name ) )

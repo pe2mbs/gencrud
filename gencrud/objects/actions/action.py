@@ -107,8 +107,19 @@ class TemplateAction( object ):
         return RouteTemplate( self, **self.__cfg.get( 'route', None ) ) if self.isAngularRoute() else {}
 
     @property
-    def param( self ):
-        return self.__cfg.get( 'param', [] )
+    def params( self ):
+        return self.__cfg.get( 'params', {} )
+
+    def routeParams( self ):
+        params = self.params
+        if len( params ) > 0:
+            items = {}
+            for key, value in params.items():
+                items[ key ] = value
+            # (click) = "router.navigate( [ '/tr/edit', { queryParams: { id: 'TR_ID', mode: 'edit', value: row.TR_ID } } ] )"
+            return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
+
+        return ''
 
     #
     #   Internal functions and properies to gencrud
@@ -145,7 +156,7 @@ class TemplateAction( object ):
 
         function = ''
         if self.function == '' and self.uri != '':
-            param = TypeScript().build( self.param )
+            param = TypeScript().build( self.params )
             function = "dataService.genericPut( '{uri}', {param} )".format( uri = self.uri,
                                                                               param = param )
 
@@ -163,7 +174,12 @@ class TemplateAction( object ):
         elif self.isAngularRoute():
             BUTTON_STR = '''<a {button} {tooltip} color="primary" ({on})="router.navigate( [ '/{route}', {params} ] )" id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.route.name ] )
-            params = self.route.routeParams()
+            params = self.routeParams()
+
+        elif self.type == 'screen':
+            BUTTON_STR = '''<a {button} {tooltip} color="primary" ({on})="router.navigate( [ '/{route}', {params} ] )" id="{objname}.{name}">{content}</a>'''
+            route = "/".join( [ self.__parent.name, self.name ] )
+            params = {}
 
         else:
             raise Exception( 'Missing function or route for {}'.format( self ) )
