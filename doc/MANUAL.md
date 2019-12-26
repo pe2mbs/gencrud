@@ -395,6 +395,7 @@ for more details the section **5.7 Table**
         type:                   screen
         position:               header
         on:                     click
+        color:                  primary
         label:                  Add
         icon:                   add
         route:
@@ -410,6 +411,7 @@ for more details the section **5.7 Table**
         type:                   dialog
         on:                     click
         position:               cell
+        color:                  primary
         label:                  Delete
         icon:                   delete
         function:               deleteRecord( i, row, 'D_ROLE' )   
@@ -417,6 +419,8 @@ for more details the section **5.7 Table**
         type:                   api
         position:               cell
         label:                  Assign
+        color:                  alert
+        css:                    alternate-theme
         on:                     click
         icon:                   connect
         uri:                    /api/role/assign_something   
@@ -454,6 +458,22 @@ tooltip of the icon-button.
 The `on` can be used to alter the behaviour of a action, normally it selects the default 
 for action based on the position parameter; for `row` it selects `dblclick` and the others
 will use `click`  
+
+##### color
+The `color` can be used to alter color scheme of the button. The color scheme that are avalable
+are the following;
+* primary
+* accent
+* warn
+
+When another color scheme is needed a `mat-palette` and `angular-material-theme` must be 
+defined in _styles.scss_. And define the alternate theme there and set theme in the css 
+attribute of the module.    
+ 
+This is an optional element. When omitted the default is set to _primary_
+
+##### css
+The `css` can be used to set a extra css class to the action. This is an optional element. 
 
 ##### function
 The `function` defines the function that shall be executed in the Angular class. Current 

@@ -103,6 +103,14 @@ class TemplateAction( object ):
         return self.__cfg.get( 'hint', '' )
 
     @property
+    def color( self ):
+        return self.__cfg.get( 'color', 'primary' )
+
+    @property
+    def css( self ):
+        return self.__cfg.get( 'css', '' )
+
+    @property
     def route( self ):
         return RouteTemplate( self, **self.__cfg.get( 'route', None ) ) if self.isAngularRoute() else {}
 
@@ -166,18 +174,22 @@ class TemplateAction( object ):
         button = '<span class="spacer"></span>'
         logger.info( "function: {}\nroute: {}".format( function, "/".join( [ self.__parent.name if self.__parent is not None else '',
                                                                              self.route.name if isinstance( self.route, RouteTemplate ) else '?' ] ) ) )
+        cls = ''
+        if self.css != '':
+            cls = 'class="{}"'.format( self.css )
+
         if function != '':
-            BUTTON_STR = '''<button {button} {tooltip} color="primary" ({on})="{function}" id="{objname}.{name}">{content}</button>'''
+            BUTTON_STR = '''<button {cls} {button} {tooltip} color="{color}" ({on})="{function}" id="{objname}.{name}">{content}</button>'''
             route = ''
             params = ''
 
         elif self.isAngularRoute():
-            BUTTON_STR = '''<a {button} {tooltip} color="primary" ({on})="router.navigate( [ '/{route}' ], {params} )" id="{objname}.{name}">{content}</a>'''
+            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.route.name ] )
             params = self.routeParams()
 
-        elif self.type == 'screen':
-            BUTTON_STR = '''<a {button} {tooltip} color="primary" ({on})="router.navigate( [ '/{route}', {params} ] )" id="{objname}.{name}">{content}</a>'''
+        elif self.type == 'screen' and self.name in ( 'new', 'edit' ):
+            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.name ] )
             params = {}
 
@@ -186,7 +198,9 @@ class TemplateAction( object ):
 
         return button + BUTTON_STR.format( button = button_type,
                                            route = route,
+                                           cls = cls,
                                            params = params,
+                                           color = self.color,
                                            function = function,
                                            tooltip = tooltip,
                                            on = self.on,

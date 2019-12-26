@@ -113,7 +113,7 @@ class TemplateActions( object ):
                     # return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
                     route = "/".join( [ self.__parent.name, action.name ] )
 
-                    ACTION_STR = '''({on})="router.navigate( [ '/{route}' ], {params} )"'''
+                    ACTION_STR = '''({on})="router.navigate( ['/{route}'], {params} )"'''
                     params = action.route.routeParams()
 
                 elif action.function != '':
@@ -123,7 +123,7 @@ class TemplateActions( object ):
 
                 elif action.type == 'screen':
                     route = "/".join( [ self.__name, action.name ] )
-                    ACTION_STR = '''({on})="router.navigate( [ '/{route}', {params} ] )"'''
+                    ACTION_STR = '''({on})="router.navigate( ['/{route}'], {params} )"'''
                     params = action.routeParams()
 
                 else:
