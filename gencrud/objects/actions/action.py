@@ -172,7 +172,7 @@ class TemplateAction( object ):
             params = ''
 
         elif self.isAngularRoute():
-            BUTTON_STR = '''<a {button} {tooltip} color="primary" ({on})="router.navigate( [ '/{route}', {params} ] )" id="{objname}.{name}">{content}</a>'''
+            BUTTON_STR = '''<a {button} {tooltip} color="primary" ({on})="router.navigate( [ '/{route}' ], {params} )" id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.route.name ] )
             params = self.routeParams()
 
