@@ -1159,6 +1159,9 @@ The following simple example creates a constant name preceeded by the field name
   constant-format:  "'{0} = {1}'.format( '_'.join( [ field, label.upper() ] ), value )"
 ```
 
+**Note:** The `constant-format` is an actual Python expression. When an error is detected the traceback 
+is shown to resolve the error. 
+
 **Note:** The internal og gencrud norimaizes the attributes (table, field, label), this means that when it 
 starts with a digit an underscore `_` is prepended to the attribute, where other characters are used than
 letters and digits those are replaced with a single underscore `_`.     
