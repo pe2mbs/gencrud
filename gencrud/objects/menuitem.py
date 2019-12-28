@@ -22,6 +22,10 @@
 class TemplateMenuItem( object ):
     def __init__( self, key, **cfg ):
         self.__item = cfg[ key ]
+        self.__submenu = None
+        if 'menu' in self.__item:
+            self.__submenu = TemplateMenuItem( 'menu', **self.__item )
+
         return
 
     @property
@@ -50,7 +54,10 @@ class TemplateMenuItem( object ):
 
     @property
     def menu( self ):
-        if 'menu' in self.__item:
-            return TemplateMenuItem( 'menu', **self.__item )
+        return self.__submenu
 
-        return None
+    def activateItem( self ):
+        if 'menu' in self.__item:
+            return self.__submenu.activateItem()
+
+        return self.route

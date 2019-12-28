@@ -40,8 +40,7 @@ from gencrud.util.exceptions import (InvalidEnvironment,
                                      InvalidSetting)
 
 logger = logging.getLogger()
-global version
-version = 1
+
 
 def verifyLoadProject( env, config ):
     if env == 'angular':
@@ -106,10 +105,9 @@ def doWork( inputFile ):
         config = TemplateConfiguration( **yaml.load( stream ) )
 
     if 'version' in config:
-        global version
-        version = config[ 'version' ]
-        if version != 1:
-            raise Exception( "Invalid configuration version: {}, must be 1".format( version ) )
+        gencrud.util.utils.version = config[ 'version' ]
+        if gencrud.util.utils.version != 1:
+            raise Exception( "Invalid configuration version: {}, must be 1".format( gencrud.util.utils.version ) )
 
     # This override/set commandline options from the template defintion.
     config.options()
@@ -147,7 +145,7 @@ Options:
     -h / --help                         This help information.
     -b / --backup                       Make backup of the orginal project files files.
     -o / --overwrite                    Force overwriting the files.
-    -c / --case-insensitive-db-ids      All database names shall be in lower case. 
+    -c / --ignore-case-db-ids           All database names shall be in lower case. 
     -M / --module                       Create module component for template and use GenCrudModule.
                                         instead of adding the components directly into app.module.ts   
     -s / --sslverify                    Disable the verification of ssl certificate when    
@@ -170,7 +168,7 @@ def main():
                                                      'backup'
                                                      'module'
                                                      'version',
-                                                     'case-insensitive-db-ids' ] )
+                                                     'ignore-case-db-ids' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:

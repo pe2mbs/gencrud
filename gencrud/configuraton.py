@@ -57,6 +57,7 @@ class TemplateConfiguration( object ):
         if opts is not None:
             gencrud.util.utils.useModule = opts.get( 'use-module', False )
             gencrud.util.utils.backupFiles = opts.get( 'backup', False )
-            gencrud.util.utils.lowerCaseDbIds = opts.get( 'case-insensitive-db-ids', False )
+            gencrud.util.utils.lowerCaseDbIds = opts.get( 'ignore-case-db-ids', False )
+            gencrud.util.utils.overWriteFiles = opts.get( 'overwrite', False )
 
         return

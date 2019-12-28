@@ -449,6 +449,9 @@ class TemplateColumn( object ):
         return '[ {} ] '.format( result )
 
     def angularUiInput( self ):
+        if self.__ui is None:
+            raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field, self.__tableName ) )
+
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
                                             self.__config.get( 'label', '' ),

@@ -28,6 +28,7 @@ backupFiles     = False
 overWriteFiles  = False
 lowerCaseDbIds  = False
 useModule       = False
+version         = 1
 
 C_FILEMODE_UPDATE = 'r+'
 C_FILEMODE_WRITE  = 'w'
@@ -42,7 +43,8 @@ def backupFile( file_name ):
         while os.path.isfile( file_name + '.~{0}'.format( idx ) ):
             idx += 1
 
-        shutil.copyfile( file_name, file_name + '.~{0}'.format( idx ) )
+        if os.path.isfile( file_name ):
+            shutil.copyfile( file_name, file_name + '.~{0}'.format( idx ) )
 
     return
 
