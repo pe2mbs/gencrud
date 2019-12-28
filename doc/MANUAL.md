@@ -154,26 +154,43 @@ backend code.
  
 ## 3.2. Options
 The following options
-> -h / --help         This help information.
+> -h / --help                   This help information.
 
-> -b / --backup       Make backup of the orginal project files files.
+> -v                            Verbose option, prints what the tool is doing.
 
-When used every file that belongs to the orignal project will be backuped every time its altered.  
+> -V / --version                Print the version of the tool.
 
-> -o / --overwrite    Force overwriting the files.
+
+> -b / --backup                 Make backup of the orginal project files files.
+
+When used every file that belongs to the orignal project will be backuped every time its altered.
+This is override by the `options.backup` in the template file.  
+
+> -o / --overwrite              Force overwriting the files.
 
 If  this option is omitted the program will exit on encountering a module name that already exists.
+This is override by the `options.overwite` in the template file.
 
-> -s / --sslverify    Disable the verification of ssl certificate when
->                     retrieving some external profile data.
+> -s / --sslverify              Disable the verification of ssl certificate when
+>                               retrieving some external profile data.
 
 When you are behind a proxy that uses it own certificates, you may need to enable this option ones,
   to retrieve to extra data files from the nltk package.
 
-> -v                  Verbose option, prints what the tool is doing.
+> -c / --ignore-case-db-ids     Set the database ids in lower case.
 
-> -V / --version      Print the version of the tool.
+This option is for databases that are installed on a Windows server system. As sqlalchemy detectes
+the changes in the database model, when using full uppercase columns names, the detection fails.  
+This is override by the `options.ignore-case-db-ids` in the template file.
 
+> -M / --use-module             Creates a module per object that in included into app.module.ts 
+>                               and injects a route into app-routing.module.ts when it exists.
+
+Enables the creation of an Angular module per template. Therefore only the one module is imported in 
+app.module.ts, instead of at least 4 components. And in app-routing.module.ts the Route is injected
+as a single variable instead of all the routes needed to handle the template components.   
+This is override by the `options.use-module` in the template file.
+ 
 
 # 4. Requirements
 For the default templates there are requirements to the Python and Angular project setup.
@@ -343,7 +360,7 @@ version:                  1
 
 This is an optional element and only version `1` is supported at this time.  
 
-  
+ 
 ## 5.3. objects
 At root level in the file. `objects` describes the components it shall generate. It consists
 out of the information how its presented, table defintion, menu entry and actions.
@@ -689,16 +706,17 @@ earlier. `tab` has two attributes;
 ## 5.9 ui
 ```yaml
             ui:
-                type:           choice
-                debug:          true
-                pipe:           datetime
-                format:         nl-NL;YYYY-MM-DD HH:mm:ss
+                type:             choice
+                debug:            true
+                pipe:             datetime
+                format:           nl-NL;YYYY-MM-DD HH:mm:ss
                 service:
                     ...
                 resolve-list:
                     ...
-                rows:           20
-                cols:           80
+                constant-format:  "'C_{0:48} = {1}'.format( '_'.join( [ table, field, label.upper() ] ), value )"
+                rows:             20
+                cols:             80
 ```
 ##### type
 `type` defines the control type in the dialog or screen. There are the following types;
@@ -1112,6 +1130,40 @@ This is an optional element.
 * label: defined the field name from the table which is shown in the **choice** or **combobox** control
 
 `service` and `resolve-list` are mutually exclusive. This is an optional element.
+
+`resolve-list` has a simpler format where the value is the key of the `resolve-list` and the value of that key 
+is the value.  
+
+```yaml
+                resolve-list:
+                    0:          "Pending"
+                    1:          "Warning"
+                    2:          "Manual"
+                    3:          "Passed"
+```
+ 
+##### constant-format
+`constant-format` is an expression to format the constant variable with there values in the _constant.py_ file.
+By default the label from the `resolve-list` is used as the constant variable name and the value from the 
+`resolve-list` is used without any formating. This means that in cases where the same label is defined, only 
+the first occurrence shall be in the _constant.py_ file. To avoid this the template writer must make the 
+constant names unique. this can be done with `constant-format` expression, there are the following variables
+available;
+*   table:  table name as defined object -> table -> name 
+*   field:  field name as defined object -> column -> field (only the name)
+*   label:  label from the resolve-list   
+*   value:  value from the resolve-list
+
+The following simple example creates a constant name preceeded by the field name.
+```yaml
+  constant-format:  "'{0} = {1}'.format( '_'.join( [ field, label.upper() ] ), value )"
+```
+
+**Note:** The internal og gencrud norimaizes the attributes (table, field, label), this means that when it 
+starts with a digit an underscore `_` is prepended to the attribute, where other characters are used than
+letters and digits those are replaced with a single underscore `_`.     
+
+
  
 ##### rows
 `rows` defined the number of rows that are shown for the **textarea** control. This is an optional element.
@@ -1170,3 +1222,25 @@ fields from the current table are allowed. This is an optional element.
 * component: the HTML selector of the component.  
 * params: this is a optioal dictionary containing the attributes with values to be injected into the component. 
 
+
+## 5.10 options
+At root level in the file. This is available from gencrud version 1.6.366.
+
+```yaml
+options:
+    use-module:               false
+    overwrite:                false
+    backup:                   false
+    ignore-case-db-ids:       false
+```
+This is an optional element. When omitted the default for the options is _false_    
+When an option is included it supersede the command line option. 
+
+`use-module` enables the creation of an Angular module per template.
+
+`overwrite` enables the overwriting of the files in the target folder. When overwrite is _false_, 
+no files shall be written if they exist, even that they are changed.  
+
+`backup` makes backups of all the files it overwrites. 
+
+`case-insensitive-db-ids` all database names shall be in lower case. 

@@ -1,3 +1,24 @@
+/*
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2019 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation; either version 2 of the
+#   License, or (at your option) any later version.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+*/
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -16,7 +37,13 @@ import { ${ obj.cls }TableComponent } from './${ obj.name }/table.component';
 import { ${ obj.cls }DataService } from './${ obj.name }/service';
 
 
-
+/*
+*   This NgModule is injected in the app-module.ts. This deals with declaring, importing,
+*   creating entry point and providing the services for the ${ obj.name } screens and dialogs.
+*
+*   This don't clutter the app-module.ts, instead of at least 4 components that are added to the app-module.ts
+*   it only adds this module and includes it in the import section.
+*/
 @NgModule( {
     declarations: [
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
@@ -26,7 +53,7 @@ import { ${ obj.cls }DataService } from './${ obj.name }/service';
         Delete${ obj.cls }Dialog,
 % endif
 % if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
-        Screen{ obj.cls }Component,
+        Screen${ obj.cls }Component,
 % endif
         ${ obj.cls }TableComponent
     ],
@@ -50,7 +77,7 @@ import { ${ obj.cls }DataService } from './${ obj.name }/service';
     ],
     exports: [
 % if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
-        Screen{ obj.cls }Component,
+        Screen${ obj.cls }Component,
 % endif
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
         Dialog${ obj.cls }Component,
@@ -61,10 +88,52 @@ import { ${ obj.cls }DataService } from './${ obj.name }/service';
         ${ obj.cls }TableComponent
     ]
 } )
-export class RoleModule
+export class ${ obj.cls }Module
 {
     static forChild(): ModuleWithProviders
     {
-        return { ngModule: RoleModule };
+        return { ngModule: ${ obj.cls }Module };
     }
+}
+
+
+/*
+*   This Route in injected into the app-routing.module. Instead of at least 4 components that are added
+*   to the app-routing.module.ts it only adds this route and injects it in the main route definition.
+*/
+const ${ obj.name }Route: Route = {
+    path:           '${ obj.menu.activateItem() }'
+    children: [
+        {
+            path: ''
+            component: ${ obj.cls }TableComponent
+            data:
+            {
+                breadcrumb: '${ obj.title }',
+                title:      '${ obj.title }'
+            }
+        },
+% if obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none':
+        {
+            path: 'new'
+            Screen${ obj.cls }Component,
+            data:
+            {
+                breadcrumb: 'New',
+                title:      'New'
+            }
+        },
+% endif
+% if obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none':
+        {
+            path: 'edit'
+            Screen${ obj.cls }Component,
+            data:
+            {
+                breadcrumb: 'Edit',
+                title:      'Edit'
+            }
+        },
+% endif
+    ]
 }

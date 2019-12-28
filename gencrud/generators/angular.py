@@ -104,7 +104,7 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
                                                         rangePos,
                                                         LABEL_NG_MODULE + '{',
                                                       '})' )
-    pos = sectionLines[0].find( '{' )
+    pos = sectionLines[ 0 ].find( '{' )
     sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
     pos = sectionLines[ -1 ].find( '}' )
     sectionLines[ -1 ] = sectionLines[ -1 ][ : pos + 1 ]
@@ -143,57 +143,69 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
         lines = stream.readlines()
 
     gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) )
+
     imports = []
     entries = []
     for cfg in config:
         if cfg.menu is not None and cfg.menu.menu is not None:
             # Do we have child pages for new and edit?
-            children = []
-            for action in cfg.actions:
-                logger.info( "Action: {} {} {}".format( config.application, cfg.name, action ) )
-                if action.type == 'screen' and action.isAngularRoute():
-                    logger.info( "Screen {} {} {}".format( config.application, cfg.name, action ) )
-                    children.append( {  'path': "'{}'".format( action.route.name ),
-                                        'component': "{}".format( action.route.cls ),
-                                        'data': {
-                                            'title': "'{cls} {label}'".format( cls = cfg.cls,
-                                                                               label = action.route.label ),
-                                            'breadcrum': "'{}'".format( action.route.label )
-                                        }
-                                      } )
-                    filename = 'table.component' if action.route.cls.endswith( 'TableComponent' ) else 'screen.component'
-                    clsmod = cfg.name if action.route.module is None else action.route.module
-                    component = "import {{ {cls} }} from './{app}/{module}/{filename}';".format( cls = action.route.cls,
-                                                                                                 app = config.application,
-                                                                                                 module = clsmod,
-                                                                                                 filename = filename )
-                    if component not in imports:
-                        imports.append( component )
+            if not gencrud.util.utils.useModule:
+                children = []
+                for action in cfg.actions:
+                    logger.info( "Action: {} {} {}".format( config.application, cfg.name, action ) )
+                    if action.type == 'screen' and action.isAngularRoute():
+                        logger.info( "Screen {} {} {}".format( config.application, cfg.name, action ) )
+                        children.append( {  'path': "'{}'".format( action.route.name ),
+                                            'component': "{}".format( action.route.cls ),
+                                            'data': {
+                                                'title': "'{cls} {label}'".format( cls = cfg.cls,
+                                                                                   label = action.route.label ),
+                                                'breadcrum': "'{}'".format( action.route.label )
+                                            }
+                                          } )
+                        filename = 'table.component' if action.route.cls.endswith( 'TableComponent' ) else 'screen.component'
+                        clsmod = cfg.name if action.route.module is None else action.route.module
+                        component = "import {{ {cls} }} from './{app}/{module}/{filename}';".format( cls = action.route.cls,
+                                                                                                     app = config.application,
+                                                                                                     module = clsmod,
+                                                                                                     filename = filename )
+                        if component not in imports:
+                            imports.append( component )
 
-            logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), cfg.menu.menu.route[ 1: ] ) )
-            if len( children ) > 0:
-                children.insert( 0, {
-                    'path':      "''",
-                    'component': '{cls}TableComponent'.format( cls = cfg.cls ),
-                    'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
-                                   'breadcrum': "'{}'".format( cfg.cls ) }
-                } )
-                routeItem = { 'path': "'{}'".format( cfg.menu.menu.route[ 1: ] ), 'children': children }
+                logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), cfg.menu.menu.route[ 1: ] ) )
+                if len( children ) > 0:
+                    children.insert( 0, {
+                        'path':      "''",
+                        'component': '{cls}TableComponent'.format( cls = cfg.cls ),
+                        'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
+                                       'breadcrum': "'{}'".format( cfg.cls ) }
+                    } )
+                    routeItem = { 'path': "'{}'".format( cfg.menu.menu.route[ 1: ] ), 'children': children }
+
+                else:
+                    routeItem = {
+                        'path':      "'{}'".format( cfg.menu.menu.route[ 1: ] ),
+                        'component': '{cls}TableComponent'.format( cls = cfg.cls ),
+                        'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
+                                       'breadcrum': "'{}'".format( cfg.cls ) }
+                    }
 
             else:
-                routeItem = {
-                    'path':      "'{}'".format( cfg.menu.menu.route[ 1: ] ),
-                    'component': '{cls}TableComponent'.format( cls = cfg.cls ),
-                    'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
-                                   'breadcrum': "'{}'".format( cfg.cls ) }
-                }
+                routeItem = "{}Route".format( cfg.name )
 
             entries.append( routeItem )
 
         logger.info( "Inports: {} {} {}".format( config.application, cfg.name, cfg.cls ) )
-        component = "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
+        if not gencrud.util.utils.useModule:
+            component = "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
                                                                                                      app = config.application,
                                                                                                      mod = cfg.name )
+
+        else:
+            component = "import {{ {cls}Module }} from './{app}/{mod}.module';".format( cls = cfg.cls,
+                                                                                        app = config.application,
+                                                                                        mod = cfg.name )
+
         if component not in imports:
             imports.append( component )
 
@@ -263,10 +275,14 @@ def generateAngular( templates, config ):
                                              config.application,
                                              cfg.name,
                                              gencrud.util.utils.sourceName( templ ) )
-            if templ.endswith( 'module.ts.template' ):
+            if templ.endswith( 'module.ts.templ' ):
                 # This handled by createAngularComponentModule()
                 continue
 
+            if not gencrud.util.utils.overWriteFiles and os.path.isfile( templateFilename ):
+                continue
+
+            gencrud.util.utils.backupFile( templateFilename )
             if os.path.isfile( templateFilename ):
                 # First remove the old file
                 os.remove( templateFilename )
@@ -382,8 +398,7 @@ def generateAngular( templates, config ):
     for mod in exportsModules:
         logger.info( mod )
 
-
-    logger.info( 'appModule' )
+    logger.info( 'appModule: {}'.format( json.dumps( appModule, indent = 4 ) ) )
     for mod in appModule:
         logger.info( mod.strip( '\n' ) )
 
@@ -407,13 +422,14 @@ def generateAngular( templates, config ):
 
 
 def createAngularComponentModuleTs( config, appModule ):
-    if not gencrud.util.utils.useModule:
+    if not gencrud.util.utils.useModule or not gencrud.util.utils.overWriteFiles:
         return appModule
 
     templ = os.path.abspath( os.path.join( config.angular.templateFolder, 'module.ts.templ' ) )
     imports = []
     for cfg in config:
-        filename = os.path.join( config.application, '{}.module.ts.templ'.format( cfg.name ) )
+        filename = os.path.join( config.angular.sourceFolder, config.application, '{}.module.ts'.format( cfg.name ) )
+        gencrud.util.utils.backupFile( filename )
         # Create the '<name>-module.ts'
         with open( filename, 'w' ) as stream:
             for line in Template( filename = templ ).render( obj = cfg ).split( '\n' ):

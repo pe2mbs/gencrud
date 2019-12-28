@@ -17,8 +17,11 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+import logging
+import traceback
 import json
 from gencrud.objects.table.column.service import TemplateService
+import gencrud.util.utils
 
 class TemplateUi( object ):
     def __init__( self, parent, **cfg ):
@@ -268,27 +271,89 @@ class TemplateUi( object ):
             resolveList = self.__cfg.get( 'resolve-list', [] )
 
         '''
-        - label:          Disabled
-          value:          false
-        - label:          Enabled
-          value:          true
+        resolve-list:
+        -   label:          Disabled
+            value:          false
+        -   label:          Enabled
+            value:          true
         OR
-        - label:          Disabled
-          value:          0
-        - label:          Enabled      
-          value:          1
+        resolve-list:
+        -   label:          Disabled
+            value:          0
+        -   label:          Enabled      
+            value:          1
+        OR
+        resolve-list:
+            0:              Disabled     
+            1:              Disabled
         '''
-        if isinstance( resolveList[ 0 ], dict ):
-            result = {}
-
-        else:
-            result = []
-
+        result = {}
         for item in resolveList:
             if isinstance( item, dict ):
                 result[ item[ 'value' ] ] = item[ 'label' ]
 
+            elif isinstance( item, ( str, int, float ) ):  # key
+                result[ item ] = resolveList[ item ]
+
             else:
-                result.append( item )
+                raise Exception( "Invalid format in resolve-list" )
 
         return json.dumps( result ).replace( "'", "\'" ).replace( '"', "'" )
+
+    def createResolveConstants( self ):
+        def normalizeConstant( value ):
+            last = ''
+            result = ''
+            if isinstance( value, ( int, float ) ):
+                return normalizeConstant( str( value ) )
+
+            for ch in value:
+                if ch.isalnum():
+                    result += ch
+                    last = ch
+
+                elif last != ' ':
+                    result += '_'
+                    last = ' '
+
+            if result[0].isdigit():
+                result = '_' + result
+
+            return result
+
+        lines = []
+        if self.hasResolveList():
+            constant_format = self.__cfg.get( 'constant-format', '"{0:50} = {1}".format( label, value )' )
+            if 'resolveList' in self.__cfg:
+                resolveList = self.__cfg.get( 'resolveList', {} )
+
+            else:
+                resolveList = self.__cfg.get( 'resolve-list', {} )
+
+            for item in resolveList:
+                try:
+                    varables = { 'field': normalizeConstant( self.__parent.name ),
+                                 'table': normalizeConstant( self.__parent.tableName ) }
+                    if isinstance( resolveList, ( list, tuple ) ) and isinstance( item, dict ):
+                        varables[ "label" ] = normalizeConstant( item[ 'label' ] )
+                        varables[ "value" ] = item[ 'value' ]
+
+                    elif isinstance( item, ( str, int, float ) ):   # key
+                        varables[ "label" ] = normalizeConstant( resolveList[ item ] )
+                        varables[ "value" ] = item
+
+                    else:
+                        raise Exception( "Invalid format in resolve-list" )
+
+                    result = eval( constant_format, globals(), varables )
+                    if result not in lines:
+                        lines.append( result )
+
+                except Exception as exc:
+                    logging.error( traceback.format_exc() )
+                    raise Exception( "There is an error in the 'constant-format' expression" ) from None
+
+        return lines
+
+
+
