@@ -259,8 +259,21 @@ class TemplateUi( object ):
         else:
             resolveList = self.__cfg.get( 'resolve-list',[ ] )
 
+        if isinstance( resolveList, dict ):
+            # Short hand resolveList, need to convert
+            newResolveList = []
+            for item in resolveList.keys():
+                newResolveList.append( {
+                    'label': resolveList[ item ],
+                    'value': item
+                })
+
+
+        else:
+            newResolveList = resolveList
+
         ## result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
-        return "{}".format( json.dumps( resolveList ) )
+        return "{}".format( json.dumps( newResolveList, indent = 12 ) )
 
     @property
     def resolveList( self ):

@@ -375,6 +375,8 @@ objects:
         ...
     menu:
         ...
+    extra:
+        ...
     table:
         ...
 ```  
@@ -584,7 +586,6 @@ the `route` element should be present.
 The `route` defines the route for the frontend, each route must be unique. It always starts 
 with a forward slash `/`.  This is an optional element, but when ommitted the `menu` element 
 should be present.
-
 
 ## 5.5 Table
 
@@ -1166,7 +1167,6 @@ is shown to resolve the error.
 starts with a digit an underscore `_` is prepended to the attribute, where other characters are used than
 letters and digits those are replaced with a single underscore `_`.     
 
-
  
 ##### rows
 `rows` defined the number of rows that are shown for the **textarea** control. This is an optional element.
@@ -1247,3 +1247,51 @@ no files shall be written if they exist, even that they are changed.
 `backup` makes backups of all the files it overwrites. 
 
 `case-insensitive-db-ids` all database names shall be in lower case. 
+
+## 5.11 extra
+At root level in the file. This is available from gencrud version 1.7.367. This is only required when `use-module`
+is set to **true**. 
+With `extra` imports to the TypeScript components can be made. As the TypeScript compiler cannot find components
+that are defined in other shared modules, it is nessarry to import those components or modules for a specific 
+directive, service, or component.
+
+```yaml
+extra:
+    imports:
+      ...
+```
+
+`imports` see for more details 5,11.1 imports   
+
+### 5,11.1 imports
+`imports` is a list of modules or components that needs to be imported within the module.
+
+```yaml
+    - module:                 RoleModule
+      path:                   ./role.module
+      where:                  module
+      type:                   typescript
+    - component:              StandardComponent
+      path:                   ./role.module
+      where:                  module
+      type:                   typescript
+    - module:                 SomeModule
+      path:                   ./modules/some.module
+      where:                  app
+      type:                   typescript
+```
+
+`module` is the module class name to be imported. 
+`component` is the component class name to be imported.
+`path` is the path including the filename where the module or component is defined in.
+`where` is where the import must take place, there are two options: 
+* _module_: the current module that is being generated.  
+* _app_: the main application module __app.module.ts__.
+
+When where is omitted the default is _module_ 
+
+`type` type if import, there are two type of imports;
+* _typescript_: the import is intended for the typescript module  
+* _python_: the import is intended for the python module
+  
+When where is omitted the default is _typescript_

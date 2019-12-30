@@ -19,11 +19,6 @@
 #   Boston, MA 02110-1301 USA
 #
 */
-% for imp in obj.table.tsInports:
- % if imp.module.endswith( "model" ):
-import { ${ imp.name }Record } from '${ imp.module }';
- % endif
-% endfor
 
 export class ${ obj.cls }Record
 {

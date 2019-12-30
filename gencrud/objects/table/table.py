@@ -58,17 +58,6 @@ class TemplateTable( object ):
                 raise Exception( "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
 
         self.__mixin = TemplateMixin( table[ 'mixin' ] if 'mixin' in table else None )
-
-        if 'tsInport' in table:
-            source = 'tsInport'
-
-        elif 'pyInport' in table:
-            source = 'pyInport'
-
-        else:
-            return
-
-        self.__inports.append( source, table[ source ] )
         return
 
     def hasTabs( self, tp = 'dialog' ):
@@ -146,14 +135,6 @@ class TemplateTable( object ):
     @property
     def primaryKey( self ):
         return self.__primaryKey
-
-    @property
-    def tsInports( self ):
-        return self.__inports.typescript
-
-    @property
-    def pyInports( self ):
-        return self.__inports.python
 
     @property
     def listViewColumns( self ):

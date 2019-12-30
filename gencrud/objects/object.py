@@ -21,6 +21,7 @@
 from gencrud.objects.menuitem import TemplateMenuItem
 from gencrud.objects.table import TemplateTable
 from gencrud.objects.actions.actions import TemplateActions
+from gencrud.objects.extra import TemplateExtra
 
 
 class TemplateObject( object ):
@@ -28,10 +29,9 @@ class TemplateObject( object ):
         self.__config       = cfg
         self.__parent       = parent
         self.__menu         = TemplateMenuItem( 'menu', **cfg ) if 'menu' in cfg else None
-        self.__actions      = TemplateActions( self,
-                                               self.name,
-                                               self.__config.get( 'actions', [] ) )
+        self.__actions      = TemplateActions( self, self.name, self.__config.get( 'actions', [] ) )
         self.__table        = TemplateTable( **self.__config.get( 'table', {} ) )
+        self.__extra        = TemplateExtra( self, **self.__config[ 'extra' ] ) if 'extra' in self.__config else None
         return
 
     #
@@ -60,6 +60,13 @@ class TemplateObject( object ):
     @property
     def actions( self ):
         return self.__actions
+
+    def hasExtra( self ):
+        return self.__extra is not None
+
+    @property
+    def extra( self ):
+        return self.__extra
 
     @property
     def menu( self ):

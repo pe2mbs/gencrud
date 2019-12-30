@@ -322,12 +322,6 @@ def generateAngular( templates, config ):
             for col in cfg.table.columns:
                 logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
 
-            for imp in cfg.table.tsInports:
-                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
-
-            for imp in cfg.table.pyInports:
-                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
-
             logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
             logger.info( 'uri         : {0}'.format( cfg.uri ) )
             with open( templateFilename,
@@ -427,6 +421,7 @@ def createAngularComponentModuleTs( config, appModule ):
 
     templ = os.path.abspath( os.path.join( config.angular.templateFolder, 'module.ts.templ' ) )
     imports = []
+    files = []
     for cfg in config:
         filename = os.path.join( config.angular.sourceFolder, config.application, '{}.module.ts'.format( cfg.name ) )
         gencrud.util.utils.backupFile( filename )
@@ -440,27 +435,48 @@ def createAngularComponentModuleTs( config, appModule ):
         component = "import {{ {cls}Module }} from './{app}/{mod}.module';".format( cls = cfg.cls,
                                                                                     app = config.application,
                                                                                     mod = cfg.name )
-        imports.append( component )
+        if component not in files:
+            files.append( component )
+
+        imp = "{cls}Module.forRoot()".format( cls = cfg.cls )
+        if imp not in imports:
+            imports.append( imp )
 
     appModule = {
-        "files": [ "import { CustomMaterialModule } from './material.module';",
-                   "import { GenCrudModule } from './common/gencrud.module';",
+        "files": [  "import { BrowserModule } from '@angular/platform-browser';",
+                    "import { BrowserAnimationsModule } from '@angular/platform-browser/animations';",
+                    "import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';",
+                    "import { FormsModule, ReactiveFormsModule } from '@angular/forms';",
+                    "import { CustomMaterialModule } from './material.module';",
+                    "import { GenCrudModule } from './common/gencrud.module';",
                    ],
-        "imports": [ ],
-        "declarations": [ "BrowserModule",
-                          "BrowserAnimationsModule",
-                          "HttpClientModule",
-                          "FormsModule",
-                          "ReactiveFormsModule",
-                          "CustomMaterialModule",
-                          "GenCrudModule" ],
+        "declarations": [],
+        "imports": [ "BrowserModule",
+                     "BrowserAnimationsModule",
+                     "HttpClientModule",
+                     "FormsModule",
+                     "ReactiveFormsModule",
+                     "CustomMaterialModule",
+                     "GenCrudModule" ],
 
         "entryComponents": [ ],
-        "providers": [ ],
+            "providers": [
+                { "multi": "true",
+                  "provide": "HTTP_INTERCEPTORS",
+                  "useClass": "AuthInterceptorService"
+                }
+            ]
     }
-    for imp in imports:
+
+
+
+    for imp in files:
         if imp not in appModule[ 'files' ]:
             appModule[ 'files' ].append( imp )
+
+    for imp in imports:
+        if imp not in appModule[ 'imports' ]:
+            appModule[ 'imports' ].append( imp )
 
     return appModule
 

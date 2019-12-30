@@ -208,12 +208,6 @@ def generatePython( templates, config ):
             for col in cfg.table.columns:
                 logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
 
-            for imp in cfg.table.tsInports:
-                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
-
-            for imp in cfg.table.pyInports:
-                logger.info( '  {0}  {1}'.format( imp.module, imp.name ) )
-
             logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
             logger.info( 'uri         : {0}'.format( cfg.uri ) )
 
