@@ -86,7 +86,7 @@ def updatePythonProject( config, app_module ):
     # update import section
     modules = []
     for table in config:
-        line = 'import {0}.{1}   # import maintained by generator.py'.format( config.application,
+        line = 'import {0}.{1}   # import maintained by gencrud.py'.format( config.application,
                                                                             table.name )
         gencrud.util.utils.insertLinesUnique( lines, rangePos, line )
         modules.append( '{0}.{1}'.format( config.application, table.name ) )
@@ -134,7 +134,7 @@ def updatePythonProject( config, app_module ):
         """
         foundMenu = False
         for menuItem in menu_items:
-            if menuItem[ MENU_DISPLAY_NAME ] == menu.displayName:
+            if menuItem[ MENU_DISPLAY_NAME ] == menu.caption:
                 foundMenu = True
                 if menu.menu is not None:
                     # sub menu
@@ -143,8 +143,8 @@ def updatePythonProject( config, app_module ):
 
                     processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
                 else:
-                    menuItem[ MENU_DISPLAY_NAME ]   = menu.displayName
-                    menuItem[ MENU_ICON_NAME ]      = menu.iconName
+                    menuItem[ MENU_DISPLAY_NAME ]   = menu.caption
+                    menuItem[ MENU_ICON_NAME ]      = menu.icon
                     menuItem[ MENU_INDEX ]          = menu.index
                     if menu.route is not None:
                         menuItem[ MENU_ROUTE ]          = menu.route
@@ -156,8 +156,8 @@ def updatePythonProject( config, app_module ):
                         processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
 
         if not foundMenu:
-            menuItem = {   MENU_DISPLAY_NAME:   menu.displayName,
-                           MENU_ICON_NAME:      menu.iconName,
+            menuItem = {   MENU_DISPLAY_NAME:   menu.caption,
+                           MENU_ICON_NAME:      menu.icon,
                            MENU_INDEX:          menu.index }
             if menu.route is not None:
                 menuItem[ MENU_ROUTE ] = menu.route

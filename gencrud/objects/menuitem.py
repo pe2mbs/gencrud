@@ -50,7 +50,7 @@ class TemplateMenuItem( object ):
 
     @property
     def route( self ):
-        return self.__item.get( 'route', self.caption )
+        return self.__item.get( 'route', None )
 
     @property
     def menu( self ):
