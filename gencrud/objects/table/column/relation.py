@@ -17,6 +17,8 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+from gencrud.constants import *
+
 class TemplateRelation( object ):
     def __init__( self, field, **cfg ):
         self.__field        = field
@@ -25,15 +27,15 @@ class TemplateRelation( object ):
 
     @property
     def name( self ):
-        return self.__cfg.get( 'name', None )
+        return self.__cfg.get( C_NAME, None )
 
     @property
     def fieldName( self ):
-        return self.__cfg.get( 'field-name', self.__field.name + '_REL' )
+        return self.__cfg.get( C_FIELD_NAME, self.__field.name + '_REL' )
 
     @property
     def cls( self ):
-        return self.__cfg.get( 'class', None )
+        return self.__cfg.get( C_CLASS, None )
 
     @property
     def tableName( self ):
@@ -41,4 +43,4 @@ class TemplateRelation( object ):
 
     @property
     def lazy( self ):
-        return self.__cfg.get( 'lazy', 'True' )
+        return self.__cfg.get( C_LAZY, 'True' )

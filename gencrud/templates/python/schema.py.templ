@@ -18,13 +18,13 @@
 #   Boston, MA 02110-1301 USA
 #
 from applic.extensions import mm
-from ${ obj.application }.${ obj.name }.model import ${ obj.cls }
+from ${ root.application }.${ obj.name }.model import ${ obj.cls }
 % if obj.table.Mixin.Schema.Available:
 from ${obj.table.Mixin.Schema.Module} import ${obj.table.Mixin.Schema.Class}
 % endif
 % for field in obj.table.columns:
  % if field.hasRelationship():
-from ${ obj.application }.${ field.relationship.name }.schema import ${ field.relationship.name }Schema
+from ${ root.application }.${ field.relationship.name }.schema import ${ field.relationship.name }Schema
  % endif
 % endfor
 

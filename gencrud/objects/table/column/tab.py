@@ -17,6 +17,8 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+from gencrud.constants import *
+
 
 class TemplateTab( object ):
     def __init__( self, parent, **cfg ):
@@ -26,11 +28,11 @@ class TemplateTab( object ):
 
     @property
     def index( self ):
-        return self.__cfg.get( 'index', None )
+        return self.__cfg.get( C_INDEX, None )
 
     @property
     def label( self ):
-        return self.__cfg.get( 'label', None )
+        return self.__cfg.get( C_LABEL, None )
 
 
 class TemplateTabs( object ):
@@ -47,9 +49,9 @@ class TemplateTabs( object ):
         for key in self.__fields.keys():
             self.__fields[ key ].sort( key = lambda x: x.tab.index, reverse = False )
 
-        for tab in self.__cfg.get( 'tab', [] ):
-            self.__comps[ tab.get( 'label', None ) ] = tab.get( 'component', None )
-            self.__params[ tab.get( 'label', None ) ] = tab.get( 'params', {} )
+        for tab in self.__cfg.get( C_TAB, [] ):
+            self.__comps[ tab.get( C_LABEL, None ) ] = tab.get( C_COMPONENT, None )
+            self.__params[ tab.get( C_LABEL, None ) ] = tab.get( C_PARAMS, {} )
 
         return
 
@@ -58,19 +60,19 @@ class TemplateTabs( object ):
         if isinstance( self.__cfg, ( list, tuple ) ):
             return self.__cfg
 
-        return self.__cfg.get( 'labels', None )
+        return self.__cfg.get( C_LABELS, None )
 
     @property
     def tabTag( self ):
-        return self.__cfg.get( 'tabtag', 'mat-tab' )
+        return self.__cfg.get( C_TAB_TAG, 'mat-tab' )
 
     @property
     def contentTag( self ):
-        return self.__cfg.get( 'contenttag', None )
+        return self.__cfg.get( C_TAB_CONTENT_TAG, None )
 
     @property
     def groupTag( self ):
-        return self.__cfg.get( 'grouptag', 'mat-tab-group' )
+        return self.__cfg.get( C_TAB_GROUP_TAG, 'mat-tab-group' )
 
     def fieldsFor( self, label ):
         result = self.__fields[ label ]
@@ -88,7 +90,7 @@ class TemplateTabs( object ):
         result = ''
         for key, value in self.__params[ label ].items():
             result += '[{}]="{}" '.format( key, value )
-            if key == 'value':
+            if key == C_VALUE:
                 result += '*ngIf="{}" '.format( value )
 
         return result

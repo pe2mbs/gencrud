@@ -19,13 +19,13 @@
 #
 import logging
 from nltk.tokenize import word_tokenize
-import gencrud.util.utils
 from gencrud.objects.table.column.listview import TemplateListView
 from gencrud.objects.table.column.relation import TemplateRelation
 from gencrud.objects.table.column.ui import TemplateUi
 from gencrud.objects.table.column.tab import TemplateTab
 from gencrud.util.exceptions import InvalidSetting
-
+from gencrud.constants import *
+import gencrud.util.utils as root
 logger = logging.getLogger()
 
 
@@ -48,8 +48,8 @@ class TemplateColumn( object ):
         self.__ui           = None
         self.__leadIn       = []
         self.__dbField      = ''
-        if 'field' in cfg:
-            tokens = [ x for x in word_tokenize( cfg.get( 'field', '' ) ) ]
+        if C_FIELD in cfg:
+            tokens = [ x for x in word_tokenize( cfg.get( C_FIELD, '' ) ) ]
             self.__dbField  = self.__field = tokens[ 0 ]
             self.__sqlType  = tokens[ 1 ]
             if self.__sqlType not in ( 'INT', 'BIGINT', 'CHAR', 'VARCHAR',
@@ -57,7 +57,7 @@ class TemplateColumn( object ):
                                        'BOOLEAN', 'DATE', 'TIME', 'TIMESTAMP',
                                        'FLOAT', 'REAL',  'INTERVAL', 'BLOB',
                                        'DECIMAL', 'NUMERIC' ):
-                raise InvalidSetting( 'field', self.__tableName, self.__field )
+                raise InvalidSetting( C_FIELD, self.__tableName, self.__field )
 
             offset = 2
             if offset < len( tokens ) and tokens[ offset ] == '(':
@@ -81,7 +81,7 @@ class TemplateColumn( object ):
                         self.__attrs.append( 'NOT NULL' )
 
                     else:
-                        raise InvalidSetting( 'field', 'attr: "NOT ' + tokens[ offset ] + '"', self.__field )
+                        raise InvalidSetting( C_FIELD, 'attr: "NOT ' + tokens[ offset ] + '"', self.__field )
 
                 elif tokens[ offset ] == 'DEFAULT':
                     self.__attrs.append( 'DEFAULT {0}'.format( tokens[ offset + 1 ] ) )
@@ -97,20 +97,20 @@ class TemplateColumn( object ):
                     offset += 1
 
                 else:
-                    raise InvalidSetting( 'field', 'attr: "' + tokens[ offset ] + '"', self.__field )
+                    raise InvalidSetting( C_FIELD, 'attr: "' + tokens[ offset ] + '"', self.__field )
 
                 offset += 2
 
-            if 'ui' in cfg and type( cfg[ 'ui' ] ) is dict:
-                self.__ui = TemplateUi( self, **cfg.get( 'ui', {} ) )
+            if C_UI in cfg and type( cfg[ C_UI ] ) is dict:
+                self.__ui = TemplateUi( self, **cfg.get( C_UI, {} ) )
 
-            self.__relationShip = TemplateRelation( self, **self.__config.get( 'relationship', {} ) )
-            self.__listview     = TemplateListView( self, **self.__config.get( 'listview', {} ) )
+            self.__relationShip = TemplateRelation( self, **self.__config.get( C_RELATION_SHIP, {} ) )
+            self.__listview     = TemplateListView( self, **self.__config.get( C_LIST_VIEW, {} ) )
 
-        if gencrud.util.utils.lowerCaseDbIds:
+        if root.config.options.ignoreCaseDbIds:
             self.__dbField = self.__dbField.lower()
 
-        if 'index' in cfg:
+        if C_INDEX in cfg:
             logger.warning( "'index' in the 'field' defintion is OBSOLETE, use 'listview' -> 'index' in the 'field' definition." )
 
         return
@@ -121,14 +121,14 @@ class TemplateColumn( object ):
 
     @property
     def hasAutoUpdate( self ):
-        return 'autoupdate' in self.__config
+        return C_AUTO_UPDATE in self.__config
 
     @property
     def autoUpdate( self ):
-        if 'autoupdate' in self.__config:
-            logger.debug( "AUTO UPDATE {}".format( self.__config[ 'autoupdate' ] ) )
+        if C_AUTO_UPDATE in self.__config:
+            logger.debug( "AUTO UPDATE {}".format( self.__config[ C_AUTO_UPDATE ] ) )
 
-            autoValue = self.__config[ 'autoupdate' ]
+            autoValue = self.__config[ C_AUTO_UPDATE ]
             if '(' in autoValue:
                 # Python callable
                 if '.' not in autoValue:
@@ -164,25 +164,25 @@ class TemplateColumn( object ):
 
     @property
     def hasTab( self ):
-        return 'tab' in self.__config
+        return C_TAB in self.__config
 
     @property
     def tab( self ):
-        return TemplateTab( self, **self.__config.get( 'tab', {} ) )
+        return TemplateTab( self, **self.__config.get( C_TAB, {} ) )
 
     @property
     def uniqueKey( self ):
-        return self.__config.get( 'unique-key', '' )
+        return self.__config.get( C_UNIQUE_KEY, '' )
 
     def hasUniqueKey( self ):
-        return 'unique-key' in self.__config
+        return C_UNIQUE_KEY in self.__config
 
     def hasForeignKey( self ):
         return any( 'FOREIGN KEY' in x for x in self.__attrs )
         #return 'FOREIGN KEY' in self.__attrs
 
     def hasRelationship( self ):
-        return self.hasForeignKey() and 'relationship' in self.__config
+        return self.hasForeignKey() and C_RELATION_SHIP in self.__config
 
     @property
     def relationship( self ):
@@ -193,11 +193,11 @@ class TemplateColumn( object ):
         return self.__field
 
     def hasLabel( self ):
-        return self.__config.get( 'label', '' ) != ''
+        return self.__config.get( C_LABEL, '' ) != ''
 
     @property
     def label( self ):
-        return self.__config.get( 'label', '' )
+        return self.__config.get( C_LABEL, '' )
 
     def isPrimaryKey( self ):
         return 'PRIMARY KEY' in self.__attrs
@@ -210,16 +210,16 @@ class TemplateColumn( object ):
         return self.__ui
 
     def minimal( self ):
-        return self.__config.get( 'minimal', '0' )
+        return self.__config.get( C_MINIMAL, '0' )
 
     def maximal( self ):
         if self.__sqlType == 'BIGINT':
-            return self.__config.get( 'maximal', str( 2 ** 63 - 1 ) )
+            return self.__config.get( C_MAXIMAL, str( 2 ** 63 - 1 ) )
 
         elif self.__sqlType == 'NUMERIC' or self.__sqlType == 'DECIMAL':
-            return self.__config.get( 'maximal', str( 2 ** ( self.__length * 8 ) - 1 ) )
+            return self.__config.get( C_MAXIMAL, str( 2 ** ( self.__length * 8 ) - 1 ) )
 
-        return self.__config.get( 'maximal', str( 2 ** 31 - 1 ) )
+        return self.__config.get( C_MAXIMAL, str( 2 ** 31 - 1 ) )
 
     @property
     def pType( self ):
@@ -336,7 +336,7 @@ class TemplateColumn( object ):
         :return:
         '''
         result = ''
-        if gencrud.util.utils.lowerCaseDbIds:
+        if root.config.options.ignoreCaseDbIds:
             result = 'db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
 
         else:
@@ -356,7 +356,7 @@ class TemplateColumn( object ):
                 result += ', nullable = False'
 
             elif attr.startswith( 'FOREIGN KEY' ):
-                if gencrud.util.utils.lowerCaseDbIds:
+                if root.config.options.ignoreCaseDbIds:
                     result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ].lower() )
 
                 else:
@@ -403,9 +403,9 @@ class TemplateColumn( object ):
         return result
 
     def DefaultValue( self ):
-        if 'default' in self.__config:
+        if C_DEFAULT in self.__config:
             module_name = function = None
-            defValue = self.__config[ 'default' ]
+            defValue = self.__config[ C_DEFAULT ]
             if '(' in defValue:
                 # Python callable
                 if '.' in defValue:
@@ -434,7 +434,7 @@ class TemplateColumn( object ):
 
             return "''"
 
-        return self.__config.get( 'initialValue', initValueDefault() )
+        return self.__config.get( C_INITIAL_VALUE, initValueDefault() )
 
     @property
     def validators( self ):
@@ -450,13 +450,14 @@ class TemplateColumn( object ):
 
     def angularUiInput( self ):
         if self.__ui is None:
-            raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field, self.__tableName ) )
+            raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field,
+                                                                                    self.__tableName ) )
 
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
-                                            self.__config.get( 'label', '' ),
-                                            [ 'readonly' if self.isPrimaryKey() or self.readonly else '' ] )
+                                            self.__config.get( C_LABEL, '' ),
+                                            [ C_READ_ONLY if self.isPrimaryKey() or self.readonly else '' ] )
 
     @property
     def readonly( self ):
-        return self.__config.get( 'readonly', False )
+        return self.__config.get( C_READ_ONLY, False )

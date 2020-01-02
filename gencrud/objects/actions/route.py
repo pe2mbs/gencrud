@@ -18,6 +18,7 @@
 #   Boston, MA 02110-1301 USA
 #
 from gencrud.util.typescript import TypeScript
+from gencrud.constants import *
 
 
 class RouteTemplate( object ):
@@ -28,22 +29,22 @@ class RouteTemplate( object ):
 
     @property
     def name( self ):
-        return self.__config.get( 'name', self.__parent.name )
+        return self.__config.get( C_NAME, self.__parent.name )
 
     @property
     def label( self ):
-        return self.__config.get( 'label', self.__parent.label )
+        return self.__config.get( C_LABEL, self.__parent.label )
 
     @property
     def cls( self ):
-        return self.__config.get( 'class', None )
+        return self.__config.get( C_CLASS, None )
 
     @property
     def module( self ):
-        return self.__config.get( 'module', None )
+        return self.__config.get( C_MODULE, None )
 
     def params( self ):
-        return self.__config.get( 'params', {} )
+        return self.__config.get( C_PARAMS, {} )
 
     def routeParams( self ):
         params = self.params()

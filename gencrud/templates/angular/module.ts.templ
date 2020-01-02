@@ -23,19 +23,19 @@ import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CustomMaterialModule } from '../material.module';
-import { GenCrudModule } from '../common/gencrud.module';
+import { CustomMaterialModule } from './../../material.module';
+import { GenCrudModule } from './../../common/gencrud.module';
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
-import { Dialog${ obj.cls }Component } from './${ obj.name }/dialog.component';
+import { Dialog${ obj.cls }Component } from './dialog.component';
 % endif
 % if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
-import { Screen${ obj.cls }Component } from './${ obj.name }/screen.component';
+import { Screen${ obj.cls }Component } from './screen.component';
 % endif
 % if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
-import { Delete${ obj.cls }Dialog } from './${ obj.name }/delete.dialog';
+import { Delete${ obj.cls }Dialog } from './delete.dialog';
 % endif
-import { ${ obj.cls }TableComponent } from './${ obj.name }/table.component';
-import { ${ obj.cls }DataService } from './${ obj.name }/service';
+import { ${ obj.cls }TableComponent } from './table.component';
+import { ${ obj.cls }DataService } from './service';
 % if obj.hasExtra():
 %  for inp in obj.extra.getTypeScriptInports( 'module' ):
 import { ${ inp.module } } from '${ inp.path }';
@@ -50,15 +50,25 @@ import { ${ inp.component } } from '${ inp.path }';
 *   to the app-routing.module.ts it injects it in the main route definition through is module.
 */
 export const ${ obj.name }Route: Route = {
+% if root.options.lazyLoading:
+    path:           '',
+% else:
     path:           '${ obj.menu.activateItem() }',
+% endif
+
+    data:
+    {
+        breadcrumb: '${ obj.title }',
+        title:      '${ obj.title }'
+    },
     children: [
         {
             path: '',
             component: ${ obj.cls }TableComponent,
             data:
             {
-                breadcrumb: '${ obj.title }',
-                title:      '${ obj.title }'
+                breadcrumb: '',
+                title:      ''
             }
         },
 % if obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none':
@@ -85,8 +95,6 @@ export const ${ obj.name }Route: Route = {
 % endif
     ]
 }
-
-export const routing: ModuleWithProviders = RouterModule.forChild( [ ${ obj.name }Route ] )
 
 /*
 *   This NgModule is injected in the app-module.ts. This deals with declaring, importing,
@@ -135,7 +143,7 @@ export const routing: ModuleWithProviders = RouterModule.forChild( [ ${ obj.name
         ${ inp.module },
 %  endfor
 % endif
-        routing
+        RouterModule.forChild( [ ${ obj.name }Route ] )
     ],
     exports: [
 % if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):

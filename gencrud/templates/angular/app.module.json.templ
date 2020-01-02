@@ -1,16 +1,16 @@
 {
     "files": [
 % if ( obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'dialog' ) or ( obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'dialog' ):
-        "import { Dialog${obj.cls}Component } from './${ obj.application }/${ obj.name }/dialog.component';",
+        "import { Dialog${obj.cls}Component } from './${ root.application }/${ obj.name }/dialog.component';",
 % endif
 % if ( obj.actions.get( 'new' ).position != 'none' and obj.actions.get( 'new' ).type == 'screen' ) or ( obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'screen' ):
-        "import { Screen${obj.cls}Component } from './${ obj.application }/${ obj.name }/screen.component';",
+        "import { Screen${obj.cls}Component } from './${ root.application }/${ obj.name }/screen.component';",
 % endif
 % if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
-        "import { Delete${obj.cls}Dialog } from './${ obj.application }/${ obj.name }/delete.dialog';",
+        "import { Delete${obj.cls}Dialog } from './${ root.application }/${ obj.name }/delete.dialog';",
 % endif
-        "import { ${ obj.cls }TableComponent } from './${ obj.application }/${ obj.name }/table.component';",
-        "import { ${ obj.cls }DataService } from './${ obj.application }/${ obj.name }/service';"
+        "import { ${ obj.cls }TableComponent } from './${ root.application }/${ obj.name }/table.component';",
+        "import { ${ obj.cls }DataService } from './${ root.application }/${ obj.name }/service';"
     ],
     "imports": [
         "BrowserModule",

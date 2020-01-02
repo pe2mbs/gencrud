@@ -23,27 +23,26 @@ from gencrud.util.exceptions import (MissingTemplate,
                                      KeyNotFoundException,
                                      MissingTemplateFolder,
                                      PathNotFoundException)
-from platform import system
+from gencrud.util.utils import get_platform
+from gencrud.constants import *
+
 
 class TemplateSource( object ):
     def __init__( self, tp, **cfg ):
-        platf = system().lower()
-        if platf == "darwin":   # as platform.system() for OS-X returns Darwin we translate for consistency.
-            platf =  "osx"
-
-        if platf not in ( 'linux', 'windows', 'osx' ):
+        platf = get_platform()
+        if platf not in C_PLATFORMS:
             raise Exception( "Unsupported platform: {}".format( platf ) )
 
         self.__config = cfg
         self.__key = tp
-        self.__source = self.__config.get( platf, self.__config ).get( 'source', {} )
-        self.__template = self.__config.get( platf, self.__config ).get( 'template',
+        self.__source = self.__config.get( platf, self.__config ).get( C_SOURCE, {} )
+        self.__template = self.__config.get( platf, self.__config ).get( C_TEMPLATE,
                         os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'templates' ) ) )
         return
 
     @property
     def baseFolder( self ):
-        folder = self.__source.get( 'base', os.getcwd() )
+        folder = self.__source.get( C_BASE, os.getcwd() )
         if not os.path.isdir( folder ):
             raise PathNotFoundException( folder )
 
@@ -53,7 +52,7 @@ class TemplateSource( object ):
     def sourceFolder( self ):
         folder = self.__source.get( self.__key, None )
         if folder is None:
-            raise KeyNotFoundException( "source.{}".format( self.__key ) )
+            raise KeyNotFoundException( "{}.{}".format( C_SOURCE, self.__key ) )
 
         if not folder.startswith( os.path.pathsep ):
             # not absolute path
@@ -97,55 +96,11 @@ class TemplateSource( object ):
 
 class TemplateSourcePython( TemplateSource ):
     def __init__( self, **cfg ):
-        TemplateSource.__init__( self, 'python', **cfg )
+        TemplateSource.__init__( self, C_PYTHON, **cfg )
         return
 
 
 class TemplateSourceAngular( TemplateSource ):
     def __init__( self, **cfg ):
-        TemplateSource.__init__( self, 'angular', **cfg )
+        TemplateSource.__init__( self, C_ANGULAR, **cfg )
         return
-
-
-DATA1 = {   'source': {
-                'python':   '/home/mbertens/src/angular/angular-mat-table-crud/backend',
-                'angular':  '/home/mbertens/src/angular/angular-mat-table-crud/src/app'
-            }
-        }
-
-DATA2 = {   'source': {
-                'base':     '/home/mbertens/src/angular/angular-mat-table-crud',
-                'python':   'backend',
-                'angular':  'src/app'
-            },
-            'template': '/home/mbertens/src/python/gencrud/gencrud/templates'
-        }
-
-DATA3 = {   'linux': {
-                'source': {
-                    'base':     '/home/mbertens/src/angular/angular-mat-table-crud',
-                    'python':   'backend',
-                    'angular':  'src/app'
-                }
-            },
-            'windows':
-            {
-                'source': {
-                    'base': '\\src\\angular\\angular-mat-table-crud',
-                    'python': 'backend',
-                    'angular': 'src\\app'
-                }
-            }
-        }
-
-DATA = [ DATA1, DATA2, DATA3 ]
-
-
-if __name__ == '__main__':
-    for data in DATA:
-        obj = TemplateSourcePython( **data )
-        print( obj )
-        print()
-        obj = TemplateSourceAngular( **data )
-        print( obj )
-        print()

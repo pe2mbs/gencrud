@@ -22,16 +22,16 @@ from gencrud.objects.menuitem import TemplateMenuItem
 from gencrud.objects.table import TemplateTable
 from gencrud.objects.actions.actions import TemplateActions
 from gencrud.objects.extra import TemplateExtra
-
+from gencrud.constants import *
 
 class TemplateObject( object ):
     def __init__( self, parent, **cfg ):
         self.__config       = cfg
         self.__parent       = parent
-        self.__menu         = TemplateMenuItem( 'menu', **cfg ) if 'menu' in cfg else None
-        self.__actions      = TemplateActions( self, self.name, self.__config.get( 'actions', [] ) )
-        self.__table        = TemplateTable( **self.__config.get( 'table', {} ) )
-        self.__extra        = TemplateExtra( self, **self.__config[ 'extra' ] ) if 'extra' in self.__config else None
+        self.__menu         = TemplateMenuItem( C_MENU, **cfg ) if C_MENU in cfg else None
+        self.__actions      = TemplateActions( self, self.name, self.__config.get( C_ACTIONS, [] ) )
+        self.__table        = TemplateTable( **self.__config.get( C_TABLE, {} ) )
+        self.__extra        = TemplateExtra( self, **self.__config.get( C_EXTRA, {} ) )
         return
 
     #
@@ -39,23 +39,19 @@ class TemplateObject( object ):
     #
     @property
     def title( self ):
-        return self.__config.get( 'title', self.__config.get( 'class', '<-Unknown->' ) )
-
-    @property
-    def application( self ):
-        return self.__config.get( 'application', self.__parent.application )
+        return self.__config.get( C_TITLE, self.__config.get( C_CLASS, '<-Unknown->' ) )
 
     @property
     def name( self ):
-        return self.__config.get( 'name', '' )
+        return self.__config.get( C_NAME, '' )
 
     @property
     def cls( self ):
-        return self.__config.get( 'class', '' )
+        return self.__config.get( C_CLASS, '' )
 
     @property
     def uri( self ):
-        return self.__config.get( 'uri', '' )
+        return self.__config.get( C_URI, '' )
 
     @property
     def actions( self ):
@@ -78,7 +74,7 @@ class TemplateObject( object ):
 
     @property
     def actionWidth( self ):
-        return self.__config.get( 'action-width', '5%' )
+        return self.__config.get( C_ACTION_WIDTH, '5%' )
 
     #
     #   internal functions and properties to gencrud

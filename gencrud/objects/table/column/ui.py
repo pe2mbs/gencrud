@@ -21,14 +21,14 @@ import logging
 import traceback
 import json
 from gencrud.objects.table.column.service import TemplateService
-import gencrud.util.utils
+from gencrud.constants import *
 
 class TemplateUi( object ):
     def __init__( self, parent, **cfg ):
         self.__parent   = parent
         self.__cfg = cfg
-        if 'service' in cfg:
-            self.__service = TemplateService( **cfg[ 'service' ] )
+        if C_SERVICE in cfg:
+            self.__service = TemplateService( **cfg[ C_SERVICE ] )
 
         else:
             self.__service = None
@@ -37,112 +37,115 @@ class TemplateUi( object ):
 
     @property
     def uiObject( self ):
-        return self.__cfg.get( 'type', 'textbox' )
+        return self.__cfg.get( C_TYPE, C_TEXTBOX )
 
     @property
     def rows( self ):
-        return self.__cfg.get( 'rows', 4 )
+        return self.__cfg.get( C_ROWS, 4 )
 
     @property
     def cols( self ):
-        return self.__cfg.get( 'cols', 80 )
+        return self.__cfg.get( C_COLS, 80 )
 
     @property
     def min( self ):
-        return self.__cfg.get( 'min', 0 )
+        return self.__cfg.get( C_MIN, 0 )
 
     @property
     def max( self ):
-        return self.__cfg.get( 'max', 100 )
+        return self.__cfg.get( C_MAX, 100 )
 
     def hasPrefix( self ):
-        return 'prefix' in self.__cfg
+        return C_PREFIX in self.__cfg
 
     @property
     def prefixType( self ):
-        return self.__cfg.get( 'prefix-type', 'text' )
+        return self.__cfg.get( C_PREFIX_TYPE, C_TEXT )
 
     @property
     def prefix( self ):
-        return self.__cfg.get( 'prefix', '' )
+        return self.__cfg.get( C_PREFIX, '' )
 
     def hasSuffix( self ):
-        return 'suffix' in self.__cfg
+        return C_SUFFIX in self.__cfg
 
     @property
     def suffixType( self ):
-        return self.__cfg.get( 'suffix-type', 'text' )
+        return self.__cfg.get( C_SUFFIX_TYPE, C_TEXT )
 
     @property
     def suffix( self ):
-        return self.__cfg.get( 'suffix', '' )
+        return self.__cfg.get( C_SUFFIX, '' )
 
     def isTextbox( self ):
-        return self.uiObject.lower() == 'textbox'
+        return self.uiObject.lower() == C_TEXTBOX
 
     def isCheckbox( self ):
-        return self.uiObject.lower() == 'checkbox'
+        return self.uiObject.lower() == C_CHECKBOX
 
     def isTextArea( self ):
-        return self.uiObject.lower() == 'textarea'
+        return self.uiObject.lower() == C_TEXTAREA
 
     def isPassword( self ):
-        return self.uiObject.lower() == 'password'
+        return self.uiObject.lower() == C_PASSWORD
 
     def isNumber( self ):
-        return self.uiObject.lower() == 'number'
+        return self.uiObject.lower() == C_NUMBER
 
     def isChoice( self ):
-        return self.uiObject.lower() == 'choice'
+        return self.uiObject.lower() == C_CHOICE
+
+    def isEmail( self ):
+        return self.uiObject.lower() == C_EMAIL
 
     def isCombobox( self ):
-        return self.uiObject.lower() == 'combobox' or self.uiObject.lower() == 'combo'
+        return self.uiObject.lower() == C_COMBOBOX or self.uiObject.lower() == C_COMBO
 
     def isDate( self ):
-        return self.uiObject.lower() == 'datepicker' or self.uiObject.lower() == 'date'
+        return self.uiObject.lower() == C_DATE_PICKER or self.uiObject.lower() == C_DATE
 
     def isDateTime( self ):
-        return self.uiObject.lower() == 'datetimepicker' or self.uiObject.lower() == 'datetime'
+        return self.uiObject.lower() == C_DATE_TIME_PICKER or self.uiObject.lower() == C_DATE_TIME
 
     def isTime( self ):
-        return self.uiObject.lower() == 'timepicker' or self.uiObject.lower() == 'time'
+        return self.uiObject.lower() == C_TIME_PICKER or self.uiObject.lower() == C_TIME
 
     def isLabel( self ):
-        return self.uiObject.lower() == 'label'
+        return self.uiObject.lower() == C_LABEL
 
     def isSlider( self ):
-        return self.uiObject.lower() == 'slider'
+        return self.uiObject.lower() == C_SLIDER
 
     def isSliderToggle( self ):
-        return self.uiObject.lower() == 'slidertoggle'
+        return self.uiObject.lower() == C_SLIDER_TOGGLE
 
     def buildInputElement( self, table, field, label, options = None ):
         if options is None:
             options = []
 
         type2component = {
-            'label':            'pyt-label-box',
-            'textbox':          'pyt-text-input-box',
-            'text':             'pyt-text-input-box',
-            'checkbox':         'pyt-checkbox-input-box',
-            'password':         'pyt-password-input-box',
-            'textarea':         'pyt-textarea-input-box',
-            'number':           'pyt-number-input-box',
-            'email':            'pyt-email-input-box',
-            'choice':           'pyt-choice-input-box',
-            'combobox':         'pyt-combo-input-box',
-            'combo':            'pyt-combo-input-box',
-            'slider':           'pyt-slider-input-box',
-            'slidertoggle':     'pyt-slidertoggle-input-box',
-            'date':             'pyt-date-input-box',
-            'time':             'pyt-time-input-box',
-            'datetime':         'pyt-datetime-input-box',
-            'datepicker':       'pyt-datepicker-input-box',
-            'timepicker':       'pyt-timepicker-input-box',
-            'datetimepicker':   'pyt-datetimepicker-input-box'
+            C_LABEL:                'pyt-label-box',
+            C_TEXTBOX:              'pyt-text-input-box',
+            C_TEXT:                 'pyt-text-input-box',
+            C_CHECKBOX:             'pyt-checkbox-input-box',
+            C_PASSWORD:             'pyt-password-input-box',
+            C_TEXTAREA:             'pyt-textarea-input-box',
+            C_NUMBER:               'pyt-number-input-box',
+            C_EMAIL:                'pyt-email-input-box',
+            C_CHOICE:               'pyt-choice-input-box',
+            C_COMBOBOX:             'pyt-combo-input-box',
+            C_COMBO:                'pyt-combo-input-box',
+            C_SLIDER:               'pyt-slider-input-box',
+            C_SLIDER_TOGGLE:        'pyt-slidertoggle-input-box',
+            C_DATE:                 'pyt-date-input-box',
+            C_TIME:                 'pyt-time-input-box',
+            C_DATE_TIME:            'pyt-datetime-input-box',
+            C_DATE_PICKER:          'pyt-datepicker-input-box',
+            C_TIME_PICKER:          'pyt-timepicker-input-box',
+            C_DATE_TIME_PICKER:     'pyt-datetimepicker-input-box'
         }
-        if 'hint' in  self.__cfg:
-            options.append( 'hint="{0}"'.format( self.__cfg[ 'hint' ] ) )
+        if C_HINT in  self.__cfg:
+            options.append( 'hint="{0}"'.format( self.__cfg[ C_HINT ] ) )
 
         options.append( 'error="{0}"'.format( self.error.lower() ) )
 
@@ -174,17 +177,17 @@ class TemplateUi( object ):
             options.append( 'thumbLabel="{0}"'.format( self.thumbLabel ) )
             options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
 
-        if 'disabled' in self.__cfg:
+        if C_DISABLED in self.__cfg:
             options.append( 'disabled="{0}"'.format( self.disabled ) )
 
-        if 'color' in self.__cfg:
+        if C_COLOR in self.__cfg:
             options.append( 'color="{0}"'.format( self.color ) )
 
         if self.isLabel():
             options.append( 'format="{0}"'.format( self.format ) )
             options.append( 'pipe="{0}"'.format( self.pipe ) )
 
-        options.append( 'debug="{0}"'.format( str( self.__cfg.get( 'debug', False ) ) ).lower() )
+        options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
         return '''<{tag} id="{table}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
                 format( tag = type2component[ self.__cfg.get( 'type', 'textbox' ) ],
@@ -203,69 +206,69 @@ class TemplateUi( object ):
 
     @property
     def interval( self ):
-        return self.__cfg.get( 'interval', 1 )
+        return self.__cfg.get( C_INTERVAL, 1 )
 
     @property
     def vertical( self ):
-        return str( self.__cfg.get( 'vertical', False ) ).lower()
+        return str( self.__cfg.get( C_VERTICAL, False ) ).lower()
 
     @property
     def disabled( self ):
-        return str( self.__cfg.get( 'disabled', False ) ).lower()
+        return str( self.__cfg.get( C_DISABLED, False ) ).lower()
 
     @property
     def pipe( self ):
-        return str( self.__cfg.get( 'pipe', '' ) ).lower()
+        return str( self.__cfg.get( C_PIPE, '' ) ).lower()
 
     @property
     def format( self ):
-        return str( self.__cfg.get( 'format', 'text' ) )
+        return str( self.__cfg.get( C_FORMAT, C_TEXT ) )
 
     @property
     def invert( self ):
-        return str( self.__cfg.get( 'invert', False ) ).lower()
+        return str( self.__cfg.get( C_INVERT, False ) ).lower()
 
     @property
     def step( self ):
-        return self.__cfg.get( 'step', 1 )
+        return self.__cfg.get( C_STEP, 1 )
 
     @property
     def thumbLabel( self ):
-        return str( self.__cfg.get( 'thumbLabel', True ) ).lower()
+        return str( self.__cfg.get( C_THUMB_LABEL, True ) ).lower()
 
     @property
     def color( self ):
-        return str( self.__cfg.get( 'color', 'primary' ) ).lower()
+        return str( self.__cfg.get( C_COLOR, C_COLOR_PRIMARY ) ).lower()
 
     @property
     def checked( self ):
-        return str( self.__cfg.get( 'checked', False ) ).lower()
+        return str( self.__cfg.get( C_CHECKED, False ) ).lower()
 
     @property
     def labelPosition( self ):
-        return str( self.__cfg.get( 'labelPosition', 'after' ) ).lower()
+        return str( self.__cfg.get( C_LABEL_POSITION, C_AFTER ) ).lower()
 
     @property
     def error( self ):
-        return str( self.__cfg.get( 'error', True ) ).lower()
+        return str( self.__cfg.get( C_ERROR, True ) ).lower()
 
     def hasResolveList( self ):
-        return 'resolve-list' in self.__cfg or 'resolveList' in self.__cfg
+        return C_RESOLVE_LIST in self.__cfg or C_RESOLVE_LIST_OLD in self.__cfg
 
     def typescriptResolveList( self ):
-        if 'resolveList' in self.__cfg:
-            resolveList = self.__cfg[ 'resolveList' ]
+        if C_RESOLVE_LIST_OLD in self.__cfg:
+            resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
 
         else:
-            resolveList = self.__cfg.get( 'resolve-list',[ ] )
+            resolveList = self.__cfg.get( C_RESOLVE_LIST,[ ] )
 
         if isinstance( resolveList, dict ):
             # Short hand resolveList, need to convert
             newResolveList = []
             for item in resolveList.keys():
                 newResolveList.append( {
-                    'label': resolveList[ item ],
-                    'value': item
+                    C_LABEL: resolveList[ item ],
+                    C_VALUE: item
                 })
 
 
@@ -277,11 +280,11 @@ class TemplateUi( object ):
 
     @property
     def resolveList( self ):
-        if 'resolveList' in self.__cfg:
-            resolveList = self.__cfg[ 'resolveList' ]
+        if C_RESOLVE_LIST_OLD in self.__cfg:
+            resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
 
         else:
-            resolveList = self.__cfg.get( 'resolve-list', [] )
+            resolveList = self.__cfg.get( C_RESOLVE_LIST, [] )
 
         '''
         resolve-list:
@@ -303,7 +306,7 @@ class TemplateUi( object ):
         result = {}
         for item in resolveList:
             if isinstance( item, dict ):
-                result[ item[ 'value' ] ] = item[ 'label' ]
+                result[ item[ C_VALUE ] ] = item[ C_LABEL ]
 
             elif isinstance( item, ( str, int, float ) ):  # key
                 result[ item ] = resolveList[ item ]
@@ -336,24 +339,24 @@ class TemplateUi( object ):
 
         lines = []
         if self.hasResolveList():
-            constant_format = self.__cfg.get( 'constant-format', '"{0:50} = {1}".format( label, value )' )
-            if 'resolveList' in self.__cfg:
-                resolveList = self.__cfg.get( 'resolveList', {} )
+            constant_format = self.__cfg.get( C_CONSTANT_FORMAT, '"{0:50} = {1}".format( label, value )' )
+            if C_RESOLVE_LIST_OLD in self.__cfg:
+                resolveList = self.__cfg.get( C_RESOLVE_LIST_OLD, {} )
 
             else:
-                resolveList = self.__cfg.get( 'resolve-list', {} )
+                resolveList = self.__cfg.get( C_RESOLVE_LIST, {} )
 
             for item in resolveList:
                 try:
-                    varables = { 'field': normalizeConstant( self.__parent.name ),
-                                 'table': normalizeConstant( self.__parent.tableName ) }
+                    varables = { C_FIELD: normalizeConstant( self.__parent.name ),
+                                 C_TABLE: normalizeConstant( self.__parent.tableName ) }
                     if isinstance( resolveList, ( list, tuple ) ) and isinstance( item, dict ):
-                        varables[ "label" ] = normalizeConstant( item[ 'label' ] )
-                        varables[ "value" ] = item[ 'value' ]
+                        varables[ C_LABEL ] = normalizeConstant( item[ C_LABEL ] )
+                        varables[ C_VALUE ] = item[ C_VALUE ]
 
                     elif isinstance( item, ( str, int, float ) ):   # key
-                        varables[ "label" ] = normalizeConstant( resolveList[ item ] )
-                        varables[ "value" ] = item
+                        varables[ C_LABEL ] = normalizeConstant( resolveList[ item ] )
+                        varables[ C_VALUE ] = item
 
                     else:
                         raise Exception( "Invalid format in resolve-list" )

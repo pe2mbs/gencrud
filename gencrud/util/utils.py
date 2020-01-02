@@ -22,13 +22,16 @@ import logging
 import shutil
 
 from gencrud.util.positon import PositionInterface
+from platform import system
 
 sslVerify       = True
 backupFiles     = False
 overWriteFiles  = False
-lowerCaseDbIds  = False
+ignoreCaseDbIds = False
 useModule       = False
+lazyLoading     = False
 version         = 1
+config          = None
 
 C_FILEMODE_UPDATE = 'r+'
 C_FILEMODE_WRITE  = 'w'
@@ -37,14 +40,21 @@ C_FILEMODE_READ   = 'r'
 logger = logging.getLogger()
 
 
-def backupFile( file_name ):
-    if backupFiles:
-        idx = 1
-        while os.path.isfile( file_name + '.~{0}'.format( idx ) ):
-            idx += 1
+def get_platform():
+    platf = system().lower()
+    if platf == "darwin":   # as platform.system() for OS-X returns Darwin we translate for consistency.
+        platf =  "osx"
 
-        if os.path.isfile( file_name ):
-            shutil.copyfile( file_name, file_name + '.~{0}'.format( idx ) )
+    return platf
+
+
+def backupFile( file_name ):
+    idx = 1
+    while os.path.isfile( file_name + '.~{0}'.format( idx ) ):
+        idx += 1
+
+    if os.path.isfile( file_name ):
+        shutil.copyfile( file_name, file_name + '.~{0}'.format( idx ) )
 
     return
 

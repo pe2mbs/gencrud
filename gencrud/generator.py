@@ -32,22 +32,22 @@ from gencrud.configuraton import TemplateConfiguration
 from gencrud.generators.python import generatePython
 from gencrud.generators.angular import generateAngular
 from gencrud.version import __version__, __author__, __email__, __copyright__
-from gencrud.util.exceptions import (InvalidEnvironment,
-                                     EnvironmentInvalidMissing,
-                                     MissingAngularEnvironment,
-                                     FlaskEnvironmentNotFound,
-                                     ModuleExistsAlready,
-                                     InvalidSetting)
-
+from gencrud.util.exceptions import ( InvalidEnvironment,
+                                      EnvironmentInvalidMissing,
+                                      MissingAngularEnvironment,
+                                      FlaskEnvironmentNotFound,
+                                      ModuleExistsAlready,
+                                      InvalidSetting )
+from gencrud.constants import *
 logger = logging.getLogger()
 
 
-def verifyLoadProject( env, config ):
-    if env == 'angular':
+def verifyLoadProject( config: TemplateConfiguration, env ):
+    if env == C_ANGULAR:
         configFile  = os.path.join( '..', '..', 'angular.json' )
         root        = config.angular
 
-    elif env == 'python':
+    elif env == C_PYTHON:
         root = config.python
         if os.path.isfile( os.path.join( root.sourceFolder, 'config.yaml' ) ):
             configFile = 'config.yaml'
@@ -62,7 +62,8 @@ def verifyLoadProject( env, config ):
         raise InvalidEnvironment( env )
 
     if os.path.isdir( root.sourceFolder ) and os.path.isfile( os.path.join( root.sourceFolder, configFile ) ):
-        with open( os.path.join( root.sourceFolder, configFile ), gencrud.util.utils.C_FILEMODE_READ ) as stream:
+        with open( os.path.join( root.sourceFolder, configFile ),
+                   gencrud.util.utils.C_FILEMODE_READ ) as stream:
             if configFile.endswith( '.yaml' ):
                 data = yaml.load( stream )
 
@@ -76,7 +77,7 @@ def verifyLoadProject( env, config ):
         raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
     logger.info( 'Configuration for {}: {}'.format( env, json.dumps( data, indent = 4 ) ) )
-    if env == 'angular':
+    if env == C_ANGULAR:
         # Check if we have a valid Angular environment
         if 'defaultProject' in data and 'projects' in data:
             if data[ 'defaultProject' ] not in data[ 'projects' ]:
@@ -88,7 +89,7 @@ def verifyLoadProject( env, config ):
         else:
             raise MissingAngularEnvironment( 'tag defaultProject' )
 
-    elif env == 'python':
+    elif env == C_PYTHON:
         # Check if we have a valid Python-Flask environment
         if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
             raise FlaskEnvironmentNotFound()
@@ -104,22 +105,19 @@ def doWork( inputFile ):
     with open( inputFile, 'r' ) as stream:
         config = TemplateConfiguration( **yaml.load( stream ) )
 
-    if 'version' in config:
-        gencrud.util.utils.version = config[ 'version' ]
+    if C_VERSION in config:
+        gencrud.util.utils.version = config[ C_VERSION ]
         if gencrud.util.utils.version != 1:
             raise Exception( "Invalid configuration version: {}, must be 1".format( gencrud.util.utils.version ) )
 
-    # This override/set commandline options from the template defintion.
-    config.options()
-
-    verifyLoadProject( 'angular', config )
-    verifyLoadProject( 'python', config )
-    generatePython( [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
-                                   for t in os.listdir( config.python.templateFolder ) ],
-                    config )
-    generateAngular( [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
-                                    for t in os.listdir( config.angular.templateFolder ) ],
-                     config )
+    verifyLoadProject( config, C_ANGULAR )
+    verifyLoadProject( config, C_PYTHON )
+    generatePython( config,
+                    [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
+                                   for t in os.listdir( config.python.templateFolder ) ] )
+    generateAngular( config,
+                     [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
+                                    for t in os.listdir( config.angular.templateFolder ) ] )
     return
 
 

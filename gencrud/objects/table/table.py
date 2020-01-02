@@ -24,7 +24,8 @@ from gencrud.objects.table.column import TemplateColumn
 from gencrud.objects.table.column.tab import TemplateTabs
 from gencrud.objects.table.sort import SortInfo
 from gencrud.objects.table.mixin import TemplateMixin
-import gencrud.util.utils
+import gencrud.util.utils as root
+from gencrud.constants import *
 
 logger = logging.getLogger()
 
@@ -38,8 +39,8 @@ class TemplateTable( object ):
         self.__viewSize         = None
         self.__defaultViewSize  = 10
         self.__inports          = SourceImport()
-        noColumns               = len( self.__table[ 'columns' ] )
-        for col in self.__table[ 'columns' ]:
+        noColumns               = len( self.__table[ C_COLUMNS ] )
+        for col in self.__table[ C_COLUMNS ]:
             column = TemplateColumn( noColumns,
                                      self.name,
                                      **col )
@@ -47,24 +48,24 @@ class TemplateTable( object ):
             if column.isPrimaryKey():
                 self.__primaryKey = column.name
 
-        if 'viewSort' in table:
-            self.__viewSort = SortInfo( table[ 'viewSort' ] )
+        if C_VIEW_SORT in table:
+            self.__viewSort = SortInfo( table[ C_VIEW_SORT ] )
 
-        if 'viewSize' in table:
-            if type( table[ 'viewSize' ] ) in ( int, str ):
-                self.__viewSize = table[ 'viewSize' ]
+        if C_VIEW_SIZE in table:
+            if type( table[ C_VIEW_SIZE ] ) in ( int, str ):
+                self.__viewSize = table[ C_VIEW_SIZE ]
 
             else:
                 raise Exception( "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
 
-        self.__mixin = TemplateMixin( table[ 'mixin' ] if 'mixin' in table else None )
+        self.__mixin = TemplateMixin( table[ C_MIXIN ] if C_MIXIN in table else None )
         return
 
-    def hasTabs( self, tp = 'dialog' ):
-        return len( self.__table.get( tp + 'tabs', [] ) ) > 0
+    def hasTabs( self, tp = C_DIALOG ):
+        return len( self.__table.get( tp + C_TABS, [] ) ) > 0
 
-    def tabs( self, tp = 'dialog' ):
-        return TemplateTabs( self, **self.__table.get( tp + 'tabs', {} ) )
+    def tabs( self, tp = C_DIALOG ):
+        return TemplateTabs( self, **self.__table.get( tp + C_TABS, {} ) )
 
     @property
     def Mixin( self ):
@@ -88,34 +89,34 @@ class TemplateTable( object ):
 
     @property
     def tableName( self ):
-        if gencrud.util.utils.lowerCaseDbIds:
-            return self.__table.get( 'name', '' ).lower()
+        if root.config.options.ignoreCaseDbIds:
+            return self.__table.get( C_NAME, '' ).lower()
 
-        return self.__table.get( 'name', '' )
+        return self.__table.get( C_NAME, '' )
 
     @property
     def name( self ):
-        if gencrud.util.utils.lowerCaseDbIds:
-            return self.__table.get( 'name', '' ).lower()
+        if root.config.options.ignoreCaseDbIds:
+            return self.__table.get( C_NAME, '' ).lower()
 
-        return self.__table.get( 'name', '' )
+        return self.__table.get( C_NAME, '' )
 
     @property
     def orderBy( self ):
-        return self.__table.get( 'order-by', [ self.__primaryKey ] )
+        return self.__table.get( C_ORDER_BY, [ self.__primaryKey ] )
 
     @property
     def uniqueKey( self ):
         values  = {}
-        for value in self.__table.get( 'unique-key', {} ):
+        for value in self.__table.get( C_UNIQUE_KEY, {} ):
             for key in value.keys():
                 values[ key ] = ', '.join( [ "'{0}'".format( x ) for x in value[ key ] ] )
 
         return values
 
     def hasUniqueKey( self ):
-        if 'unique-key' in self.__table:
-            if type( self.__table.get( 'unique-key', None ) ) in ( dict, tuple, list ):
+        if C_UNIQUE_KEY in self.__table:
+            if type( self.__table.get( C_UNIQUE_KEY, None ) ) in ( dict, tuple, list ):
                 return True
 
         return False
@@ -181,4 +182,4 @@ class TemplateTable( object ):
         return self.__viewSize
 
     def __repr__(self):
-        return "<TemplateTable >"
+        return "<TemplateTable name={}, table={}>".format( self.name, self.tableName )

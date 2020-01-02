@@ -17,23 +17,19 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-
-DIRECTIONS = ( 'asc', 'desc', '' )
+from gencrud.constants import *
 
 
 class SortInfo( object ):
     def __init__( self, data ):
-        self.__field    = data[ 'field' ]
-        self.__direction = 'asc'
-        # 'asc'
-        # 'desc'
-        # ''
-        if 'direction' in data:
-            if data[ 'direction' ] in DIRECTIONS:
-                self.__direction    = data[ 'direction' ]
+        self.__field    = data[ C_FIELD ]
+        self.__direction = C_ASCENDING
+        if C_DIRECTION in data:
+            if data[ C_DIRECTION ] in C_DIRECTIONS:
+                self.__direction    = data[ C_DIRECTION ]
 
             else:
-                raise Exception( "Sorting order must be one of the following: 'asc', 'desc' or ''")
+                raise Exception( "Sorting order must be one of the following: {}".format( ', '.join( C_DIRECTIONS ) ) )
 
         return
 

@@ -23,7 +23,7 @@ import sys
 import logging
 import shutil
 from mako.template import Template
-
+from gencrud.configuraton import TemplateConfiguration
 import gencrud.util.utils
 import gencrud.util.exceptions
 from gencrud.util.positon import PositionInterface
@@ -61,13 +61,15 @@ def makePythonModules( root_path, *args ):
     return
 
 
-def updatePythonProject( config, app_module ):
+def updatePythonProject( config: TemplateConfiguration, app_module ):
     logger.debug( config.python.sourceFolder )
     lines = []
     filename = os.path.join( config.python.sourceFolder, config.application, 'main.py' )
     if os.path.isfile( filename ):
+        if config.options.backupFiles:
+            gencrud.util.utils.backupFile( filename )
+
         lines = open( filename, 'r' ).readlines()
-        gencrud.util.utils.backupFile( filename )
 
     if len( lines ) <= 2:
         lines = open( os.path.join( os.path.dirname( __file__ ),
@@ -147,7 +149,7 @@ def updatePythonProject( config, app_module ):
                     menuItem[ MENU_ICON_NAME ]      = menu.icon
                     menuItem[ MENU_INDEX ]          = menu.index
                     if menu.route is not None:
-                        menuItem[ MENU_ROUTE ]          = menu.route
+                        menuItem[ MENU_ROUTE ]      = menu.route
 
                     elif menu.menu is not None:
                         if MENU_CHILDEREN_LABEL not in menuItem:
@@ -191,47 +193,45 @@ def updatePythonProject( config, app_module ):
     return
 
 
-def generatePython( templates, config ):
+def generatePython( config: TemplateConfiguration, templates: list ):
     modules = []
     constants = []
+    logger.info( 'application : {0}'.format( config.application ) )
     for cfg in config:
         backupDone = False
         modulePath = os.path.join( config.python.sourceFolder,
                                    config.application,
                                    cfg.name )
+        logger.info( 'name        : {0}'.format( cfg.name ) )
+        logger.info( 'class       : {0}'.format( cfg.cls ) )
+        logger.info( 'table       : {0}'.format( cfg.table.tableName ) )
+        logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
+        logger.info( 'uri         : {0}'.format( cfg.uri ) )
+        for col in cfg.table.columns:
+            logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
+
         for templ in templates:
             logger.info( 'template    : {0}'.format( templ ) )
-            logger.info( 'application : {0}'.format( config.application ) )
-            logger.info( 'name        : {0}'.format( cfg.name ) )
-            logger.info( 'class       : {0}'.format( cfg.cls ) )
-            logger.info( 'table       : {0}'.format( cfg.table.tableName ) )
-            for col in cfg.table.columns:
-                logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
-
-            logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
-            logger.info( 'uri         : {0}'.format( cfg.uri ) )
 
             if not os.path.isdir( config.python.sourceFolder ):
                 os.makedirs( config.python.sourceFolder )
 
-            if os.path.isdir( modulePath ) and not gencrud.util.utils.overWriteFiles:
+            if os.path.isdir( modulePath ) and not config.options.overWriteFiles:
                 raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
-            if gencrud.util.utils.backupFiles:
+            if config.options.backupFiles:
                 gencrud.util.utils.backupFile( os.path.join( modulePath,
                                                              gencrud.util.utils.sourceName( templ ) ) )
 
             makePythonModules( config.python.sourceFolder, config.application, cfg.name )
-
             with open( os.path.join( modulePath,
                                      gencrud.util.utils.sourceName( templ ) ),
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                # stream.write( Template( filename = os.path.abspath( templ ) ).render( obj = cfg ) )
-                for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
+                for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
+                                                                                    root = config ).split( '\n' ):
                     stream.write( line )
                     if sys.platform.startswith( 'linux' ):
                         stream.write( '\n' )
-
 
             # Open the __init__.py
             filename = os.path.join( modulePath, '__init__.py' )
@@ -251,7 +251,9 @@ def generatePython( templates, config ):
                                                   PositionInterface( end = len( lines ) ),
                                                   importStr )
             if not backupDone:
-                gencrud.util.utils.backupFile( filename )
+                if config.options.backupFiles:
+                    gencrud.util.utils.backupFile( filename )
+
                 modules.append( ( config.application, cfg.name ) )
                 backupDone = True
 
@@ -272,7 +274,7 @@ def generatePython( templates, config ):
             constants.insert( 0, '' )
             constants.insert( 0, '# Generated by gencrud' )
             filename = os.path.join( modulePath, 'constant.py' )
-            if gencrud.util.utils.backupFiles:
+            if config.options.backupFiles:
                 gencrud.util.utils.backupFile( filename )
 
             with open( filename, 'w' ) as stream:
@@ -286,7 +288,7 @@ def generatePython( templates, config ):
             templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
 
             with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                for line in Template( filename = templateFile ).render( obj = cfg ).split( '\n' ):
+                for line in Template( filename = templateFile ).render( obj = cfg, root = config ).split( '\n' ):
                     stream.write( line + '\n' )
 
     updatePythonProject( config, '' )

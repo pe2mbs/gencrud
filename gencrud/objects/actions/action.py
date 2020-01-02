@@ -21,13 +21,10 @@ import logging
 from gencrud.util.typescript import TypeScript
 from gencrud.util.exceptions import InvalidSetting
 from gencrud.objects.actions.route import RouteTemplate
+from gencrud.constants import *
 
 logger = logging.getLogger()
 
-TYPES       = ( 'dialog', 'screen', 'list', 'api', 'none' )
-POSITIONS   = ( 'cell', 'header', 'footer', 'row', 'none' )
-ATTRIBUTES  = ( 'function', 'name', 'label', 'icon', 'source', 'position', 'type', 'uri', 'route', 'param', 'on' )
-ON_ACTIONS  = ( 'click', 'dblclick' )
 
 class TemplateAction( object ):
     def __init__( self, parent, obj_name, **cfg ):
@@ -38,50 +35,50 @@ class TemplateAction( object ):
 
     @property
     def name( self ):
-        result = self.__cfg.get( 'name', None )
+        result = self.__cfg.get( C_NAME, None )
         if result is None:
-            raise InvalidSetting( 'name', 'action', self.name )
+            raise InvalidSetting( C_NAME, C_ACTION, self.name )
 
         return result
 
     @property
     def type( self ):
-        result = self.__cfg.get( 'type', TYPES[ -1 ] )
-        if result not in TYPES:
-            raise InvalidSetting( 'name', 'action', self.name )
+        result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] )
+        if result not in C_ACTION_TYPES:
+            raise InvalidSetting( C_TYPE, C_ACTION, self.name )
 
         return result
 
     @property
     def position( self ):
-        result = self.__cfg.get( 'position', POSITIONS[ -1 ] )
-        if result not in POSITIONS:
-            raise InvalidSetting( 'position', 'action', self.name )
+        result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] )
+        if result not in C_ACTION_POSITIONS:
+            raise InvalidSetting( C_POSITION, C_ACTION, self.name )
 
         return result
 
     @property
     def on( self ):
-        value = self.__cfg.get( 'on', 'dblclick' if self.position == 'row' else 'click' )
-        if value not in ON_ACTIONS:
-            raise Exception( "invalid 'on' value, must be one of {}".format( ', '.join( ON_ACTIONS ) ) )
+        value = self.__cfg.get( C_ON, C_DOUBLE_CLICK if self.position == C_ROW else C_CLICK )
+        if value not in C_ACTION_ON_ACTIONS:
+            raise Exception( "invalid 'on' value, must be one of {}".format( ', '.join( C_ACTION_ON_ACTIONS ) ) )
 
         return value
 
     @property
     def label( self ):
-        return self.__cfg.get( 'label', '' )
+        return self.__cfg.get( C_LABEL, '' )
 
     @property
     def icon( self ):
-        return self.__cfg.get( 'icon', '' )
+        return self.__cfg.get( C_ICON, '' )
 
     @property
     def function( self ):
-        return self.__cfg.get( 'function', '' )
+        return self.__cfg.get( C_FUNCTION, '' )
 
     def set( self, attr, value ):
-        if attr not in ATTRIBUTES:
+        if attr not in C_ACTION_ATTRIBUTES:
             raise Exception( "Invalid attribute '{}' for Action with value '{}'".format( attr, value ) )
 
         self.__cfg[ attr ] = value
@@ -89,34 +86,34 @@ class TemplateAction( object ):
 
     @property
     def source( self ):
-        return self.__cfg.get( 'source', '' )
+        return self.__cfg.get( C_SOURCE, '' )
 
     @property
     def uri( self ):
-        return self.__cfg.get( 'uri', '' )
+        return self.__cfg.get( C_URI, '' )
 
     def isAngularRoute( self ):
-        return 'route' in self.__cfg
+        return C_ROUTE in self.__cfg
 
     @property
     def hint( self ):
-        return self.__cfg.get( 'hint', '' )
+        return self.__cfg.get( C_HINT, '' )
 
     @property
     def color( self ):
-        return self.__cfg.get( 'color', 'primary' )
+        return self.__cfg.get( C_COLOR, 'primary' )
 
     @property
     def css( self ):
-        return self.__cfg.get( 'css', '' )
+        return self.__cfg.get( C_CSS, '' )
 
     @property
     def route( self ):
-        return RouteTemplate( self, **self.__cfg.get( 'route', None ) ) if self.isAngularRoute() else {}
+        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else {}
 
     @property
     def params( self ):
-        return self.__cfg.get( 'params', {} )
+        return self.__cfg.get( C_PARAMS, {} )
 
     def routeParams( self ):
         params = self.params
@@ -133,7 +130,7 @@ class TemplateAction( object ):
     #   Internal functions and properies to gencrud
     #
     def hasApiFunction( self ):
-        return 'function' in self.__cfg
+        return C_FUNCTION in self.__cfg
 
     def clone( self, obj_name ):
         return TemplateAction( self.__parent,
@@ -147,7 +144,7 @@ class TemplateAction( object ):
 
     def buttonObject( self ):
         tooltip = ''
-        if self.type == 'none':
+        if self.type == C_NONE:
             return ''
 
         button_type = 'mat-raised-button'
@@ -216,24 +213,24 @@ class TemplateAction( object ):
 
 DEFAULT_NEW_ACTION      = TemplateAction( None,
                                           'internal_action',
-                                          name = 'new',
+                                          name = C_NEW,
                                           label = 'Add a new record',
-                                          type = 'dialog',
+                                          type = C_DIALOG,
                                           icon = 'add',
-                                          position = 'header',
+                                          position = C_HEADER,
                                           function = 'addRecord()' )
 DEFAULT_DELETE_ACTION   = TemplateAction( None,
                                           'internal_action',
-                                          name = 'delete',
+                                          name = C_DELETE,
                                           label = 'Delete a record',
-                                          type = 'dialog',
+                                          type = C_DIALOG,
                                           icon = 'delete',
-                                          position = 'cell',
+                                          position = C_CELL,
                                           function = 'deleteRecord( i, row )' )
 DEFAULT_EDIT_ACTION     = TemplateAction( None,
                                           'internal_action',
-                                          name = 'edit',
+                                          name = C_EDIT,
                                           label = 'Edit a record',
-                                          type = 'dialog',
-                                          position = 'row',
+                                          type = C_DIALOG,
+                                          position = C_ROW,
                                           function = 'editRecord( i, row )' )

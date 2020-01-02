@@ -17,6 +17,9 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+from gencrud.constants import *
+
+
 class TemplateService( object ):
     def __init__( self, **cfg ):
         self.__cfg = cfg
@@ -24,19 +27,19 @@ class TemplateService( object ):
 
     @property
     def name( self ):
-        return self.__cfg[ 'name' ]
+        return self.__cfg[ C_NAME ]
 
     @property
     def value( self ):
-        return self.__cfg[ 'value' ]
+        return self.__cfg[ C_VALUE ]
 
     @property
     def label( self ):
-        return self.__cfg[ 'label' ]
+        return self.__cfg[ C_LABEL ]
 
     @property
     def cls( self ):
-        value = self.__cfg[ 'class' ]
+        value = self.__cfg[ C_CLASS ]
         if value.endswith( 'Service' ):
             return value
 
@@ -44,7 +47,7 @@ class TemplateService( object ):
 
     @property
     def path( self ):
-        if 'path' in self.__cfg:
-            return self.__cfg[ 'path' ]
+        if C_PATH in self.__cfg:
+            return self.__cfg[ C_PATH ]
 
-        return '../{}/service'.format( self.__cfg[ 'name' ] )
+        return '../{}/service'.format( self.__cfg[ C_NAME ] )

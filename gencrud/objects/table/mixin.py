@@ -17,14 +17,14 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-
+from gencrud.constants import *
 from gencrud.objects.table.python import PythonObject
 
 class TemplateMixin( object ):
     def __init__( self, mixin ):
-        self.__model    = PythonObject( mixin[ 'model' ] if mixin is not None and 'model' in mixin else None )
-        self.__schema   = PythonObject( mixin[ 'schema' ] if mixin is not None and 'schema' in mixin else None )
-        self.__view     = PythonObject( mixin[ 'view' ] if mixin is not None and 'view' in mixin else None )
+        self.__model    = PythonObject( mixin[ C_MODEL ] if mixin is not None and C_MODEL in mixin else None )
+        self.__schema   = PythonObject( mixin[ C_SCHEMA ] if mixin is not None and C_SCHEMA in mixin else None )
+        self.__view     = PythonObject( mixin[ C_VIEW ] if mixin is not None and C_VIEW in mixin else None )
         return
 
     @property

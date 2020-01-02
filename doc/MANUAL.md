@@ -1235,6 +1235,7 @@ options:
     overwrite:                false
     backup:                   false
     ignore-case-db-ids:       false
+    lazy-loading:             false
 ```
 This is an optional element. When omitted the default for the options is _false_    
 When an option is included it supersede the command line option. 
@@ -1247,6 +1248,9 @@ no files shall be written if they exist, even that they are changed.
 `backup` makes backups of all the files it overwrites. 
 
 `case-insensitive-db-ids` all database names shall be in lower case. 
+
+`lazy-loading` this option is only effective when `use-module` is enabled. When enabled 
+the module is added as a lazy loaded module instead of direct loaded. 
 
 ## 5.11 extra
 At root level in the file. This is available from gencrud version 1.7.367. This is only required when `use-module`

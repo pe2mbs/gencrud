@@ -18,6 +18,7 @@
 #   Boston, MA 02110-1301 USA
 #
 
+
 class PythonObject( object ):
     def __init__( self, obj ):
         self.__object   = obj

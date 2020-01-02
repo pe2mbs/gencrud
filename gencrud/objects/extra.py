@@ -17,6 +17,10 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+from gencrud.constants import *
+
+C_APP                   = 'app'
+
 class TemplateImport():
     def __init__( self, **cfg ):
         self.__config = cfg
@@ -24,23 +28,23 @@ class TemplateImport():
 
     @property
     def module( self ):
-        return self.__config.get( 'module', '' )
+        return self.__config.get( C_MODULE, '' )
 
     @property
     def component( self ):
-        return self.__config.get( 'component', '' )
+        return self.__config.get( C_COMPONENT, '' )
 
     @property
     def type( self ):
-        return self.__config.get( 'type', '' ).lower()
+        return self.__config.get( C_TYPE, '' ).lower()
 
     @property
     def where( self ):
-        return self.__config.get( 'where', 'app' ).lower()
+        return self.__config.get( C_WHERE, C_APP ).lower()
 
     @property
     def path( self ):
-        return self.__config.get( 'path', '.' )
+        return self.__config.get( C_PATH, '.' )
 
 
 class TemplateExtra( object ):
@@ -49,11 +53,11 @@ class TemplateExtra( object ):
         self.__parent       = parent
         self.__modules      = []
         self.__components   = [ ]
-        for inp in self.__config.get( 'imports', [ ] ):
-            if 'module' in inp:
+        for inp in self.__config.get( C_IMPORTS, [ ] ):
+            if C_MODULE in inp:
                 self.__modules.append( TemplateImport( **inp ) )
 
-            elif 'component' in inp:
+            elif C_COMPONENT in inp:
                 self.__components.append( TemplateImport( **inp ) )
 
             else:
@@ -61,26 +65,26 @@ class TemplateExtra( object ):
 
         return
 
-    def getTypeScriptInports( self, where = 'app' ):
+    def getTypeScriptInports( self, where = C_APP ):
         result = []
         for inp in self.__modules:
-            if inp.type == 'typescript' and inp.where == where:
+            if inp.type == C_TYPESCRIPT and inp.where == where:
                 result.append( inp )
 
         return result
 
-    def getPythonInports( self, where = 'app' ):
+    def getPythonInports( self, where = C_APP ):
         result = [ ]
         for inp in self.__modules:
-            if inp.type == 'python' and inp.where == where:
+            if inp.type == C_PYTHON and inp.where == where:
                 result.append( inp )
 
         return result
 
-    def getTypeScriptComponents( self, where = 'app' ):
+    def getTypeScriptComponents( self, where = C_APP ):
         result = [ ]
         for inp in self.__components:
-            if inp.type == 'typescript' and inp.where == where:
+            if inp.type == C_TYPESCRIPT and inp.where == where:
                 result.append( inp )
 
         return result

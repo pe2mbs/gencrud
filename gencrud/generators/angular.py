@@ -17,10 +17,8 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-import copy
 import json
 import os
-import posixpath
 import shutil
 import sys
 import logging
@@ -28,7 +26,9 @@ from mako.template import Template
 from mako import exceptions
 import gencrud.util.utils
 import gencrud.util.exceptions
-from gencrud.generators.typescript_obj import TypeScript
+from gencrud.constants import *
+from gencrud.configuraton import TemplateConfiguration
+from gencrud.util.typescript import TypeScript
 from gencrud.util.positon import PositionInterface
 from gencrud.util.sha import sha256sum
 
@@ -36,8 +36,10 @@ logger = logging.getLogger()
 
 LABEL_APP_ROUTES    = 'const appRoutes: Routes ='
 LABEL_NG_MODULE     = '@NgModule('
-APP_MODULE          = 'app.module.ts'
-APP_ROUTING_MODULE  = 'app.routingmodule.ts'
+
+#APP_MODULE          = 'app.module.ts'
+#APP_ROUTING_MODULE  = 'app.routingmodule.ts'
+
 NG_ENTRY_COMPONENTS = 'entryComponents'
 NG_IMPORTS          = 'imports'
 NG_PROVIDERS        = 'providers'
@@ -85,9 +87,7 @@ def updateImportSection( lines, files ):
             rangePos.end += 1
 
 
-def updateAngularAppModuleTs( config, app_module, exportsModules ):
-    logger.debug( config.angular.sourceFolder )
-
+def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exportsModules ):
     # File to edit 'app.module.ts'
     # inject the following;
     #   inport
@@ -95,10 +95,14 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     #   imports:            search for 'imports: ['
     #   providers:          search for 'providers: ['
     #   entryComponents:    search for 'entryComponents: ['
-    with open( os.path.join( config.angular.sourceFolder, APP_MODULE ), 'r' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder,
+                             config.references.app_module.filename ), 'r' ) as stream:
         lines = stream.readlines()
 
-    gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_MODULE ) )
+    if config.options.backupFiles:
+        gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder,
+                                                     config.references.app_module.filename ) )
+
     rangePos        = PositionInterface()
     sectionLines    = gencrud.util.utils.searchSection( lines,
                                                         rangePos,
@@ -113,9 +117,14 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     NgModule = ts.parse( ''.join( sectionLines ) )
 
     def updateNgModule( section ):
+        injectPoint = -1
+        for idx, decl in enumerate( app_module[ section ] ):
+            if config.references.app_routing.module in decl:
+                injectPoint = idx
+
         for decl in app_module[ section ]:
             if decl != '' and decl not in NgModule[ section ]:
-                NgModule[ section ].append( decl )
+                NgModule[ section ].insert( injectPoint, decl )
 
     updateNgModule( NG_DECLARATIONS )
     updateNgModule( NG_PROVIDERS )
@@ -127,7 +136,8 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     gencrud.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, app_module[ 'files' ] )
-    with open( os.path.join( config.angular.sourceFolder, APP_MODULE ), 'w' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder,
+                             config.references.app_module.filename ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
             logger.debug( line.replace( '\n', '' ) )
@@ -135,21 +145,25 @@ def updateAngularAppModuleTs( config, app_module, exportsModules ):
     return
 
 
-def updateAngularAppRoutingModuleTs( config, app_module ):
-    if not os.path.isfile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) ):
+def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module ):
+    if not os.path.isfile( os.path.join( config.angular.sourceFolder,
+                                         config.references.app_routing.module ) ):
         return []
 
-    with open( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ), 'r' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder,
+                             config.references.app_routing.module ), 'r' ) as stream:
         lines = stream.readlines()
 
-    gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ) )
+    if config.options.backupFiles:
+        gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder,
+                                                     config.references.app_routing.module ) )
 
     imports = []
     entries = []
     for cfg in config:
         if cfg.menu is not None and cfg.menu.menu is not None:
             # Do we have child pages for new and edit?
-            if not gencrud.util.utils.useModule:
+            if not config.options.useModule:
                 children = []
                 for action in cfg.actions:
                     logger.info( "Action: {} {} {}".format( config.application, cfg.name, action ) )
@@ -190,21 +204,45 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
                                        'breadcrum': "'{}'".format( cfg.cls ) }
                     }
 
-            else:
+                entries.append( routeItem )
+
+            elif not config.options.lazyLoading:
                 routeItem = "{}Route".format( cfg.name )
 
-            entries.append( routeItem )
+                entries.append( routeItem )
+
+            elif config.options.lazyLoading:
+                routeItem = {
+                    "path": "'{}'".format( cfg.menu.menu.route[ 1: ] ),
+                    "data": {
+                        "breadcrumb": "'{cls} table'".format( cls = cfg.cls ),
+                        "title":      "'{cls} table'".format( cls = cfg.cls ),
+                    },
+                    "loadChildren": "() => import( './{app}/{mod}/module' ).then( mod =>  mod.{cls}Module )".format(
+                        app = config.application,
+                        mod = cfg.name,
+                        cls = cfg.cls
+                    )
+                }
+                entries.append( routeItem )
 
         logger.info( "Inports: {} {} {}".format( config.application, cfg.name, cfg.cls ) )
-        if not gencrud.util.utils.useModule:
-            component = "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls ,
-                                                                                                     app = config.application,
-                                                                                                     mod = cfg.name )
+        if config.options.useModule and config.options.lazyLoading:
+            component = "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls,
+                                                                                                         app = config.application,
+                                                                                                         mod = cfg.name )
 
-        else:
+
+        elif config.options.useModule:
             component = "import {{ {cls}Module }} from './{app}/{mod}.module';".format( cls = cfg.cls,
                                                                                         app = config.application,
                                                                                         mod = cfg.name )
+
+        else:
+            component = "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls,
+                                                                                                         app = config.application,
+                                                                                                         mod = cfg.name )
+
 
         if component not in imports:
             imports.append( component )
@@ -226,8 +264,8 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
 
         routeIdx = -1
         for idx, route in enumerate( appRoutes ):
-            if route[ 'path' ] == entry[ 'path' ]:
-                logger.info( "Found route: {}".format( route[ 'path' ] ) )
+            if route[ C_PATH ] == entry[ C_PATH ]:
+                logger.info( "Found route: {}".format( route[ C_PATH ] ) )
                 logger.info( json.dumps( route ) )
                 routeIdx = idx
                 break
@@ -243,7 +281,7 @@ def updateAngularAppRoutingModuleTs( config, app_module ):
     gencrud.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, imports )
-    with open( os.path.join( config.angular.sourceFolder, APP_ROUTING_MODULE ), 'w' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder, config.references.app_routing.module ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
             logger.debug( line.replace( '\n', '' ) )
@@ -255,7 +293,7 @@ def exportAndType( line ):
     return line.split( ' ' )[ 1 : 3 ]
 
 
-def generateAngular( templates, config ):
+def generateAngular( config: TemplateConfiguration, templates: list ):
     modules = []
     if not os.path.isdir( config.angular.sourceFolder ):
         os.makedirs( config.angular.sourceFolder )
@@ -264,13 +302,23 @@ def generateAngular( templates, config ):
         modulePath = os.path.join( config.angular.sourceFolder,
                                    config.application,
                                    cfg.name )
-        if os.path.isdir( modulePath ) and not gencrud.util.utils.overWriteFiles:
+        if os.path.isdir( modulePath ) and not config.options.overWriteFiles:
             raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
         makeAngularModule( config.angular.sourceFolder,
                            config.application,
                            cfg.name )
+        logger.info( 'application : {0}'.format( config.application ) )
+        logger.info( 'name        : {0}'.format( cfg.name ) )
+        logger.info( 'class       : {0}'.format( cfg.cls ) )
+        logger.info( 'table       : {0}'.format( cfg.table.name ) )
+        for col in cfg.table.columns:
+            logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
+
+        logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
+        logger.info( 'uri         : {0}'.format( cfg.uri ) )
         for templ in templates:
+            logger.info( 'template    : {0}'.format( templ ) )
             templateFilename = os.path.join( config.angular.sourceFolder,
                                              config.application,
                                              cfg.name,
@@ -279,51 +327,43 @@ def generateAngular( templates, config ):
                 # This handled by createAngularComponentModule()
                 continue
 
-            if not gencrud.util.utils.overWriteFiles and os.path.isfile( templateFilename ):
+            if not config.options.overWriteFiles and os.path.isfile( templateFilename ):
                 continue
 
-            gencrud.util.utils.backupFile( templateFilename )
+            if config.options.backupFiles:
+                gencrud.util.utils.backupFile( templateFilename )
+
             if os.path.isfile( templateFilename ):
                 # First remove the old file
                 os.remove( templateFilename )
 
             logger.info( 'template    : {0}'.format( templ ) )
-            if 'screen' in templ:
-                logger.info( 'Action new  : {0}'.format( cfg.actions.get( 'new' ).type ) )
-                logger.info( 'Action edit : {0}'.format( cfg.actions.get( 'edit' ).type ) )
-                if 'screen' in templ and 'screen' in (cfg.actions.get( 'new' ).type,cfg.actions.get( 'edit' ).type):
-                    logger.info( "Adding screen for {}".format( templ ) )
+            if C_SCREEN in templ:
+                logger.debug( 'Action new  : {0}'.format( cfg.actions.get( C_NEW ).type ) )
+                logger.debug( 'Action edit : {0}'.format( cfg.actions.get( C_EDIT ).type ) )
+                if C_SCREEN in templ and C_SCREEN in (cfg.actions.get( C_NEW ).type,cfg.actions.get( C_EDIT ).type ):
+                    logger.debug( "Adding screen for {}".format( templ ) )
 
                 else:
                     logger.info( "Not adding {}".format( templ ) )
                     continue
 
-            elif 'dialog' in templ:
-                logger.info( 'Action new  : {0}'.format( cfg.actions.get( 'new' ).type ) )
-                logger.info( 'Action edit : {0}'.format( cfg.actions.get( 'edit' ).type ) )
-                if 'component' in templ and 'dialog' in ( cfg.actions.get( 'new' ).type, cfg.actions.get( 'edit' ).type ):
+            elif C_DIALOG in templ:
+                logger.debug( 'Action new  : {0}'.format( cfg.actions.get( C_NEW ).type ) )
+                logger.debug( 'Action edit : {0}'.format( cfg.actions.get( C_EDIT ).type ) )
+                if C_COMPONENT in templ and C_DIALOG in ( cfg.actions.get( C_NEW ).type, cfg.actions.get( C_EDIT ).type ):
                     logger.info( "Adding dialog for {}".format( templ ) )
 
-                elif 'delete' in templ and cfg.actions.get( 'delete' ).type == 'dialog':
+                elif C_DELETE in templ and cfg.actions.get( C_DELETE ).type == C_DIALOG:
                     logger.info( "Adding dialog for {}".format( templ ) )
 
                 else:
-                    logger.info( "Not adding {}".format( templ ) )
+                    logger.debug( "Not adding {}".format( templ ) )
                     continue
 
             else:
                 pass
 
-            logger.info( 'template    : {0}'.format( templ ) )
-            logger.info( 'application : {0}'.format( config.application ) )
-            logger.info( 'name        : {0}'.format( cfg.name ) )
-            logger.info( 'class       : {0}'.format( cfg.cls ) )
-            logger.info( 'table       : {0}'.format( cfg.table.name ) )
-            for col in cfg.table.columns:
-                logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
-
-            logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
-            logger.info( 'uri         : {0}'.format( cfg.uri ) )
             with open( templateFilename,
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 def errorHandler( context, error, *args, **kwargs ):
@@ -334,7 +374,7 @@ def generateAngular( templates, config ):
                     return
 
                 try:
-                    for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg ).split( '\n' ):
+                    for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg, root = config ).split( '\n' ):
                         if line.startswith( 'export ' ):
                             modules.append( (config.application,
                                              cfg.name,
@@ -342,7 +382,7 @@ def generateAngular( templates, config ):
                                              exportAndType( line ) ) )
 
                         stream.write( line )
-                        if sys.platform.startswith( 'linux' ):
+                        if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
                             stream.write( '\n' )
 
                 except Exception as exc:
@@ -388,7 +428,6 @@ def generateAngular( templates, config ):
         json.dump( appModule, stream, indent = 4 )
 
     logger.info( 'exportsModules' )
-
     for mod in exportsModules:
         logger.info( mod )
 
@@ -396,14 +435,12 @@ def generateAngular( templates, config ):
     for mod in appModule:
         logger.info( mod.strip( '\n' ) )
 
-    imports = updateAngularAppRoutingModuleTs( config,appModule )
+    imports = updateAngularAppRoutingModuleTs( config, appModule )
     for imp in imports:
         if imp not in appModule[ 'files' ]:
             appModule[ 'files' ].append( imp )
 
-
     appModule = createAngularComponentModuleTs( config, appModule )
-
     logger.info( "appModule: {}".format( json.dumps( appModule, indent = 4 ) ) )
     updateAngularAppModuleTs( config, appModule, exportsModules )
 
@@ -415,30 +452,35 @@ def generateAngular( templates, config ):
     return
 
 
-def createAngularComponentModuleTs( config, appModule ):
-    if not gencrud.util.utils.useModule or not gencrud.util.utils.overWriteFiles:
+def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: dict ):
+    if not config.options.useModule or not config.options.overWriteFiles:
         return appModule
 
     templ = os.path.abspath( os.path.join( config.angular.templateFolder, 'module.ts.templ' ) )
     imports = []
     files = []
     for cfg in config:
-        filename = os.path.join( config.angular.sourceFolder, config.application, '{}.module.ts'.format( cfg.name ) )
-        gencrud.util.utils.backupFile( filename )
-        # Create the '<name>-module.ts'
+        filename = os.path.join( config.angular.sourceFolder,
+                                 config.application,
+                                 cfg.name,
+                                 'module.ts'.format( cfg.name ) )
+        if config.options.backupFiles:
+            gencrud.util.utils.backupFile( filename )
+
+        # Create the 'module.ts'
         with open( filename, 'w' ) as stream:
-            for line in Template( filename = templ ).render( obj = cfg ).split( '\n' ):
+            for line in Template( filename = templ ).render( obj = cfg, root = config ).split( '\n' ):
                 stream.write( line )
-                if sys.platform.startswith( 'linux' ):
+                if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
                     stream.write( '\n' )
 
-        component = "import {{ {cls}Module }} from './{app}/{mod}.module';".format( cls = cfg.cls,
+        component = "import {{ {cls}Module }} from './{app}/{mod}/module';".format( cls = cfg.cls,
                                                                                     app = config.application,
                                                                                     mod = cfg.name )
         if component not in files:
             files.append( component )
 
-        imp = "{cls}Module.forRoot()".format( cls = cfg.cls )
+        imp = "{cls}Module".format( cls = cfg.cls )
         if imp not in imports:
             imports.append( imp )
 
@@ -494,8 +536,8 @@ def copyAngularCommon( source, destination ):
         elif os.path.isfile( os.path.join( destination, filename ) ):
             if sha256sum( os.path.join( destination, filename ) ) != sha256sum( os.path.join( source, filename ) ):
                 # Hash differs, therefore replace the file
-                logger.debug( "Hash differs, therefore replace the file {0} => {1}".format( os.path.join( source, filename ),
-                                                                                     os.path.join( destination, filename ) ) )
+                logger.debug( "Hash differs, replace the file {0} => {1}".format( os.path.join( source, filename ),
+                                                                                  os.path.join( destination, filename ) ) )
                 shutil.copy( os.path.join( source, filename ),
                              os.path.join( destination, filename ) )
 

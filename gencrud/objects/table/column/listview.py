@@ -18,6 +18,7 @@
 #   Boston, MA 02110-1301 USA
 #
 import logging
+from gencrud.constants import *
 
 logger = logging.getLogger()
 
@@ -30,16 +31,16 @@ class TemplateListView( object ):
 
     @property
     def width( self ):
-        if 'width' not in self.__cfg:
-            if hasattr( self.__parent, 'css' ):
+        if C_WIDTH not in self.__cfg:
+            if hasattr( self.__parent, C_CSS ):
                 return self.__parent.css.width
 
-        return self.__cfg.get( 'width', None )
+        return self.__cfg.get( C_WIDTH, None )
 
     @property
     def index( self ):
-        if 'index' not in self.__cfg:
-            if hasattr( self.__parent, 'index' ):
+        if C_INDEX not in self.__cfg:
+            if hasattr( self.__parent, C_INDEX ):
                 return self.__parent.index
 
-        return self.__cfg.get( 'index', None )
+        return self.__cfg.get( C_INDEX, None )

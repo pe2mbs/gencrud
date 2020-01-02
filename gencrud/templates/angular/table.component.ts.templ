@@ -24,7 +24,7 @@ import { Router, ActivatedRoute } from  '@angular/router';
 import { Location } from  '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatPaginator, MatSort, PageEvent, MatSortable } from '@angular/material';
-import { Subscribers } from 'src/app/common/subscribers';
+import { Subscribers } from '../../common/subscribers';
 import { fromEvent } from 'rxjs';
 import { ${ obj.cls }Record } from './model';
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):

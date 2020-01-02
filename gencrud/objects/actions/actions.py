@@ -18,11 +18,11 @@
 #   Boston, MA 02110-1301 USA
 #
 import logging
-import json
 from gencrud.objects.actions.action import (TemplateAction,
                                             DEFAULT_DELETE_ACTION,
                                             DEFAULT_EDIT_ACTION,
                                             DEFAULT_NEW_ACTION)
+from gencrud.constants import *
 
 logger = logging.getLogger()
 
@@ -36,13 +36,13 @@ class TemplateActions( object ):
         for action in cfg:
             self.__actions.append( TemplateAction( self.__parent, objname, **action ) )
 
-        if not self.has( 'new' ):
+        if not self.has( C_NEW ):
             self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
 
-        if not self.has( 'edit' ):
+        if not self.has( C_EDIT ):
             self.__actions.append( DEFAULT_EDIT_ACTION.clone( objname ) )
 
-        if not self.has( 'delete' ):
+        if not self.has( C_DELETE ):
             self.__actions.append( DEFAULT_DELETE_ACTION.clone( objname ) )
 
         return
@@ -67,7 +67,7 @@ class TemplateActions( object ):
     def getCustomButtons( self ):
         result = []
         for action in self.__actions:
-            if action.name not in ( 'new', 'edit', 'delete' ):
+            if action.name not in ( C_NEW, C_EDIT, C_DELETE ):
                 result.append( action )
 
         return result
@@ -75,7 +75,7 @@ class TemplateActions( object ):
     def getHeaderButtons( self ):
         result = []
         for action in self.__actions:
-            if action.position == 'header' and action.type != 'none':
+            if action.position == C_HEADER and action.type != C_NONE:
                 result.append( action )
 
         return result
@@ -83,7 +83,7 @@ class TemplateActions( object ):
     def getCellButtons( self ):
         result = []
         for action in self.__actions:
-            if action.position == 'cell' and action.type != 'none':
+            if action.position == C_CELL and action.type != C_NONE:
                 result.append( action )
 
         return result
@@ -99,7 +99,7 @@ class TemplateActions( object ):
 
     def isRowActionFunction( self ):
         for action in self.__actions:
-            if action.position == 'row' and action.type != 'none':
+            if action.position == C_ROW and action.type != C_NONE:
                 logger.info( "getRowAction() => {}".format( action ) )
                 return action.function != ''
 
@@ -107,7 +107,7 @@ class TemplateActions( object ):
 
     def getRowRouterLink( self ):
         for action in self.__actions:
-            if action.position == 'row' and action.type != 'none':
+            if action.position == C_ROW and action.type != C_NONE:
                 logger.info( "getRowAction() => {}".format( action ) )
                 if action.isAngularRoute():
                     # return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
@@ -121,7 +121,7 @@ class TemplateActions( object ):
                     route = ''
                     params = ''
 
-                elif action.type == 'screen':
+                elif action.type == C_SCREEN:
                     route = "/".join( [ self.__name, action.name ] )
                     ACTION_STR = '''({on})="router.navigate( ['/{route}'], {params} )"'''
                     params = action.routeParams()
@@ -129,7 +129,6 @@ class TemplateActions( object ):
                 else:
 
                     raise Exception( "Missing function or route declaration" )
-
 
                 return ACTION_STR.format( function = action.function,
                                           on = action.on,
@@ -140,7 +139,7 @@ class TemplateActions( object ):
 
     def hasRowButtons( self ):
         for action in self.__actions:
-            if action.position == 'row' and action.type != 'none':
+            if action.position == C_ROW and action.type != C_NONE:
                 return True
 
         return False
@@ -148,7 +147,7 @@ class TemplateActions( object ):
     def getFooterButtons( self ):
         result = []
         for action in self.__actions:
-            if action.position == 'footer' and action.type != 'none':
+            if action.position == C_FOOTER and action.type != C_NONE:
                 result.append( action )
 
         return result
@@ -156,17 +155,17 @@ class TemplateActions( object ):
     def invalid( self, name ):
         for action in self.__actions:
             if action.name == name:
-                if action.type == 'none':
+                if action.type == C_NONE:
                     return True
 
-                return action.position == 'none'
+                return action.position == C_NONE
 
         return False
 
     def valid( self, name, _type ):
         for action in self.__actions:
             if action.name == name and action.type == _type:
-                return action.position != 'none'
+                return action.position != C_NONE
 
         return False
 
