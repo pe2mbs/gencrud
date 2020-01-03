@@ -121,7 +121,7 @@ class TemplateAction( object ):
             items = {}
             for key, value in params.items():
                 items[ key ] = value
-            # (click) = "router.navigate( [ '/tr/edit', { queryParams: { id: 'TR_ID', mode: 'edit', value: row.TR_ID } } ] )"
+
             return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
 
         return ''
@@ -183,7 +183,7 @@ class TemplateAction( object ):
         elif self.isAngularRoute():
             BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.route.name ] )
-            params = self.routeParams()
+            params = self.route.routeParams()
 
         elif self.type == 'screen' and self.name in ( 'new', 'edit' ):
             BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}">{content}</a>'''

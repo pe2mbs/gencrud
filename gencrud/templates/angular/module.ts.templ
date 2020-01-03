@@ -25,15 +25,21 @@ import { RouterModule, Routes, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CustomMaterialModule } from './../../material.module';
 import { GenCrudModule } from './../../common/gencrud.module';
-% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
-import { Dialog${ obj.cls }Component } from './dialog.component';
-% endif
-% if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
-import { Screen${ obj.cls }Component } from './screen.component';
-% endif
-% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+% for action in obj.actions.unique:
+%  if action.position != 'none':
+%   if action.type == 'dialog':
+%    if action.name == 'delete':
 import { Delete${ obj.cls }Dialog } from './delete.dialog';
-% endif
+%    else:
+import { Dialog${ obj.cls }Component } from './dialog.component';
+%    endif
+%   elif action.isAngularRoute():
+import { ${ action.route.cls } } from '${ action.route.module }';
+%   else:
+import { Screen${ obj.cls }Component } from './screen.component';
+%   endif
+%  endif
+% endfor
 import { ${ obj.cls }TableComponent } from './table.component';
 import { ${ obj.cls }DataService } from './service';
 % if obj.hasExtra():
@@ -71,28 +77,23 @@ export const ${ obj.name }Route: Route = {
                 title:      ''
             }
         },
-% if obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none':
+% for action in obj.actions:
+%  if action.type == 'screen' and action.position != 'none':
         {
-            path: 'new',
+            path: '${ action.name }',
+%   if action.isAngularRoute():
+            component: ${ action.route.cls },
+%   else:
             component: Screen${ obj.cls }Component,
+%   endif
             data:
             {
-                breadcrumb: 'New',
-                title:      'New'
+                breadcrumb: '${ action.label }',
+                title:      '${ action.label }'
             }
         },
-% endif
-% if obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none':
-        {
-            path: 'edit',
-            component: Screen${ obj.cls }Component,
-            data:
-            {
-                breadcrumb: 'Edit',
-                title:      'Edit'
-            }
-        }
-% endif
+%  endif
+% endfor
     ]
 }
 

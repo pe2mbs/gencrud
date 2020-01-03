@@ -52,7 +52,7 @@ class RouteTemplate( object ):
             items = {}
             for key, value in params.items():
                 items[ key ] = value
-            # (click) = "router.navigate( [ '/tr/edit', { queryParams: { id: 'TR_ID', mode: 'edit', value: row.TR_ID } } ] )"
+
             return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
 
         return ''

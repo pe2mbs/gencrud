@@ -50,6 +50,27 @@ class TemplateActions( object ):
     def __iter__( self ):
         return iter( self.__actions )
 
+    @property
+    def unique( self ):
+        label_list = []
+        result_list = []
+        for action in self.__actions:
+            if action.name in ( 'new', 'edit' ):
+                if 'newedit' + action.type in label_list:
+                    continue
+
+                label_list.append( 'newedit' + action.type )
+
+            else:
+                if action.name + action.type in label_list:
+                    continue
+
+                label_list.append( action.name + action.type )
+
+            result_list.append( action )
+
+        return iter( result_list )
+
     def has( self, key ):
         for action in self.__actions:
             if action.name == key:
