@@ -45,6 +45,7 @@ def get_platform():
     if platf == "darwin":   # as platform.system() for OS-X returns Darwin we translate for consistency.
         platf =  "osx"
 
+    #logging.debug( "Platform '{}'".format( platf ) )
     return platf
 
 
