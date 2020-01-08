@@ -25,7 +25,7 @@ C_TEMPLATE              = 'template'
 C_PLATFORM_LINUX        = 'linux'
 C_PLATFORM_WINDOS       = 'windows'
 C_PLATFORM_OSX          = 'osx'
-C_PLATFORMS             = ( C_PLATFORM_LINUX, C_PLATFORM_LINUX, C_PLATFORM_OSX )
+C_PLATFORMS             = ( C_PLATFORM_LINUX, C_PLATFORM_WINDOS, C_PLATFORM_OSX )
 
 C_VERSION               = 'version'
 C_MENU                  = 'menu'
