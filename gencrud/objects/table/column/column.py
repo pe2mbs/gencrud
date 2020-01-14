@@ -309,7 +309,7 @@ class TemplateColumn( object ):
             return 'Interval'
 
         elif self.__sqlType == 'BLOB':
-            return 'LargeBinary'
+            return 'string'
 
         elif self.__sqlType == 'NUMERIC' or self.__sqlType == 'DECIMAL':
             return 'string'
