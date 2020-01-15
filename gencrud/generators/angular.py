@@ -445,7 +445,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
     updateAngularAppModuleTs( config, appModule, exportsModules )
 
     os.remove( os.path.join( config.angular.sourceFolder, 'app.module.json' ) )
-    copyAngularCommon( os.path.abspath( os.path.join( os.path.dirname( __file__ ),
+    copyAngularCommon( config, os.path.abspath( os.path.join( os.path.dirname( __file__ ),
                                                       '..',
                                                       'common-ts' ) ),
                        os.path.join( config.angular.sourceFolder, 'common' ) )
@@ -523,9 +523,12 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
     return appModule
 
 
-def copyAngularCommon( source, destination ):
+def copyAngularCommon( config, source, destination ):
     files = os.listdir( source )
     for filename in files:
+        if filename == 'gencrud.module.ts' and not config.options.useModule:
+            continue
+
         if not os.path.isfile( os.path.join( destination, filename ) ) and \
                os.path.isfile( os.path.join( source, filename ) ):
             logger.debug( "Copy new file {0} => {1}".format( os.path.join( source, filename ),
@@ -546,6 +549,6 @@ def copyAngularCommon( source, destination ):
                                                      os.path.join( destination, filename ) ) )
 
         elif os.path.isdir( os.path.join( destination, filename ) ):
-            copyAngularCommon( os.path.join( source, filename ), os.path.join( destination, filename ) )
+            copyAngularCommon( config, os.path.join( source, filename ), os.path.join( destination, filename ) )
 
     return
