@@ -34,34 +34,34 @@ class TemplateMenuItem( object ):
         return
 
     @property
-    def index( self ):
+    def index( self ) -> int:
         return self.__item.get( C_INDEX, -1 )
 
     @property
-    def displayName( self ):
+    def displayName( self ) -> str:
         return self.caption
 
     @property
-    def caption( self ):
+    def caption( self ) -> str:
         return self.__item.get( C_CAPTION, self.__item.get( C_DISPLAY_NAME, '' ) )
 
     @property
-    def iconName( self ):
+    def iconName( self ) -> str:
         return self.icon
 
     @property
-    def icon( self ):
+    def icon( self ) -> str:
         return self.__item.get( C_ICON, self.__item.get( C_ICON_NAME, '' ) )
 
     @property
-    def route( self ):
+    def route( self ) -> str:
         return self.__item.get( C_ROUTE, None )
 
     @property
-    def menu( self ):
+    def menu( self ) -> object:
         return self.__submenu
 
-    def activateItem( self ):
+    def activateItem( self ) -> str:
         if C_MENU in self.__item:
             return self.__submenu.activateItem()
 

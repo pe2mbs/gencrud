@@ -27,23 +27,23 @@ class TemplateImport():
         return
 
     @property
-    def module( self ):
+    def module( self ) -> str:
         return self.__config.get( C_MODULE, '' )
 
     @property
-    def component( self ):
+    def component( self ) -> str:
         return self.__config.get( C_COMPONENT, '' )
 
     @property
-    def type( self ):
+    def type( self ) -> str:
         return self.__config.get( C_TYPE, '' ).lower()
 
     @property
-    def where( self ):
+    def where( self ) -> str:
         return self.__config.get( C_WHERE, C_APP ).lower()
 
     @property
-    def path( self ):
+    def path( self ) -> str:
         return self.__config.get( C_PATH, '.' )
 
 
@@ -65,7 +65,7 @@ class TemplateExtra( object ):
 
         return
 
-    def getTypeScriptInports( self, where = C_APP ):
+    def getTypeScriptInports( self, where = C_APP )-> list:
         result = []
         for inp in self.__modules:
             if inp.type == C_TYPESCRIPT and inp.where == where:
@@ -73,7 +73,7 @@ class TemplateExtra( object ):
 
         return result
 
-    def getPythonInports( self, where = C_APP ):
+    def getPythonInports( self, where = C_APP )-> list:
         result = [ ]
         for inp in self.__modules:
             if inp.type == C_PYTHON and inp.where == where:
@@ -81,7 +81,7 @@ class TemplateExtra( object ):
 
         return result
 
-    def getTypeScriptComponents( self, where = C_APP ):
+    def getTypeScriptComponents( self, where = C_APP ) -> list:
         result = [ ]
         for inp in self.__components:
             if inp.type == C_TYPESCRIPT and inp.where == where:

@@ -37,11 +37,11 @@ class TemplateSource( object ):
         self.__key = tp
         self.__source = self.__config.get( platf, self.__config ).get( C_SOURCE, {} )
         self.__template = self.__config.get( platf, self.__config ).get( C_TEMPLATE,
-                        os.path.abspath( os.path.join( os.path.dirname( __file__ ), 'templates' ) ) )
+                        os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'templates' ) ) )
         return
 
     @property
-    def baseFolder( self ):
+    def baseFolder( self ) -> str:
         folder = self.__source.get( C_BASE, os.getcwd() )
         if not os.path.isdir( folder ):
             raise PathNotFoundException( folder )
@@ -49,7 +49,7 @@ class TemplateSource( object ):
         return folder
 
     @property
-    def sourceFolder( self ):
+    def sourceFolder( self ) -> str:
         folder = self.__source.get( self.__key, None )
         if folder is None:
             raise KeyNotFoundException( "{}.{}".format( C_SOURCE, self.__key ) )
@@ -68,7 +68,7 @@ class TemplateSource( object ):
         return folder
 
     @property
-    def templateFolder( self ):
+    def templateFolder( self ) -> str:
         folder = os.path.join( self.__template, self.__key )
         if not os.path.isdir( folder ):
             raise MissingTemplateFolder( folder )

@@ -17,91 +17,15 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-from typing import TypeVar
+from typing import TypeVar, Iterable
 import gencrud.util.utils
-from gencrud.objects.object import TemplateObject
-from gencrud.source import TemplateSourcePython, TemplateSourceAngular
+from gencrud.objects.object import TemplateObject, TemplateObjects
+from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular
+from gencrud.config.options import TemplateOptions
+from gencrud.config.references import TemplateReferences
 from gencrud.constants import *
 
-OptionalString = TypeVar('OptionalString', str, None)
-
-
-class TemplateOptions( object ):
-    def __init__( self, **cfg ) -> None:
-        self.__config = cfg
-        return
-
-    @property
-    def useModule( self ) -> bool:
-        # This override/set commandline options from the template defintion.
-        return self.__config.get( C_USE_MODULE, gencrud.util.utils.useModule )
-
-    @property
-    def backupFiles( self ) -> bool:
-        # This override/set commandline options from the template defintion.
-        return self.__config.get( C_BACKUP, gencrud.util.utils.backupFiles )
-
-    @property
-    def ignoreCaseDbIds( self ) -> bool:
-        # This override/set commandline options from the template defintion.
-        return self.__config.get( C_IGNORE_CASE_DB_IDS, gencrud.util.utils.ignoreCaseDbIds )
-
-    @property
-    def overWriteFiles( self ) -> bool:
-        # This override/set commandline options from the template defintion.
-        return self.__config.get( C_OVERWRITE, gencrud.util.utils.overWriteFiles )
-
-    @property
-    def lazyLoading( self ) -> bool:
-        # This override/set commandline options from the template defintion.
-        return self.__config.get( C_LAZY_LOADING, gencrud.util.utils.lazyLoading )
-
-
-class TemplateObjects( list ):
-    pass
-
-
-class TemplateAngularModule( object ):
-    def __init__( self, default_filename, default_class, default_module = None, **cfg ):
-        self.__filename = default_filename
-        self.__class = default_class
-        self.__module = default_module or default_class
-        self.__config = cfg
-        return
-
-    @property
-    def filename( self ) -> str:
-        return self.__config.get( C_FILENAME, self.__filename )
-
-    @property
-    def cls( self ) -> str:
-        return self.__config.get( C_CLASS, self.module if self.__class is None else self.__class )
-
-    @property
-    def module( self ) -> str:
-        return self.__config.get( C_MODULE, self.__module )
-
-
-class TemplateReferences( object ):
-    def __init__( self, **cfg ):
-        self.__config = cfg
-        tmp             = self.__config[ C_APP_MODULE ] if C_APP_MODULE in self.__config else { }
-        self.__main     = TemplateAngularModule( 'app.module.ts',
-                                             'AppModule',
-                                             **tmp )
-        tmp             = self.__config[ C_APP_ROUTING ] if C_APP_ROUTING in self.__config else { }
-        self.__rout     = TemplateAngularModule( 'app.routing.module.ts',
-                                                'AppRoutingModule',
-                                                **tmp )
-        return
-
-    @property
-    def app_module( self ) -> TemplateAngularModule:
-        return self.__main
-
-    @property
-    def app_routing( self ) -> TemplateAngularModule:
-        return self.__rout
+OptionalString = TypeVar( 'OptionalString', str, None )
 
 
 class TemplateConfiguration( object ):
@@ -115,7 +39,7 @@ class TemplateConfiguration( object ):
         self.__angular      = TemplateSourceAngular( **self.__config )
         opts                = self.__config[ C_REFERENCES ] if C_REFERENCES in self.__config else { }
         self.__references   = TemplateReferences( **opts )
-        self.__objects      = TemplateObjects()
+        self.__objects      = []
         for obj in self.__config[ C_OBJECTS ]:
             self.__objects.append( TemplateObject( self, **obj ) )
 
@@ -133,7 +57,7 @@ class TemplateConfiguration( object ):
     def objects( self ) -> TemplateObjects:
         return self.__objects
 
-    def __iter__( self ):
+    def __iter__( self ) -> Iterable[ TemplateObject ]:
         return iter( self.__objects )
 
     @property

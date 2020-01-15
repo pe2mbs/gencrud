@@ -17,12 +17,13 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-
+from typing import List
 from gencrud.objects.menuitem import TemplateMenuItem
 from gencrud.objects.table import TemplateTable
 from gencrud.objects.actions.actions import TemplateActions
 from gencrud.objects.extra import TemplateExtra
 from gencrud.constants import *
+
 
 class TemplateObject( object ):
     def __init__( self, parent, **cfg ):
@@ -38,48 +39,48 @@ class TemplateObject( object ):
     #   Configuration properties
     #
     @property
-    def title( self ):
+    def title( self ) -> str:
         return self.__config.get( C_TITLE, self.__config.get( C_CLASS, '<-Unknown->' ) )
 
     @property
-    def name( self ):
+    def name( self ) -> str:
         return self.__config.get( C_NAME, '' )
 
     @property
-    def cls( self ):
+    def cls( self ) -> str:
         return self.__config.get( C_CLASS, '' )
 
     @property
-    def uri( self ):
+    def uri( self ) -> str:
         return self.__config.get( C_URI, '' )
 
     @property
-    def actions( self ):
+    def actions( self ) -> TemplateActions:
         return self.__actions
 
-    def hasExtra( self ):
+    def hasExtra( self )  -> bool:
         return self.__extra is not None
 
     @property
-    def extra( self ):
+    def extra( self ) -> TemplateExtra:
         return self.__extra
 
     @property
-    def menu( self ):
+    def menu( self ) -> TemplateMenuItem:
         return self.__menu
 
     @property
-    def table( self ):
+    def table( self ) -> TemplateTable:
         return self.__table
 
     @property
-    def actionWidth( self ):
+    def actionWidth( self ) -> str:
         return self.__config.get( C_ACTION_WIDTH, '5%' )
 
     #
     #   internal functions and properties to gencrud
     #
-    def orderBy( self ):
+    def orderBy( self ) -> str:
         orderList = []
         for field in self.__table.orderBy:
             orderList.append( 'order_by( {}.{} )'.format( self.cls, field ) )
@@ -87,7 +88,7 @@ class TemplateObject( object ):
         return '.'.join( orderList )
 
     @property
-    def externalService( self ):
+    def externalService( self ) -> str:
         FILLER = '                 , '
         FILLER_LF = '\r\n                 , '
         result = []
@@ -105,3 +106,6 @@ class TemplateObject( object ):
                         raise Exception( "service missing in {} in field {}".format( self.__table.name, field.name )  )
 
         return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
+
+
+TemplateObjects = List[ TemplateObject ]

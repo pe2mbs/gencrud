@@ -47,10 +47,9 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     <mat-form-field color="accent">
         <input  matInput 
                 class="custom-input__input" 
-                readonly
                 id="{{ id }}"
                 placeholder="{{ placeholder }}"
-                [formControl]="labelControl"/>
+                [formControl]="control"/>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
@@ -74,12 +73,11 @@ export class PytLabelComponent extends PytBaseComponent
 {
     @Input( 'pipe' )        pipe:   string = '';
     @Input( 'format' )      format: string = '';
-    public labelControl: FormControl;
 
     constructor( fGD: FormGroupDirective ) 
     {
         super( fGD );
-        this.labelControl = new FormControl()
+        this.control.disable();
         return;
     }
 
@@ -103,14 +101,14 @@ export class PytLabelComponent extends PytBaseComponent
                     }
                     if ( idx < splitted.length )
                     {
-                        defFormat = splitted[ idx ]
+                        defFormat = splitted[ idx ];
                     }
                 }
                 let dt = moment( value );
                 value = dt.format( defFormat );
             }
         }
-        this.labelControl.setValue( value );
+        this.control.setValue( value );
         return;
     }
 }

@@ -61,24 +61,24 @@ class TemplateTable( object ):
         self.__mixin = TemplateMixin( table[ C_MIXIN ] if C_MIXIN in table else None )
         return
 
-    def hasTabs( self, tp = C_DIALOG ):
+    def hasTabs( self, tp = C_DIALOG ) -> bool:
         return len( self.__table.get( tp + C_TABS, [] ) ) > 0
 
-    def tabs( self, tp = C_DIALOG ):
+    def tabs( self, tp = C_DIALOG ) -> TemplateTabs:
         return TemplateTabs( self, **self.__table.get( tp + C_TABS, {} ) )
 
     @property
-    def Mixin( self ):
+    def Mixin( self ) -> TemplateMixin:
         return self.__mixin
 
-    def sortedInfo( self ):
+    def sortedInfo( self ) -> str:
         if self.__viewSort is not None:
             return self.__viewSort.htmlMaterialSorting()
 
         return ''
 
     @property
-    def leadIn( self ):
+    def leadIn( self ) -> str:
         result = []
         for column in self.__columns:
             for leadin in column.leadIn:
@@ -88,25 +88,25 @@ class TemplateTable( object ):
         return '\n'.join( result )
 
     @property
-    def tableName( self ):
+    def tableName( self ) -> str:
         if root.config.options.ignoreCaseDbIds:
             return self.__table.get( C_NAME, '' ).lower()
 
         return self.__table.get( C_NAME, '' )
 
     @property
-    def name( self ):
+    def name( self ) -> str:
         if root.config.options.ignoreCaseDbIds:
             return self.__table.get( C_NAME, '' ).lower()
 
         return self.__table.get( C_NAME, '' )
 
     @property
-    def orderBy( self ):
+    def orderBy( self ) -> list:
         return self.__table.get( C_ORDER_BY, [ self.__primaryKey ] )
 
     @property
-    def uniqueKey( self ):
+    def uniqueKey( self ) -> dict:
         values  = {}
         for value in self.__table.get( C_UNIQUE_KEY, {} ):
             for key in value.keys():
@@ -114,7 +114,7 @@ class TemplateTable( object ):
 
         return values
 
-    def hasUniqueKey( self ):
+    def hasUniqueKey( self ) -> bool:
         if C_UNIQUE_KEY in self.__table:
             if type( self.__table.get( C_UNIQUE_KEY, None ) ) in ( dict, tuple, list ):
                 return True
@@ -122,7 +122,7 @@ class TemplateTable( object ):
         return False
 
     @property
-    def hasAutoUpdate( self ):
+    def hasAutoUpdate( self ) -> bool:
         for field in self.__columns:
             if field.hasAutoUpdate:
                 return True
@@ -134,15 +134,15 @@ class TemplateTable( object ):
         return self.__columns
 
     @property
-    def primaryKey( self ):
+    def primaryKey( self ) -> str:
         return self.__primaryKey
 
     @property
-    def listViewColumns( self ):
+    def listViewColumns( self ) -> list :
         return sorted( [ col for col in self.__columns if col.listview.index is not None ],
                        key = lambda col: col.listview.index )
 
-    def buildFilter( self ):
+    def buildFilter( self ) -> str:
         result = [ ]
         for item in self.listViewColumns:
             if item.ui.isChoice() or item.ui.isCombobox():
@@ -160,7 +160,7 @@ class TemplateTable( object ):
         return (' + \r\n                   '.join( result ))
 
     @property
-    def viewSort( self ):
+    def viewSort( self ) -> SortInfo:
         return self.__viewSort
 
     @property
@@ -171,7 +171,7 @@ class TemplateTable( object ):
         return False
 
     @property
-    def hasViewSizeValue( self ):
+    def hasViewSizeValue( self ) -> bool:
         if self.__viewSize is not None:
             return type( self.__viewSize ) is int
 
