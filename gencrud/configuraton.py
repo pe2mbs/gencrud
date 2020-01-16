@@ -19,7 +19,7 @@
 #
 from typing import TypeVar, Iterable
 import gencrud.util.utils
-from gencrud.objects.object import TemplateObject, TemplateObjects
+from gencrud.config.objects.object import TemplateObject, TemplateObjects
 from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular
 from gencrud.config.options import TemplateOptions
 from gencrud.config.references import TemplateReferences

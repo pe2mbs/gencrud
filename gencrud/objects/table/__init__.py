@@ -1,1 +1,0 @@
-from gencrud.objects.table.table import *
