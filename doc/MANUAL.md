@@ -1299,3 +1299,14 @@ When where is omitted the default is _module_
 * _python_: the import is intended for the python module
   
 When where is omitted the default is _typescript_
+
+## references
+references:
+    app-module:
+        filename:                   app.module.ts
+        class:                      AppModule
+        module:                     app.module
+    app-routing:
+        filename:                   app.routingmodule.ts
+        class:                      AppRoutingModule
+        module:                     app.routingmodule

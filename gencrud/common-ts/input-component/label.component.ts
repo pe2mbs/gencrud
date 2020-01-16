@@ -46,7 +46,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
   template: `<div class="form">
     <mat-form-field color="accent">
         <input  matInput 
-                class="custom-input__input" 
+                class="custom-input__input"
+                disabled
                 id="{{ id }}"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"/>
@@ -77,7 +78,7 @@ export class PytLabelComponent extends PytBaseComponent
     constructor( fGD: FormGroupDirective ) 
     {
         super( fGD );
-        this.control.disable();
+        // this.control.disable();
         return;
     }
 
