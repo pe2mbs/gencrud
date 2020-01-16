@@ -45,7 +45,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         <input  matInput 
                 class="custom-input"
                 id="{{ id }}"
-                [disabled]="readonly"
+                [attr.readonly]="readonly"
+                [attr.readonly]="disabled"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"/>
         <mat-hint *ngIf="hint !== undefined">{{ hint }} </mat-hint>

@@ -193,7 +193,7 @@ def main():
                 gencrud.util.utils.backupFiles = True
 
             elif o in ( '-c', '--case-insensitive-db-ids' ):
-                gencrud.util.utils.lowerCaseDbIds = True
+                gencrud.util.utils.ignoreCaseDbIds = True
 
             elif o in ( '-o', '--overwrite' ):
                 gencrud.util.utils.overWriteFiles = True

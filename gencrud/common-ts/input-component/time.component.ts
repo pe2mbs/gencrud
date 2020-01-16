@@ -40,7 +40,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
                 class="custom-input"
                 id="{{ id }}"
                 matInput
-                [disabled]="readonly"
+                [attr.readonly]="readonly"
+                [attr.readonly]="disabled"
                 [format]="24"
                 placeholder="{{ placeholder }}"
                 [formControl]="control">

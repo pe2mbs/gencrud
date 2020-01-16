@@ -200,6 +200,10 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
     onControlChange()
     {
         console.log( 'base-onControlChange', this.formControlName, this.control );
+        if ( this.readonly || this.disabled )
+        {
+            return;
+        }
         // check condition if the form control is RESET
         if ( this.control.value === '' || this.control.value === null || this.control.value === undefined )
         {

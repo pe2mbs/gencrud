@@ -47,7 +47,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     <mat-form-field color="accent">
         <input  matInput 
                 class="custom-input__input"
-                disabled
+               [attr.readonly]="readonly"
+               [attr.readonly]="disabled"
                 id="{{ id }}"
                 placeholder="{{ placeholder }}"
                 [formControl]="control"/>
@@ -78,6 +79,7 @@ export class PytLabelComponent extends PytBaseComponent
     constructor( fGD: FormGroupDirective ) 
     {
         super( fGD );
+        this.readonly = true
         // this.control.disable();
         return;
     }

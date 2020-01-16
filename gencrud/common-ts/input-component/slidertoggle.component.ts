@@ -44,7 +44,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     <mat-slide-toggle class="custom-input"
                   id="{{ id }}"
                   [color]="color"
-                  [disabled]="readonly"
+                  [attr.readonly]="readonly"
+                  [attr.readonly]="disabled"
                   [labelPosition]="labelPosition"
                   [formControl]="control">
         {{ placeholder }}

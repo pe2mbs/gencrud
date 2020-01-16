@@ -45,7 +45,8 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
         <mat-select [(value)]="selected"
                     class="custom-input__input"
                     id="{{ id }}"
-                    [disabled]="readonly"
+                   [attr.readonly]="readonly"
+                   [attr.readonly]="disabled"
                     placeholder="{{ placeholder }}"
                     [formControl]="control">
             <mat-option *ngFor="let item of items" [value]="item.value">
