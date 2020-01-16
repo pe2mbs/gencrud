@@ -84,6 +84,13 @@ export class PytLabelComponent extends PytBaseComponent
         return;
     }
 
+    ngOnInit()
+    {
+        super.ngOnInit()
+        this.readonly = true
+        return;
+    }
+
     onControlChange()
     {
         super.onControlChange();
@@ -110,8 +117,8 @@ export class PytLabelComponent extends PytBaseComponent
                 let dt = moment( value );
                 value = dt.format( defFormat );
             }
+            this.control.setValue( value );
         }
-        this.control.setValue( value );
         return;
     }
 }
