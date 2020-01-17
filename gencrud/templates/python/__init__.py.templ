@@ -17,8 +17,13 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-__version__     = '1.7.381'
-__author__      = 'Marc Bertens-Nguyen'
-__email__       = 'm.bertens@pe2mbs.nl'
-__copyright__   = '2018 - 2019'
-__licence__     = 'GNU Library General Public License GPL-2.0-only'
+#   gencrud: ${date} version ${version}
+#
+from ${root.application}.${obj.name}.schema import *
+from ${root.application}.${obj.name}.model import *
+from ${root.application}.${obj.name}.view import *
+try:
+    from ${root.application}.${obj.name}.constants import *
+
+except ImportError:
+    pass

@@ -17,6 +17,8 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+#   gencrud: ${date} version ${version}
+#
 import logging
 import traceback
 from flask import Blueprint, request, jsonify
@@ -28,6 +30,7 @@ from ${ root.application }.common import fieldConversion
 % if obj.table.Mixin.View.Available:
 from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
 % endif
+
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
 logger = logging.getLogger()
 

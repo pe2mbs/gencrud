@@ -132,7 +132,7 @@ class TemplateAction( object ):
     def hasApiFunction( self ) -> bool:
         return C_FUNCTION in self.__cfg
 
-    def clone( self, obj_name ) -> TemplateAction:
+    def clone( self, obj_name ):
         return TemplateAction( self.__parent,
                                obj_name,
                                name = self.name,

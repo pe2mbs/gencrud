@@ -17,6 +17,8 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+#   gencrud: ${date} version ${version} by user ${username}
+#
 from applic.database import db
 from sqlalchemy import event
 import common
@@ -24,6 +26,7 @@ import common
 from ${obj.table.Mixin.Model.Module} import ${obj.table.Mixin.Model.Class}
 % endif
 ${ obj.table.leadIn }
+
 
 class ${obj.cls}( db.Model
 % if obj.table.Mixin.Model.Available:

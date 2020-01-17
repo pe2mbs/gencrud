@@ -22,6 +22,8 @@ import os
 import sys
 import logging
 import shutil
+import datetime
+import version
 from mako.template import Template
 from gencrud.configuraton import TemplateConfiguration
 import gencrud.util.utils
@@ -198,8 +200,10 @@ def generatePython( config: TemplateConfiguration, templates: list ):
     modules = []
     constants = []
     logger.info( 'application : {0}'.format( config.application ) )
+    dt = datetime.datetime.now()
+    generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
+    userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
     for cfg in config:
-        backupDone = False
         modulePath = os.path.join( config.python.sourceFolder,
                                    config.application,
                                    cfg.name )
@@ -229,36 +233,13 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                                      gencrud.util.utils.sourceName( templ ) ),
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
-                                                                                    root = config ).split( '\n' ):
+                                                                                    root = config,
+                                                                                    date = generationDateTime,
+                                                                                    version = version.__version__,
+                                                                                    username = userName ).split( '\n' ):
                     stream.write( line )
                     if sys.platform.startswith( 'linux' ):
                         stream.write( '\n' )
-
-            # Open the __init__.py
-            filename = os.path.join( modulePath, '__init__.py' )
-            moduleName, _ = os.path.splitext( gencrud.util.utils.sourceName( templ ) )
-            importStr = 'from {0}.{1}.{2} import *'.format( config.application,
-                                                            cfg.name,
-                                                            moduleName )
-            lines = []
-            try:
-                lines = open( filename, gencrud.util.utils.C_FILEMODE_READ ).readlines()
-
-            except Exception:
-                logger.error( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
-
-            logger.info( lines )
-            gencrud.util.utils.insertLinesUnique( lines,
-                                                  PositionInterface( end = len( lines ) ),
-                                                  importStr )
-            if not backupDone:
-                if config.options.backupFiles:
-                    gencrud.util.utils.backupFile( filename )
-
-                modules.append( ( config.application, cfg.name ) )
-                backupDone = True
-
-            open( filename, gencrud.util.utils.C_FILEMODE_WRITE ).writelines( lines )
 
         for column in cfg.table.columns:
             if column.ui is not None:
