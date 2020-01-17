@@ -89,6 +89,7 @@ class TemplateTable( object ):
                 if leadin not in result:
                     result.append( leadin )
 
+        logger.info( "LeadIn = {}".format( result ) )
         return '\n'.join( result )
 
     @property

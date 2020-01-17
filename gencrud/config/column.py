@@ -138,7 +138,7 @@ class TemplateColumn( object ):
 
                 module_name, _ = autoValue.rsplit('.', 1 )
                 import_statement = 'import {}'.format( module_name )
-                if import_statement not in self.__leadIn:
+                if module_name != 'common' and import_statement not in self.__leadIn:
                     self.__leadIn.append( import_statement )
 
             else:
@@ -396,7 +396,7 @@ class TemplateColumn( object ):
                     # Python callable
                     # Need to inject the module
                     import_statement = 'import {}'.format( module_name )
-                    if import_statement not in self.__leadIn:
+                    if module_name != 'common' and import_statement not in self.__leadIn:
                         self.__leadIn.append( import_statement )
 
                     result += ', default = {mod}.{call}'.format( mod = module_name, call = function )
