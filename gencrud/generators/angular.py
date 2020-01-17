@@ -453,6 +453,9 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
     if not config.options.useModule or not config.options.overWriteFiles:
         return appModule
 
+    dt = datetime.datetime.now()
+    generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
+    userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
     templ = os.path.abspath( os.path.join( config.angular.templateFolder, 'module.ts.templ' ) )
     imports = []
     files = []
@@ -466,7 +469,11 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
 
         # Create the 'module.ts'
         with open( filename, 'w' ) as stream:
-            for line in Template( filename = templ ).render( obj = cfg, root = config ).split( '\n' ):
+            for line in Template( filename = templ ).render( obj = cfg,
+                                                             root = config,
+                                                             username = userName,
+                                                             date = generationDateTime,
+                                                             version = version.__version__ ).split( '\n' ):
                 stream.write( line )
                 if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
                     stream.write( '\n' )
