@@ -18,10 +18,10 @@
 #   Boston, MA 02110-1301 USA
 #
 import logging
-from gencrud.config.objects.actions.action import (TemplateAction,
-                                                   DEFAULT_DELETE_ACTION,
-                                                   DEFAULT_EDIT_ACTION,
-                                                   DEFAULT_NEW_ACTION)
+from gencrud.config.action import (TemplateAction,
+                                   DEFAULT_DELETE_ACTION,
+                                   DEFAULT_EDIT_ACTION,
+                                   DEFAULT_NEW_ACTION)
 from gencrud.constants import *
 
 logger = logging.getLogger()
@@ -52,24 +52,24 @@ class TemplateActions( object ):
 
     @property
     def unique( self ):
-        label_list = []
-        result_list = []
+        labelList = []
+        resultList = []
         for action in self.__actions:
             if action.name in ( 'new', 'edit' ):
-                if 'newedit' + action.type in label_list:
+                if 'newedit' + action.type in labelList:
                     continue
 
-                label_list.append( 'newedit' + action.type )
+                labelList.append( 'newedit' + action.type )
 
             else:
-                if action.name + action.type in label_list:
+                if action.name + action.type in labelList:
                     continue
 
-                label_list.append( action.name + action.type )
+                labelList.append( action.name + action.type )
 
-            result_list.append( action )
+            resultList.append( action )
 
-        return iter( result_list )
+        return iter( resultList )
 
     def has( self, key ):
         for action in self.__actions:

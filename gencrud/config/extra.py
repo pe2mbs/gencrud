@@ -21,7 +21,8 @@ from gencrud.constants import *
 
 C_APP                   = 'app'
 
-class TemplateImport():
+
+class TemplateImport( object ):
     def __init__( self, **cfg ):
         self.__config = cfg
         return
@@ -65,7 +66,7 @@ class TemplateExtra( object ):
 
         return
 
-    def getTypeScriptInports( self, where = C_APP )-> list:
+    def getTypeScriptInports( self, where = C_APP ) -> list:
         result = []
         for inp in self.__modules:
             if inp.type == C_TYPESCRIPT and inp.where == where:
@@ -73,7 +74,7 @@ class TemplateExtra( object ):
 
         return result
 
-    def getPythonInports( self, where = C_APP )-> list:
+    def getPythonInports( self, where = C_APP ) -> list:
         result = [ ]
         for inp in self.__modules:
             if inp.type == C_PYTHON and inp.where == where:

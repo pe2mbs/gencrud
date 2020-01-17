@@ -20,6 +20,7 @@
 import os
 import pathlib
 
+
 class PathNotFoundException( Exception ):
     def __init__( self, path ):
         super( PathNotFoundException, self ).__init__( '{} not found.'.format( path ) )
@@ -35,5 +36,3 @@ def findpath( curr: pathlib.Path, rel: str ):
 
         if str( curr ) == curr.root:
             raise PathNotFoundException( rel )
-
-    return

@@ -20,8 +20,9 @@
 import logging
 import traceback
 import json
-from gencrud.config.objects.table.column.service import TemplateService
+from gencrud.config.service import TemplateService
 from gencrud.constants import *
+
 
 class TemplateUi( object ):
     def __init__( self, parent, **cfg ):
@@ -180,6 +181,12 @@ class TemplateUi( object ):
         if C_DISABLED in self.__cfg:
             options.append( 'disabled="{0}"'.format( self.disabled ) )
 
+        if self.__parent.isPrimaryKey():
+            options.append( 'readonly="true"' )
+
+        elif C_READ_ONLY in self.__cfg or self.__parent.readonly:
+            options.append( 'readonly="{0}"'.format( self.readonly ) )
+
         if C_COLOR in self.__cfg:
             options.append( 'color="{0}"'.format( self.color ) )
 
@@ -187,7 +194,11 @@ class TemplateUi( object ):
             options.append( 'format="{0}"'.format( self.format ) )
             options.append( 'pipe="{0}"'.format( self.pipe ) )
 
-        options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
+        if self.isDate() or self.isTime() or self.isDateTime():
+            options.append( 'format="{0}"'.format( self.format ) )
+
+        if C_DEBUG in self.__cfg:
+            options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
         return '''<{tag} id="{table}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
                 format( tag = type2component[ self.__cfg.get( 'type', 'textbox' ) ],
@@ -214,7 +225,11 @@ class TemplateUi( object ):
 
     @property
     def disabled( self ):
-        return str( self.__cfg.get( C_DISABLED, False ) ).lower()
+        return str( self.__cfg.get( C_DISABLED, self.__parent.disabled ) ).lower()
+
+    @property
+    def readonly( self ):
+        return str( self.__cfg.get( C_READ_ONLY, self.__parent.readonly ) ).lower()
 
     @property
     def pipe( self ):
@@ -260,7 +275,7 @@ class TemplateUi( object ):
             resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
 
         else:
-            resolveList = self.__cfg.get( C_RESOLVE_LIST,[ ] )
+            resolveList = self.__cfg.get( C_RESOLVE_LIST, [ ] )
 
         if isinstance( resolveList, dict ):
             # Short hand resolveList, need to convert
@@ -271,11 +286,10 @@ class TemplateUi( object ):
                     C_VALUE: item
                 })
 
-
         else:
             newResolveList = resolveList
 
-        ## result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
+        # result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
         return "{}".format( json.dumps( newResolveList, indent = 12 ) )
 
     @property
@@ -319,23 +333,23 @@ class TemplateUi( object ):
     def createResolveConstants( self ):
         def normalizeConstant( value ):
             last = ''
-            result = ''
+            constantName = ''
             if isinstance( value, ( int, float ) ):
                 return normalizeConstant( str( value ) )
 
             for ch in value:
                 if ch.isalnum():
-                    result += ch
+                    constantName += ch
                     last = ch
 
                 elif last != ' ':
-                    result += '_'
+                    constantName += '_'
                     last = ' '
 
-            if result[0].isdigit():
-                result = '_' + result
+            if constantName[0].isdigit():
+                constantName = '_' + constantName
 
-            return result
+            return constantName
 
         lines = []
         if self.hasResolveList():
@@ -348,28 +362,25 @@ class TemplateUi( object ):
 
             for item in resolveList:
                 try:
-                    varables = { C_FIELD: normalizeConstant( self.__parent.name ),
+                    variables = { C_FIELD: normalizeConstant( self.__parent.name ),
                                  C_TABLE: normalizeConstant( self.__parent.tableName ) }
                     if isinstance( resolveList, ( list, tuple ) ) and isinstance( item, dict ):
-                        varables[ C_LABEL ] = normalizeConstant( item[ C_LABEL ] )
-                        varables[ C_VALUE ] = item[ C_VALUE ]
+                        variables[ C_LABEL ] = normalizeConstant( item[ C_LABEL ] )
+                        variables[ C_VALUE ] = item[ C_VALUE ]
 
                     elif isinstance( item, ( str, int, float ) ):   # key
-                        varables[ C_LABEL ] = normalizeConstant( resolveList[ item ] )
-                        varables[ C_VALUE ] = item
+                        variables[ C_LABEL ] = normalizeConstant( resolveList[ item ] )
+                        variables[ C_VALUE ] = item
 
                     else:
                         raise Exception( "Invalid format in resolve-list" )
 
-                    result = eval( constant_format, globals(), varables )
+                    result = eval( constant_format, globals(), variables )
                     if result not in lines:
                         lines.append( result )
 
-                except Exception as exc:
+                except Exception:
                     logging.error( traceback.format_exc() )
                     raise Exception( "There is an error in the 'constant-format' expression" ) from None
 
         return lines
-
-
-

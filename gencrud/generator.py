@@ -126,6 +126,7 @@ def banner():
 Copyright (C) {copyright} {autor} <{email}>
 '''.format( version = __version__, autor = __author__, email = __email__, copyright = __copyright__ ) )
 
+
 def usage( msg = '' ):
     banner()
     if msg != '':
@@ -221,7 +222,6 @@ def main():
                     if filename.lower().endswith( '.yaml' ):
                         print( filename )
                         doWork( filename )
-
 
             else:
                 doWork( arg )

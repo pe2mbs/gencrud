@@ -20,6 +20,10 @@
 import logging
 from flask import Blueprint, jsonify
 
+__version__     = '1.0.0'
+__copyright__   = '(c) Copyright 2020, all rights reserved, GPL2 only'
+__author__      = 'Marc Bertens-Nguyen'
+
 ##
 #   Section maintained by gencrud.py
 ##
@@ -55,17 +59,37 @@ def registerApi( app, cors ):
 
 
 def registerExtensions( app, db ):
+    del app     # unused
+    del db      # unused
     return
 
 
 def registerShellContext( app, db ):
+    del app     # unused
+    del db      # unused
     return
 
 
 def registerCommands( app ):
+    del app     # unused
     return
+
 
 @menuApi.route( "/api/menu", methods=[ 'GET' ] )
 def getUserMenu():
     return jsonify( menuItems )
 
+
+@menuApi.route( "/api/version", methods=[ 'GET' ] )
+def getAppVersion():
+    return __version__
+
+
+@menuApi.route( "/api/copyright", methods=[ 'GET' ] )
+def getAppCopyright():
+    return __copyright__
+
+
+@menuApi.route( "/api/author", methods=[ 'GET' ] )
+def getAppAuthor():
+    return __author__

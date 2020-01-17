@@ -1,1 +1,4 @@
 nltk
+mako
+pyyaml
+six

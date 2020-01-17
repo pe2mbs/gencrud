@@ -62,6 +62,7 @@ def makePythonModules( root_path, *args ):
 
 
 def updatePythonProject( config: TemplateConfiguration, app_module ):
+    del app_module  # unused
     logger.debug( config.python.sourceFolder )
     lines = []
     filename = os.path.join( config.python.sourceFolder, config.application, 'main.py' )
@@ -121,7 +122,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
     try:
         menuItems = json.loads( ''.join( sectionLines ) )
 
-    except:
+    except Exception:
         for line_no, line in enumerate( sectionLines ):
             print( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
 
@@ -135,41 +136,41 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
         :return:
         """
         foundMenu = False
-        for menuItem in menu_items:
-            if menuItem[ MENU_DISPLAY_NAME ] == menu.caption:
+        for newMenuItem in menu_items:
+            if newMenuItem[ MENU_DISPLAY_NAME ] == menu.caption:
                 foundMenu = True
                 if menu.menu is not None:
                     # sub menu
-                    if MENU_CHILDEREN_LABEL not in menuItem:
-                        menuItem[ MENU_CHILDEREN_LABEL ] = []
+                    if MENU_CHILDEREN_LABEL not in newMenuItem:
+                        newMenuItem[ MENU_CHILDEREN_LABEL ] = []
 
-                    processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                    processNewMenuStructure( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
                 else:
-                    menuItem[ MENU_DISPLAY_NAME ]   = menu.caption
-                    menuItem[ MENU_ICON_NAME ]      = menu.icon
-                    menuItem[ MENU_INDEX ]          = menu.index
+                    newMenuItem[ MENU_DISPLAY_NAME ]   = menu.caption
+                    newMenuItem[ MENU_ICON_NAME ]      = menu.icon
+                    newMenuItem[ MENU_INDEX ]          = menu.index
                     if menu.route is not None:
-                        menuItem[ MENU_ROUTE ]      = menu.route
+                        newMenuItem[ MENU_ROUTE ]      = menu.route
 
                     elif menu.menu is not None:
-                        if MENU_CHILDEREN_LABEL not in menuItem:
-                            menuItem[ MENU_CHILDEREN_LABEL ] = []
+                        if MENU_CHILDEREN_LABEL not in newMenuItem:
+                            newMenuItem[ MENU_CHILDEREN_LABEL ] = []
 
-                        processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                        processNewMenuStructure( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
 
         if not foundMenu:
-            menuItem = {   MENU_DISPLAY_NAME:   menu.caption,
-                           MENU_ICON_NAME:      menu.icon,
-                           MENU_INDEX:          menu.index }
+            newMenuItem = { MENU_DISPLAY_NAME:   menu.caption,
+                            MENU_ICON_NAME:      menu.icon,
+                            MENU_INDEX:          menu.index }
             if menu.route is not None:
-                menuItem[ MENU_ROUTE ] = menu.route
+                newMenuItem[ MENU_ROUTE ] = menu.route
 
             elif menu.menu is not None:
-                menuItem[ MENU_CHILDEREN_LABEL ] = []
-                processNewMenuStructure( menuItem[ MENU_CHILDEREN_LABEL ],menu.menu )
+                newMenuItem[ MENU_CHILDEREN_LABEL ] = []
+                processNewMenuStructure( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
 
             menu_items.insert( menu.index if menu.index >= 0 else ( len( menu_items ) + menu.index + 1 ),
-                               menuItem )
+                               newMenuItem )
 
         return
 
@@ -183,8 +184,8 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
         menuItem[ MENU_INDEX ] = idx
         if MENU_CHILDEREN_LABEL in menuItem:
             # Re-number the submenu
-            for idx, subMenuItem in enumerate( menuItem[ MENU_CHILDEREN_LABEL ] ):
-                subMenuItem[ MENU_INDEX ] = idx
+            for subIdx, subMenuItem in enumerate( menuItem[ MENU_CHILDEREN_LABEL ] ):
+                subMenuItem[ MENU_INDEX ] = subIdx
 
     menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
     gencrud.util.utils.replaceInList( lines, rangePos, menuItemsBlock )
@@ -243,7 +244,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
             try:
                 lines = open( filename, gencrud.util.utils.C_FILEMODE_READ ).readlines()
 
-            except:
+            except Exception:
                 logger.error( 'Error reading the file {0}'.format( filename ), file = sys.stdout )
 
             logger.info( lines )

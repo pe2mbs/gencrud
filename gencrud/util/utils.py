@@ -43,9 +43,9 @@ logger = logging.getLogger()
 def get_platform():
     platf = system().lower()
     if platf == "darwin":   # as platform.system() for OS-X returns Darwin we translate for consistency.
-        platf =  "osx"
+        platf = "osx"
 
-    #logging.debug( "Platform '{}'".format( platf ) )
+    # logging.debug( "Platform '{}'".format( platf ) )
     return platf
 
 
@@ -111,7 +111,6 @@ def insertLinesUnique( lines, rangeObj, line ):
         lines.insert( rangeObj.end+1, line + '\n' )
         rangeObj.end += 1
 
-
     return
 
 
@@ -126,12 +125,12 @@ def searchSection( lines, rangeObj, sectionStart, sectionEnd ):
             rangeObj.end = lineNo
             stage += 1
 
-    return lines[ rangeObj.start : rangeObj.end+1 ]
+    return lines[ rangeObj.start: rangeObj.end+1 ]
 
 
-def replaceInList( lines, rangeObj, to_replace ):
-    lineNo = rangeObj.start
-    for line in rangeObj.range():
+def replaceInList( lines, range_obj, to_replace ):
+    lineNo = range_obj.start
+    for i in range_obj.range():
         del lines[ lineNo ]
 
     del lines[ lineNo ]
@@ -154,12 +153,12 @@ def check_nltk():
         from nltk.tokenize import word_tokenize
         word_tokenize( 'It\'s.' )
 
-    except:
+    except Exception:
         from nltk import download
         if not sslVerify:
             from ssl import _create_unverified_context
             from six.moves.urllib.request import install_opener, HTTPSHandler, build_opener
-
+            # TODO: This needs still proxy support !
             ctx = _create_unverified_context()
             opener = build_opener( HTTPSHandler( context = ctx ) )
             install_opener( opener )

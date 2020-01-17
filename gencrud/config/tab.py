@@ -94,4 +94,3 @@ class TemplateTabs( object ):
                 result += '*ngIf="{}" '.format( value )
 
         return result
-

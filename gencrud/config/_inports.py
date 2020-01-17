@@ -19,6 +19,7 @@
 #
 from nltk.tokenize import word_tokenize
 
+
 class SourceItemImport( object ):
     def __init__( self, name = '', module = '' ):
         self.__name     = name
@@ -49,10 +50,10 @@ class SourceImport( object ):
         return self.__tsList
 
     def appendPy(self, data ):
-        def exists( name, module ):
+        def exists( exist_name, exist_module ):
             found = False
             for obj in self.__pyList:
-                if obj.module == module and obj.name == name:
+                if obj.module == exist_module and obj.name == exist_name:
                     found = True
                     break
 
@@ -75,10 +76,10 @@ class SourceImport( object ):
         return
 
     def appendTs(self, data ):
-        def exists( name, module ):
+        def exists( exist_name, exist_module ):
             found = False
             for obj in self.__tsList:
-                if obj.module == module and obj.name == name:
+                if obj.module == exist_module and obj.name == exist_name:
                     found = True
                     break
 

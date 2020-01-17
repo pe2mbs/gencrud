@@ -28,11 +28,10 @@ def fieldConversion( record, key, value, default = None ):
     try:
         _type = record.__table__.columns[ key ].type
 
-    except:
+    except Exception:
         _type = record.__table__.columns[ key.lower() ].type
 
     logger.debug( 'field {0} value {1} type {2}'.format( key, value, _type ) )
-
     if isinstance( _type, ( sqlalchemy.sql.sqltypes.Integer,
                             sqlalchemy.sql.sqltypes.INTEGER,
                             sqlalchemy.sql.sqltypes.BigInteger,
@@ -63,7 +62,7 @@ def fieldConversion( record, key, value, default = None ):
             value = value[0:22] + value[23:]
             logger.debug( 'datetime.datetime.value: {}'.format( value ) )
             if value.endswith( 'Z' ):
-                value = datetime.datetime.strptime( value,'%Y-%m-%dT%H:%M:%S.00Z' )
+                value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S.00Z' )
 
             else:
                 value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S%z' )

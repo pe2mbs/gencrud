@@ -18,23 +18,30 @@
 #   Boston, MA 02110-1301 USA
 #
 from gencrud.constants import *
-from gencrud.config.objects.table.python import PythonObject
 
-class TemplateMixin( object ):
-    def __init__( self, mixin ):
-        self.__model    = PythonObject( mixin[ C_MODEL ] if mixin is not None and C_MODEL in mixin else None )
-        self.__schema   = PythonObject( mixin[ C_SCHEMA ] if mixin is not None and C_SCHEMA in mixin else None )
-        self.__view     = PythonObject( mixin[ C_VIEW ] if mixin is not None and C_VIEW in mixin else None )
+
+class TemplateRelation( object ):
+    def __init__( self, field, **cfg ):
+        self.__field        = field
+        self.__cfg          = cfg
         return
 
     @property
-    def Model( self ):
-        return self.__model
+    def name( self ):
+        return self.__cfg.get( C_NAME, None )
 
     @property
-    def Schema( self ):
-        return self.__schema
+    def fieldName( self ):
+        return self.__cfg.get( C_FIELD_NAME, self.__field.name + '_REL' )
 
     @property
-    def View( self ):
-        return self.__view
+    def cls( self ):
+        return self.__cfg.get( C_CLASS, None )
+
+    @property
+    def tableName( self ):
+        return self.__field.tableName
+
+    @property
+    def lazy( self ):
+        return self.__cfg.get( C_LAZY, 'True' )

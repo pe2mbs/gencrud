@@ -17,6 +17,8 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+
+
 class PositionInterface( object ):
     def __init__( self, start = 0, end = 0 ):
         self.__start    = start
@@ -46,4 +48,4 @@ class PositionInterface( object ):
 
     def dump( self, caption ):
         print( '{0}\n- start: {1} end {2}'.format( caption, self.__start, self.__end ) )
-
+        return

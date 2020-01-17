@@ -20,7 +20,6 @@
 import json
 import os
 import shutil
-import sys
 import logging
 from mako.template import Template
 from mako import exceptions
@@ -36,10 +35,6 @@ logger = logging.getLogger()
 
 LABEL_APP_ROUTES    = 'const appRoutes: Routes ='
 LABEL_NG_MODULE     = '@NgModule('
-
-#APP_MODULE          = 'app.module.ts'
-#APP_ROUTING_MODULE  = 'app.routingmodule.ts'
-
 NG_ENTRY_COMPONENTS = 'entryComponents'
 NG_IMPORTS          = 'imports'
 NG_PROVIDERS        = 'providers'
@@ -88,6 +83,7 @@ def updateImportSection( lines, files ):
 
 
 def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exportsModules ):
+    del exportsModules  # unused
     # File to edit 'app.module.ts'
     # inject the following;
     #   inport
@@ -132,7 +128,7 @@ def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exports
     updateNgModule( NG_ENTRY_COMPONENTS )
 
     buffer = LABEL_NG_MODULE + ts.build( NgModule, 2 ) + ')'
-    bufferLines = [ '{}\n'.format ( x ) for x in buffer.split( '\n' ) ]
+    bufferLines = [ '{}\n'.format( x ) for x in buffer.split( '\n' ) ]
     gencrud.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, app_module[ 'files' ] )
@@ -146,6 +142,7 @@ def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exports
 
 
 def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module ):
+    del app_module  # unused
     if not os.path.isfile( os.path.join( config.angular.sourceFolder,
                                          config.references.app_routing.module ) ):
         return []
@@ -186,7 +183,8 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
                         if component not in imports:
                             imports.append( component )
 
-                logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ), cfg.menu.menu.route[ 1: ] ) )
+                logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ),
+                                                                   cfg.menu.menu.route[ 1: ] ) )
                 if len( children ) > 0:
                     children.insert( 0, {
                         'path':      "''",
@@ -232,7 +230,6 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
                                                                                                          app = config.application,
                                                                                                          mod = cfg.name )
 
-
         elif config.options.useModule:
             component = "import {{ {cls}Module }} from './{app}/{mod}.module';".format( cls = cfg.cls,
                                                                                         app = config.application,
@@ -242,7 +239,6 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
             component = "import {{ {cls}TableComponent }} from './{app}/{mod}/table.component';".format( cls = cfg.cls,
                                                                                                          app = config.application,
                                                                                                          mod = cfg.name )
-
 
         if component not in imports:
             imports.append( component )
@@ -290,7 +286,7 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
 
 
 def exportAndType( line ):
-    return line.split( ' ' )[ 1 : 3 ]
+    return line.split( ' ' )[ 1: 3 ]
 
 
 def generateAngular( config: TemplateConfiguration, templates: list ):
@@ -341,7 +337,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
             if C_SCREEN in templ:
                 logger.debug( 'Action new  : {0}'.format( cfg.actions.get( C_NEW ).type ) )
                 logger.debug( 'Action edit : {0}'.format( cfg.actions.get( C_EDIT ).type ) )
-                if C_SCREEN in templ and C_SCREEN in (cfg.actions.get( C_NEW ).type,cfg.actions.get( C_EDIT ).type ):
+                if C_SCREEN in templ and C_SCREEN in (cfg.actions.get( C_NEW ).type, cfg.actions.get( C_EDIT ).type ):
                     logger.debug( "Adding screen for {}".format( templ ) )
 
                 else:
@@ -366,13 +362,6 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
 
             with open( templateFilename,
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                def errorHandler( context, error, *args, **kwargs ):
-                    print( context )
-                    print( error )
-                    print( args )
-                    print( kwargs )
-                    return
-
                 try:
                     for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg, root = config ).split( '\n' ):
                         if line.startswith( 'export ' ):
@@ -385,7 +374,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                         if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
                             stream.write( '\n' )
 
-                except Exception as exc:
+                except Exception:
                     print( "Mako exception:" )
                     for line in exceptions.text_error_template().render_unicode().encode('ascii').split(b'\n'):
                         print( line )
@@ -406,7 +395,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                 try:
                     data = json.load( stream )
 
-                except:
+                except Exception:
                     logger.error( "Error in file: {0}".format( app_module_json_file ) )
                     raise
 
@@ -509,8 +498,6 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
                 }
             ]
     }
-
-
 
     for imp in files:
         if imp not in appModule[ 'files' ]:

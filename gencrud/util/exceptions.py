@@ -18,6 +18,7 @@
 #   Boston, MA 02110-1301 USA
 #
 
+
 class ModuleExistsAlready( Exception ):
     def __init__( self, obj, path ):
         self.__obj = obj
@@ -58,13 +59,11 @@ class MissingTemplateFolder( Exception ):
                                                      format( path ) )
 
 
-
 class InvalidEnvironment( Exception ):
     def __init__( self, environment ):
         self.__environment = environment
         super( InvalidEnvironment, self ).__init__( 'Invalid environment {0} in verifyLoadProject'.
                                                     format( environment ) )
-
 
 
 class EnvironmentInvalidMissing( Exception ):
@@ -74,6 +73,7 @@ class EnvironmentInvalidMissing( Exception ):
         self.__configFile = config_file
         super( EnvironmentInvalidMissing, self ).__init__( 'Error: {0} environment invalid, missing {1} in config file {2}'.
                                                            format( environment, missing, config_file ) )
+
 
 class MissingAngularEnvironment( Exception ):
     def __init__( self, missing ):

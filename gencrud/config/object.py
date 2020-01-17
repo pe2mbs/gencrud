@@ -18,10 +18,10 @@
 #   Boston, MA 02110-1301 USA
 #
 from typing import List
-from gencrud.config.objects.menuitem import TemplateMenuItem
-from gencrud.config.objects.table import TemplateTable
-from gencrud.config.objects.actions.actions import TemplateActions
-from gencrud.config.objects.extra import TemplateExtra
+from gencrud.config.menuitem import TemplateMenuItem
+from gencrud.config.table import TemplateTable
+from gencrud.config.actions import TemplateActions
+from gencrud.config.extra import TemplateExtra
 from gencrud.constants import *
 
 

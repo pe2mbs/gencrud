@@ -19,10 +19,10 @@
 #
 import logging
 from nltk.tokenize import word_tokenize
-from gencrud.config.objects.table.column.listview import TemplateListView
-from gencrud.config.objects.table.column.relation import TemplateRelation
-from gencrud.config.objects.table.column.ui import TemplateUi
-from gencrud.config.objects.table.column.tab import TemplateTab
+from gencrud.config.listview import TemplateListView
+from gencrud.config.relation import TemplateRelation
+from gencrud.config.ui import TemplateUi
+from gencrud.config.tab import TemplateTab
 from gencrud.util.exceptions import InvalidSetting
 from gencrud.constants import *
 import gencrud.util.utils as root
@@ -30,13 +30,14 @@ logger = logging.getLogger()
 
 
 class TemplateColumn( object ):
-    def __init__( self, no_columns, table_name, **cfg ):
-        '''
+    def __init__( self, parent, table_name, **cfg ):
+        """
             field:              D_ROLE_ID       INT         AUTO_NUMBER  PRIMARY KEY
 
         :param cfg:
         :return:
-        '''
+        """
+        self.__parent       = parent
         self.__tableName    = table_name
         self.__config       = cfg
         self.__field        = ''
@@ -111,16 +112,17 @@ class TemplateColumn( object ):
             self.__dbField = self.__dbField.lower()
 
         if C_INDEX in cfg:
-            logger.warning( "'index' in the 'field' defintion is OBSOLETE, use 'listview' -> 'index' in the 'field' definition." )
+            logger.warning( "'index' in the 'field' defintion is OBSOLETE, use 'listview' -> 'index' +"
+                            " in the 'field' definition." )
 
         return
 
     @property
-    def leadIn( self ):
+    def leadIn( self ) -> list:
         return self.__leadIn
 
     @property
-    def hasAutoUpdate( self ):
+    def hasAutoUpdate( self ) -> bool:
         return C_AUTO_UPDATE in self.__config
 
     @property
@@ -152,36 +154,36 @@ class TemplateColumn( object ):
     def listview( self ):
         return self.__listview
 
-    def hasResolveList( self ):
+    def hasResolveList( self ) -> bool:
         return self.__ui is not None and self.__ui.hasResolveList()
 
-    def hasService( self ):
+    def hasService( self ) -> bool:
         return self.__ui is not None and self.__ui.hasService()
 
     @property
-    def tableName( self ):
+    def tableName( self ) -> str:
         return self.__tableName
 
     @property
-    def hasTab( self ):
+    def hasTab( self ) -> bool:
         return C_TAB in self.__config
 
     @property
-    def tab( self ):
+    def tab( self ) -> TemplateTab:
         return TemplateTab( self, **self.__config.get( C_TAB, {} ) )
 
     @property
-    def uniqueKey( self ):
+    def uniqueKey( self ) -> str:
         return self.__config.get( C_UNIQUE_KEY, '' )
 
-    def hasUniqueKey( self ):
+    def hasUniqueKey( self ) -> bool:
         return C_UNIQUE_KEY in self.__config
 
-    def hasForeignKey( self ):
+    def hasForeignKey( self ) -> bool:
         return any( 'FOREIGN KEY' in x for x in self.__attrs )
-        #return 'FOREIGN KEY' in self.__attrs
+        # return 'FOREIGN KEY' in self.__attrs
 
-    def hasRelationship( self ):
+    def hasRelationship( self ) -> bool:
         return self.hasForeignKey() and C_RELATION_SHIP in self.__config
 
     @property
@@ -189,27 +191,27 @@ class TemplateColumn( object ):
         return self.__relationShip
 
     @property
-    def name( self ):
+    def name( self ) -> str:
         return self.__field
 
-    def hasLabel( self ):
+    def hasLabel( self ) -> bool:
         return self.__config.get( C_LABEL, '' ) != ''
 
     @property
-    def label( self ):
+    def label( self ) -> str:
         return self.__config.get( C_LABEL, '' )
 
-    def isPrimaryKey( self ):
+    def isPrimaryKey( self ) -> bool:
         return 'PRIMARY KEY' in self.__attrs
 
-    def hasForeign( self ):
+    def hasForeign( self ) -> bool:
         return 'FOREIGN KEY' in self.__attrs
 
     @property
     def ui( self ):
         return self.__ui
 
-    def minimal( self ):
+    def minimal( self ) -> str:
         return self.__config.get( C_MINIMAL, '0' )
 
     def maximal( self ):
@@ -222,8 +224,8 @@ class TemplateColumn( object ):
         return self.__config.get( C_MAXIMAL, str( 2 ** 31 - 1 ) )
 
     @property
-    def pType( self ):
-        '''
+    def pType( self ) -> str:
+        """
             BigInteger          = BIGINT
             Boolean             = BOOLEAN or SMALLINT
             Date                = DATE
@@ -243,7 +245,7 @@ class TemplateColumn( object ):
             Text                = CLOB or TEXT.
             Time                = TIME
         :return:
-        '''
+        """
         if self.__sqlType == 'CHAR' or self.__sqlType.startswith( 'VARCHAR' ):
             return 'db.String'
 
@@ -283,7 +285,7 @@ class TemplateColumn( object ):
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
     @property
-    def tsType( self ):
+    def tsType( self ) -> str:
         if self.__sqlType == 'CHAR' or self.__sqlType.startswith( 'VARCHAR' ):
             return 'string'
 
@@ -322,20 +324,19 @@ class TemplateColumn( object ):
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
-    def isNumericField( self ):
+    def isNumericField( self ) -> bool:
         return self.__sqlType in ( "INT", "BIGINT", "FLOAT", "REAL", "INTERVAL", "NUMERIC", "DECIMAL" )
 
-    def isBooleanField( self ):
+    def isBooleanField( self ) -> bool:
         return self.__sqlType in ( "BOOLEAN", "INT" )
 
-    def sqlAlchemyDef( self ):
-        '''
+    def sqlAlchemyDef( self ) -> str:
+        """
 
             https://docs.sqlalchemy.org/en/latest/core/metadata.html#sqlalchemy.schema.Column
 
         :return:
-        '''
-        result = ''
+        """
         if root.config.options.ignoreCaseDbIds:
             result = 'db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
 
@@ -388,7 +389,8 @@ class TemplateColumn( object ):
                 defValue, module_name, function = defValue
                 if module_name is None:
                     # A scalar
-                    result += ', default = {q}{val}{q}'.format( val = defValue, q = '"' if type( defValue ) is str else "" )
+                    result += ', default = {q}{val}{q}'.format( val = defValue,
+                                                                q = '"' if type( defValue ) is str else "" )
 
                 else:
                     # Python callable
@@ -404,7 +406,8 @@ class TemplateColumn( object ):
 
     def DefaultValue( self ):
         if C_DEFAULT in self.__config:
-            module_name = function = None
+            module_name = None
+            function = None
             defValue = self.__config[ C_DEFAULT ]
             if '(' in defValue:
                 # Python callable
@@ -419,7 +422,7 @@ class TemplateColumn( object ):
                 # A scalar
                 pass
 
-            return ( defValue, module_name, function )
+            return defValue, module_name, function
 
         return None
 
@@ -455,9 +458,12 @@ class TemplateColumn( object ):
 
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
-                                            self.__config.get( C_LABEL, '' ),
-                                            [ C_READ_ONLY if self.isPrimaryKey() or self.readonly else '' ] )
+                                            self.__config.get( C_LABEL, '' ) )
 
     @property
-    def readonly( self ):
+    def readonly( self ) -> bool:
         return self.__config.get( C_READ_ONLY, False )
+
+    @property
+    def disabled( self ) -> bool:
+        return self.__config.get( C_DISABLED, False )

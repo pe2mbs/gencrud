@@ -21,6 +21,7 @@ import json
 import unittest
 from gencrud.util.exceptions import TypeScriptFormatError, TypeScriptInvalidStartDataType
 
+
 class TypeScript( object ):
     def __init__( self ):
         self.__indent = 0
@@ -90,13 +91,9 @@ class TypeScript( object ):
         elif typeObj in ( tuple, list ):
             return self._buildArray( obj, indent )
 
-        else:
-            return obj
-
-        return
+        return obj
 
     def build( self, obj, indent = 0 ):
-        typeObj = type( obj )
         self.__indent = indent
         if type( obj ) in ( dict, tuple, list ):
             return self._build( obj )
@@ -150,7 +147,6 @@ class TypeScript( object ):
         self.__column += 1
         return result, idx
 
-
     def _parseArray( self, text, idx ):
         result = []
         idx = self.__skipWhiteSpace( text, idx )
@@ -171,25 +167,24 @@ class TypeScript( object ):
     def _parse( self, text, idx ):
         idx = self.__skipWhiteSpace( text, idx )
 
-        def copyUntil( idx, until ):
+        def copyUntil( copyIdx, until ):
             result = ''
-            while idx < len( text ) and text[ idx ] not in until:
+            while copyIdx < len( text ) and text[ copyIdx ] not in until:
                 if text[ idx ] == '//':
-                    result += text[ idx ]
+                    result += text[ copyIdx ]
                     self.__column += 1
-                    idx += 1
-                    result += text[ idx ]
+                    copyIdx += 1
+                    result += text[ copyIdx ]
                     self.__column += 1
-                    idx += 1
+                    copyIdx += 1
 
                 else:
-                    result += text[ idx ]
+                    result += text[ copyIdx ]
                     self.__column += 1
-                    idx += 1
+                    copyIdx += 1
 
-            idx = self.__skipWhiteSpace( text, idx )
-            return result, idx
-
+            copyIdx = self.__skipWhiteSpace( text, copyIdx )
+            return result, copyIdx
 
         if text[ idx ] == '{':
             # dict
@@ -218,7 +213,7 @@ class TypeScript( object ):
         else:
             obj, idx = copyUntil( idx, ',{}[]: \t\n\r' )
 
-        return ( obj, idx )
+        return obj, idx
 
     def parse( self, text ):
         self.__line = 1

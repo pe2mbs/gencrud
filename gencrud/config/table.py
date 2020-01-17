@@ -19,15 +19,22 @@
 #
 #
 import logging
-from gencrud.config.objects.table._inports import SourceImport
-from gencrud.config.objects.table.column.column import TemplateColumn
-from gencrud.config.objects.table.column.tab import TemplateTabs
-from gencrud.config.objects.table.sort import SortInfo
-from gencrud.config.objects.table.mixin import TemplateMixin
+from gencrud.config._inports import SourceImport
+from gencrud.config.column import TemplateColumn
+from gencrud.config.tab import TemplateTabs
+from gencrud.config.sort import SortInfo
+from gencrud.config.mixin import TemplateMixin
 import gencrud.util.utils as root
 from gencrud.constants import *
 
 logger = logging.getLogger()
+
+
+class InvalidViewSize( Exception ):
+    def __init__(self):
+        Exception.__init__( self, "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or " +
+                            "string with service class name of where the function getViewSize() resides." )
+        return
 
 
 class TemplateTable( object ):
@@ -39,11 +46,8 @@ class TemplateTable( object ):
         self.__viewSize         = None
         self.__defaultViewSize  = 10
         self.__inports          = SourceImport()
-        noColumns               = len( self.__table[ C_COLUMNS ] )
         for col in self.__table[ C_COLUMNS ]:
-            column = TemplateColumn( noColumns,
-                                     self.name,
-                                     **col )
+            column = TemplateColumn( self, self.name, **col )
             self.__columns.append( column )
             if column.isPrimaryKey():
                 self.__primaryKey = column.name
@@ -56,7 +60,7 @@ class TemplateTable( object ):
                 self.__viewSize = table[ C_VIEW_SIZE ]
 
             else:
-                raise Exception( "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or string with service class name of where the function getViewSize() resides." )
+                raise InvalidViewSize()
 
         self.__mixin = TemplateMixin( table[ C_MIXIN ] if C_MIXIN in table else None )
         return
@@ -138,7 +142,7 @@ class TemplateTable( object ):
         return self.__primaryKey
 
     @property
-    def listViewColumns( self ) -> list :
+    def listViewColumns( self ) -> list:
         return sorted( [ col for col in self.__columns if col.listview.index is not None ],
                        key = lambda col: col.listview.index )
 
@@ -157,14 +161,14 @@ class TemplateTable( object ):
         if len( result ) == 0:
             return "''"
 
-        return (' + \r\n                   '.join( result ))
+        return ' + \r\n                   '.join( result )
 
     @property
     def viewSort( self ) -> SortInfo:
         return self.__viewSort
 
     @property
-    def hasViewSizeService( self ):
+    def hasViewSizeService( self ) -> bool:
         if self.__viewSize is not None:
             return type( self.__viewSize ) is str
 

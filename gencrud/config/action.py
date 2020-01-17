@@ -20,7 +20,7 @@
 import logging
 from gencrud.util.typescript import TypeScript
 from gencrud.util.exceptions import InvalidSetting
-from gencrud.config.objects.actions.route import RouteTemplate
+from gencrud.config.route import RouteTemplate
 from gencrud.constants import *
 
 logger = logging.getLogger()
@@ -85,37 +85,37 @@ class TemplateAction( object ):
         return
 
     @property
-    def source( self ):
+    def source( self ) -> str:
         return self.__cfg.get( C_SOURCE, '' )
 
     @property
-    def uri( self ):
+    def uri( self ) -> str:
         return self.__cfg.get( C_URI, '' )
 
-    def isAngularRoute( self ):
+    def isAngularRoute( self ) -> bool:
         return C_ROUTE in self.__cfg
 
     @property
-    def hint( self ):
+    def hint( self ) -> str:
         return self.__cfg.get( C_HINT, '' )
 
     @property
-    def color( self ):
+    def color( self ) -> str:
         return self.__cfg.get( C_COLOR, 'primary' )
 
     @property
-    def css( self ):
+    def css( self ) -> str:
         return self.__cfg.get( C_CSS, '' )
 
     @property
-    def route( self ):
+    def route( self ) -> RouteTemplate:
         return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else {}
 
     @property
     def params( self ):
         return self.__cfg.get( C_PARAMS, {} )
 
-    def routeParams( self ):
+    def routeParams( self ) -> str:
         params = self.params
         if len( params ) > 0:
             items = {}
@@ -129,10 +129,10 @@ class TemplateAction( object ):
     #
     #   Internal functions and properies to gencrud
     #
-    def hasApiFunction( self ):
+    def hasApiFunction( self ) -> bool:
         return C_FUNCTION in self.__cfg
 
-    def clone( self, obj_name ):
+    def clone( self, obj_name ) -> TemplateAction:
         return TemplateAction( self.__parent,
                                obj_name,
                                name = self.name,
@@ -142,7 +142,7 @@ class TemplateAction( object ):
                                position = self.position,
                                function = self.function )
 
-    def buttonObject( self ):
+    def buttonObject( self ) -> str:
         tooltip = ''
         if self.type == C_NONE:
             return ''
@@ -159,7 +159,6 @@ class TemplateAction( object ):
             if self.hint != '':
                 tooltip = 'matTooltip = "{}"'.format( self.hint )
 
-        function = ''
         if self.function == '' and self.uri != '':
             param = TypeScript().build( self.params )
             function = "dataService.genericPut( '{uri}', {param} )".format( uri = self.uri,
@@ -181,12 +180,16 @@ class TemplateAction( object ):
             params = ''
 
         elif self.isAngularRoute():
-            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}">{content}</a>'''
+            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
+                            ({on})="router.navigate( ['/{route}'], {params} )" 
+                            id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.route.name ] )
             params = self.route.routeParams()
 
         elif self.type == 'screen' and self.name in ( 'new', 'edit' ):
-            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}">{content}</a>'''
+            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
+                            ({on})="router.navigate( ['/{route}'], {params} )" 
+                            id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.name ] )
             params = {}
 
