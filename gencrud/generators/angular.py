@@ -21,6 +21,8 @@ import json
 import os
 import shutil
 import logging
+import datetime
+import version
 from mako.template import Template
 from mako import exceptions
 import gencrud.util.utils
@@ -293,7 +295,9 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
     modules = []
     if not os.path.isdir( config.angular.sourceFolder ):
         os.makedirs( config.angular.sourceFolder )
-
+    dt = datetime.datetime.now()
+    generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
+    userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
     for cfg in config:
         modulePath = os.path.join( config.angular.sourceFolder,
                                    config.application,
@@ -363,7 +367,11 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
             with open( templateFilename,
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 try:
-                    for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg, root = config ).split( '\n' ):
+                    for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
+                                                                                        root = config,
+                                                                                        version = version.__version__,
+                                                                                        username = userName,
+                                                                                        date = generationDateTime ).split( '\n' ):
                         if line.startswith( 'export ' ):
                             modules.append( (config.application,
                                              cfg.name,
