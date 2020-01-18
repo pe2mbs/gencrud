@@ -182,3 +182,6 @@ C_AUTO_UPDATE           = 'autoupdate'
 C_DEFAULT               = 'default'
 C_INITIAL_VALUE         = 'initialValue'
 C_READ_ONLY             = 'readonly'
+
+C_GENERATE_FRONTEND     = 'generate-frontend'
+C_GENERATE_BACKEND      = 'generate-backend'

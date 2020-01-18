@@ -31,3 +31,13 @@ class TemplateOptions( object ):
     def lazyLoading( self ) -> bool:
         # This override/set commandline options from the template defintion.
         return self.__config.get( C_LAZY_LOADING, gencrud.util.utils.lazyLoading )
+
+    @property
+    def generateFrontend( self ) -> bool:
+        # This override/set commandline options from the template defintion.
+        return self.__config.get( C_GENERATE_FRONTEND, True )
+
+    @property
+    def generateBackend( self ) -> bool:
+        # This override/set commandline options from the template defintion.
+        return self.__config.get( C_GENERATE_BACKEND, True )

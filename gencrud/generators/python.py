@@ -224,13 +224,16 @@ def generatePython( config: TemplateConfiguration, templates: list ):
             if os.path.isdir( modulePath ) and not config.options.overWriteFiles:
                 raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
+            outputSourceFile = os.path.join( modulePath, gencrud.util.utils.sourceName( templ ) )
             if config.options.backupFiles:
-                gencrud.util.utils.backupFile( os.path.join( modulePath,
-                                                             gencrud.util.utils.sourceName( templ ) ) )
+                gencrud.util.utils.backupFile( outputSourceFile )
+
+            if os.path.isfile( outputSourceFile ):
+                # remove the file first
+                os.remove( outputSourceFile )
 
             makePythonModules( config.python.sourceFolder, config.application, cfg.name )
-            with open( os.path.join( modulePath,
-                                     gencrud.util.utils.sourceName( templ ) ),
+            with open( outputSourceFile,
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                     root = config,

@@ -110,14 +110,27 @@ def doWork( inputFile ):
         if gencrud.util.utils.version != 1:
             raise Exception( "Invalid configuration version: {}, must be 1".format( gencrud.util.utils.version ) )
 
-    verifyLoadProject( config, C_ANGULAR )
-    verifyLoadProject( config, C_PYTHON )
-    generatePython( config,
-                    [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
+    if config.options.generateFrontend:
+        verifyLoadProject( config, C_ANGULAR )
+
+    else:
+        logger.info( "NOT generating frontend code" )
+
+    if config.options.generateBackend:
+        verifyLoadProject( config, C_PYTHON )
+
+    else:
+        logger.info( "NOT generating backend code" )
+
+    if config.options.generateBackend:
+        generatePython( config,
+                        [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
                                    for t in os.listdir( config.python.templateFolder ) ] )
-    generateAngular( config,
-                     [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
-                                    for t in os.listdir( config.angular.templateFolder ) ] )
+
+    if config.options.generateFrontend:
+        generateAngular( config,
+                         [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
+                                        for t in os.listdir( config.angular.templateFolder ) ] )
     return
 
 

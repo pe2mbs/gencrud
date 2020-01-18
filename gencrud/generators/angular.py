@@ -295,6 +295,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
     modules = []
     if not os.path.isdir( config.angular.sourceFolder ):
         os.makedirs( config.angular.sourceFolder )
+
     dt = datetime.datetime.now()
     generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
     userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
