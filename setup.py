@@ -157,7 +157,10 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires = [ 'mako', 'nltk' ],  # Optional
+    install_requires = [ 'mako',
+                         'nltk',
+                         'pyyaml',
+                         'six' ],  # Optional
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
@@ -181,13 +184,13 @@ setup(
         '': template_list,
         'gencrud': template_list,
     },
-
+    python_requires = '>=3.6',
     # Although 'package_data' is the preferred approach, in some case you may
     # need to place data files outside of your packages. See:
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files
     #
     # In this case, 'data_file' will be installed into '<sys.prefix>/my_data'
-    #data_files=[('my_data', ['data/data_file'])],  # Optional
+    # data_files=[('my_data', ['data/data_file'])],  # Optional
 
     # To provide executable scripts, use entry points in preference to the
     # "scripts" keyword. Entry points provide cross-platform support and allow
@@ -212,8 +215,8 @@ setup(
     # maintainers, and where to support the project financially. The key is
     # what's used to render the link text on PyPI.
     project_urls = {  # Optional
-        'Source Public':'https://github.com/pe2mbs/gencrud/',
-        'Bug Reports':  'https://github.com/pe2mbs/gencrud/issues',
-        'Say Thanks!':  'https://github.com/pe2mbs/gencrud/saythanks',
+        'Source Public':    'https://github.com/pe2mbs/gencrud/',
+        'Bug Reports':      'https://github.com/pe2mbs/gencrud/issues',
+        'Say Thanks!':      'https://github.com/pe2mbs/gencrud/saythanks',
     },
 )

@@ -110,7 +110,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
     sectionLines = [ LABEL_LIST_MODULES + '\n' ]
     for idx, mod in enumerate( modules ):
         sectionLines.append( '    {0}{1}\n'.format( mod,
-                                                    '' if len( modules )-1 == idx else ',' ) )
+                                                    '' if len( modules ) - 1 == idx else ',' ) )
 
     sectionLines.append( LABEL_END_LIST + '\n' )
     gencrud.util.utils.replaceInList( lines, rangePos, sectionLines )

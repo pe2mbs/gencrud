@@ -108,7 +108,7 @@ def insertLinesUnique( lines, rangeObj, line ):
     if not found:
         logger.debug( 'inject files [{0}] @ {1}'.format( line, rangeObj.end ) )
 
-        lines.insert( rangeObj.end+1, line + '\n' )
+        lines.insert( rangeObj.end + 1, line + '\n' )
         rangeObj.end += 1
 
     return
@@ -125,7 +125,7 @@ def searchSection( lines, rangeObj, sectionStart, sectionEnd ):
             rangeObj.end = lineNo
             stage += 1
 
-    return lines[ rangeObj.start: rangeObj.end+1 ]
+    return lines[ rangeObj.start: rangeObj.end + 1 ]
 
 
 def replaceInList( lines, range_obj, to_replace ):
