@@ -314,7 +314,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
         logger.info( 'class       : {0}'.format( cfg.cls ) )
         logger.info( 'table       : {0}'.format( cfg.table.name ) )
         for col in cfg.table.columns:
-            logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
+            logger.info( '- {0:<20}: {1}'.format( col.name, col.tsType ) )
 
         logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
         logger.info( 'uri         : {0}'.format( cfg.uri ) )

@@ -76,7 +76,7 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
     else:
         raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
-    logger.info( 'Configuration for {}: {}'.format( env, json.dumps( data, indent = 4 ) ) )
+    logger.debug( 'Configuration for {}: {}'.format( env, json.dumps( data, indent = 4 ) ) )
     if env == C_ANGULAR:
         # Check if we have a valid Angular environment
         if 'defaultProject' in data and 'projects' in data:
@@ -123,11 +123,13 @@ def doWork( inputFile ):
         logger.info( "NOT generating backend code" )
 
     if config.options.generateBackend:
+        logger.info( "*** Generating Python backend source code.***" )
         generatePython( config,
                         [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
                                    for t in os.listdir( config.python.templateFolder ) ] )
 
     if config.options.generateFrontend:
+        logger.info( "*** Generating Typescript Angular frontend source code. ***" )
         generateAngular( config,
                          [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
                                         for t in os.listdir( config.angular.templateFolder ) ] )
