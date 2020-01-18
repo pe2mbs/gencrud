@@ -384,11 +384,11 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                             stream.write( '\n' )
 
                 except Exception:
-                    print( "Mako exception:" )
+                    logger.error( "Mako exception:" )
                     for line in exceptions.text_error_template().render_unicode().encode('ascii').split(b'\n'):
-                        print( line )
+                        logger.error( line )
 
-                    print( "Mako done" )
+                    logger.error( "Mako done" )
                     raise
 
     appModule = None

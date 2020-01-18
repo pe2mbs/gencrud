@@ -45,6 +45,7 @@ LABEL_END_LIST          = ']'
 def makePythonModules( root_path, *args ):
     def write__init__py():
         with open( os.path.join( root_path, '__init__.py' ), 'w+' ) as stream:
+            # Write one newline to the file
             print( '', file = stream )
 
         return
@@ -126,7 +127,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
 
     except Exception:
         for line_no, line in enumerate( sectionLines ):
-            print( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
+            logger.error( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
 
         raise
 
