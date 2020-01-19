@@ -23,13 +23,51 @@ from gencrud.config.listview import TemplateListView
 from gencrud.config.relation import TemplateRelation
 from gencrud.config.ui import TemplateUi
 from gencrud.config.tab import TemplateTab
+from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import InvalidSetting
 from gencrud.constants import *
 import gencrud.util.utils as root
 logger = logging.getLogger()
 
 
-class TemplateColumn( object ):
+class TemplateColumn( TemplateBase ):
+    TS_TYPES_FROM_SQL = { 'CHAR': 'string',
+                          'VARCHAR': 'string',
+                          'INT': 'number',
+                          'BIGINT': 'number',
+                          'FLOAT': 'number',
+                          'REAL': 'number',
+                          'BOOLEAN': 'boolean',
+                          'TIMESTAMP': 'Date',
+                          'DATETIME': 'Date',
+                          'DATE': 'Date',
+                          'TIME': 'Date',
+                          'INTERVAL': 'Interval',
+                          'BLOB': 'string',
+                          'NUMERIC': 'string',
+                          'DECIMAL': 'string',
+                          'CLOB': 'string',
+                          'TEXT': 'string' }
+
+    PY_TYPES_FROM_SQL = { 'CHAR': 'db.String',
+                          'VARCHAR': 'db.String',
+                          'INT': 'db.Integer',
+                          'BIGINT': 'db.BigInteger',
+                          'BOOLEAN': 'db.Boolean',
+                          'BOOL': 'db.Boolean',
+                          'TIMESTAMP': 'db.DateTime',
+                          'DATETIME': 'db.DateTime',
+                          'DATE': 'db.Date',
+                          'FLOAT': 'db.Float',
+                          'REAL': 'db.Float',
+                          'INTERVAL': 'db.Interval',
+                          'BLOB': 'db.LargeBinary',
+                          'NUMERIC': 'db.Numeric',
+                          'DECIMAL': 'db.Numeric',
+                          'CLOB': 'db.Text',
+                          'TEXT': 'db.Text',
+                          'TIME': 'db.Time' }
+
     def __init__( self, parent, table_name, **cfg ):
         """
             field:              D_ROLE_ID       INT         AUTO_NUMBER  PRIMARY KEY
@@ -37,7 +75,7 @@ class TemplateColumn( object ):
         :param cfg:
         :return:
         """
-        self.__parent       = parent
+        TemplateBase.__init__( self, parent )
         self.__tableName    = table_name
         self.__config       = cfg
         self.__field        = ''
@@ -50,14 +88,11 @@ class TemplateColumn( object ):
         self.__leadIn       = []
         self.__dbField      = ''
         if C_FIELD in cfg:
-            tokens = [ x for x in word_tokenize( cfg.get( C_FIELD, '' ) ) ]
+            field_data = cfg.get( C_FIELD, '' )
+            tokens = [ x for x in word_tokenize( field_data ) ]
             self.__dbField  = self.__field = tokens[ 0 ]
             self.__sqlType  = tokens[ 1 ]
-            if self.__sqlType not in ( 'INT', 'BIGINT', 'CHAR', 'VARCHAR',
-                                       'TEXT', 'CLOB',
-                                       'BOOLEAN', 'DATE', 'TIME', 'TIMESTAMP',
-                                       'FLOAT', 'REAL',  'INTERVAL', 'BLOB',
-                                       'DECIMAL', 'NUMERIC' ):
+            if self.__sqlType not in self.TS_TYPES_FROM_SQL:
                 raise InvalidSetting( C_FIELD, self.__tableName, self.__field )
 
             offset = 2
@@ -116,6 +151,14 @@ class TemplateColumn( object ):
                             " in the 'field' definition." )
 
         return
+
+    @property
+    def table( self ):
+        return self.parent
+
+    @property
+    def object( self ):
+        return self.table.object
 
     @property
     def leadIn( self ) -> list:
@@ -246,89 +289,35 @@ class TemplateColumn( object ):
             Time                = TIME
         :return:
         """
-        if self.__sqlType == 'CHAR' or self.__sqlType.startswith( 'VARCHAR' ):
-            return 'db.String'
-
-        elif self.__sqlType == 'INT':
-            return 'db.Integer'
-
-        elif self.__sqlType == 'BIGINT':
-            return 'db.BigInteger'
-
-        elif self.__sqlType == 'BOOLEAN':
-            return 'db.Boolean'
-
-        elif self.__sqlType == 'TIMESTAMP':
-            return 'db.DateTime'
-
-        elif self.__sqlType == 'DATE':
-            return 'db.Date'
-
-        elif self.__sqlType == 'FLOAT' or self.__sqlType == 'REAL':
-            return 'db.Float'
-
-        elif self.__sqlType == 'INTERVAL':
-            return 'db.Interval'
-
-        elif self.__sqlType == 'BLOB':
-            return 'db.LargeBinary'
-
-        elif self.__sqlType == 'NUMERIC' or self.__sqlType == 'DECIMAL':
-            return 'db.Numeric'
-
-        elif self.__sqlType == 'CLOB' or self.__sqlType == 'TEXT':
-            return 'db.Text'
-
-        elif self.__sqlType == 'TIME':
-            return 'db.Time'
+        if self.__sqlType in self.PY_TYPES_FROM_SQL:
+            return self.PY_TYPES_FROM_SQL[ self.__sqlType ]
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
     @property
     def tsType( self ) -> str:
-        if self.__sqlType == 'CHAR' or self.__sqlType.startswith( 'VARCHAR' ):
-            return 'string'
-
-        elif self.__sqlType == 'INT':
-            return 'number'
-
-        elif self.__sqlType == 'BIGINT':
-            return 'number'
-
-        elif self.__sqlType == 'BOOLEAN':
-            return 'boolean'
-
-        elif self.__sqlType == 'DATE':
-            return 'Date'
-
-        elif self.__sqlType == 'TIMESTAMP':
-            return 'Date'
-
-        elif self.__sqlType == 'FLOAT' or self.__sqlType == 'REAL':
-            return 'number'
-
-        elif self.__sqlType == 'INTERVAL':
-            return 'Interval'
-
-        elif self.__sqlType == 'BLOB':
-            return 'string'
-
-        elif self.__sqlType == 'NUMERIC' or self.__sqlType == 'DECIMAL':
-            return 'string'
-
-        elif self.__sqlType == 'CLOB' or self.__sqlType == 'TEXT':
-            return 'string'
-
-        elif self.__sqlType == 'TIME':
-            return 'Date'
+        if self.__sqlType in self.TS_TYPES_FROM_SQL:
+            return self.TS_TYPES_FROM_SQL[ self.__sqlType ]
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
     def isNumericField( self ) -> bool:
-        return self.__sqlType in ( "INT", "BIGINT", "FLOAT", "REAL", "INTERVAL", "NUMERIC", "DECIMAL" )
+        return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'number'
 
     def isBooleanField( self ) -> bool:
-        return self.__sqlType in ( "BOOLEAN", "INT" )
+        return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'boolean'
+
+    def isDateField( self ):
+        return self.__sqlType == "DATE"
+
+    def isTimeField( self ):
+        return self.__sqlType == "TIME"
+
+    def isDateTimeField( self ):
+        return self.__sqlType in ( "DATETIME", 'TIMESTAMP' )
+
+    def isString( self ):
+        return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'string'
 
     def sqlAlchemyDef( self ) -> str:
         """
@@ -455,6 +444,8 @@ class TemplateColumn( object ):
         if self.__ui is None:
             raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field,
                                                                                     self.__tableName ) )
+        if root.config.controls is not None:
+            return self.build()
 
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
@@ -467,3 +458,21 @@ class TemplateColumn( object ):
     @property
     def disabled( self ) -> bool:
         return self.__config.get( C_DISABLED, False )
+
+    def isSet( self, property ):
+        return property in self.__config
+
+    def build( self ):
+        if self.__ui is None:
+            return ''
+
+        obj = root.config.controls.get( self.__ui.type )
+
+        if obj is None:
+            raise Exception( "Unknown control {} in {}".format( self.__ui.type, self.name ) )
+
+        return obj.build( field = self,
+                          table = self.table,
+                          obj = self.object,
+                          root = root.config )
+

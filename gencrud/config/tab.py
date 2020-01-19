@@ -18,11 +18,12 @@
 #   Boston, MA 02110-1301 USA
 #
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 
-class TemplateTab( object ):
+class TemplateTab( TemplateBase ):
     def __init__( self, parent, **cfg ):
-        self.__parent   = parent
+        TemplateBase.__init__( self, parent )
         self.__cfg = cfg
         return
 
@@ -35,14 +36,14 @@ class TemplateTab( object ):
         return self.__cfg.get( C_LABEL, None )
 
 
-class TemplateTabs( object ):
+class TemplateTabs( TemplateBase ):
     def __init__( self, parent, **cfg ):
-        self.__parent   = parent
+        TemplateBase.__init__( self, parent )
         self.__cfg      = cfg
         self.__fields   = { l: [] for l in self.labels }
         self.__comps    = { l: None for l in self.labels }
         self.__params   = { l: None for l in self.labels }
-        for col in self.__parent.columns:
+        for col in self.parent.columns:
             if col.hasTab:
                 self.__fields[ col.tab.label ].append( col )
 

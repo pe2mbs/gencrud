@@ -19,10 +19,12 @@
 #
 from gencrud.constants import *
 from gencrud.config.python import PythonObject
+from gencrud.config.base import TemplateBase
 
 
-class TemplateMixin( object ):
+class TemplateMixin( TemplateBase ):
     def __init__( self, mixin ):
+        TemplateBase.__init__( self, None )
         self.__model    = PythonObject( mixin[ C_MODEL ] if mixin is not None and C_MODEL in mixin else None )
         self.__schema   = PythonObject( mixin[ C_SCHEMA ] if mixin is not None and C_SCHEMA in mixin else None )
         self.__view     = PythonObject( mixin[ C_VIEW ] if mixin is not None and C_VIEW in mixin else None )

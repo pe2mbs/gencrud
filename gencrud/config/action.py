@@ -22,13 +22,14 @@ from gencrud.util.typescript import TypeScript
 from gencrud.util.exceptions import InvalidSetting
 from gencrud.config.route import RouteTemplate
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 logger = logging.getLogger()
 
 
-class TemplateAction( object ):
+class TemplateAction( TemplateBase ):
     def __init__( self, parent, obj_name, **cfg ):
-        self.__parent = parent
+        TemplateBase.__init__( self, parent )
         self.__name = obj_name
         self.__cfg = cfg
         return
@@ -124,7 +125,7 @@ class TemplateAction( object ):
 
             return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
 
-        return ''
+        return '{ }'
 
     #
     #   Internal functions and properies to gencrud
@@ -133,7 +134,7 @@ class TemplateAction( object ):
         return C_FUNCTION in self.__cfg
 
     def clone( self, obj_name ):
-        return TemplateAction( self.__parent,
+        return TemplateAction( self.parent,
                                obj_name,
                                name = self.name,
                                label = self.label,
@@ -168,7 +169,7 @@ class TemplateAction( object ):
             function = self.function
 
         button = '<span class="spacer"></span>'
-        logger.info( "function: {}\nroute: {}".format( function, "/".join( [ self.__parent.name if self.__parent is not None else '',
+        logger.info( "function: {}\nroute: {}".format( function, "/".join( [ self.parent.name if self.parent is not None else '',
                                                                              self.route.name if isinstance( self.route, RouteTemplate ) else '?' ] ) ) )
         cls = ''
         if self.css != '':
@@ -183,15 +184,15 @@ class TemplateAction( object ):
             BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
                             ({on})="router.navigate( ['/{route}'], {params} )" 
                             id="{objname}.{name}">{content}</a>'''
-            route = "/".join( [ self.__parent.name, self.route.name ] )
+            route = "/".join( [ self.parent.name, self.route.name ] )
             params = self.route.routeParams()
 
         elif self.type == 'screen' and self.name in ( 'new', 'edit' ):
             BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
                             ({on})="router.navigate( ['/{route}'], {params} )" 
                             id="{objname}.{name}">{content}</a>'''
-            route = "/".join( [ self.__parent.name, self.name ] )
-            params = {}
+            route = "/".join( [ self.parent.name, self.name ] )
+            params = '{ }'
 
         else:
             raise Exception( 'Missing function or route for {}'.format( self ) )

@@ -17,10 +17,12 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+from gencrud.config.base import TemplateBase
 
 
-class PythonObject( object ):
+class PythonObject( TemplateBase ):
     def __init__( self, obj ):
+        TemplateBase.__init__( self, None )
         self.__object   = obj
         self.__module   = None
         self.__class    = None

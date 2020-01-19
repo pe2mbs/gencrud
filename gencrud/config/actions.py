@@ -23,18 +23,19 @@ from gencrud.config.action import (TemplateAction,
                                    DEFAULT_EDIT_ACTION,
                                    DEFAULT_NEW_ACTION)
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 logger = logging.getLogger()
 
 
-class TemplateActions( object ):
+class TemplateActions( TemplateBase ):
     def __init__( self, parent, objname, cfg ):
-        self.__parent = parent
+        TemplateBase.__init__( self, parent )
         self.__name = objname
         self.__actions = []
         self.__cfg = cfg
         for action in cfg:
-            self.__actions.append( TemplateAction( self.__parent, objname, **action ) )
+            self.__actions.append( TemplateAction( self.parent, objname, **action ) )
 
         if not self.has( C_NEW ):
             self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
@@ -132,7 +133,7 @@ class TemplateActions( object ):
                 logger.info( "getRowAction() => {}".format( action ) )
                 if action.isAngularRoute():
                     # return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
-                    route = "/".join( [ self.__parent.name, action.name ] )
+                    route = "/".join( [ self.parent.name, action.name ] )
 
                     ACTION_STR = '''({on})="router.navigate( ['/{route}'], {params} )"'''
                     params = action.route.routeParams()

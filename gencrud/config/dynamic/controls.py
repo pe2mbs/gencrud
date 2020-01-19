@@ -5,6 +5,7 @@ class DymanicControls( object ):
     def __init__( self, controls ):
         self.__cfg = controls
         self.__controls = {}
+        self.parse()
         return
 
     def parse( self ):
@@ -12,10 +13,10 @@ class DymanicControls( object ):
             # all types shall be in lowercase
             if any( c.islower() for c in name ):
                 # Add new control
-                self.append( TemplateDymanicControl( ctrls,
-                                                     name,
-                                                     arguments = value[ 'properties' ],
-                                                     htmlTemplate = value[ 'html' ] ) )
+                self.__controls[ name ] = TemplateDymanicControl( self,
+                                              name,
+                                              arguments = value[ 'properties' ],
+                                              htmlTemplate = value[ 'html' ] )
 
         return
 

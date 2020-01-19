@@ -19,28 +19,29 @@
 #
 import logging
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 logger = logging.getLogger()
 
 
-class TemplateListView( object ):
+class TemplateListView( TemplateBase ):
     def __init__( self, parent, **cfg ):
-        self.__parent   = parent
+        TemplateBase.__init__( self, parent )
         self.__cfg      = cfg
         return
 
     @property
     def width( self ):
         if C_WIDTH not in self.__cfg:
-            if hasattr( self.__parent, C_CSS ):
-                return self.__parent.css.width
+            if hasattr( self.parent, C_CSS ):
+                return self.parent.css.width
 
         return self.__cfg.get( C_WIDTH, None )
 
     @property
     def index( self ):
         if C_INDEX not in self.__cfg:
-            if hasattr( self.__parent, C_INDEX ):
-                return self.__parent.index
+            if hasattr( self.parent, C_INDEX ):
+                return self.parent.index
 
         return self.__cfg.get( C_INDEX, None )

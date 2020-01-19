@@ -4,12 +4,15 @@ import { PytTextInputComponent } from './input-component/textbox.component';
 import { PytChoiceInputComponent } from './input-component/choice.component';
 import { PytComboInputComponent } from './input-component/combobox.component';
 import { PytDateInputComponent } from './input-component/date.component';
+import { PytDatePickerInputComponent } from './input-component/date.picker.component';
 import { PytDateTimeInputComponent } from './input-component/datetime.component';
+import { PytDateTimePickerInputComponent } from './input-component/datetime.picker.component';
 import { PytNumberInputComponent } from './input-component/number.component';
 import { PytPasswordInputComponent } from './input-component/password.component';
 import { PytEmailInputComponent } from './input-component/email.component';
 import { PytTextareaInputComponent } from './input-component/textarea.component';
 import { PytTimeInputComponent } from './input-component/time.component';
+import { PytTimePickerInputComponent } from './input-component/time.picker.component';
 import { PytLabelComponent } from './input-component/label.component';
 import { PytCheckboxInputComponent } from './input-component/checkbox.component';
 import { PytSliderToggleInputComponent } from './input-component/slidertoggle.component';
@@ -33,11 +36,14 @@ import { MatButtonModule, MatDialogModule, MatInputModule,
         PytChoiceInputComponent,
         PytComboInputComponent,
         PytDateInputComponent,
+        PytDatePickerInputComponent,
         PytDateTimeInputComponent,
+        PytDateTimePickerInputComponent,
         PytNumberInputComponent,
         PytPasswordInputComponent,
         PytTextareaInputComponent,
         PytTimeInputComponent,
+        PytTimePickerInputComponent,
         PytEmailInputComponent,
         PytLabelComponent,
         PytCheckboxInputComponent,
@@ -80,12 +86,15 @@ import { MatButtonModule, MatDialogModule, MatInputModule,
         PytChoiceInputComponent,
         PytComboInputComponent,
         PytDateInputComponent,
+        PytDatePickerInputComponent,
         PytDateTimeInputComponent,
+        PytDateTimePickerInputComponent,
         PytEmailInputComponent,
         PytNumberInputComponent,
         PytPasswordInputComponent,
         PytTextareaInputComponent,
         PytTimeInputComponent,
+        PytTimePickerInputComponent,
         PytLabelComponent,
         PytCheckboxInputComponent,
         PytSliderToggleInputComponent,

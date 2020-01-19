@@ -18,14 +18,16 @@
 #   Boston, MA 02110-1301 USA
 #
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 # Old names
 C_DISPLAY_NAME  = 'displayName'
 C_ICON_NAME     = 'iconName'
 
 
-class TemplateMenuItem( object ):
+class TemplateMenuItem( TemplateBase ):
     def __init__( self, key, **cfg ):
+        TemplateBase.__init__( self, None )
         self.__item = cfg[ key ]
         self.__submenu = None
         if C_MENU in self.__item:

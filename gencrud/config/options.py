@@ -1,9 +1,11 @@
 from gencrud.constants import *
 import gencrud.util.utils
+from gencrud.config.base import TemplateBase
 
 
-class TemplateOptions( object ):
+class TemplateOptions( TemplateBase ):
     def __init__( self, **cfg ) -> None:
+        TemplateBase.__init__( self, None )
         self.__config = cfg
         return
 

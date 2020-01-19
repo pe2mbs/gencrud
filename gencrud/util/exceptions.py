@@ -110,3 +110,10 @@ class KeyNotFoundException( Exception ):
 
 class InvalidPropertyValue( Exception ):
     pass
+
+
+class InvalidViewSize( Exception ):
+    def __init__(self):
+        Exception.__init__( self, "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or " +
+                            "string with service class name of where the function getViewSize() resides." )
+        return

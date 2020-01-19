@@ -41,7 +41,7 @@ class IncludeLoader( yaml.SafeLoader ):
         filename = os.path.join( self._root, self.construct_scalar( node ) )
 
         with open( filename, 'r' ) as f:
-            return yaml.load( f, Loader )
+            return yaml.load( f, Loader = IncludeLoader )
 
 IncludeLoader.add_constructor( '!include', IncludeLoader.include )
 

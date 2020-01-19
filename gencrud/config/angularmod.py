@@ -1,8 +1,10 @@
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 
 class TemplateAngularModule( object ):
     def __init__( self, default_filename, default_class, default_module = None, **cfg ):
+        TemplateBase.__init__( self, None )
         self.__filename = default_filename
         self.__class = default_class
         self.__module = default_module or default_class

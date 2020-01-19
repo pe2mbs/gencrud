@@ -23,15 +23,16 @@ from gencrud.config.table import TemplateTable
 from gencrud.config.actions import TemplateActions
 from gencrud.config.extra import TemplateExtra
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 
-class TemplateObject( object ):
+class TemplateObject( TemplateBase ):
     def __init__( self, parent, **cfg ):
+        TemplateBase.__init__( self, parent )
         self.__config       = cfg
-        self.__parent       = parent
         self.__menu         = TemplateMenuItem( C_MENU, **cfg ) if C_MENU in cfg else None
         self.__actions      = TemplateActions( self, self.name, self.__config.get( C_ACTIONS, [] ) )
-        self.__table        = TemplateTable( **self.__config.get( C_TABLE, {} ) )
+        self.__table        = TemplateTable( self, **self.__config.get( C_TABLE, {} ) )
         self.__extra        = TemplateExtra( self, **self.__config.get( C_EXTRA, {} ) )
         return
 

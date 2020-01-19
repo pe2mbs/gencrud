@@ -18,12 +18,13 @@
 #   Boston, MA 02110-1301 USA
 #
 from gencrud.constants import *
-
+from gencrud.config.base import TemplateBase
 C_APP                   = 'app'
 
 
-class TemplateImport( object ):
+class TemplateImport( TemplateBase ):
     def __init__( self, **cfg ):
+        TemplateBase.__init__( self, None )
         self.__config = cfg
         return
 

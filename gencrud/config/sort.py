@@ -18,10 +18,12 @@
 #   Boston, MA 02110-1301 USA
 #
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 
-class SortInfo( object ):
+class SortInfo( TemplateBase ):
     def __init__( self, data ):
+        TemplateBase.__init__( self, None )
         self.__field    = data[ C_FIELD ]
         self.__direction = C_ASCENDING
         if C_DIRECTION in data:

@@ -25,10 +25,12 @@ from gencrud.util.exceptions import (MissingTemplate,
                                      PathNotFoundException)
 from gencrud.util.utils import get_platform
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 
-class TemplateSource( object ):
+class TemplateSource( TemplateBase ):
     def __init__( self, tp, **cfg ):
+        TemplateBase.__init__( self, None )
         platf = get_platform()
         if platf not in C_PLATFORMS:
             raise Exception( "Unsupported platform: {}".format( platf ) )

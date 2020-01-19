@@ -19,21 +19,22 @@
 #
 from gencrud.util.typescript import TypeScript
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 
-class RouteTemplate( object ):
+class RouteTemplate( TemplateBase ):
     def __init__( self, parent, **cfg ):
-        self.__parent = parent
+        TemplateBase.__init__( self, parent )
         self.__config = cfg
         return
 
     @property
     def name( self ):
-        return self.__config.get( C_NAME, self.__parent.name )
+        return self.__config.get( C_NAME, self.parent.name )
 
     @property
     def label( self ):
-        return self.__config.get( C_LABEL, self.__parent.label )
+        return self.__config.get( C_LABEL, self.parent.label )
 
     @property
     def cls( self ):
@@ -55,7 +56,7 @@ class RouteTemplate( object ):
 
             return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
 
-        return ''
+        return '{ }'
 
     def __repr__(self):
         return "<RouteTemplate name = '{}', label = '{}', class = {}, params = {}>".format(
