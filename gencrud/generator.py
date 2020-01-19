@@ -28,7 +28,7 @@ import glob
 import traceback
 import logging
 import gencrud.util.utils
-from gencrud.configuraton import TemplateConfiguration
+from gencrud.configuraton import TemplateConfiguration, IncludeLoader
 from gencrud.generators.python import generatePython
 from gencrud.generators.angular import generateAngular
 from gencrud.version import __version__, __author__, __email__, __copyright__
@@ -103,7 +103,7 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
 
 def doWork( inputFile ):
     with open( inputFile, 'r' ) as stream:
-        config = TemplateConfiguration( **yaml.load( stream ) )
+        config = TemplateConfiguration( **yaml.load( stream, Loader = IncludeLoader ) )
 
     if C_VERSION in config:
         gencrud.util.utils.version = config[ C_VERSION ]

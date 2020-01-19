@@ -18,14 +18,32 @@
 #   Boston, MA 02110-1301 USA
 #
 from typing import TypeVar, Iterable
+import yaml
+import os
 import gencrud.util.utils
 from gencrud.config.object import TemplateObject, TemplateObjects
 from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular
 from gencrud.config.options import TemplateOptions
 from gencrud.config.references import TemplateReferences
+from gencrud.config.dynamic.controls import DymanicControls
 from gencrud.constants import *
 
 OptionalString = TypeVar( 'OptionalString', str, None )
+
+
+class IncludeLoader( yaml.SafeLoader ):
+    def __init__( self, stream ):
+        self._root = os.path.split( stream.name )[ 0 ]
+        super( IncludeLoader, self ).__init__( stream )
+        return
+
+    def include( self, node ):
+        filename = os.path.join( self._root, self.construct_scalar( node ) )
+
+        with open( filename, 'r' ) as f:
+            return yaml.load( f, Loader )
+
+IncludeLoader.add_constructor( '!include', IncludeLoader.include )
 
 
 class TemplateConfiguration( object ):
@@ -33,6 +51,11 @@ class TemplateConfiguration( object ):
         # For some cases that the base config is required
         gencrud.util.utils.config = self
         self.__config       = cfg
+        self.__controls     = None
+        controls            = cfg.get( 'controls', None )
+        if controls is not None:
+            self.__controls = DymanicControls( controls )
+
         opts                = self.__config[ C_OPTIONS ] if C_OPTIONS in self.__config else { }
         self.__options      = TemplateOptions( **opts )
         self.__python       = TemplateSourcePython( **self.__config )
@@ -71,3 +94,7 @@ class TemplateConfiguration( object ):
     @property
     def references( self ) -> TemplateReferences:
         return self.__references
+
+    @property
+    def controls( self ) -> DymanicControls:
+        return self.__controls

@@ -106,3 +106,7 @@ class KeyNotFoundException( Exception ):
     def __init__( self, path ):
         super( KeyNotFoundException, self ).__init__( 'key {} not found.'.format( path ) )
         return
+
+
+class InvalidPropertyValue( Exception ):
+    pass
