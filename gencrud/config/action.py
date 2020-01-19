@@ -124,7 +124,7 @@ class TemplateAction( object ):
 
             return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
 
-        return ''
+        return '{ }'
 
     #
     #   Internal functions and properies to gencrud
@@ -191,7 +191,7 @@ class TemplateAction( object ):
                             ({on})="router.navigate( ['/{route}'], {params} )" 
                             id="{objname}.{name}">{content}</a>'''
             route = "/".join( [ self.__parent.name, self.name ] )
-            params = {}
+            params = '{ }'
 
         else:
             raise Exception( 'Missing function or route for {}'.format( self ) )
