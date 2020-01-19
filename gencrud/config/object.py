@@ -31,7 +31,7 @@ class TemplateObject( object ):
         self.__parent       = parent
         self.__menu         = TemplateMenuItem( C_MENU, **cfg ) if C_MENU in cfg else None
         self.__actions      = TemplateActions( self, self.name, self.__config.get( C_ACTIONS, [] ) )
-        self.__table        = TemplateTable( **self.__config.get( C_TABLE, {} ) )
+        self.__table        = TemplateTable( self, **self.__config.get( C_TABLE, {} ) )
         self.__extra        = TemplateExtra( self, **self.__config.get( C_EXTRA, {} ) )
         return
 
