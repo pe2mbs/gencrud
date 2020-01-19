@@ -19,6 +19,7 @@
 #
 #
 import logging
+from gencrud.config.base import TemplateBase
 from gencrud.config._inports import SourceImport
 from gencrud.config.column import TemplateColumn
 from gencrud.config.tab import TemplateTabs
@@ -37,8 +38,9 @@ class InvalidViewSize( Exception ):
         return
 
 
-class TemplateTable( object ):
-    def __init__( self, **table ):
+class TemplateTable( TemplateBase ):
+    def __init__( self, parent, **table ):
+        TemplateBase.__init__( self, parent )
         self.__table            = table
         self.__columns          = []
         self.__primaryKey       = ''
@@ -64,6 +66,17 @@ class TemplateTable( object ):
 
         self.__mixin = TemplateMixin( table[ C_MIXIN ] if C_MIXIN in table else None )
         return
+
+    @property
+    def object( self ):
+        return self.parent
+
+    def __iter__(self):
+        return iter( self.__columns )
+
+    @property
+    def config( self ):
+        return self.object.config
 
     def hasTabs( self, tp = C_DIALOG ) -> bool:
         return len( self.__table.get( tp + C_TABS, [] ) ) > 0
