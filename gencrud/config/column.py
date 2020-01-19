@@ -460,4 +460,17 @@ class TemplateColumn( TemplateBase ):
     def isSet( self, property ):
         return property in self.__config
 
+    def build( self, ctrls, root ):
+        if self.__ui is None:
+            return ''
+
+        obj = ctrls.get( self.__ui.type )
+
+        if obj is None:
+            raise Exception( "Unknown control {} in {}".format( self.__ui.type, self.name ) )
+
+        return obj.build( field = self,
+                          table = self.table,
+                          obj = self.object,
+                          root = root )
 

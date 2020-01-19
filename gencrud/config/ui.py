@@ -20,13 +20,14 @@
 import logging
 import traceback
 import json
+from gencrud.config.base import TemplateBase
 from gencrud.config.service import TemplateService
 from gencrud.constants import *
 
 
-class TemplateUi( object ):
+class TemplateUi( TemplateBase ):
     def __init__( self, parent, **cfg ):
-        self.__parent   = parent
+        TemplateBase.__init__( self, parent )
         self.__cfg = cfg
         if C_SERVICE in cfg:
             self.__service = TemplateService( **cfg[ C_SERVICE ] )
@@ -37,8 +38,32 @@ class TemplateUi( object ):
         return
 
     @property
+    def field( self ):
+        return self.parent
+
+    @property
+    def table( self ):
+        return self.parent.table
+
+    @property
+    def object( self ):
+        return self.table.object
+
+    @property
     def uiObject( self ):
         return self.__cfg.get( C_TYPE, C_TEXTBOX )
+
+    @property
+    def type( self ):
+        return self.__cfg.get( C_TYPE, None )
+
+    @property
+    def label( self ):
+        return self.__cfg.get( C_LABEL, self.parent.label )
+
+    @property
+    def hint( self ):
+        return self.__cfg.get( C_HINT, None )
 
     @property
     def rows( self ):
@@ -56,8 +81,8 @@ class TemplateUi( object ):
     def max( self ):
         return self.__cfg.get( C_MAX, 100 )
 
-    def hasPrefix( self ):
-        return C_PREFIX in self.__cfg
+    # def hasPrefix( self ):
+    #     return C_PREFIX in self.__cfg
 
     @property
     def prefixType( self ):
@@ -67,8 +92,8 @@ class TemplateUi( object ):
     def prefix( self ):
         return self.__cfg.get( C_PREFIX, '' )
 
-    def hasSuffix( self ):
-        return C_SUFFIX in self.__cfg
+    # def hasSuffix( self ):
+    #     return C_SUFFIX in self.__cfg
 
     @property
     def suffixType( self ):
@@ -77,6 +102,61 @@ class TemplateUi( object ):
     @property
     def suffix( self ):
         return self.__cfg.get( C_SUFFIX, '' )
+
+    @property
+    def interval( self ):
+        return self.__cfg.get( C_INTERVAL, 1 )
+
+    @property
+    def vertical( self ):
+        return str( self.__cfg.get( C_VERTICAL, False ) ).lower()
+
+    @property
+    def disabled( self ):
+        return str( self.__cfg.get( C_DISABLED, self.__parent.disabled ) ).lower()
+
+    @property
+    def readonly( self ):
+        return str( self.__cfg.get( C_READ_ONLY, self.__parent.readonly ) ).lower()
+
+    @property
+    def pipe( self ):
+        return str( self.__cfg.get( C_PIPE, '' ) ).lower()
+
+    @property
+    def format( self ):
+        return str( self.__cfg.get( C_FORMAT, C_TEXT ) )
+
+    @property
+    def invert( self ):
+        return str( self.__cfg.get( C_INVERT, False ) ).lower()
+
+    @property
+    def step( self ):
+        return self.__cfg.get( C_STEP, 1 )
+
+    @property
+    def thumbLabel( self ):
+        return str( self.__cfg.get( C_THUMB_LABEL, True ) ).lower()
+
+    @property
+    def color( self ):
+        return str( self.__cfg.get( C_COLOR, C_COLOR_PRIMARY ) ).lower()
+
+    @property
+    def checked( self ):
+        return str( self.__cfg.get( C_CHECKED, False ) ).lower()
+
+    @property
+    def labelPosition( self ):
+        return str( self.__cfg.get( C_LABEL_POSITION, C_AFTER ) ).lower()
+
+    @property
+    def error( self ):
+        return str( self.__cfg.get( C_ERROR, True ) ).lower()
+
+    def get( self, property, default = None ):
+        return self.__cfg.get( property, default )
 
     def isTextbox( self ):
         return self.uiObject.lower() == C_TEXTBOX
@@ -119,6 +199,9 @@ class TemplateUi( object ):
 
     def isSliderToggle( self ):
         return self.uiObject.lower() == C_SLIDER_TOGGLE
+
+    def isSet( self, property ):
+        return property in self.__cfg or self.parent.isSet( property )
 
     def buildInputElement( self, table, field, label, options = None ):
         if options is None:
@@ -181,10 +264,10 @@ class TemplateUi( object ):
         if C_DISABLED in self.__cfg:
             options.append( 'disabled="{0}"'.format( self.disabled ) )
 
-        if self.__parent.isPrimaryKey():
+        if self.field.isPrimaryKey():
             options.append( 'readonly="true"' )
 
-        elif C_READ_ONLY in self.__cfg or self.__parent.readonly:
+        elif C_READ_ONLY in self.__cfg or self.field.readonly:
             options.append( 'readonly="{0}"'.format( self.readonly ) )
 
         if C_COLOR in self.__cfg:
@@ -214,58 +297,6 @@ class TemplateUi( object ):
     @property
     def service( self ):
         return self.__service
-
-    @property
-    def interval( self ):
-        return self.__cfg.get( C_INTERVAL, 1 )
-
-    @property
-    def vertical( self ):
-        return str( self.__cfg.get( C_VERTICAL, False ) ).lower()
-
-    @property
-    def disabled( self ):
-        return str( self.__cfg.get( C_DISABLED, self.__parent.disabled ) ).lower()
-
-    @property
-    def readonly( self ):
-        return str( self.__cfg.get( C_READ_ONLY, self.__parent.readonly ) ).lower()
-
-    @property
-    def pipe( self ):
-        return str( self.__cfg.get( C_PIPE, '' ) ).lower()
-
-    @property
-    def format( self ):
-        return str( self.__cfg.get( C_FORMAT, C_TEXT ) )
-
-    @property
-    def invert( self ):
-        return str( self.__cfg.get( C_INVERT, False ) ).lower()
-
-    @property
-    def step( self ):
-        return self.__cfg.get( C_STEP, 1 )
-
-    @property
-    def thumbLabel( self ):
-        return str( self.__cfg.get( C_THUMB_LABEL, True ) ).lower()
-
-    @property
-    def color( self ):
-        return str( self.__cfg.get( C_COLOR, C_COLOR_PRIMARY ) ).lower()
-
-    @property
-    def checked( self ):
-        return str( self.__cfg.get( C_CHECKED, False ) ).lower()
-
-    @property
-    def labelPosition( self ):
-        return str( self.__cfg.get( C_LABEL_POSITION, C_AFTER ) ).lower()
-
-    @property
-    def error( self ):
-        return str( self.__cfg.get( C_ERROR, True ) ).lower()
 
     def hasResolveList( self ):
         return C_RESOLVE_LIST in self.__cfg or C_RESOLVE_LIST_OLD in self.__cfg
@@ -384,3 +415,4 @@ class TemplateUi( object ):
                     raise Exception( "There is an error in the 'constant-format' expression" ) from None
 
         return lines
+

@@ -1,0 +1,197 @@
+DEFAULT:  &DEFAULT_PROPERTIES
+  disabled:
+    type: bool
+  readonly:
+    type: bool
+  color:
+    type: str
+    allowed:
+    - primary
+    - accent
+    - warn
+  error:
+    type: bool
+    default: true
+  debug:
+    type: bool
+  hint:
+    type: str
+  prefix:
+    type: str
+  prefix-type:
+    type: str
+    allowed:
+    - icon
+    - text
+  suffix:
+    type: str
+  suffix-type:
+    type: str
+    allowed:
+    - icon
+    - text
+label:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+    readonly:
+      type: bool
+      default: true
+  html: >
+    <pyt-label-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                     ${ this.getOptions( field.ui ) }>
+    </pyt-label-input-box>
+textbox:  &TEXTBOX
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-text-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                    ${ this.getOptions( field.ui ) }>
+    </pyt-text-input-box>
+text:
+  <<: *TEXTBOX
+checkbox:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+    labelPosition:
+      type: str
+      default: before
+      allowed:
+      - before
+      - after
+  html: >
+    <pyt-checkbox-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                        ${ this.getOptions( field.ui ) }>
+    </pyt-checkbox-input-box>
+password:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+    minLength:
+      type:   int
+    maxLength:
+      type:   int
+    mustContain:
+      type:   str
+  html: >
+    <pyt-password-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                        ${ this.getOptions( field.ui ) }>
+    </pyt-password-input-box>
+textarea:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+    rows:
+      type: int
+    cols:
+      type: int
+  html: >
+    <pyt-textarea-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                        ${ this.getOptions( field.ui ) }>
+    </pyt-textarea-input-box>
+number:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+    minimal:
+      type:   int
+    maximal:
+      type:   int
+  html: >
+    <pyt-number-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                      ${ this.getOptions( field.ui ) }>
+    </pyt-number-input-box>
+email:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-email-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                      ${ this.getOptions( field.ui ) }>
+    </pyt-email-input-box>
+choice:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-choice-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                      ${ this.getOptions( field.ui ) }>
+    </pyt-choice-input-box>
+combobox: &COMBOBOX
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-combobox-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                        ${ this.getOptions( field.ui ) }>
+    </pyt-combobox-input-box>
+
+combo:
+  <<: *COMBOBOX
+slider:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+    min:
+      type: int
+      default: 0
+    max:
+      type: int
+      default: 100
+    interval:
+      type: int
+    vertical:
+      type: bool
+    invert:
+      type: bool
+    step:
+      type: int
+    thumbLabel:
+      type: bool
+      default: false
+  html: >
+    <pyt-slider-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                      ${ this.getOptions( field.ui ) }>
+    </pyt-slider-input-box>
+
+slidertoggle:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-slidertoggle-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                            ${ this.getOptions( field.ui ) }>
+    </pyt-slidertoggle-input-box>
+date:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-date-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                    ${ this.getOptions( field.ui ) }>
+    </pyt-date-input-box>
+time:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-time-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                    ${ this.getOptions( field.ui ) }>
+    </pyt-time-input-box>
+datetime:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-datetime-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                        ${ this.getOptions( field.ui ) }>
+    </pyt-datetime-input-box>
+datepicker:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-datepicker-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                          ${ this.getOptions( field.ui ) }>
+    </pyt-datepicker-input-box>
+timepicker:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-timepicker-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                          ${ this.getOptions( field.ui ) }>
+    </pyt-timepicker-input-box>
+datetimepicker:
+  properties:
+    <<: *DEFAULT_PROPERTIES
+  html: >
+    <pyt-datetimepicker-input-box id="${table.name}.${field.name}" placeholder="${field.label}" formControlName="${field.name}"
+                                                              ${ this.getOptions( field.ui ) }>
+    </pyt-datetimepicker-input-box>
