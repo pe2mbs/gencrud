@@ -55,7 +55,7 @@ class RouteTemplate( object ):
 
             return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
 
-        return ''
+        return '{ }'
 
     def __repr__(self):
         return "<RouteTemplate name = '{}', label = '{}', class = {}, params = {}>".format(
