@@ -22,7 +22,7 @@ import os
 import shutil
 import logging
 import datetime
-import version
+import gencrud.version
 from mako.template import Template
 from mako import exceptions
 import gencrud.util.utils
@@ -370,7 +370,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                 try:
                     for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                         root = config,
-                                                                                        version = version.__version__,
+                                                                                        version = gencrud.version.__version__,
                                                                                         username = userName,
                                                                                         date = generationDateTime ).split( '\n' ):
                         if line.startswith( 'export ' ):
@@ -474,7 +474,7 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
                                                              root = config,
                                                              username = userName,
                                                              date = generationDateTime,
-                                                             version = version.__version__ ).split( '\n' ):
+                                                             version = gencrud.version.__version__ ).split( '\n' ):
                 stream.write( line )
                 if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
                     stream.write( '\n' )

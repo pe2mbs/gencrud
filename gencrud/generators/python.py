@@ -23,7 +23,7 @@ import sys
 import logging
 import shutil
 import datetime
-import version
+import gencrud.version
 from mako.template import Template
 from gencrud.configuraton import TemplateConfiguration
 import gencrud.util.utils
@@ -239,7 +239,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                     root = config,
                                                                                     date = generationDateTime,
-                                                                                    version = version.__version__,
+                                                                                    version = gencrud.version.__version__,
                                                                                     username = userName ).split( '\n' ):
                     stream.write( line )
                     if sys.platform.startswith( 'linux' ):
