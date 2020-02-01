@@ -20,23 +20,24 @@ for the 'Main Angular application package'"""
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
+import sys
 import yaml
 import logging
+import logging.config
 import traceback
 import importlib
-from applogger import loadLoggingFile, updateLogging
-from logging.config import dictConfig
-from os.path import join
-from angular import registerAngular
-import commands
-from exceptions import InvalidUsage
+from webapp.common.logger import loadLoggingFile, updateLogging
+from webapp.extensions.register import registerExtensions
+from webapp.common.angular import registerAngular
+from webapp.commands.register import registerCommands
+from webapp.common.exceptions import InvalidUsage
+from webapp.extensions.flask import Flask
 import webapp.api as API
-import webapp.extensions.flask import Flask
 
 
 def ResolveRootPath( path ):
     if path == '':
-        path = os.path.abspath( os.path.dirname( __file__ ) )
+        path = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) )
 
     elif path == '.':
         path = os.path.abspath( path )
@@ -65,10 +66,10 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             else:
                 config_file = 'config.yaml'
                 root_path = ResolveRootPath( root_path )
-                if not os.path.isfile( join( root_path, config_file ) ):
+                if not os.path.isfile( os.path.join( root_path, config_file ) ):
                     config_file = 'config.json'
 
-        if not os.path.isfile( join( root_path, config_file ) ):
+        if not os.path.isfile( os.path.join( root_path, config_file ) ):
             print( "The config file is missing", file = sys.stderr )
             exit( -1 )
 
@@ -78,7 +79,8 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
                      static_folder      = root_path )
         logDict = {}
         API.app.logger.info( "Starting Flask application, loading configuration." )
-        API.app.config.fromFile( join( root_path, config_file ) )
+
+        API.app.config.fromFile( os.path.join( root_path, config_file ) )
 
         # Setup logging for the application
         if 'logging' in API.app.config:
@@ -89,7 +91,7 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
 
         if len( logDict ) == 0:
             logDict = loadLoggingFile( root_path,
-                                       folder = API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in app.config else None,
+                                       folder = API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in API.app.config else None,
                                        verbose = verbose )
 
         else:
@@ -97,38 +99,69 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
                 # filename
                 logDict = loadLoggingFile( root_path,
                                            logDict,
-                                           API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in app.config else None,
+                                           API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in API.app.config else None,
                                            verbose )
 
             elif isinstance( logDict, dict ):
                 logDict = updateLogging( logDict,
-                                         API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in app.config else None,
+                                         API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in API.app.config else None,
                                          verbose )
 
             else:
                 print( "The logging key in config file is invalid", file = sys.stderr )
 
 
-        dictConfig( logDict )
-        #app.logger.setLevel( logging.DEBUG if app.config[ 'DEBUG' ] else logging.ERROR )
+        logging.config.dictConfig( logDict )
         API.app.logger.log( API.app.logger.level,
-                        "Logging Flask application: %s" % ( logging.getLevelName( app.logger.level ) ) )
-        API.app.logger.info( "{}".format( yaml.dump( app.config, default_flow_style = False ) ) )
+                        "Logging Flask application: %s" % ( logging.getLevelName( API.app.logger.level ) ) )
+        API.app.logger.info( "Config file: {}".format( os.path.join( root_path, config_file ) ) )
+        API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
         if full_start:
-            API.app.logger.info( "AngularPath : {}".format( app.config[ 'ANGULAR_PATH' ] ) )
-            API.app.static_folder   = join( root_path, app.config[ 'ANGULAR_PATH' ] ) + "/"
+            API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
+            API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
             API.app.url_map.strict_slashes = False
-            if module is None and 'API_MODULE' in app.config:
-                API.app.logger.info("Loading module : {}".format( app.config[ 'API_MODULE' ] ) )
-                module = importlib.import_module( app.config[ 'API_MODULE' ] )
+            if module is None and 'API_MODULE' in API.app.config:
+                API.app.logger.info("Loading module : {}".format( API.app.config[ 'API_MODULE' ] ) )
+                module = importlib.import_module( API.app.config[ 'API_MODULE' ] )
 
             API.app.logger.info("Application module : {}".format( module ) )
 
-            registerExtensions( API.app, module )
-            registerBluePrints( API.app, module )
-            registerErrorHandlers( API.app, module )
-            registerShellContext( API.app, module )
-            registerCommands( API.app, module )
+            registerExtensions( module )
+            if hasattr( module, 'registerExtensions' ):
+                module.registerExtensions()
+
+            API.app.logger.info( "Registering error handler" )
+            if hasattr( module, 'registerErrorHandler' ):
+                module.registerErrorHandler()
+
+            else:
+                def errorhandler( error ):
+                    response = error.to_json()
+                    response.status_code = error.status_code
+                    return response
+
+                API.app.errorhandler( InvalidUsage )( errorhandler )
+
+            API.app.logger.info( "Registering SHELL context" )
+            if hasattr( module, 'registerShellContext' ):
+                module.registerShellContext()
+
+            else:
+                API.app.shell_context_processor( { 'db': API.db } )
+
+            registerCommands()
+            if hasattr( module, 'registerCommands' ):
+                module.registerCommands()
+
+            API.app.logger.info( "Registering blueprints" )
+            if not API.app.config.get( "ALLOW_CORS_ORIGIN", False ):
+                API.app.logger.info( "NOT allowing CORS" )
+
+            registerAngular()
+            if not hasattr( module, 'registerApi' ):
+                raise Exception( "Missing registerApi() in module {}".format( module ) )
+
+            module.registerApi()
 
     except Exception as exc:
         if API.app:
@@ -140,112 +173,3 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
         raise
 
     return API.app
-
-
-def registerExtensions( module ):
-    """Register Flask extensions.
-
-       :param app:          The application object.
-       :param module:       The actual application module.
-       :return:             None.
-    """
-    API.app.logger.info( "Registering extensions" )
-    API.bcrypt.init_app( API.app )
-    API.cache.init_app( API.app )
-    API.db.init_app( API.app )
-    API.mm.init_app( API.app )
-    #migrate.init_app( API.app, API.db )
-    API.migrate.init_app( API.app, API.db, render_as_batch = True )
-    API.jwt.init_app( API.app )
-
-
-    # Set the auth callbacks
-    if hasattr( module, 'registerJwt' ):
-        module.registerJwt( API.app, API.jwt )
-
-    else:
-        API.app.logger.info( "Not registering JWT" )
-
-    if hasattr( module, 'registerExtensions' ):
-        module.registerExtensions( API.app, API.db )
-
-    return
-
-
-def registerBluePrints( module ):
-    """Register Flask blueprints.
-
-       :param app:          The application object.
-       :param module:       The actual application module.
-       :return:             None.
-    """
-    API.app.logger.info( "Registering blueprints" )
-    if not API.app.config.get( "ALLOW_CORS_ORIGIN", False ):
-        API.app.logger.info( "NOT allowing CORS" )
-
-    registerAngular( API.app, API.cors )
-    if not hasattr( module, 'registerApi' ):
-        raise Exception( "Missing registerApi() in module {}".format( module ) )
-
-    module.registerApi( API.app, API.cors )
-    return
-
-
-def registerErrorHandlers( module ):
-    """Register Flask error handler.
-
-       :param app:          The application object.
-       :param module:       The actual application module.
-       :return:             None.
-    """
-    API.app.logger.info( "Registering error handler" )
-
-    if hasattr( module, 'registerErrorHandler' ):
-        module.registerErrorHandler( API.app )
-
-    else:
-        def errorhandler( error ):
-            response = error.to_json()
-            response.status_code = error.status_code
-            return response
-
-        API.app.errorhandler( InvalidUsage )( errorhandler )
-
-    return
-
-
-def registerShellContext( app, module ):
-    """Register shell context objects.
-
-       :param app:          The application object.
-       :param module:       The actual application module.
-       :return:             None.
-    """
-    API.app.logger.info( "Registering SHELL context" )
-    if hasattr( module, 'registerShellContext' ):
-        module.registerShellContext( API.app, API.db )
-
-    else:
-        API.app.shell_context_processor( { 'db': API.db } )
-
-    return
-
-
-def registerCommands( app, module ):
-    """Register Click commands.
-
-       :param app:          The application object.
-       :param module:       The actual application module.
-       :return:             None.
-    """
-    API.app.logger.info( "Registering commands" )
-    API.app.cli.add_command( commands.test )
-    API.app.cli.add_command( commands.lint )
-    API.app.cli.add_command( commands.clean )
-    API.app.cli.add_command( commands.urls )
-    API.app.cli.add_command( commands.runsslCommand )
-    API.app.cli.add_command( commands.runProduction )
-    if hasattr( module, 'registerCommands' ):
-        module.registerCommands( API.app )
-
-    return

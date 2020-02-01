@@ -76,6 +76,7 @@ Werkzeug==0.14.1
 ## Development modes
 ```bash
 # export FLASK_APP=webapp/autoapp.py
+# export FLASK_APP_CONFIG=devconfig.yaml
 # export FLASK_DEBUG=1
 # export FLASK_ENV=DEVELOPMENT 
 # flask run
@@ -84,6 +85,7 @@ Werkzeug==0.14.1
 ## Test modes
 ```bash 
 # export FLASK_APP=webapp/autoapp.py
+# export FLASK_APP_CONFIG=testconfig.yaml
 # export FLASK_ENV=STAGING 
 # flask run --no-reload --with-threads 
 ```
@@ -91,6 +93,7 @@ Werkzeug==0.14.1
 ## Production modes
 ```bash 
 # export FLASK_APP=webapp/autoapp.py
+# export FLASK_APP_CONFIG=prodconfig.yaml
 # export FLASK_ENV=PRODUCTION 
 # flask run --no-reload --with-threads 
 ```

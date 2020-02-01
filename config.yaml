@@ -1,42 +1,56 @@
-LOGGING_COMMON: &logging_common
+LOGGING_COMMON: &logging
     version: 1
-    formatters:
+    formatters: &logging_formatters
         default:
             format: "[%(asctime)s] %(levelname)s %(name)s in %(module)s.%(funcName)s( %(lineno)s ): %(message)s"
+
         console:
             format: "%(asctime)s %(levelname)s %(name)s in %(module)s: %(message)s"
-    handlers:
-        console:
+
+    handlers: &logging_handlers
+        console: &logging_handler_console
             class: logging.StreamHandler
             stream: ext://sys.stdout
             formatter: console
             level: DEBUG
-        testrunweb:
+
+        logfile: &logging_handler_logfile
             class: logging.handlers.RotatingFileHandler
-            filename: testrun-web.log
+            filename: webapp.log
             maxBytes: 10485760
             backupCount: 7
             formatter: default
             level: DEBUG
-    root:
+
+    loggers: &logging_loggers
+        flask.app:
+            level: DEBUG
+
+        webapp:
+            level: DEBUG
+
+    root: &logging_root
         level: DEBUG
         handlers:
         -   console
-        -   testrunweb
-    loggers:
-        flask.app:
-            level: DEBUG
+        -   logfile
+
 COMMON: &common
     SECRET_KEY:                         insecure
     HOST:                               0.0.0.0
     PORT:                               8000
     DEBUG:                              false
     TESTING:                            false
-    API_MODULE:                         testrun
+    API_MODULE:                         application
     LOGGING:
-        <<: *logging_common
-    APP_PATH:                           D:\src\python\testrun-web\backend
-    ANGULAR_PATH:                       D:\src\python\testrun-web\dist\angular-flask
+        <<: *logging
+        handlers:
+            <<: *logging_handlers
+            logfile:
+                <<: *logging_handler_logfile
+                filename: /var/log/dev/webapp.log
+    APP_PATH:                           /opt/application
+    ANGULAR_PATH:                       ./frontend/dist/angular-app
     BCRYPT_LOG_ROUNDS:                  13
     DEBUG_TB_INTERCEPT_REDIRECTS:       false
     CACHE_TYPE:                         simple
@@ -49,125 +63,65 @@ COMMON: &common
     ALLOW_CORS_ORIGIN:                  false
     CORS_ORIGIN_WHITELIST: []
     SQLALCHEMY_POOL_RECYCLE:            28799
-    CLEANUP:
-        KEEP_PENDING: 1
-        KEEP_PASSED:  14
-        KEEP_WARNING: 14
-        KEEP_FAILED: 14
-    JIRA:
-        URL: https:\\jira.worldline.com
-        PROJECT: TESTPROJECT
-        ENABLED: false
-        USERNAME: G101090
-        PASSWORD: Test2019_nov
-COMMON_PROD:    &common_prod
-    <<: *common
-    SECRET_KEY:                         insecure
-    HOST:                               0.0.0.0
-    PORT:                               80
-    DEBUG:                              false
-    TESTING:                            false
-    API_MODULE:                         testrun
-    LOGGING_FOLDER:                     D:\var\log\prod
-    APP_PATH:                           D:\srv\testrun-web\backend
-    ANGULAR_PATH:                       D:\srv\testrun-web\dist\angular-flask
-    BCRYPT_LOG_ROUNDS:                  13
-    DEBUG_TB_INTERCEPT_REDIRECTS:       false
-    CACHE_TYPE:                         simple
-    SQLALCHEMY_TRACK_MODIFICATIONS:     false
-    JWT_AUTH_USERNAME_KEY:              id
-    JWT_AUTH_HEADER_PREFIX:             Authorization
-    JWT_HEADER_TYPE:                    JWT
-    JWT_EXPIRATION_DELTA:               weeks=52
-    ACCESS_TOKEN_EXPIRES:               days=365
-    ALLOW_CORS_ORIGIN:                  false
-    CORS_ORIGIN_WHITELIST: [ ]
 DATABASE:   &database
     ENGINE:                             mysql+pymysql
-    USERNAME:                           testrunweb
-    PASSWORD:                           testrunweb
-    SCHEMA:                             TESTTOOL_DEV
-    HOST:                               sts20029
+    HOST:                               localhost
     PORT:                               3306
+
 DEVELOPMENT:    &development
     <<: *common
-    DEBUG:                              true
-    TESTING:                            true
-    HOST:                               0.0.0.0
-    PORT:                               8000
-    ENV:                                dev
-    LOGGING_FOLDER:                     D:\var\log\dev
+    DEBUG:                          true
+    TESTING:                        true
+    PORT:                           8000
+    ENV:                            dev
+    APP_PATH:                       ~/src/python/application
+    ANGULAR_PATH:                   ./frontend/dist/angular-app
+    LOGGING:
+        <<: *logging
+        handlers:
+            <<: *logging_handlers
+            logfile:
+                <<: *logging_handler_logfile
+                filename: ~/log/webapp.log
     DATABASE:
         <<: *database
-srv00399:
-    <<: *development
-SRV00399:
-    <<: *development
-A480226:
-    # Marc Bertens
-    <<: *development
-    PORT:                               8001
-    HOST:                               0.0.0.0
-    APP_PATH:                           c:\src\python\testrun-web\backend
-    ANGULAR_PATH:                       c:\src\python\testrun-web\dist\angular-flask
-    LOGGING_FOLDER:                     C:\var\log\dev
-    DATABASE:
-        <<: *database
-        USERNAME:                       A480226
-        PASSWORD:                       A480226
-        SCHEMA:                         TESTTOOL_A480226
-    JIRA:
-        URL: https:\\jira.worldline.com
-        PROJECT: TESTPROJECT
-        ENABLED: false
-        USERNAME: A480226
-        PASSWORD: A480226
-A480406:
-    # Ernst Rijerse
-    <<: *development
-    PORT:                               8002
-    APP_PATH:                           c:\src\python\testrun-web\backend
-    ANGULAR_PATH:                       c:\src\python\testrun-web\dist\angular-flask
-    LOGGING_FOLDER:                     C:\var\log
-    DATABASE:
-        <<: *database
-        USERNAME:                       A480406
-        PASSWORD:                       A480406
-        SCHEMA:                         TESTTOOL_A480406
-A698665:
-    # Igor Iezhokin
-    <<: *development
-    PORT:                               8003
-    APP_PATH:                           c:\src\python\testrun-web\backend
-    ANGULAR_PATH:                       c:\src\python\testrun-web\dist\angular-flask
-    LOGGING_FOLDER:                     C:\var\log
-    DATABASE:
-        <<: *database
-        USERNAME:                       A698665
-        PASSWORD:                       A698665
-        SCHEMA:                         TESTTOOL_A698665
+        SCHEMA:                     schema
+        USERNAME:                   username
+        PASSWORD:                   password
+
 STAGING:
-    <<: *common_prod
-    SECRET_KEY:                         sortasecure
-    ENV:                                staging
-    DEBUG:                              true
-    TESTING:                            true
-    LOGGING_FOLDER:                     D:\var\log\dev
-    APP_PATH:                           D:\src\python\testrun-web\backend
-    ANGULAR_PATH:                       D:\src\python\testrun-web\dist\angular-flask
+    <<: *common
+    SECRET_KEY:                     sortasecure
+    ENV:                            staging
+    DEBUG:                          true
+    TESTING:                        true
+    LOGGING:
+        <<: *logging
+        handlers:
+            <<: *logging_handlers
+            logfile:
+                <<: *logging_handler_logfile
+                filename: /var/log/staging/webapp.log
     DATABASE:
         <<: *database
+        SCHEMA:                     schema
+        USERNAME:                   username
+        PASSWORD:                   password
+
 PRODUCTION:
-    <<: *common_prod
-    SECRET_KEY:                         shouldbereallysecureatsomepoint
-    ENV:                                prod
-    LOGGING_FOLDER:                     D:\var\log\prod
+    <<: *common
+    SECRET_KEY:                     shouldbereallysecureatsomepoint
+    PORT:                           80
+    LOGGING:
+        <<: *logging
+        handlers:
+            <<: *logging_handlers
+            logfile:
+                <<: *logging_handler_logfile
+                filename: /var/log/prod/webapp.log
+    ENV:                            prod
     DATABASE:
         <<: *database
-        SCHEMA:                         TESTTOOL_RE2019_02
-    JIRA:
-        URL: https:\\jira.worldline.com
-        PROJECT: ZVS
-        ENABLED: false
-        USERNAME: G101090
-        PASSWORD: Test2019_nov
+        SCHEMA:                     schema
+        USERNAME:                   username
+        PASSWORD:                   password

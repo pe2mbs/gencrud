@@ -20,68 +20,144 @@
 #
 import logging
 import os
-import sys
 import errno
 import copy
-import yaml
+#import yaml
 import json
 import datetime
 from flask import Config as BaseConfig
+from webapp.common.lookahead import lookahead
+#import yaml.composer
+
+# def compose_document( self ):
+#     self.get_event()
+#     node = self.compose_node( None, None )
+#     self.get_event()
+#     return node
+#
+# yaml.composer.Composer.compose_document = compose_document
+#
+#
+# class IncludeLoader( yaml.Loader ):
+#     """
+#     yaml.Loader subclass handles "!include path/to/foo.yml" directives in config
+#     files.  When constructed with a file object, the root path for includes
+#     defaults to the directory containing the file, otherwise to the current
+#     working directory. In either case, the root path can be overridden by the
+#     `root` keyword argument.
+#
+#     When an included file F contain its own !include directive, the path is
+#     relative to F's location.
+#
+#     Example:
+#         YAML file /home/frodo/one-ring.yml:
+#             ---
+#             Name: The One Ring
+#             Specials:
+#                 - resize-to-wearer
+#             Effects:
+#                 - !include path/to/invisibility.yml
+#
+#         YAML file /home/frodo/path/to/invisibility.yml:
+#             ---
+#             Name: invisibility
+#             Message: Suddenly you disappear!
+#
+#         Loading:
+#             data = IncludeLoader(open('/home/frodo/one-ring.yml', 'r')).get_data()
+#
+#         Result:
+#             {'Effects': [{'Message': 'Suddenly you disappear!', 'Name':
+#                 'invisibility'}], 'Name': 'The One Ring', 'Specials':
+#                 ['resize-to-wearer']}
+#     """
+#     def __init__( self, stream, *args, **kwargs ):
+#         self.root = None
+#         self.masterAnchors = {}
+#         if 'anchors' in kwargs:
+#             self.masterAnchors = kwargs[ 'anchors' ]
+#
+#         super( IncludeLoader, self ).__init__( stream )
+#         self.add_constructor( '!include', self._include )
+#         if 'root' in kwargs:
+#             self.root = kwargs[ 'root' ]
+#
+#         elif stream is not None:
+#             self.root = os.path.dirname( stream.name )
+#
+#         else:
+#             self.root = os.path.curdir
+#
+#
+#     def load_stream( self ):
+#         try:
+#             self.anchors = self.masterAnchors
+#             data = self.get_single_data()
+#             self.masterAnchors.update( self.anchors )
+#
+#         finally:
+#             self.dispose()
+#
+#         return data
+#
+#     def get_single_data( self ):
+#         # Ensure that the stream contains a single document and construct it.
+#         result= None
+#         node = self.get_single_node()
+#         if node is not None:
+#             result = self.construct_document( node )
+#             self.masterAnchors.update( self.anchors )
+#
+#         return result
+#
+#
+#     def _include( self, loader, node ):
+#         oldRoot = self.root
+#         filename = os.path.join( self.root, loader.construct_scalar(node))
+#         self.root = os.path.dirname( filename )
+#         # data = yaml.load( open( filename, 'r' ), Loader = IncludeLoader )
+#         loader = IncludeLoader( open( filename, 'r' ), anchors = self.masterAnchors )
+#         try:
+#             data = loader.get_single_data()
+#             self.root = oldRoot
+#             self.masterAnchors.update( loader.anchors )
+#             return data
+#
+#         finally:
+#             loader.dispose()
+from ruamel import yaml
 
 
-class IncludeLoader( yaml.Loader ):
-    """
-    yaml.Loader subclass handles "!include path/to/foo.yml" directives in config
-    files.  When constructed with a file object, the root path for includes
-    defaults to the directory containing the file, otherwise to the current
-    working directory. In either case, the root path can be overridden by the
-    `root` keyword argument.
+def my_compose_document(self):
+    self.get_event()
+    node = self.compose_node(None, None)
+    self.get_event()
+    # self.anchors = {}    # <<<< commented out
+    return node
 
-    When an included file F contain its own !include directive, the path is
-    relative to F's location.
 
-    Example:
-        YAML file /home/frodo/one-ring.yml:
-            ---
-            Name: The One Ring
-            Specials:
-                - resize-to-wearer
-            Effects:
-                - !include path/to/invisibility.yml
+yaml.SafeLoader.compose_document = my_compose_document
 
-        YAML file /home/frodo/path/to/invisibility.yml:
-            ---
-            Name: invisibility
-            Message: Suddenly you disappear!
 
-        Loading:
-            data = IncludeLoader(open('/home/frodo/one-ring.yml', 'r')).get_data()
+# adapted from http://code.activestate.com/recipes/577613-yaml-include-support/
+def yaml_include(loader, node):
+    with open(node.value) as inputfile:
+        return list(my_safe_load(inputfile, master=loader).values())[0]
+#              leave out the [0] if your include file drops the key ^^^
 
-        Result:
-            {'Effects': [{'Message': 'Suddenly you disappear!', 'Name':
-                'invisibility'}], 'Name': 'The One Ring', 'Specials':
-                ['resize-to-wearer']}
-    """
-    def __init__( self, *args, **kwargs ):
-        super( IncludeLoader, self ).__init__( *args, **kwargs )
-        self.add_constructor( '!include', self._include )
-        if 'root' in kwargs:
-            self.root = kwargs['root']
+yaml.add_constructor("!include", yaml_include, Loader=yaml.SafeLoader)
 
-        elif isinstance( self.stream, file ):
-            self.root = os.path.dirname( self.stream.name )
 
-        else:
-            self.root = os.path.curdir
+def my_safe_load(stream, Loader=yaml.SafeLoader, master=None):
+    loader = Loader(stream)
+    if master is not None:
+        loader.anchors = master.anchors
 
-    def _include( self, loader, node ):
-        oldRoot = self.root
-        filename = os.path.join(self.root, loader.construct_scalar(node))
-        self.root = os.path.dirname( filename )
-        data = yaml.load( open( filename, 'r' ) )
-        self.root = oldRoot
-        return data
+    try:
+        return loader.get_single_data()
 
+    finally:
+        loader.dispose()
 
 
 class Config( BaseConfig ):
@@ -130,7 +206,10 @@ class Config( BaseConfig ):
         self[ 'ENVIRONMENT' ] = env.lower()
         try:
             with open( config_file ) as f:
-                c = yaml.load( f )
+                c = my_safe_load( f )
+                # loader = IncludeLoader( f )
+                # c = loader.load_stream()
+                #c = yaml.load( f, Loader = IncludeLoader )
 
         except IOError as e:
             if silent and e.errno in (errno.ENOENT, errno.EISDIR):
@@ -139,7 +218,8 @@ class Config( BaseConfig ):
             e.strerror = 'Unable to load configuration file (%s)' % e.strerror
             raise
 
-        return self._modify( c.get( env, c ) )
+        taskSection = c.get( 'COMMON_TASKS' ).get( os.environ.get( 'FLASK_TASK', 'webapp' ), {} )
+        return self._modify( c.get( env, c ), taskSection )
 
     def fromJson( self, config_file, silent=False ):
         """Load the configuration from a file, currently JSON formats
@@ -179,9 +259,15 @@ class Config( BaseConfig ):
             c.update( segment )
             segment = c
 
-        return self._modify( segment )
+        if 'COMMON_TASKS' in c:
+            taskSection = c.get( 'COMMON_TASKS' ).get( os.environ.get( 'FLASK_TASK', 'webapp' ), {} )
 
-    def _modify( self, c ):
+        else:
+            taskSection = {}
+
+        return self._modify( segment, taskSection )
+
+    def _modify( self, c, taskSection ):
         """Internal updater to fix PATH's and DATABASE uri
 
         :param c:
@@ -191,6 +277,35 @@ class Config( BaseConfig ):
                        "SEND_FILE_MAX_AGE_DEFAULT",
                        "JWT_ACCESS_TOKEN_EXPIRES", 
                        "JWT_REFRESH_TOKEN_EXPIRES" )
+
+        if len( taskSection ):
+            print( "taskSection", taskSection )
+
+            def resolveKeys( path, keys, value ):
+                for key, more in lookahead( keys ):
+                    if more:
+                        path = path[ key ]
+
+                    else:
+                        path[ key ] = value
+                        return
+
+                return
+
+            def resolveKey( path, upd ):
+                for key, value in  upd.items():
+                    if '.' in key:
+                        resolveKeys( c, key.split( '.' ), value )
+
+                    elif isinstance( value, dict ):
+                        path[ key ] = resolveKey( path[ key ], value )
+
+                    else:
+                        path[ key ] = value
+
+                return path
+
+            resolveKey( c, taskSection )
 
         for key in c.keys():
             if key.isupper():
@@ -262,16 +377,27 @@ class Config( BaseConfig ):
 
         return True
 
-    def _dump( self, segment = None ):
+    def _dump( self, segment = None, stream = None ):
         logger = logging.getLogger( 'flask.app' )
+        def logit( data ):
+            if stream:
+                print( data )
+
+            else:
+                logger.info( data )
+
         if segment is None:
             segment = self
-            logger.info( "Dump configuration." )
+            logit( "Dump configuration." )
 
         else:
-            logger.info( "Dump segment configuration." )
+            logit( "Dump segment configuration." )
 
         for key in sorted( segment.keys() ):
-            logger.info( "%-30s : %s" % ( key, segment[ key ] ) )
+            logit( "%-30s : %s" % ( key, segment[ key ] ) )
 
         return
+
+    @property
+    def struct( self ):
+        return dict( self )

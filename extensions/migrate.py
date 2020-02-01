@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Extensions module for the 'Main Angular application package'.
-Each extension is initialized in the app factory located in applic/app.py."""
 #
-# Exception module for the 'Main Angular application package'.
+# Angular base module, containing the app factory function.
 # Copyright (C) 2018 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
 #
 # This program is free software; you can redistribute it and/or
@@ -20,16 +18,8 @@ Each extension is initialized in the app factory located in applic/app.py."""
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+from flask_migrate import Migrate
+import webapp.api as API
 
 
-
-
-
-
-
-
-
-
-
-
-
+API.migrate = Migrate()

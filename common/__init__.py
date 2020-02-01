@@ -1,2 +1,2 @@
-from common.parameters import *
-from common import *
+from webapp.common.parameters import *
+from webapp.common import *

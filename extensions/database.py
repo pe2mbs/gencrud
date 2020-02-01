@@ -21,9 +21,10 @@ including the SQLAlchemy database object and DB-related utilities."""
 #
 import webapp.api as API
 from sqlalchemy.orm import relationship
-from compat import basestring
+from webapp.common.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, Column
+
 
 # Fix described @ https://stackoverflow.com/questions/45527323/flask-sqlalchemy-upgrade-failing-after-updating-models-need-an-explanation-on-h
 naming_convention = {
