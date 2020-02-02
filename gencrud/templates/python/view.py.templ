@@ -22,7 +22,7 @@
 import logging
 import traceback
 from flask import Blueprint, request, jsonify
-from applic.database import db
+import webapp.api as API
 from ${ root.application }.common import fieldConversion
 from ${ root.application }.${ obj.name }.model import ${ obj.cls }
 from ${ root.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
@@ -32,30 +32,23 @@ from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
 % endif
 
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
-logger = logging.getLogger()
 
 
-def registerApi( app, cors ):
+def registerApi():
     # Set the logger for the users module
-    if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-        app.logger.info( 'Allowing CORS' )
-        if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-            origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' )
-            cors.init_app( '${ obj.name }Api', origins = origins )
-
-    logger.info( 'Register ${ obj.cls } routes' )
-    app.register_blueprint( ${ obj.name }Api )
+    API.app.logger.info( 'Register ${ obj.cls } routes' )
+    API.app.register_blueprint( ${ obj.name }Api )
     try:
         import ${ root.application }.${ obj.name }.entry_points  as EP
-        logger.info( 'Register ${ obj.cls } entrypoint routes' )
-        app.register_blueprint( EP.entryPointApi )
+        API.app.logger.info( 'Register ${ obj.cls } entrypoint routes' )
+        API.app.register_blueprint( EP.entryPointApi )
 
     except:
         pass
 
 % if obj.table.Mixin.View.Available:
-    logger.info( 'Registering ${ obj.cls } view mixin' )
-    app.register_blueprint( ${obj.table.Mixin.View.Class}.blueprint )
+    API.app.logger.info( 'Registering ${ obj.cls } view mixin' )
+    API.app.register_blueprint( ${obj.table.Mixin.View.Class}.blueprint )
 % endif
     return
 
@@ -67,7 +60,7 @@ def get${ obj.cls }ListFiltered( id, value ):
                  filter_by( **filter ).\
                  ${ obj.orderBy() }.all()
     result = ${ obj.name }sSchema.jsonify( recordList )
-    logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
     return result
 
 
@@ -75,7 +68,7 @@ def get${ obj.cls }ListFiltered( id, value ):
 def get${ obj.cls }List():
     recordList = db.session.query( ${ obj.cls } ).${ obj.orderBy() }.all()
     result = ${ obj.name }sSchema.jsonify( recordList )
-    logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
     return result
 
 
@@ -84,7 +77,8 @@ def api${ obj.cls }New():
     data    = request.json
     if data is None:
         return "Invalid request, missing ${ obj.cls }Record", 500
-    logging.info( 'POST: {0}'.format( repr( data ) ) )
+
+    API.app.logging.info( 'POST: {0}'.format( repr( data ) ) )
     if '${ obj.table.primaryKey }' in data:
         del data[ '${ obj.table.primaryKey }' ]
 
@@ -93,10 +87,10 @@ def api${ obj.cls }New():
         if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
             setattr( record, key, fieldConversion( record, key, value ) )
 
-    db.session.add( record )
-    db.session.commit()
+    API.db.session.add( record )
+    API.db.session.commit()
     result = ${ obj.name }Schema.jsonify( record )
-    logger.debug( 'get${obj.cls}New() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${obj.cls}New() => {0}'.format( result ) )
     return result
 
 
@@ -106,30 +100,30 @@ def api${ obj.cls }Get():
     if data is None:
         return "Invalid request, missing ${ obj.cls }Record", 500
 
-    logging.info( 'GET: {0}'.format( repr( data ) ) )
+    API.app.logging.info( 'GET: {0}'.format( repr( data ) ) )
     record = ${ obj.cls }.query.get( int( data[ '${ obj.table.primaryKey }' ] ) )
     result = ${ obj.name }Schema.jsonify( record )
-    logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
     return result
 
 
 @${ obj.name }Api.route( '${ obj.uri }/get/<int:id>', methods = [ 'GET' ] )
 def api${ obj.cls }GetId( id ):
-    logging.info( 'GET: {0}'.format( id ) )
+    API.app.logging.info( 'GET: {0}'.format( id ) )
     record = ${ obj.cls }.query.get( int( id ) )
     result = ${ obj.name }Schema.jsonify( record )
-    logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
     return result
 
 
 @${ obj.name }Api.route( '${ obj.uri }/<int:id>', methods = [ 'DELETE' ] )
 def api${ obj.cls }Delete( id ):
-    logging.info( 'DELETE: {0}'.format( id ) )
+    API.app.logging.info( 'DELETE: {0}'.format( id ) )
     record = ${ obj.cls }.query.get( int( id ) )
-    db.session.delete( record )
-    db.session.commit()
+    API.db.session.delete( record )
+    API.db.session.commit()
     result = ${ obj.name }Schema.jsonify( record )
-    logger.debug( 'get${ obj.cls }Delete() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${ obj.cls }Delete() => {0}'.format( result ) )
     return result
 
 
@@ -138,37 +132,38 @@ def api${ obj.cls }Put():
     data    = request.json
     if data is None:
         return "Invalid request, missing ${ obj.cls }Record", 500
-    logging.info( 'PUT: {0}'.format( repr( data ) ) )
+
+    API.app.logging.info( 'PUT: {0}'.format( repr( data ) ) )
     record = ${obj.cls}.query.get( data[ '${ obj.table.primaryKey }' ] )
     for key, value in data.items():
         if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
             setattr( record, key, fieldConversion( record, key, value ) )
 
-    db.session.commit()
+    API.db.session.commit()
     result = ${ obj.name }Schema.jsonify( record )
-    logger.debug( 'get${ obj.cls }Put() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${ obj.cls }Put() => {0}'.format( result ) )
     return result
 
 
 @${ obj.name }Api.route( '${ obj.uri }/update', methods=[ 'POST' ] )
 def api${ obj.cls }Patch():
     data    = request.json
-    logging.info( 'PATCH: {0}'.format( repr( data ) ) )
+    API.app.logging.info( 'PATCH: {0}'.format( repr( data ) ) )
     record = ${ obj.cls }.query.get( data[ '${ obj.table.primaryKey }' ] )
     for key, value in data.items():
         if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
             setattr( record, key, fieldConversion( record, key, value ) )
 
-    db.session.commit()
+    API.db.session.commit()
     result = ${ obj.name }Schema.jsonify( record )
-    logger.debug( 'get${ obj.cls }Patch() => {0}'.format( result ) )
+    API.app.logger.debug( 'get${ obj.cls }Patch() => {0}'.format( result ) )
     return result
 
 
 @${ obj.name }Api.route( '${ obj.uri }/select', methods=[ 'GET' ] )
 def api${ obj.cls }Select():
     data    = request.json
-    logging.info( 'POST: {0}'.format( repr( data ) ) )
+    API.app.logging.info( 'POST: {0}'.format( repr( data ) ) )
     if data is not None:
         value = data[ 'value' ]
         label = data[ 'label' ]
@@ -183,15 +178,14 @@ def api${ obj.cls }Select():
         result.append( { 'value': getattr( record, value ),
                          'label': getattr( record, label ) } )
 
-    logger.debug( 'api${ obj.cls }Select => {0}'.format( result ) )
-
+    API.app.logger.debug( 'api${ obj.cls }Select => {0}'.format( result ) )
     return jsonify( result )
 
 
 @${ obj.name }Api.route( '${ obj.uri }/lock', methods=[ 'POST' ] )
 def api${ obj.cls }Lock():
     data    = request.json
-    logging.info( 'LOCK: {0}'.format( repr( data ) ) )
+    API.app.logging.info( 'LOCK: {0}'.format( repr( data ) ) )
     # TODO: This needs to be implemented for correct multiuser support
 
     return jsonify( { 'result': 'OK' } )
@@ -200,7 +194,7 @@ def api${ obj.cls }Lock():
 @${ obj.name }Api.route( '${ obj.uri }/unlock', methods=[ 'POST' ] )
 def api${ obj.cls }Unlock():
     data    = request.json
-    logging.info( 'UNLOCK: {0}'.format( repr( data ) ) )
+    API.app.logging.info( 'UNLOCK: {0}'.format( repr( data ) ) )
     # TODO: This needs to be implemented for correct multiuser support
 
     return jsonify( { 'result': 'OK' } )

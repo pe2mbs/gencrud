@@ -19,16 +19,16 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 #
-from applic.database import db
+import webapp.api as API
 from sqlalchemy import event
-import common
+import webapp.common
 % if obj.table.Mixin.Model.Available:
 from ${obj.table.Mixin.Model.Module} import ${obj.table.Mixin.Model.Class}
 % endif
 ${ obj.table.leadIn }
 
 
-class ${obj.cls}( db.Model
+class ${obj.cls}( API.db.Model
 % if obj.table.Mixin.Model.Available:
                 , ${obj.table.Mixin.Model.Class}
 % endif

@@ -19,7 +19,7 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 #
-from applic.extensions import mm
+import webapp.api as API
 from ${ root.application }.${ obj.name }.model import ${ obj.cls }
 % if obj.table.Mixin.Schema.Available:
 from ${obj.table.Mixin.Schema.Module} import ${obj.table.Mixin.Schema.Class}
@@ -31,7 +31,7 @@ from ${ root.application }.${ field.relationship.name }.schema import ${ field.r
 % endfor
 
 
-class ${ obj.cls }Schema( mm.ModelSchema
+class ${ obj.cls }Schema( API.mm.ModelSchema
 % if obj.table.Mixin.Schema.Available:
                 , ${obj.table.Mixin.Schema.Class}
 % endif

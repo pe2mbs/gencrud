@@ -4,8 +4,7 @@
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
-#   as published by the Free Software Foundation; either version 2 of the
-#   License, or (at your option) any later version.
+#   as published by the Free Software Foundation.
 #
 #   This library is distributed in the hope that it will be useful, but
 #   WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -23,7 +22,7 @@ import sys
 import logging
 import shutil
 import datetime
-import version
+import gencrud.version
 from mako.template import Template
 from gencrud.configuraton import TemplateConfiguration
 import gencrud.util.utils
@@ -239,7 +238,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                     root = config,
                                                                                     date = generationDateTime,
-                                                                                    version = version.__version__,
+                                                                                    version = gencrud.version.__version__,
                                                                                     username = userName ).split( '\n' ):
                     stream.write( line )
                     if sys.platform.startswith( 'linux' ):

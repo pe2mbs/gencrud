@@ -4,8 +4,7 @@
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
-#   as published by the Free Software Foundation; either version 2 of the
-#   License, or (at your option) any later version.
+#   as published by the Free Software Foundation.
 #
 #   This library is distributed in the hope that it will be useful, but
 #   WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,7 +21,7 @@ import os
 import shutil
 import logging
 import datetime
-import version
+import gencrud.version
 from mako.template import Template
 from mako import exceptions
 import gencrud.util.utils
@@ -370,7 +369,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                 try:
                     for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                         root = config,
-                                                                                        version = version.__version__,
+                                                                                        version = gencrud.version.__version__,
                                                                                         username = userName,
                                                                                         date = generationDateTime ).split( '\n' ):
                         if line.startswith( 'export ' ):
@@ -535,6 +534,9 @@ def copyAngularCommon( config, source, destination ):
                os.path.isfile( os.path.join( source, filename ) ):
             logger.debug( "Copy new file {0} => {1}".format( os.path.join( source, filename ),
                                                       os.path.join( destination, filename ) ) )
+            if not os.path.isdir( destination ):
+                os.makedirs( destination )
+
             shutil.copy( os.path.join( source, filename ),
                          os.path.join( destination, filename ) )
 
@@ -550,7 +552,7 @@ def copyAngularCommon( config, source, destination ):
                 logger.debug( "{0} is the same {1}".format( os.path.join( source, filename ),
                                                      os.path.join( destination, filename ) ) )
 
-        elif os.path.isdir( os.path.join( destination, filename ) ):
+        elif os.path.isdir( os.path.join( source, filename ) ):
             copyAngularCommon( config, os.path.join( source, filename ), os.path.join( destination, filename ) )
 
     return

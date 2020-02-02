@@ -19,9 +19,10 @@
 #
 import logging
 from flask import Blueprint, jsonify
+import webapp.app as API
 
-__version__     = '1.0.0'
-__copyright__   = '(c) Copyright 2020, all rights reserved, GPL2 only'
+__version__     = '1.1.0'
+__copyright__   = '(c) Copyright 2018-2020, all rights reserved, GPL2 only'
 __author__      = 'Marc Bertens-Nguyen'
 
 ##
@@ -38,58 +39,74 @@ menuItems = [
 ##
 #   End section maintained by gencrud.py
 ##
-menuApi = Blueprint( 'menuApi', __name__ )
-logger = logging.getLogger()
+applicApi = Blueprint( 'applicApi', __name__ )
 
 
-def registerApi( app, cors ):
-    logger = app.logger
+def registerApi():
+    API.app.logger.info( 'Register modules route' )
+    if API.app.config.get( 'ALLOW_CORS_ORIGIN', False ):
+        if API.app.config.get( 'ALLOW_CORS_ORIGIN', False ):
+            API.app.logger.info( 'Allowing CORS' )
+            cors.init_app( 'menuApi', origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' ) )
+
+    API.app.logger.info( 'Register Menu route' )
+    API.app.register_blueprint( menuApi )
     for module in listModules:
-        module.registerApi( app, cors )
+        module.registerApi()
 
-    if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-        app.logger.info( 'Allowing CORS' )
-        if app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-            origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' )
-            cors.init_app( 'menuApi', origins = origins )
-
-    logger.info( 'Register Menu route' )
-    app.register_blueprint( menuApi )
     return
 
 
-def registerExtensions( app, db ):
-    del app     # unused
-    del db      # unused
+def registerExtensions():
+    API.app.logger.info( 'Register extensions' )
+    for module in listModules:
+        if hasattr( module, 'registerExtensions' ):
+            module.registerExtensions()
+
     return
 
 
-def registerShellContext( app, db ):
-    del app     # unused
-    del db      # unused
+def registerShellContext():
+    API.app.logger.info( 'Register shell context' )
+    for module in listModules:
+        if hasattr( module, 'registerShellContext' ):
+            module.registerShellContext()
+
     return
 
 
-def registerCommands( app ):
-    del app     # unused
+def registerCommands():
+    API.app.logger.info( 'Register extra commands' )
+    for module in listModules:
+        if hasattr( module, 'registerCommands' ):
+            module.registerCommands()
+
     return
 
 
-@menuApi.route( "/api/menu", methods=[ 'GET' ] )
+@applicApi.route( "/api/application/menu", methods=[ 'GET' ] )
 def getUserMenu():
     return jsonify( menuItems )
 
 
-@menuApi.route( "/api/version", methods=[ 'GET' ] )
+@applicApi.route( "/api/application/version", methods=[ 'GET' ] )
 def getAppVersion():
     return __version__
 
 
-@menuApi.route( "/api/copyright", methods=[ 'GET' ] )
+@applicApi.route( "/api/application/copyright", methods=[ 'GET' ] )
 def getAppCopyright():
     return __copyright__
 
 
-@menuApi.route( "/api/author", methods=[ 'GET' ] )
+@applicApi.route( "/api/application/author", methods=[ 'GET' ] )
 def getAppAuthor():
     return __author__
+
+
+@applicApi.route( "/api/application/info", methods=[ 'GET' ] )
+def getAppInfo():
+    return jsonify( author = __author__,
+                    copyright = __copyright__,
+                    version = __version__ )
+

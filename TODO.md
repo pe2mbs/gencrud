@@ -8,8 +8,7 @@
 -   fix the email angular component, partly done but needs more work.
 -   add hyperlink angular component.
 -   add amount angular component.
--   add xml angular component
--   add json angular component
--   add yaml angular component 
-
-
+-   add editor angular component (monaco)
+    -   add xml angular component (monaco)
+    -   add json angular component (monaco)
+    -   add yaml angular component (monaco)
