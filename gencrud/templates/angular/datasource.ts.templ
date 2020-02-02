@@ -98,6 +98,10 @@ ${ obj.externalService } )
         {
             return ( this.resolveListItem( this.${ field.name }_List, id ) );
         }
+        if ( id == null )
+        {
+            return ( "?" )
+        }
         return ( id.toString );
     }
 
@@ -105,6 +109,10 @@ ${ obj.externalService } )
     public ${ field.name }_Label( id )
     {
         let values = ${ field.ui.resolveList }
+        if ( id == null )
+        {
+            return ( "?" )
+        }
         return ( values[ id ] );
     }
 

@@ -184,8 +184,13 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
                         if component not in imports:
                             imports.append( component )
 
+                # Get the actual route
+                m = cfg.menu
+                while m.menu is not None:
+                    m = m.menu
+
                 logger.info( "Action children: {} path {}".format( json.dumps( children, indent = 4 ),
-                                                                   cfg.menu.menu.route[ 1: ] ) )
+                                                                   m.route[ 1: ] ) )
                 if len( children ) > 0:
                     children.insert( 0, {
                         'path':      "''",
@@ -193,11 +198,11 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
                         'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
                                        'breadcrum': "'{}'".format( cfg.cls ) }
                     } )
-                    routeItem = { 'path': "'{}'".format( cfg.menu.menu.route[ 1: ] ), 'children': children }
+                    routeItem = { 'path': "'{}'".format( m.route[ 1: ] ), 'children': children }
 
                 else:
                     routeItem = {
-                        'path':      "'{}'".format( cfg.menu.menu.route[ 1: ] ),
+                        'path':      "'{}'".format( m.route[ 1: ] ),
                         'component': '{cls}TableComponent'.format( cls = cfg.cls ),
                         'data':      { 'title':     "'{cls} table'".format( cls = cfg.cls ),
                                        'breadcrum': "'{}'".format( cfg.cls ) }
@@ -211,8 +216,13 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
                 entries.append( routeItem )
 
             elif config.options.lazyLoading:
+                # Get the actual route
+                m = cfg.menu
+                while m.menu is not None:
+                    m = m.menu
+
                 routeItem = {
-                    "path": "'{}'".format( cfg.menu.menu.route[ 1: ] ),
+                    "path": "'{}'".format( m.route[ 1: ] ),
                     "data": {
                         "breadcrumb": "'{cls} table'".format( cls = cfg.cls ),
                         "title":      "'{cls} table'".format( cls = cfg.cls ),
@@ -473,7 +483,7 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
                                                              root = config,
                                                              username = userName,
                                                              date = generationDateTime,
-                                                             version = version.__version__ ).split( '\n' ):
+                                                             version = gencrud.version.__version__ ).split( '\n' ):
                 stream.write( line )
                 if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
                     stream.write( '\n' )
