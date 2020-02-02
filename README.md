@@ -1,7 +1,28 @@
 # Running an Angular application from Python and Flask
+
 This is an example how to setup and run an Angular application from Python and Flask.
 
-'Python and Flask serving Angular'
+# General
+This repository should be used as follows:
+
+    # git init
+    # git submodule add https://gitlab.pe2mbs.nl/python/webapp.git
+    
+    # ng new frontend
+    # touch version.py
+
+Contents of the `version.py`
+```python    
+version = '1.0.0'
+author = 'Marc Bertens-Nguyen'
+copyright = '2020 Copyright'
+```
+
+This project was based on many internet sources. Many thanks to all those authors that 
+showed how to solve part of the problem.
+
+# Licence
+Python and Flask serving Angular application.
 Copyright (C) 2018 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
 
 This program is free software; you can redistribute it and/or
@@ -17,9 +38,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-
-This project was based on many internet sources. Many thanks to all those authors that 
-showed how to solve part of the problem.
 
 # Structure
 ```
@@ -101,6 +119,7 @@ Werkzeug==0.14.1
 # Configuratio file
 The default configuration file is config.yml a different config file can be set  
 with the FLASK_CFG environment variable.
+
 
 ## config.yml
 A typical config file has four sections: COMMON, DEVELOPMENT, STAGING and PRODUCTION. 
