@@ -4,8 +4,7 @@
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
-#   as published by the Free Software Foundation; either version 2 of the
-#   License, or (at your option) any later version.
+#   as published by the Free Software Foundation.
 #
 #   This library is distributed in the hope that it will be useful, but
 #   WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,11 +18,8 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 #
-import logging
-import traceback
 from flask import Blueprint, request, jsonify
 import webapp.api as API
-from ${ root.application }.common import fieldConversion
 from ${ root.application }.${ obj.name }.model import ${ obj.cls }
 from ${ root.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
 from ${ root.application }.common import fieldConversion
@@ -31,6 +27,7 @@ from ${ root.application }.common import fieldConversion
 from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
 % endif
 
+db = API.db
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
 
 

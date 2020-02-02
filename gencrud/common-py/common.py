@@ -4,8 +4,7 @@
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
-#   as published by the Free Software Foundation; either version 2 of the
-#   License, or (at your option) any later version.
+#   as published by the Free Software Foundation.
 #
 #   This library is distributed in the hope that it will be useful, but
 #   WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,11 +16,9 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-import logging
 import datetime
 import sqlalchemy.sql.sqltypes
-
-logger = logging.getLogger()
+import webapp.api as API
 
 
 def fieldConversion( record, key, value, default = None ):
@@ -31,7 +28,7 @@ def fieldConversion( record, key, value, default = None ):
     except Exception:
         _type = record.__table__.columns[ key.lower() ].type
 
-    logger.debug( 'field {0} value {1} type {2}'.format( key, value, _type ) )
+    API.app.logger.debug( 'field {0} value {1} type {2}'.format( key, value, _type ) )
     if isinstance( _type, ( sqlalchemy.sql.sqltypes.Integer,
                             sqlalchemy.sql.sqltypes.INTEGER,
                             sqlalchemy.sql.sqltypes.BigInteger,
@@ -60,7 +57,7 @@ def fieldConversion( record, key, value, default = None ):
                               sqlalchemy.sql.sqltypes.TIMESTAMP ) ):
         if value is not None:
             value = value[0:22] + value[23:]
-            logger.debug( 'datetime.datetime.value: {}'.format( value ) )
+            API.app.logger.debug( 'datetime.datetime.value: {}'.format( value ) )
             if value.endswith( 'Z' ):
                 value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S.00Z' )
 
@@ -103,5 +100,5 @@ def fieldConversion( record, key, value, default = None ):
             else:
                 value = False
 
-    logger.debug( 'field {0} value {1}'.format( key, value ) )
+    API.app.logger.debug( 'field {0} value {1}'.format( key, value ) )
     return value
