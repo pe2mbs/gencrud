@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
+"""Main webapp application package."""
 #
-# Angular base module, containing the app factory function.
-# Copyright (C) 2018 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
+# Main webapp application package
+# Copyright (C) 2018-2020 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License GPL-2.0-only
+# as published by the Free Software Foundation.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -18,6 +18,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+
+
 import os
 
 app             = None
@@ -27,7 +29,7 @@ cache           = None
 cors            = None
 jwt             = None
 mm              = None
-
+stomp           = None
 db              = None
 Column          = None
 Model           = None

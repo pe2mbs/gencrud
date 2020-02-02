@@ -19,16 +19,15 @@ copyright = '2020 Copyright'
 ```
 
 This project was based on many internet sources. Many thanks to all those authors that 
-showed how to solve part of the problem.
+showed how to solve parts of the problem.
 
 # Licence
 Python and Flask serving Angular application.
 Copyright (C) 2018 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This library is free software; you can redistribute it and/or modify
+it under the terms of the GNU Library General Public License GPL-2.0-only
+as published by the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of

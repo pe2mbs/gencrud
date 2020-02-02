@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Python 2/3 compatibility module for the 'Main Angular application package'."""
+"""Main webapp application package."""
 #
-# Python 2/3 compatibility module for the 'Main Angular application package'.
-# Copyright (C) 2018 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
+# Main webapp application package
+# Copyright (C) 2018-2020 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# This library is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License GPL-2.0-only
+# as published by the Free Software Foundation.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
