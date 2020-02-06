@@ -19,6 +19,7 @@
 import json
 import os
 import sys
+import yaml
 import logging
 import shutil
 import datetime
@@ -28,12 +29,17 @@ from gencrud.configuraton import TemplateConfiguration
 import gencrud.util.utils
 import gencrud.util.exceptions
 from gencrud.util.positon import PositionInterface
+import gencrud.util.utils as API
 
 logger = logging.getLogger()
 
 MENU_CHILDEREN_LABEL    = 'childeren'
 MENU_DISPLAY_NAME       = 'displayName'
 MENU_ICON_NAME          = 'iconName'
+
+MENU_DISPLAY_NAME_V2    = 'caption'
+MENU_ICON_NAME_V2       = 'icon'
+
 MENU_INDEX              = 'index'
 MENU_ROUTE              = 'route'
 LABEL_LIST_MODULES      = 'listModules = ['
@@ -115,82 +121,157 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
     sectionLines.append( LABEL_END_LIST + '\n' )
     gencrud.util.utils.replaceInList( lines, rangePos, sectionLines )
 
-    sectionLines = gencrud.util.utils.searchSection( lines,
-                                                     rangePos,
-                                                     LABEL_MENU_ITEMS,
-                                                     LABEL_END_LIST )
-    pos = sectionLines[ 0 ].find( '[' )
-    sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
-    try:
-        menuItems = json.loads( ''.join( sectionLines ) )
+    if API.config.version == 1:
+        sectionLines = gencrud.util.utils.searchSection( lines,
+                                                         rangePos,
+                                                         LABEL_MENU_ITEMS,
+                                                         LABEL_END_LIST )
+        pos = sectionLines[ 0 ].find( '[' )
+        sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
+        try:
+            menuItems = json.loads( ''.join( sectionLines ) )
 
-    except Exception:
-        for line_no, line in enumerate( sectionLines ):
-            logger.error( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
+        except Exception:
+            for line_no, line in enumerate( sectionLines ):
+                logger.error( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
 
-        raise
+            raise
 
-    def processNewMenuStructure( menu_items, menu ):
-        """This is needed for reverse calling
+        def processMenuStructure_V1( menu_items, menu ):
+            """This is needed for reverse calling
 
-        :param menu_items:
-        :param menu:
-        :return:
-        """
-        foundMenu = False
-        for newMenuItem in menu_items:
-            if newMenuItem[ MENU_DISPLAY_NAME ] == menu.caption:
-                foundMenu = True
-                if menu.menu is not None:
-                    # sub menu
-                    if MENU_CHILDEREN_LABEL not in newMenuItem:
-                        newMenuItem[ MENU_CHILDEREN_LABEL ] = []
-
-                    processNewMenuStructure( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
-                else:
-                    newMenuItem[ MENU_DISPLAY_NAME ]   = menu.caption
-                    newMenuItem[ MENU_ICON_NAME ]      = menu.icon
-                    newMenuItem[ MENU_INDEX ]          = menu.index
-                    if menu.route is not None:
-                        newMenuItem[ MENU_ROUTE ]      = menu.route
-
-                    elif menu.menu is not None:
+            :param menu_items:
+            :param menu:
+            :return:
+            """
+            foundMenu = False
+            for newMenuItem in menu_items:
+                if newMenuItem[ MENU_DISPLAY_NAME ] == menu.caption:
+                    foundMenu = True
+                    if menu.menu is not None:
+                        # sub menu
                         if MENU_CHILDEREN_LABEL not in newMenuItem:
                             newMenuItem[ MENU_CHILDEREN_LABEL ] = []
 
-                        processNewMenuStructure( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                        processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                    else:
+                        newMenuItem[ MENU_DISPLAY_NAME ]   = menu.caption
+                        newMenuItem[ MENU_ICON_NAME ]      = menu.icon
+                        newMenuItem[ MENU_INDEX ]          = menu.index
+                        if menu.route is not None:
+                            newMenuItem[ MENU_ROUTE ]      = menu.route
 
-        if not foundMenu:
-            newMenuItem = { MENU_DISPLAY_NAME:   menu.caption,
-                            MENU_ICON_NAME:      menu.icon,
-                            MENU_INDEX:          menu.index }
-            if menu.route is not None:
-                newMenuItem[ MENU_ROUTE ] = menu.route
+                        elif menu.menu is not None:
+                            if MENU_CHILDEREN_LABEL not in newMenuItem:
+                                newMenuItem[ MENU_CHILDEREN_LABEL ] = []
 
-            elif menu.menu is not None:
-                newMenuItem[ MENU_CHILDEREN_LABEL ] = []
-                processNewMenuStructure( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                            processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
 
-            menu_items.insert( menu.index if menu.index >= 0 else ( len( menu_items ) + menu.index + 1 ),
-                               newMenuItem )
+            if not foundMenu:
+                newMenuItem = { MENU_DISPLAY_NAME:   menu.caption,
+                                MENU_ICON_NAME:      menu.icon,
+                                MENU_INDEX:          menu.index }
+                if menu.route is not None:
+                    newMenuItem[ MENU_ROUTE ] = menu.route
 
-        return
+                elif menu.menu is not None:
+                    newMenuItem[ MENU_CHILDEREN_LABEL ] = []
+                    processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
 
-    for cfg in config:
-        if cfg.menu is None:
-            continue
+                menu_items.insert( menu.index if menu.index >= 0 else ( len( menu_items ) + menu.index + 1 ),
+                                   newMenuItem )
 
-        processNewMenuStructure( menuItems, cfg.menu )
+            return
 
-    for idx, menuItem in enumerate( menuItems ):
-        menuItem[ MENU_INDEX ] = idx
-        if MENU_CHILDEREN_LABEL in menuItem:
-            # Re-number the submenu
-            for subIdx, subMenuItem in enumerate( menuItem[ MENU_CHILDEREN_LABEL ] ):
-                subMenuItem[ MENU_INDEX ] = subIdx
+        for cfg in config:
+            if cfg.menu is None:
+                continue
 
-    menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
-    gencrud.util.utils.replaceInList( lines, rangePos, menuItemsBlock )
+            processMenuStructure_V1( menuItems, cfg.menu )
+
+        for idx, menuItem in enumerate( menuItems ):
+            menuItem[ MENU_INDEX ] = idx
+            if MENU_CHILDEREN_LABEL in menuItem:
+                # Re-number the submenu
+                for subIdx, subMenuItem in enumerate( menuItem[ MENU_CHILDEREN_LABEL ] ):
+                    subMenuItem[ MENU_INDEX ] = subIdx
+
+        menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
+        gencrud.util.utils.replaceInList( lines, rangePos, menuItemsBlock )
+
+    else:
+        menuFilename = os.path.join( config.python.sourceFolder, config.application, 'menu.yaml' )
+        if os.path.isfile( menuFilename ):
+            with open( menuFilename, 'r' )  as stream:
+                menuItems = yaml.load( stream, Loader = yaml.Loader )
+                if menuItems is None:
+                    menuItems = []
+
+        else:
+            menuItems = []
+
+        def processMenuStructure_V2( items, menu ):
+            foundMenu = False
+            for menuItem in items:
+                if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.caption:
+                    foundMenu = True
+                    if menu.menu is not None:
+                        # sub menu
+                        if MENU_CHILDEREN_LABEL not in menuItem:
+                            menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+
+                        processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+
+                    else:
+                        menuItem[ MENU_DISPLAY_NAME_V2 ] = menu.caption
+                        menuItem[ MENU_ICON_NAME_V2 ] = menu.icon
+                        if menu.route is not None:
+                            menuItem[ MENU_ROUTE ] = menu.route
+
+                        # elif menu.menu is not None:
+                        #     if MENU_CHILDEREN_LABEL not in menuItem:
+                        #         menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                        #
+                        #     processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+
+            if not foundMenu:
+                newMenuItem = { MENU_DISPLAY_NAME_V2: menu.caption,
+                                MENU_ICON_NAME_V2: menu.icon }
+                if menu.route is not None:
+                    newMenuItem[ MENU_ROUTE ] = menu.route
+
+                elif menu.menu is not None:
+                    newMenuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                    processMenuStructure_V2( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+
+                if menu.hasBeforeAfter():
+                    index = -1
+                    if menu.after is not None:
+                        for idx, menuItem in enumerate( items ):
+                            if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.after:
+                                index = idx + 1
+
+                    else: # before
+                        for idx, menuItem in enumerate( items ):
+                            if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.before:
+                                index = idx
+
+                    items.insert( index, newMenuItem )
+
+                else:
+                    items.insert( menu.index if menu.index >= 0 else (len( menu_items ) + menu.index + 1), newMenuItem )
+
+            return
+
+
+        for cfg in config:
+            if cfg.menu is None:
+                continue
+
+            processMenuStructure_V2( menuItems, cfg.menu )
+
+        with open( menuFilename, 'w' )  as stream:
+            yaml.dump( menuItems, stream, default_style=False, default_flow_style=False )
 
     open( filename, 'w' ).writelines( lines )
     return

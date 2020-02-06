@@ -233,11 +233,12 @@ def main():
             if '*' in arg:
                 # Wild card handling
                 for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
+                    print( "Filename: {} from wildcard".format( filename ) )
                     if filename.lower().endswith( '.yaml' ):
-                        print( filename )
                         doWork( filename )
 
             else:
+                print( "Filename: {}".format( arg ) )
                 doWork( arg )
 
         print( "Done" )

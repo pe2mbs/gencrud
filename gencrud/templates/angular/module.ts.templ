@@ -51,17 +51,18 @@ import { ${ inp.component } } from '${ inp.path }';
 %  endfor
 % endif
 
+
+% if obj.menu:
 /*
 *   This Route in injected into the app-routing.module. Instead of at least 4 components that are added
 *   to the app-routing.module.ts it injects it in the main route definition through is module.
 */
 export const ${ obj.name }Route: Route = {
-% if root.options.lazyLoading:
+%  if root.options.lazyLoading:
     path:           '',
-% else:
+%  else:
     path:           '${ obj.menu.activateItem() }',
-% endif
-
+%  endif
     data:
     {
         breadcrumb: '${ obj.title }',
@@ -77,26 +78,26 @@ export const ${ obj.name }Route: Route = {
                 title:      ''
             }
         },
-% for action in obj.actions:
-%  if action.type == 'screen' and action.position != 'none':
+%  for action in obj.actions:
+%   if action.type == 'screen' and action.position != 'none':
         {
             path: '${ action.name }',
-%   if action.isAngularRoute():
+%    if action.isAngularRoute():
             component: ${ action.route.cls },
-%   else:
+%    else:
             component: Screen${ obj.cls }Component,
-%   endif
+%    endif
             data:
             {
                 breadcrumb: '${ action.label }',
                 title:      '${ action.label }'
             }
         },
-%  endif
-% endfor
+%   endif
+%  endfor
     ]
 }
-
+% endif
 /*
 *   This NgModule is injected in the app-module.ts. This deals with declaring, importing,
 *   creating entry point and providing the services for the ${ obj.name } screens and dialogs.
@@ -144,7 +145,9 @@ export const ${ obj.name }Route: Route = {
         ${ inp.module },
 %  endfor
 % endif
+% if obj.menu:
         RouterModule.forChild( [ ${ obj.name }Route ] )
+% endif
     ],
     exports: [
 % if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):

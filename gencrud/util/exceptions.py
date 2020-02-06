@@ -116,3 +116,8 @@ class InvalidViewSize( Exception ):
         Exception.__init__( self, "Invalid parameter 'viewSize', may be integer (5, 10, 25, 100) or " +
                             "string with service class name of where the function getViewSize() resides." )
         return
+
+
+class MissingAttribute( Exception ):
+    def __init__( self, group, name ):
+        Exception.__init__( self, "Missing '{1}' in section '{0}'".format( group, name ) )

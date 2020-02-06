@@ -58,6 +58,20 @@ class ${obj.cls}( API.db.Model
  % endfor
 % endif
 
+    def toDict( self ):
+        return {
+% for field in obj.table.columns:
+             "${ field.name }": self.${ field.name },
+% endfor
+        }
+
+    def toSql( self ):
+        data = self.toDict()
+        values = repr( data.values() ).split( '[' )[ 1 ].split( ']' )[ 0 ]
+        return "INSERT INTO {} ( {} ) VALUES ( {} )".format( self.__tablename__,
+                                                             ", ".join( data.keys() ),
+                                                             values )
+
 
 % if obj.table.hasAutoUpdate:
 # standard decorator style

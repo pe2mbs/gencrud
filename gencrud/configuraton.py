@@ -26,6 +26,8 @@ from gencrud.config.options import TemplateOptions
 from gencrud.config.references import TemplateReferences
 from gencrud.config.dynamic.controls import DymanicControls
 from gencrud.constants import *
+from gencrud.util.exceptions import MissingAttribute
+
 
 OptionalString = TypeVar( 'OptionalString', str, None )
 
@@ -51,6 +53,12 @@ class TemplateConfiguration( object ):
         gencrud.util.utils.config = self
         self.__config       = cfg
         self.__controls     = None
+        if 'objects' not in self.__config:
+            raise MissingAttribute( 'root', 'objects' )
+
+        if 'application' not in self.__config:
+            raise MissingAttribute( 'root', 'application' )
+
         controls            = cfg.get( 'controls', None )
         if controls is not None:
             self.__controls = DymanicControls( controls )
@@ -97,3 +105,7 @@ class TemplateConfiguration( object ):
     @property
     def controls( self ) -> DymanicControls:
         return self.__controls
+
+    @property
+    def version( self ):
+        return self.__config.get( 'version', 1 )

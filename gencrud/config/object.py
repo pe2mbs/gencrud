@@ -23,12 +23,21 @@ from gencrud.config.actions import TemplateActions
 from gencrud.config.extra import TemplateExtra
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
-
+from gencrud.util.exceptions import MissingAttribute
 
 class TemplateObject( TemplateBase ):
     def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__config       = cfg
+        if 'name' not in self.__config:
+            raise MissingAttribute( 'object', 'name' )
+
+        if 'uri' not in self.__config:
+            raise MissingAttribute( 'object', 'url' )
+
+        if 'table' not in self.__config:
+            raise MissingAttribute( 'object', 'table' )
+
         self.__menu         = TemplateMenuItem( C_MENU, **cfg ) if C_MENU in cfg else None
         self.__actions      = TemplateActions( self, self.name, self.__config.get( C_ACTIONS, [] ) )
         self.__table        = TemplateTable( self, **self.__config.get( C_TABLE, {} ) )

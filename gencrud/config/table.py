@@ -41,6 +41,12 @@ class TemplateTable( TemplateBase ):
         self.__viewSize         = None
         self.__defaultViewSize  = 10
         self.__inports          = SourceImport()
+        if C_NAME not in self.__table:
+            raise MissingAttribute( C_TABLE, C_NAME )
+
+        if C_COLUMNS not in self.__table:
+            raise MissingAttribute( C_TABLE, C_COLUMNS )
+
         for col in self.__table[ C_COLUMNS ]:
             column = TemplateColumn( self, self.name, **col )
             self.__columns.append( column )

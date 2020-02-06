@@ -26,6 +26,7 @@ from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import InvalidSetting
 from gencrud.constants import *
 import gencrud.util.utils as root
+from gencrud.util.exceptions import MissingAttribute
 logger = logging.getLogger()
 
 
@@ -86,61 +87,63 @@ class TemplateColumn( TemplateBase ):
         self.__ui           = None
         self.__leadIn       = []
         self.__dbField      = ''
-        if C_FIELD in cfg:
-            field_data = cfg.get( C_FIELD, '' )
-            tokens = [ x for x in word_tokenize( field_data ) ]
-            self.__dbField  = self.__field = tokens[ 0 ]
-            self.__sqlType  = tokens[ 1 ]
-            if self.__sqlType not in self.TS_TYPES_FROM_SQL:
-                raise InvalidSetting( C_FIELD, self.__tableName, self.__field )
+        if C_FIELD not in self.__config:
+            raise MissingAttribute( C_TABLE, C_FIELD )
 
-            offset = 2
-            if offset < len( tokens ) and tokens[ offset ] == '(':
+        field_data = cfg.get( C_FIELD, '' )
+        tokens = [ x for x in word_tokenize( field_data ) ]
+        self.__dbField  = self.__field = tokens[ 0 ]
+        self.__sqlType  = tokens[ 1 ]
+        if self.__sqlType not in self.TS_TYPES_FROM_SQL:
+            raise InvalidSetting( C_FIELD, self.__tableName, self.__field )
+
+        offset = 2
+        if offset < len( tokens ) and tokens[ offset ] == '(':
+            offset += 1
+            self.__length   = int( tokens[ offset ] )
+            offset += 2
+
+        # attributes
+        # NOT NULL
+        # DEFAULT <value>
+        # PRIMARY KEY
+        # AUTO NUMBER
+        # FOREIGN KEY <reference>
+        while offset < len( tokens ):
+            if tokens[ offset ] == 'NULL':
+                self.__attrs.append( 'NULL' )
+
+            elif tokens[ offset ] == 'NOT':
                 offset += 1
-                self.__length   = int( tokens[ offset ] )
-                offset += 2
-
-            # attributes
-            # NOT NULL
-            # DEFAULT <value>
-            # PRIMARY KEY
-            # AUTO NUMBER
-            # FOREIGN KEY <reference>
-            while offset < len( tokens ):
                 if tokens[ offset ] == 'NULL':
-                    self.__attrs.append( 'NULL' )
-
-                elif tokens[ offset ] == 'NOT':
-                    offset += 1
-                    if tokens[ offset ] == 'NULL':
-                        self.__attrs.append( 'NOT NULL' )
-
-                    else:
-                        raise InvalidSetting( C_FIELD, 'attr: "NOT ' + tokens[ offset ] + '"', self.__field )
-
-                elif tokens[ offset ] == 'DEFAULT':
-                    self.__attrs.append( 'DEFAULT {0}'.format( tokens[ offset + 1 ] ) )
-
-                elif tokens[ offset ] == 'PRIMARY':
-                    self.__attrs.append( 'PRIMARY KEY' )
-
-                elif tokens[ offset ] == 'AUTO':
-                    self.__attrs.append( 'AUTO NUMBER' )
-
-                elif tokens[ offset ] == 'FOREIGN':
-                    self.__attrs.append( 'FOREIGN KEY {0}'.format( tokens[ offset + 2 ] ) )
-                    offset += 1
+                    self.__attrs.append( 'NOT NULL' )
 
                 else:
-                    raise InvalidSetting( C_FIELD, 'attr: "' + tokens[ offset ] + '"', self.__field )
+                    raise InvalidSetting( C_FIELD, 'attr: "NOT ' + tokens[ offset ] + '"', self.__field )
 
-                offset += 2
+            elif tokens[ offset ] == 'DEFAULT':
+                self.__attrs.append( 'DEFAULT {0}'.format( tokens[ offset + 1 ] ) )
 
-            if C_UI in cfg and type( cfg[ C_UI ] ) is dict:
-                self.__ui = TemplateUi( self, **cfg.get( C_UI, {} ) )
+            elif tokens[ offset ] == 'PRIMARY':
+                self.__attrs.append( 'PRIMARY KEY' )
 
-            self.__relationShip = TemplateRelation( self, **self.__config.get( C_RELATION_SHIP, {} ) )
-            self.__listview     = TemplateListView( self, **self.__config.get( C_LIST_VIEW, {} ) )
+            elif tokens[ offset ] == 'AUTO':
+                self.__attrs.append( 'AUTO NUMBER' )
+
+            elif tokens[ offset ] == 'FOREIGN':
+                self.__attrs.append( 'FOREIGN KEY {0}'.format( tokens[ offset + 2 ] ) )
+                offset += 1
+
+            else:
+                raise InvalidSetting( C_FIELD, 'attr: "' + tokens[ offset ] + '"', self.__field )
+
+            offset += 2
+
+        if C_UI in cfg and type( cfg[ C_UI ] ) is dict:
+            self.__ui = TemplateUi( self, **cfg.get( C_UI, {} ) )
+
+        self.__relationShip = TemplateRelation( self, **self.__config.get( C_RELATION_SHIP, {} ) )
+        self.__listview     = TemplateListView( self, **self.__config.get( C_LIST_VIEW, {} ) )
 
         if root.config.options.ignoreCaseDbIds:
             self.__dbField = self.__dbField.lower()
@@ -291,7 +294,7 @@ class TemplateColumn( TemplateBase ):
         if self.__sqlType in self.PY_TYPES_FROM_SQL:
             return self.PY_TYPES_FROM_SQL[ self.__sqlType ]
 
-        raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
+        raise Exception( 'Invalid SQL type: {0} for field {1}'.format( self.__sqlType, self.name ) )
 
     @property
     def tsType( self ) -> str:

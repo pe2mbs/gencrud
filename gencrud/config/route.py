@@ -19,12 +19,19 @@
 from gencrud.util.typescript import TypeScript
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
+from gencrud.util.exceptions import MissingAttribute
 
 
 class RouteTemplate( TemplateBase ):
     def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__config = cfg
+        if C_CLASS not in self.__config:
+            raise MissingAttribute( C_TABLE, C_CLASS )
+
+        if C_MODULE not in self.__config:
+            raise MissingAttribute( C_TABLE, C_MODULE )
+
         return
 
     @property

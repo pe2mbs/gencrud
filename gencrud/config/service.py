@@ -18,29 +18,42 @@
 #
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
+from gencrud.util.exceptions import MissingAttribute
 
 
 class TemplateService( TemplateBase ):
     def __init__( self, **cfg ):
         TemplateBase.__init__( self, None )
-        self.__cfg = cfg
+        self.__config = cfg
+        if C_NAME not in self.__config:
+            raise MissingAttribute( S_SERVICE, C_NAME )
+
+        if C_VALUE not in self.__config:
+            raise MissingAttribute( S_SERVICE, C_VALUE )
+
+        if C_LABEL not in self.__config:
+            raise MissingAttribute( S_SERVICE, C_LABEL )
+
+        if C_CLASS not in self.__config:
+            raise MissingAttribute( S_SERVICE, C_CLASS )
+
         return
 
     @property
     def name( self ):
-        return self.__cfg[ C_NAME ]
+        return self.__config.get( C_NAME, None )
 
     @property
     def value( self ):
-        return self.__cfg[ C_VALUE ]
+        return self.__config.get( C_VALUE, None )
 
     @property
     def label( self ):
-        return self.__cfg[ C_LABEL ]
+        return self.__config.get( C_LABEL, None )
 
     @property
     def cls( self ):
-        value = self.__cfg[ C_CLASS ]
+        value = self.__config.get( C_CLASS, None )
         if value.endswith( 'Service' ):
             return value
 
@@ -48,7 +61,7 @@ class TemplateService( TemplateBase ):
 
     @property
     def path( self ):
-        if C_PATH in self.__cfg:
-            return self.__cfg[ C_PATH ]
+        if C_PATH in self.__config:
+            return self.__config[ C_PATH ]
 
-        return '../{}/service'.format( self.__cfg[ C_NAME ] )
+        return '../{}/service'.format( self.__config[ C_NAME ] )

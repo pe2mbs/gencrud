@@ -16,7 +16,6 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-import logging
 from flask import Blueprint, jsonify
 import webapp.app as API
 
@@ -42,14 +41,9 @@ applicApi = Blueprint( 'applicApi', __name__ )
 
 
 def registerApi():
-    API.app.logger.info( 'Register modules route' )
-    if API.app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-        if API.app.config.get( 'ALLOW_CORS_ORIGIN', False ):
-            API.app.logger.info( 'Allowing CORS' )
-            cors.init_app( 'menuApi', origins = app.config.get( 'CORS_ORIGIN_WHITELIST', '*' ) )
-
     API.app.logger.info( 'Register Menu route' )
     API.app.register_blueprint( menuApi )
+    API.app.logger.info( 'Register modules route' )
     for module in listModules:
         module.registerApi()
 

@@ -18,6 +18,7 @@
 #
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
+from gencrud.util.exceptions import MissingAttribute
 
 # Old names
 C_DISPLAY_NAME  = 'displayName'
@@ -27,8 +28,15 @@ C_ICON_NAME     = 'iconName'
 class TemplateMenuItem( TemplateBase ):
     def __init__( self, key, **cfg ):
         TemplateBase.__init__( self, None )
+        self.__config = cfg[ key ]
         self.__item = cfg[ key ]
         self.__submenu = None
+        if 'caption' not in self.__config:
+            raise MissingAttribute( C_MENU, 'caption' )
+
+        if 'route' not in self.__config and 'menu' not in self.__config:
+            raise MissingAttribute( C_MENU, 'route OR menu' )
+
         if C_MENU in self.__item:
             self.__submenu = TemplateMenuItem( C_MENU, **self.__item )
 
@@ -67,3 +75,15 @@ class TemplateMenuItem( TemplateBase ):
             return self.__submenu.activateItem()
 
         return self.route[1:] if self.route.startswith( '/' ) else self.route
+
+    def hasBeforeAfter( self ):
+        return 'after' in self.__item or 'before' in self.__item
+
+    @property
+    def before( self ):
+        return self.__item.get( 'before', None )
+
+    @property
+    def after( self ):
+        return self.__item.get( 'after', None )
+
