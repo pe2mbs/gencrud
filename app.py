@@ -55,6 +55,19 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
     """
     API.app = None
     try:
+        if 'FLASK_APP' not in os.environ:
+            print( "Missing FLASK_APP environment variable", file = sys.stderr )
+            exit( -1 )
+        else:
+            print( "FLASK_APP: {}".format( os.environ[ 'FLASK_APP' ] ) )
+
+        if 'FLASK_ENV' not in os.environ:
+            print( "Missing FLASK_ENV environment variable", file = sys.stderr )
+            exit( -1 )
+        else:
+            print( "FLASK_ENV: {}".format( os.environ[ 'FLASK_ENV' ] ) )
+
+
         if config_file is None:
             if 'FLASK_APP_CONFIG' in os.environ:
                 config_file = os.environ[ 'FLASK_APP_CONFIG' ]
@@ -107,7 +120,6 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
 
             else:
                 print( "The logging key in config file is invalid", file = sys.stderr )
-
 
         logging.config.dictConfig( logDict )
         API.app.logger.log( API.app.logger.level,

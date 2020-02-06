@@ -22,7 +22,6 @@ from flask import Blueprint, send_from_directory, current_app, request, jsonify
 from mako.template import Template
 from werkzeug.routing import BaseConverter
 import webapp.api as API
-import version
 
 ERROR_HTML = """<html>
 <head>
@@ -148,11 +147,4 @@ def getDatabaseConfig():
                     password = dbCfg.get( 'PASSWORD', '' ),
                     hostname = dbCfg.get( 'HOST', '' ),
                     hostport = dbCfg.get( 'PORT', 5432 ) )
-
-
-@bluePrint.route( "/api/version", methods=[ 'GET' ] )
-def getVersionInfo():
-    return jsonify( version = version.version,
-                    copyright = version.copyright,
-                    author = version.author )
 

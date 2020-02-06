@@ -17,15 +17,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from webapp.commands.clean import clean
-from webapp.commands.lint import lint
-from webapp.commands.rundev import rundevCommand
-from webapp.commands.runssl import runsslCommand
-from webapp.commands.runprod import runprdCommand
-from webapp.commands.test import test
-from webapp.commands.urls import urls
-
 import webapp.api as API
+from webapp.commands.misc import cli
+from webapp.commands.dba import dba
+from webapp.commands.serve import serve
+
 
 def registerCommands():
     """Register Click commands.
@@ -35,11 +31,7 @@ def registerCommands():
        :return:             None.
     """
     API.app.logger.info( "Registering commands" )
-    API.app.cli.add_command( test )
-    API.app.cli.add_command( lint )
-    API.app.cli.add_command( clean )
-    API.app.cli.add_command( urls )
-    API.app.cli.add_command( runsslCommand )
-    API.app.cli.add_command( rundevCommand )
-    API.app.cli.add_command( runprdCommand )
+    API.app.cli.add_command( cli )
+    API.app.cli.add_command( dba )
+    API.app.cli.add_command( serve )
     return
