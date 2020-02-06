@@ -276,3 +276,37 @@ def inport( fmt, filename, table ):
 
     return
 
+
+@dba.command( 'loader',
+              short_help = 'Load the database.' )
+@click.option( '--fmt',
+               nargs = 1,
+               default = "yaml",
+               help = "file inport format",
+               type = click.Choice( [ 'yaml', 'json' ],
+                                    case_sensitive = False ) )
+@click.argument( 'filename' )
+def loader( fmt, filename ):
+
+
+
+
+
+    return
+
+
+@dba.command( 'reader',
+              short_help = 'Load the database.' )
+@click.option( '--fmt',
+               nargs = 1,
+               default = "yaml",
+               help = "file inport format",
+               type = click.Choice( [ 'yaml', 'json' ],
+                                    case_sensitive = False ) )
+@click.argument( 'table' )
+@click.argument( 'filename' )
+def loader( fmt, table, filename ):
+
+
+
+    return
