@@ -43,6 +43,26 @@ def ResolveRootPath( path ):
     return path
 
 
+def loadPlugins():
+    # Now check if there are plugins
+    pluginsFolder = os.path.abspath( os.path.join(os.path.dirname(__file__), '..', 'plugins') )
+    if os.path.isdir( pluginsFolder ):
+        for plugin in os.listdir( pluginsFolder ):
+            # Found something
+            pluginFolder = os.path.join( pluginsFolder, plugin )
+            if os.path.isfile( os.path.join( pluginFolder,'__init__.py' ) ) and \
+                    os.path.isfile(os.path.join(pluginFolder, '__main__.py') ):
+                # It seems to be plugin, import it
+                import importlib
+                try:
+                    API.plugins[ plugin ] = importlib.import_module( pluginFolder )
+
+                except Exception as exc:
+                    API.app.logger.error( "Loading plugin {} with error {}".format( pluginFolder, exc ) )
+
+    return
+
+
 def createApp( root_path, config_file = None, module = None, full_start = True, verbose = False ):
     """An application factory, as explained here:
        http://flask.pocoo.org/docs/patterns/appfactories/.
@@ -127,6 +147,7 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
         API.app.logger.info( "Config file: {}".format( os.path.join( root_path, config_file ) ) )
         API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
         if full_start:
+            loadPlugins()
             API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
             API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
             API.app.url_map.strict_slashes = False
@@ -170,6 +191,7 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             registerAngular()
             if not hasattr( module, 'registerApi' ):
                 raise Exception( "Missing registerApi() in module {}".format( module ) )
+
 
             module.registerApi()
 

@@ -4,6 +4,7 @@ import yaml
 import json
 import csv
 import webapp.api as API
+from sqlalchemy.inspection import inspect
 from flask.cli import with_appcontext
 from flask.cli import AppGroup
 from webapp.commands.schema import ( listSchemas,
@@ -277,6 +278,33 @@ def inport( fmt, filename, table ):
     return
 
 
+def resolve_fieldname( settings, table, field ):
+    prefixes = settings.get( 'prefixes', {} )
+    field = "{}{}".format( prefixes.get( table, '' ), field )
+    options = settings.get( 'options', {} )
+    field_opr = options.get( 'fieldname', None )
+    if field_opr is not None:
+        field_opr = getattr( field, field_opr )
+        field = field_opr()
+
+    return field
+
+
+def getReference( settings, table, field, value ):
+    ref_model = API.db.get_model_by_tablename( table )
+    query = API.db.session.query( ref_model )
+    if isinstance( field, ( list, tuple ) ):
+        for fld, val in zip( field, value ):
+            fld = resolve_fieldname(settings, table, fld )
+            query = query.filter( getattr( ref_model, fld ) == val )
+
+    else:
+        field = resolve_fieldname(settings, table, field)
+        query = query.filter( getattr( ref_model, field ) == value )
+
+    return query.one()
+
+
 @dba.command( 'loader',
               short_help = 'Load the database.' )
 @click.option( '--fmt',
@@ -287,12 +315,73 @@ def inport( fmt, filename, table ):
                                     case_sensitive = False ) )
 @click.argument( 'filename' )
 def loader( fmt, filename ):
+    settings = {}
+    if not filename.endswith( fmt ):
+        filename = "{}.{}".format( filename, fmt )
 
+    if not os.path.isfile( filename ):
+        print( "File doesn't exists" )
+        return
 
+    with open( filename,'r' ) as stream:
+        data = yaml.load( stream )
 
+    if '__settings__' in data:
+        settings = data[ '__settings__' ]
 
+    for table, values in data.items():
+        if table.startswith( '__' ):
+            continue
+
+        model = API.db.get_model_by_tablename( table )
+        if model is  None:
+            continue
+
+        for table_data in values:
+            updateRecord( settings, model, table, table_data )
 
     return
+
+def updateRecord( settings, model, table, table_data ):
+    record = model()
+    for field, value in table_data.items():
+        if isinstance( value, ( bool, int, str, float ) ):
+            field = resolve_fieldname( settings, table, field )
+            print( "Field: {}.{} with value {}".format( table, field, value ) )
+            setattr( record, field, value )
+
+        elif isinstance( value, ( tuple, list ) ):
+            field = resolve_fieldname( settings, table, field )
+            ref_record = getReference( settings, *value )
+            setattr( record, field, inspect( ref_record ).identity[0] )
+            print("Field: {}.{} with value {}".format(table, field, inspect( ref_record ).identity[0] ) )
+
+        elif isinstance( value, dict ):
+            field = resolve_fieldname( settings, table, field )
+            ref_field = value.get('field', None )
+            if ref_field is None:
+                fields = value.get('fields')
+                if fields is None:
+                    raise Exception( "missing field or fields" )
+
+                ref_model = API.db.get_model_by_tablename( value.get( 'table' ) )
+                if ref_model is None:
+                    continue
+
+                ref_record = updateRecord( settings, ref_model, value.get( 'table' ), fields )
+
+            else:
+                ref_record = getReference( settings,
+                                       value.get( 'table' ),
+                                       value.get( 'field' ),
+                                       value.get( 'value' ) )
+
+            setattr( record, field, inspect( ref_record ).identity[0] )
+            print("Field: {}.{} with value {}".format(table, field, inspect( ref_record ).identity[0] ) )
+
+    API.db.session.add( record )
+    API.db.session.commit()
+    return record
 
 
 @dba.command( 'reader',

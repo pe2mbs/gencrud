@@ -23,6 +23,9 @@
 import os
 
 app             = None
+menuItems       = []
+applicInfo      = {}
+plugins         = None
 bcrypt          = None
 migrate         = None
 cache           = None
