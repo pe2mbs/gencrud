@@ -259,7 +259,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
                     items.insert( index, newMenuItem )
 
                 else:
-                    items.insert( menu.index if menu.index >= 0 else (len( menu_items ) + menu.index + 1), newMenuItem )
+                    items.insert( menu.index if menu.index >= 0 else (len( menuItems ) + menu.index + 1), newMenuItem )
 
             return
 

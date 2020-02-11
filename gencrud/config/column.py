@@ -218,11 +218,8 @@ class TemplateColumn( TemplateBase ):
         return TemplateTab( self, **self.__config.get( C_TAB, {} ) )
 
     @property
-    def uniqueKey( self ) -> str:
-        return self.__config.get( C_UNIQUE_KEY, '' )
-
-    def hasUniqueKey( self ) -> bool:
-        return C_UNIQUE_KEY in self.__config
+    def unique( self ) -> bool:
+        return self.__config.get( C_UNIQUE, False )
 
     def hasForeignKey( self ) -> bool:
         return any( 'FOREIGN KEY' in x for x in self.__attrs )
@@ -391,6 +388,9 @@ class TemplateColumn( TemplateBase ):
                         self.__leadIn.append( import_statement )
 
                     result += ', default = {mod}.{call}'.format( mod = module_name, call = function )
+
+        if self.unique:
+            result += ", unique = {}".format( self.unique )
 
         result += ' )'
         return result

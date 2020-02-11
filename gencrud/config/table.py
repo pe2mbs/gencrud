@@ -26,8 +26,7 @@ from gencrud.config.sort import SortInfo
 from gencrud.config.mixin import TemplateMixin
 import gencrud.util.utils as root
 from gencrud.constants import *
-from gencrud.util.exceptions import InvalidViewSize
-
+from gencrud.util.exceptions import InvalidViewSize, MissingAttribute
 logger = logging.getLogger()
 
 
@@ -124,12 +123,7 @@ class TemplateTable( TemplateBase ):
 
     @property
     def uniqueKey( self ) -> dict:
-        values  = {}
-        for value in self.__table.get( C_UNIQUE_KEY, {} ):
-            for key in value.keys():
-                values[ key ] = ', '.join( [ "'{0}'".format( x ) for x in value[ key ] ] )
-
-        return values
+        return self.__table.get( C_UNIQUE_KEY, [] )
 
     def hasUniqueKey( self ) -> bool:
         if C_UNIQUE_KEY in self.__table:

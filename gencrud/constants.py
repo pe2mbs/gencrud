@@ -125,6 +125,7 @@ C_VIEW_SORT             = 'viewSort'
 C_VIEW_SIZE             = 'viewSize'
 C_ORDER_BY              = 'order-by'
 C_UNIQUE_KEY            = 'unique-key'
+C_UNIQUE                = 'unique'
 
 C_ASCENDING             = 'asc'
 C_DESENDING             = 'desc'

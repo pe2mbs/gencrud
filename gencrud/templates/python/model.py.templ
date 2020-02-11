@@ -47,15 +47,14 @@ class ${obj.cls}( API.db.Model
  % endif
 % endfor
 
-% for field in obj.table.columns:
- %if field.hasUniqueKey():
-    db.UniqueConstraint( '${ field.name }', name='${field.uniqueKey}' )
- % endif
-% endfor
 % if obj.table.hasUniqueKey():
- % for index, fields in obj.table.uniqueKey.items():
+%  if isinstance( obj.table.uniqueKey, ( list, tuple ) ):
+    db.UniqueConstraint( ${ obj.table.uniqueKey }, name="${ "_".join( obj.table.uniqueKey ) }" )
+%  elif isinstance( obj.table.uniqueKey, dict ):
+ %  for index, fields in obj.table.uniqueKey.items():
     db.UniqueConstraint( ${ fields }, name='${ index }' )
- % endfor
+ %  endfor
+%  endif
 % endif
 
     def toDict( self ):
