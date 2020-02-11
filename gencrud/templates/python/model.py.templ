@@ -49,7 +49,7 @@ class ${obj.cls}( API.db.Model
 
 % if obj.table.hasUniqueKey():
 %  if isinstance( obj.table.uniqueKey, ( list, tuple ) ):
-    db.UniqueConstraint( ${ obj.table.uniqueKey }, name="${ "_".join( obj.table.uniqueKey ) }" )
+    db.UniqueConstraint( *${ obj.table.uniqueKey }, name="${ "_".join( obj.table.uniqueKey ) }" )
 %  elif isinstance( obj.table.uniqueKey, dict ):
  %  for index, fields in obj.table.uniqueKey.items():
     db.UniqueConstraint( ${ fields }, name='${ index }' )
