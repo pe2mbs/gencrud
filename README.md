@@ -90,7 +90,7 @@ Werkzeug==0.14.1
 ```   
   
 # Starting the web service 
-## Development modes
+## Standard development modes
 ```bash
 # export FLASK_APP=webapp/autoapp.py
 # export FLASK_APP_CONFIG=devconfig.yaml
@@ -99,7 +99,16 @@ Werkzeug==0.14.1
 # flask run
 ```
 
-## Test modes
+### Enhanched development modes
+```bash
+# export FLASK_APP=webapp/autoapp.py
+# export FLASK_APP_CONFIG=devconfig.yaml
+# export FLASK_DEBUG=1
+# export FLASK_ENV=DEVELOPMENT 
+# flask serve dev
+```
+
+## Standard test modes
 ```bash 
 # export FLASK_APP=webapp/autoapp.py
 # export FLASK_APP_CONFIG=testconfig.yaml
@@ -107,13 +116,91 @@ Werkzeug==0.14.1
 # flask run --no-reload --with-threads 
 ```
 
-## Production modes
+## Standard production modes
 ```bash 
 # export FLASK_APP=webapp/autoapp.py
 # export FLASK_APP_CONFIG=prodconfig.yaml
 # export FLASK_ENV=PRODUCTION 
 # flask run --no-reload --with-threads 
 ```
+
+## Enhanched production modes
+```bash 
+# export FLASK_APP=webapp/autoapp.py
+# export FLASK_APP_CONFIG=prodconfig.yaml
+# export FLASK_ENV=PRODUCTION 
+# flask serve prod 
+```
+
+# Flask CLI commands
+
+**cli**                     Management script for the webapp application.
+
+**cli clean**               Remove *.pyc and *.pyo files recursively starting at current...
+
+**cli lint**                Lint and check code style with flake8 and isort.
+
+**cli test**                Run the tests.
+
+**cli urls**                Display all of the url matching routes for the project.
+
+**cli db**                  Perform database migrations.
+
+**cli db branches**         Show current branch points
+
+**cli db current**          Display the current revision for each database.
+
+**cli db downgrade**        Revert to a previous version
+
+**cli db edit**             Edit a revision file
+
+**cli db heads**            Show current available heads in the script directory
+
+**cli db history**          List changeset scripts in chronological order.
+
+**cli db init**             Creates a new migration repository.
+
+**cli db merge**            Merge two revisions together, creating a new revision file
+
+**cli db migrate**          Autogenerate a new revision file (Alias for 'revision...
+
+**cli db revision**         Create a new revision file.
+
+**cli db show**             Show the revision denoted by the given symbol.
+
+**cli db stamp**            'stamp' the revision table with the given revision; don't run...
+
+**cli db upgrade**          Upgrade to a later version
+
+**cli dba**                 DBA backup / restore for the webapp application.
+
+**cli dba backup**          Backup the database.
+
+**cli dba export**          Export the database.
+
+**cli dba inport**          Inport the database.
+
+**cli dba loader**          Load the database.
+
+**cli dba restore**         Restore the database.
+
+**cli dba saver**           Load the database.
+
+**cli run**                 Runs a development server.
+
+**cli serve**               Serve commands
+
+**cli serve dev**           Runs a development server.
+
+**cli serve production**    Runs a production server.
+
+**cli serve ssl**           Runs a SSL/TLS server.
+
+**shell**                   Runs a shell in the app context.
+
+
+
+
 
 # Configuratio file
 The default configuration file is config.yml a different config file can be set  
