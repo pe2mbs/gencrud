@@ -122,8 +122,12 @@ class TemplateTable( TemplateBase ):
         return self.__table.get( C_ORDER_BY, [ self.__primaryKey ] )
 
     @property
-    def uniqueKey( self ) -> dict:
-        return self.__table.get( C_UNIQUE_KEY, [] )
+    def uniqueKey( self ) -> list:
+        values = self.__table.get( C_UNIQUE_KEY, [] )
+        if root.config.options.ignoreCaseDbIds:
+            return [ v.lower() for v in values ]
+
+        return values
 
     def hasUniqueKey( self ) -> bool:
         if C_UNIQUE_KEY in self.__table:
