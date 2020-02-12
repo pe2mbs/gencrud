@@ -1,8 +1,11 @@
 import os
 import click
 import yaml
+from yamlinclude import YamlIncludeConstructor
 import json
 import csv
+from sqlalchemy.engine.reflection import Inspector
+import sqlalchemy.orm
 import webapp.api as API
 from sqlalchemy.inspection import inspect
 from flask.cli import with_appcontext
@@ -12,6 +15,9 @@ from webapp.commands.schema import ( listSchemas,
                                      getCurrentSchema,
                                      copySchema,
                                      listTables )
+
+YamlIncludeConstructor.add_to_loader_class( loader_class= yaml.FullLoader, base_dir = '.' )
+
 
 @click.group( cls = AppGroup )
 def dba():
@@ -85,7 +91,7 @@ def restore( _list, name, schema ):
             restore( True, None )
             return
 
-    print( "Copy '{}' to '{}'".format( schema, nSchema ) )
+    API.app.logger.info( "Copy '{}' to '{}'".format( schema, nSchema ) )
     copySchema( schema, nSchema )
     return
 
@@ -102,7 +108,6 @@ def restore( _list, name, schema ):
                help = "export one table" )
 @click.argument( 'filename' )
 def export( fmt, filename, table ):
-    # print( "Format: {}".format( fmt ))
     if fmt == 'csv':
         if filename.endswith( fmt ):
             filename = filename.split( '.' )[ 0 ]
@@ -247,7 +252,7 @@ def inport( fmt, filename, table ):
 
                     try:
                         line = line.replace( '\n', '' )
-                        print( line )
+                        API.app.logger.info( line )
                         result = connection.execute( line )
                         if result.rowcount != 1:
                             raise Exception( "row not inserted" )
@@ -279,13 +284,25 @@ def inport( fmt, filename, table ):
 
 
 def resolve_fieldname( settings, table, field ):
-    prefixes = settings.get( 'prefixes', {} )
-    field = "{}{}".format( prefixes.get( table, '' ), field )
     options = settings.get( 'options', {} )
     field_opr = options.get( 'fieldname', None )
-    if field_opr is not None:
-        field_opr = getattr( field, field_opr )
-        field = field_opr()
+    if isinstance( field, ( list, tuple ) ):
+        result = []
+        for fld in field:
+            result.append( resolve_fieldname( settings, table, fld ) )
+
+        field = result
+
+    else:
+        if field_opr is not None:
+            field = getattr(field, field_opr)()
+
+        prefix = settings.get('prefixes', {}).get(table, None)
+        if prefix is not None and field_opr is not None:
+            prefix = getattr(prefix, field_opr)()
+
+        if prefix is not None and not field.startswith( prefix ):
+            field = "{}{}".format( prefix, field )
 
     return field
 
@@ -313,22 +330,24 @@ def getReference( settings, table, field, value ):
                help = "file inport format",
                type = click.Choice( [ 'yaml', 'json' ],
                                     case_sensitive = False ) )
-@click.argument( 'filename' )
+@click.argument( 'filename', type = click.Path( exists = True ) )
 def loader( fmt, filename ):
-    settings = {}
     if not filename.endswith( fmt ):
         filename = "{}.{}".format( filename, fmt )
 
     if not os.path.isfile( filename ):
-        print( "File doesn't exists" )
-        return
+        raise Exception( "File doesn't exists" )
 
     with open( filename,'r' ) as stream:
-        data = yaml.load( stream )
+        data = yaml.load( stream, Loader=yaml.FullLoader)
 
-    if '__settings__' in data:
-        settings = data[ '__settings__' ]
+    if '__magic__' not in data:
+        raise Exception( "magic code missing, not a dba loader script." )
 
+    if data[ '__magic__' ] != 'dba loader':
+        raise Exception( "magic code invalid, not a dba loader script.")
+
+    settings = data.get( '__settings__', {} )
     for table, values in data.items():
         if table.startswith( '__' ):
             continue
@@ -347,25 +366,26 @@ def updateRecord( settings, model, table, table_data ):
     for field, value in table_data.items():
         if isinstance( value, ( bool, int, str, float ) ):
             field = resolve_fieldname( settings, table, field )
-            print( "Field: {}.{} with value {}".format( table, field, value ) )
+            API.app.logger.info( "Field: {}.{} with value {}".format( table, field, value ) )
             setattr( record, field, value )
 
         elif isinstance( value, ( tuple, list ) ):
             field = resolve_fieldname( settings, table, field )
             ref_record = getReference( settings, *value )
             setattr( record, field, inspect( ref_record ).identity[0] )
-            print("Field: {}.{} with value {}".format(table, field, inspect( ref_record ).identity[0] ) )
+            API.app.logger.info( "Field: {}.{} with value {}".format(table, field, inspect( ref_record ).identity[0] ) )
 
         elif isinstance( value, dict ):
             field = resolve_fieldname( settings, table, field )
-            ref_field = value.get('field', None )
+            ref_field = value.get( 'field', None )
             if ref_field is None:
-                fields = value.get('fields')
+                fields = value.get( 'fields' )
                 if fields is None:
                     raise Exception( "missing field or fields" )
 
                 ref_model = API.db.get_model_by_tablename( value.get( 'table' ) )
                 if ref_model is None:
+                    API.app.logger.error( "model is unknown: {}".format( value.get( 'table' ) ) )
                     continue
 
                 ref_record = updateRecord( settings, ref_model, value.get( 'table' ), fields )
@@ -377,14 +397,44 @@ def updateRecord( settings, model, table, table_data ):
                                        value.get( 'value' ) )
 
             setattr( record, field, inspect( ref_record ).identity[0] )
-            print("Field: {}.{} with value {}".format(table, field, inspect( ref_record ).identity[0] ) )
+            API.app.logger.info( "Field: {}.{} with value {}".format(table, field, inspect( ref_record ).identity[0] ) )
+
+    # Need to check if the record already exists, with its unique key
+    ukey = settings.get( 'unique-key', {} ).get( table, None )
+    if ukey is not None:
+        query = API.db.session.query( model )
+        if ',' in ukey:
+            ukey = ukey.replace( ' ', '' ).split( ',' )
+
+        if isinstance( ukey, ( list, tuple ) ):
+            for sukey in ukey:
+                if isinstance( sukey, ( list, tuple ) ):
+                    for ssukey in sukey:
+                        ssukey = resolve_fieldname(settings, table, ssukey)
+                        query = query.filter(getattr(model, ssukey) == getattr(record, ssukey))
+
+                else:
+                    sukey = resolve_fieldname( settings, table, sukey )
+                    query = query.filter( getattr( model, sukey ) == getattr( record, sukey ) )
+
+        else:
+            ukey = resolve_fieldname( settings, table, ukey )
+            query = query.filter( getattr( model, ukey ) == getattr( record, ukey ) )
+
+        try:
+            rec = query.one()
+            API.app.logger.error( "Not inserting record, due to duplicate key: {}".format( ukey ) )
+            return rec
+
+        except sqlalchemy.orm.exc.NoResultFound:
+            pass
 
     API.db.session.add( record )
     API.db.session.commit()
     return record
 
 
-@dba.command( 'reader',
+@dba.command( 'saver',
               short_help = 'Load the database.' )
 @click.option( '--fmt',
                nargs = 1,
@@ -392,10 +442,89 @@ def updateRecord( settings, model, table, table_data ):
                help = "file inport format",
                type = click.Choice( [ 'yaml', 'json' ],
                                     case_sensitive = False ) )
-@click.argument( 'table' )
-@click.argument( 'filename' )
-def loader( fmt, table, filename ):
+@click.option( '--settings', nargs = 1, default = 'settings-dba-loader.yaml', help = '' )
+@click.argument( 'filename', nargs = 1 )
+@click.argument( 'tables', nargs = -1 )
+def saver( fmt, settings, filename, tables ):
+    data = { '__magic__': 'dba loader' }
+    settingsfile = settings
+    settings = {}
+    if os.path.isfile( settingsfile ):
+        with open( settingsfile, 'r' ) as stream:
+            settings = yaml.load(stream, Loader=yaml.FullLoader)
 
+    allTables = len( tables ) == 0
+    if allTables:
+        tables = listTables()
+        tables.remove( 'alembic_version' )
 
+    prefixes = settings.get( 'prefixes', {} )
+    uniquekeys = settings.get('unique-key', {} )
+    options = settings.get('options', {} )
+    updatePrefixes = len( prefixes ) == 0
+    updateUniqueKeys = len( uniquekeys ) == 0
+    if updatePrefixes or updateUniqueKeys:
+        insp = Inspector.from_engine(API.db.engine)
+        # Figure out the common prefixes.
+        for tbl in tables:
+            if updatePrefixes:
+                model = API.db.get_model_by_tablename( tbl )
+                mapper = inspect( model )
+                flds = [ column.key for column in mapper.attrs ]
+                if flds[ 0 ].isupper():
+                    options[ "fieldname" ] = "upper"
+
+                elif flds[ 0 ].islower():
+                    options[ "fieldname" ] = "lower"
+
+                if tbl not in prefixes:
+                    prefixes[ tbl ] = os.path.commonprefix( flds )
+
+            if updateUniqueKeys:
+                ukeys = []
+                for u in insp.get_unique_constraints( tbl ):
+                    f = u.get( 'column_names', [] )
+                    if len(f) == 1:
+                        ukeys.append( f[ 0 ] )
+
+                    else:
+                        ukeys.append( f )
+
+                if len( ukeys ) > 0:
+                    uniquekeys[ tbl ] = ukeys
+
+        settings[ 'prefixes' ] = prefixes
+        settings[ 'unique-key' ] = uniquekeys
+        settings[ 'options' ] = options
+    # Now process the tables
+
+    for tbl in tables:
+        model = API.db.get_model_by_tablename( tbl )
+        tbl_data = []
+        for record in API.db.session.query( model ).all():
+            tbl_data.append( record.toDict() )
+
+        if len( tbl_data ):
+            data[ tbl ] = tbl_data
+
+    if not filename.endswith( fmt ):
+        filename = "{}.{}".format( filename, fmt )
+
+    if len( settings ):
+        if fmt == 'yaml':
+            data[ '__settings__' ] = '!include {}'.format( settingsfile )
+            if not os.path.isfile( settingsfile ):
+                with open( settingsfile, 'w') as stream:
+                    yaml.dump( settings, stream )
+
+        else:
+            data['__settings__'] = settings
+
+    with open( filename, 'w' ) as stream:
+        if fmt == 'yaml':
+            yaml.dump( data, stream )
+
+        elif fmt == 'json':
+            json.dump( data, stream )
 
     return
