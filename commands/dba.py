@@ -25,9 +25,9 @@ def dba():
 
 
 @dba.command( 'backup', short_help = 'Backup the database.' )
-@click.option( '--list/--nolist', '_list', default = False, help = 'List the schemes' )
-@click.option( '--name', nargs=1, type=str )
-@click.option( '--schema', nargs=1, type=str )
+@click.option( '--list/--nolist', '_list', default = False, help = 'List the schemas.' )
+@click.option( '--name', nargs=1, type=str, help="The name of the backup name." )
+@click.option( '--schema', nargs=1, type=str, help="Backup to a different schema." )
 @with_appcontext
 def backup( _list, name, schema ):
     if _list:
@@ -61,9 +61,9 @@ def backup( _list, name, schema ):
 
 
 @dba.command( 'restore', short_help = 'Restore the database.' )
-@click.option( '--list/--nolist', '_list', default = False, help = 'List the schemes' )
-@click.option( '--name', nargs=1, type=str )
-@click.option( '--schema', nargs=1, type=str )
+@click.option( '--list/--nolist', '_list', default = False, help = 'List the schemes.' )
+@click.option( '--name', nargs=1, type=str, help="The name of the backup name to restore." )
+@click.option( '--schema', nargs=1, type=str, help="Restore from a different schema." )
 @with_appcontext
 def restore( _list, name, schema ):
     if _list:
@@ -96,16 +96,26 @@ def restore( _list, name, schema ):
     return
 
 
-@dba.command( 'export', short_help = 'Export the database.' )
+EXPORT_HELP = """Export the database to a YAML, JSON, SQL or CSV file.
+
+    dba export [ --fmt <type> ] [ --table <table-name> ] <filename> 
+
+
+<filename>: The filename with or without the extension to be used to write the database information to.
+"""
+
+
+@dba.command( 'export', short_help = 'Export the database to a YAML, JSON, SQL or CSV file.',
+              help = EXPORT_HELP )
 @click.option( '--fmt',
                nargs = 1,
                default = "yaml",
-               help = "file export format",
+               help = "Can be one of the following: YAML, JSON, SQL or CSV.",
                type = click.Choice( [ 'yaml', 'json', 'sql', 'csv' ], case_sensitive = False ) )
 @click.option( '--table',
                nargs = 1,
                default = None,
-               help = "export one table" )
+               help = "The table name from the database." )
 @click.argument( 'filename' )
 def export( fmt, filename, table ):
     if fmt == 'csv':
@@ -178,16 +188,27 @@ def export( fmt, filename, table ):
     return
 
 
-@dba.command( 'inport', short_help = 'Inport the database.' )
+INPORT_HELP = """Import the database from a YAML, JSON, SQL or CSV file.
+
+    dba export [ --fmt <type> ] [ --table <table-name> ] <filename> 
+
+
+<filename>: The filename with or without the extension to be used to write the database information to.
+"""
+
+
+@dba.command( 'inport',
+              short_help = 'Inport the database from a YAML, JSON, SQL or CSV file.',
+              help = INPORT_HELP )
 @click.option( '--fmt',
                nargs = 1,
                default = "yaml",
-               help = "file inport format",
+               help = "Can be one of the following: YAML, JSON, SQL or CSV.",
                type = click.Choice( [ 'yaml', 'json', 'sql', 'csv' ], case_sensitive = False ) )
 @click.option( '--table',
                nargs = 1,
                default = None,
-               help = "export one table" )
+               help = "The table name from the database to import from the data file." )
 @click.argument( 'filename' )
 def inport( fmt, filename, table ):
     if fmt in ( 'sql', 'yaml', 'json' ):
@@ -322,12 +343,21 @@ def getReference( settings, table, field, value ):
     return query.one()
 
 
+LOADER_HELP = """Load the database from a YAML or JSON file.
+
+    dba loader [ --fmt <type> ] [ --table <table-name> ] <filename> 
+
+
+<filename>: The filename with or without the extension to be used to write the database information to.
+"""
+
 @dba.command( 'loader',
-              short_help = 'Load the database.' )
+              short_help = 'Load the database from a YAML or JSON file.',
+              help = LOADER_HELP )
 @click.option( '--fmt',
                nargs = 1,
                default = "yaml",
-               help = "file inport format",
+               help = "Can be one of the following: YAML or JSON.",
                type = click.Choice( [ 'yaml', 'json' ],
                                     case_sensitive = False ) )
 @click.argument( 'filename', type = click.Path( exists = True ) )
@@ -434,15 +464,28 @@ def updateRecord( settings, model, table, table_data ):
     return record
 
 
+SAVER_HELP = """Save the database to a YAML or JSON file.
+
+    dba saver [ --fmt <type> ] [ --settings <filename-settings.yaml> ] <filename> 
+
+
+<filename>: The filename with or without the extension to be used to write the database information to.
+"""
+
+
 @dba.command( 'saver',
-              short_help = 'Load the database.' )
+              short_help = 'Save the database toa YAML or JSON file.',
+              help = SAVER_HELP )
 @click.option( '--fmt',
                nargs = 1,
                default = "yaml",
-               help = "file inport format",
+               help = "Can be one of the following: YAML or JSON.",
                type = click.Choice( [ 'yaml', 'json' ],
                                     case_sensitive = False ) )
-@click.option( '--settings', nargs = 1, default = 'settings-dba-loader.yaml', help = '' )
+@click.option( '--settings',
+               nargs = 1,
+               default = 'settings-dba-loader.yaml',
+               help = 'Must be a YAML file with the settings, when not present a new one shall be generated. The default is "settings-dba-loader.yaml"' )
 @click.argument( 'filename', nargs = 1 )
 @click.argument( 'tables', nargs = -1 )
 def saver( fmt, settings, filename, tables ):
