@@ -25,7 +25,7 @@ import copy
 import json
 import datetime
 from flask import Config as BaseConfig
-from webapp.common.lookahead import lookahead
+from webapp.common.iterahead import lookahead
 #import yaml.composer
 
 # def compose_document( self ):

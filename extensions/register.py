@@ -60,4 +60,8 @@ def registerExtensions( module ):
     if EXTENSIONS.get( "STOMP", False ):
         API.stomp.init_app( API.app )
 
+    if module:
+        if hasattr( module,'registerExtensions' ):
+            module.registerExtensions()
+
     return

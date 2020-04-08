@@ -18,6 +18,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
+from itertools import tee, islice, zip_longest
+
+
 def lookahead( iterable ):
     """Pass through all values from the given iterable, augmented by the
     information if there are more values to come after the current one
@@ -33,3 +36,9 @@ def lookahead( iterable ):
         last = val
     # Report the last value.
     yield last, False
+
+
+def nextahead( some_iterable, window = 1):
+    items, nexts = tee( some_iterable, 2 )
+    nexts = islice( nexts, window, None )
+    return zip_longest( items, nexts )

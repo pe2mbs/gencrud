@@ -55,31 +55,44 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
     """
     API.app = None
     try:
-        if config_file is None:
-            if 'FLASK_APP_CONFIG' in os.environ:
-                config_file = os.environ[ 'FLASK_APP_CONFIG' ]
-                root_path, config_file = os.path.split( config_file )
-                root_path = ResolveRootPath( root_path )
+        config_path = root_path = ResolveRootPath( root_path )
+        if 'FLASK_APP_CONFIG' in os.environ:
+            config_path, config_file = os.path.split( os.environ[ 'FLASK_APP_CONFIG' ] )
+            root_path = ResolveRootPath( config_path )
+
+        elif config_file is not None:
+            config_path, config_file = os.path.split( config_file )
+            if config_path == "":
+                config_path = root_path = ResolveRootPath( root_path )
 
             else:
-                config_file = 'config.yaml'
-                root_path = ResolveRootPath( root_path )
-                if not os.path.isfile( os.path.join( root_path, config_file ) ):
-                    config_file = 'config.json'
+                root_path = ResolveRootPath( config_path )
 
-        if not os.path.isfile( os.path.join( root_path, config_file ) ):
+        elif os.path.isdir( os.path.join( root_path, 'config' ) ):
+            config_path = os.path.join( root_path, 'config' )
+            root_path = ResolveRootPath( config_path )
+            config_file = 'config.yaml'
+            if not os.path.isfile( os.path.join( config_path, config_file ) ):
+                config_file = 'config.json'
+
+        elif os.path.isfile( os.path.join( config_path, config_file ) ):
+            pass
+
+        elif os.path.isfile( os.path.join( root_path, 'config.json' ) ):
+            config_path = root_path
+            config_file = 'config.json'
+
+        if not os.path.isfile( os.path.join( config_path, config_file ) ):
             print( "The config file is missing", file = sys.stderr )
             exit( -1 )
 
         API.app = Flask( __name__.split( '.' )[ 0 ],
-                     static_url_path    = "",
-                     root_path          = root_path,
-                     static_folder      = root_path )
+                         static_url_path    = "",
+                         root_path          = root_path,
+                         static_folder      = root_path )
         logDict = {}
         API.app.logger.info( "Starting Flask application, loading configuration." )
-
-        API.app.config.fromFile( os.path.join( root_path, config_file ) )
-
+        API.app.config.fromFile( os.path.join( config_path, config_file ) )
         # Setup logging for the application
         if 'logging' in API.app.config:
             logDict = API.app.config[ 'logging' ]
@@ -108,12 +121,13 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             else:
                 print( "The logging key in config file is invalid", file = sys.stderr )
 
-
         logging.config.dictConfig( logDict )
         API.app.logger.log( API.app.logger.level,
                         "Logging Flask application: %s" % ( logging.getLevelName( API.app.logger.level ) ) )
         API.app.logger.info( "Config file: {}".format( os.path.join( root_path, config_file ) ) )
         API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
+        module = None
+        sys.path.append( root_path )
         if full_start:
             API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
             API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
@@ -124,20 +138,22 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
 
             API.app.logger.info("Application module : {}".format( module ) )
 
-            registerExtensions( module )
+        registerExtensions( module )
+        if full_start:
             if hasattr( module, 'registerExtensions' ):
                 module.registerExtensions()
 
+        def errorhandler( error ):
+            response = error.to_json()
+            response.status_code = error.status_code
+            return response
+
+        if full_start:
             API.app.logger.info( "Registering error handler" )
             if hasattr( module, 'registerErrorHandler' ):
                 module.registerErrorHandler()
 
             else:
-                def errorhandler( error ):
-                    response = error.to_json()
-                    response.status_code = error.status_code
-                    return response
-
                 API.app.errorhandler( InvalidUsage )( errorhandler )
 
             API.app.logger.info( "Registering SHELL context" )
@@ -147,7 +163,11 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             else:
                 API.app.shell_context_processor( { 'db': API.db } )
 
-            registerCommands()
+        else:
+            API.app.errorhandler( InvalidUsage )( errorhandler )
+
+        registerCommands()
+        if full_start:
             if hasattr( module, 'registerCommands' ):
                 module.registerCommands()
 

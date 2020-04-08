@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Main webapp application package."""
+"""Database module for the 'Main Angular application package'.
+including the SQLAlchemy database object and DB-related utilities."""
 #
-# Main webapp application package
-# Copyright (C) 2018-2020 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
+# Database module for the 'Main Angular application package'.
+# Copyright (C) 2018 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
 #
-# This library is free software; you can redistribute it and/or modify
-# it under the terms of the GNU Library General Public License GPL-2.0-only
-# as published by the Free Software Foundation.
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,12 +19,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import webapp.api as API
-from sqlalchemy.orm import relationship
-from webapp.common.compat import basestring
+import threading
+import sqlalchemy.orm as ORM
+import sqlalchemy.types
+from applic.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import MetaData, Column
-
+from sqlalchemy import MetaData
 
 # Fix described @ https://stackoverflow.com/questions/45527323/flask-sqlalchemy-upgrade-failing-after-updating-models-need-an-explanation-on-h
 naming_convention = {
@@ -33,23 +35,54 @@ naming_convention = {
     "pk": "pk_%(table_name)s"
 }
 
-API.db = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
+# MainThread db
+db              = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
+# temp. vars
+Column          = db.Column
+relationship    = ORM.relationship
+Model           = db.Model
+db.MEDIUMBLOB   = sqlalchemy.types._Binary
+db.LONGBLOB     = sqlalchemy.types._Binary
+db.MEDIUMTEXT   = sqlalchemy.types.TEXT
+db.LONGTEXT     = sqlalchemy.types.TEXT
+db.MEDIUMCLOB   = sqlalchemy.types.TEXT
+db.LONGCLOB     = sqlalchemy.types.TEXT
+thread_db       = { "MainThread": db }
 
-# Alias common SQLAlchemy names
-API.Column = API.db.Column
-API.RelationShip = relationship
-API.Model = API.db.Model
+
+def getDataBase( app = None ):
+    if threading.currentThread().name in thread_db:
+        return thread_db[ threading.currentThread().name ]
+
+    if app is None:
+        from flask import current_app, has_request_context
+        app = current_app
+        if has_request_context():
+            return db
+
+    db_thread = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
+    # This to configure the database
+    db_thread.init_app( app )
+    app.app_context().push()
+    if "mysql" in db_thread.session.bind.dialect.name:
+        # This is nessary for the QUERY below to read the changes make by other processes.
+        app.logger.info( "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED" )
+        db_thread.session.execute( "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED" )
+
+    # Alias common SQLAlchemy names
+    thread_db[ threading.currentThread().name ] = db_thread
+    return db_thread
 
 
 # From Mike Bayer's "Building the app" talk
 # https://speakerdeck.com/zzzeek/building-the-app
-class SurrogatePK( object ):
+class SurrogatePK(object):
     """A mixin that adds a surrogate integer 'primary key' column named ``id`` \
        to any declarative-mapped class.
     """
     __table_args__ = { 'extend_existing': True }
 
-    id = API.db.Column( API.db.Integer, primary_key = True )
+    id = db.Column( db.Integer, primary_key = True )
 
     @classmethod
     def get_by_id( cls, record_id ):
@@ -65,6 +98,7 @@ def referenceColumn( tablename, nullable = False, pk_name = 'id', **kwargs ):
         category_id = reference_col('category')
         category = relationship('Category', backref='categories')
     """
-    return API.Column( API.db.ForeignKey( '{0}.{1}'.format( tablename, pk_name ) ),
+    db = getDataBase()
+    return db.Column( db.ForeignKey( '{0}.{1}'.format( tablename, pk_name ) ),
                    nullable = nullable,
                    **kwargs )

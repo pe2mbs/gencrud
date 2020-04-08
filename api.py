@@ -31,9 +31,6 @@ jwt             = None
 mm              = None
 stomp           = None
 db              = None
-Column          = None
-Model           = None
-RelationShip    = None
 
 HERE            = os.path.abspath( os.path.dirname( __file__ ) )
 PROJECT_ROOT    = os.path.join( HERE, os.pardir )
