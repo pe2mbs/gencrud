@@ -47,7 +47,7 @@ db.MEDIUMTEXT   = sqlalchemy.types.TEXT
 db.LONGTEXT     = sqlalchemy.types.TEXT
 db.MEDIUMCLOB   = sqlalchemy.types.TEXT
 db.LONGCLOB     = sqlalchemy.types.TEXT
-thread_db       = { "MainThread": db }
+thread_db       = { threading.currentThread().name: db }
 
 
 def getDataBase( app = None ):
