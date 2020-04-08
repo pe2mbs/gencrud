@@ -91,7 +91,7 @@ def index():
             current_app.logger.info( "ANGULAR_PATH incorrect {}.".format( angular_path ) )
             current_app.logger.info( "ANGULAR_PATH incorrect {}.".format( angular_path ) )
             return renderErrorPage( "ANGULAR_PATH incorrect {}.".format( angular_path ),
-                                    "The frontend foldern was not found {}.".format( angular_path ),
+                                    "The frontend folder was not found {}.".format( angular_path ),
                                     "Correct the ANGULAR_PATH in the configuration." )
 
     except Exception as exc:
@@ -156,4 +156,3 @@ def getVersionInfo():
     return jsonify( version = version.version,
                     copyright = version.copyright,
                     author = version.author )
-

@@ -36,11 +36,26 @@ naming_convention = {
     "pk": "pk_%(table_name)s"
 }
 
+
+def get_model( self, name ):
+    return self.Model._decl_class_registry.get( name, None )
+
+
+def get_model_by_tablename( self, tablename ):
+    for c in self.Model._decl_class_registry.values():
+        if hasattr( c, '__tablename__' ) and c.__tablename__ == tablename:
+            return c
+
+    return None
+
+
 # MainThread db
 db              = None
 if db is None:
     # Make sure that the db is initialized only once!
     db = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
+    db.get_model                = get_model
+    db.get_model_by_tablename   = get_model_by_tablename
     # temp. vars
     Column          = db.Column
     relationship    = ORM.relationship
