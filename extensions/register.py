@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import webapp.api as API
+from inspect import signature
 import webapp.extensions.bcrypt
 import webapp.extensions.cache
 import webapp.extensions.database
@@ -62,6 +63,11 @@ def registerExtensions( module ):
 
     if module:
         if hasattr( module,'registerExtensions' ):
-            module.registerExtensions()
+            sig = signature( module.registerExtensions )
+            if len( sig.parameters ) == 2:
+                module.registerExtensions( API.app, API.db )
+
+            else:
+                module.registerExtensions( )
 
     return

@@ -22,6 +22,7 @@ including the SQLAlchemy database object and DB-related utilities."""
 import threading
 import sqlalchemy.orm as ORM
 import sqlalchemy.types
+import webapp.api as API
 from applic.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
@@ -36,18 +37,22 @@ naming_convention = {
 }
 
 # MainThread db
-db              = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
-# temp. vars
-Column          = db.Column
-relationship    = ORM.relationship
-Model           = db.Model
-db.MEDIUMBLOB   = sqlalchemy.types._Binary
-db.LONGBLOB     = sqlalchemy.types._Binary
-db.MEDIUMTEXT   = sqlalchemy.types.TEXT
-db.LONGTEXT     = sqlalchemy.types.TEXT
-db.MEDIUMCLOB   = sqlalchemy.types.TEXT
-db.LONGCLOB     = sqlalchemy.types.TEXT
-thread_db       = { threading.currentThread().name: db }
+db              = None
+if db is None:
+    # Make sure that the db is initialized only once!
+    db = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
+    # temp. vars
+    Column          = db.Column
+    relationship    = ORM.relationship
+    Model           = db.Model
+    db.MEDIUMBLOB   = sqlalchemy.types._Binary
+    db.LONGBLOB     = sqlalchemy.types._Binary
+    db.MEDIUMTEXT   = sqlalchemy.types.TEXT
+    db.LONGTEXT     = sqlalchemy.types.TEXT
+    db.MEDIUMCLOB   = sqlalchemy.types.TEXT
+    db.LONGCLOB     = sqlalchemy.types.TEXT
+    thread_db       = { threading.currentThread().name: db }
+    API.db = db
 
 
 def getDataBase( app = None ):

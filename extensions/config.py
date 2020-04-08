@@ -217,7 +217,7 @@ class Config( BaseConfig ):
             e.strerror = 'Unable to load configuration file (%s)' % e.strerror
             raise
 
-        taskSection = c.get( 'COMMON_TASKS' ).get( os.environ.get( 'FLASK_TASK', 'webapp' ), {} )
+        taskSection = c.get( 'COMMON_TASKS', {} ).get( os.environ.get( 'FLASK_TASK', 'webapp' ), {} )
         return self._modify( c.get( env, c ), taskSection )
 
     def fromJson( self, config_file, silent=False ):
@@ -259,7 +259,7 @@ class Config( BaseConfig ):
             segment = c
 
         if 'COMMON_TASKS' in c:
-            taskSection = c.get( 'COMMON_TASKS' ).get( os.environ.get( 'FLASK_TASK', 'webapp' ), {} )
+            taskSection = c.get( 'COMMON_TASKS', {} ).get( os.environ.get( 'FLASK_TASK', 'webapp' ), {} )
 
         else:
             taskSection = {}

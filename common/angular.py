@@ -22,6 +22,7 @@ from flask import Blueprint, send_from_directory, current_app, request, jsonify
 from mako.template import Template
 from werkzeug.routing import BaseConverter
 import webapp.api as API
+from webapp.extensions.database import db
 import version
 
 ERROR_HTML = """<html>
@@ -109,14 +110,14 @@ def angularSource( path ):
 #   This part contains the standard /api/ routes other then loading the Angular application
 #
 #
-class Feedback( API.db.Model ):
+class Feedback( db.Model ):
     __tablename__       = 'ap_feedback'
-    F_ID                = API.db.Column( "f_id",        API.db.Integer, autoincrement = True, primary_key = True )
-    F_NAME              = API.db.Column( "f_name",      API.db.String( 50 ), nullable = False )
-    F_TYPE              = API.db.Column( "f_type",      API.db.Integer, nullable = False )
-    F_VOTED             = API.db.Column( "f_voted",     API.db.Integer, nullable = False )
-    F_SUBJECT           = API.db.Column( "f_subject",   API.db.String( 100 ), nullable = False )
-    F_MESSAGE           = API.db.Column( "f_message",   API.db.Text, nullable = True )
+    F_ID                = db.Column( "f_id",        db.Integer, autoincrement = True, primary_key = True )
+    F_NAME              = db.Column( "f_name",      db.String( 50 ), nullable = False )
+    F_TYPE              = db.Column( "f_type",      db.Integer, nullable = False )
+    F_VOTED             = db.Column( "f_voted",     db.Integer, nullable = False )
+    F_SUBJECT           = db.Column( "f_subject",   db.String( 100 ), nullable = False )
+    F_MESSAGE           = db.Column( "f_message",   db.Text, nullable = True )
 
 
 @bluePrint.route( '/api/feedback', methods = [ 'PUT' ] )
