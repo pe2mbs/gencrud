@@ -64,7 +64,7 @@ def loadPlugins():
     return
 
 
-def createApp( root_path, config_file = None, module = None, full_start = True, verbose = False ):
+def createApp( root_path, config_file = 'config.yaml', module = None, full_start = True, verbose = False ):
     """An application factory, as explained here:
        http://flask.pocoo.org/docs/patterns/appfactories/.
 
@@ -106,12 +106,12 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             print( "The config file is missing", file = sys.stderr )
             exit( -1 )
 
+        print( "Starting Flask application, loading configuration." )
         API.app = Flask( __name__.split( '.' )[ 0 ],
                          static_url_path    = "",
                          root_path          = root_path,
                          static_folder      = root_path )
         logDict = {}
-        API.app.logger.info( "Starting Flask application, loading configuration." )
         API.app.config.fromFile( os.path.join( config_path, config_file ) )
         # Setup logging for the application
         if 'logging' in API.app.config:
@@ -148,6 +148,8 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
         API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
         module = None
         sys.path.append( root_path )
+        registerExtensions( module )
+        registerCommands()
         if full_start:
             loadPlugins()
             API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
@@ -158,9 +160,6 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
                 module = importlib.import_module( API.app.config[ 'API_MODULE' ] )
 
             API.app.logger.info("Application module : {}".format( module ) )
-
-        registerExtensions( module )
-        if full_start:
             registerAngular()
             if hasattr( module, 'registerApi' ):
                 sig = signature( module.registerApi )
@@ -174,60 +173,8 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             response = error.to_json()
             response.status_code = error.status_code
             return response
-        #
-        # if full_start:
-        #     API.app.logger.info( "Registering error handler" )
-        #     if hasattr( module, 'registerErrorHandler' ):
-        #         sig = signature( module.registerErrorHandler )
-        #         if len( sig.parameters ) == 1:
-        #             module.registerErrorHandler( API.app )
-        #
-        #         else:
-        #             module.registerErrorHandler()
-        #
-        #     else:
+
         API.app.errorhandler( InvalidUsage )( errorhandler )
-        #
-        #     API.app.logger.info( "Registering SHELL context" )
-        #     if hasattr( module, 'registerShellContext' ):
-        #         sig = signature( module.registerExtensions )
-        #         if len( sig.parameters ) == 2:
-        #             module.registerShellContext( API.app, API.db )
-        #
-        #         else:
-        #             module.registerShellContext()
-        #
-        #     else:
-        #         API.app.shell_context_processor( { 'db': API.db } )
-        #
-        # else:
-        #     API.app.errorhandler( InvalidUsage )( errorhandler )
-        #
-        registerCommands()
-        # if full_start:
-        #     if hasattr( module, 'registerCommands' ):
-        #         sig = signature( module.registerCommands )
-        #         if len( sig.parameters ) == 1:
-        #             module.registerCommands( API.app )
-        #
-        #         else:
-        #             module.registerCommands()
-        #
-        #     API.app.logger.info( "Registering blueprints" )
-        #     if not API.app.config.get( "ALLOW_CORS_ORIGIN", False ):
-        #         API.app.logger.info( "NOT allowing CORS" )
-        #
-        #     registerAngular()
-        #     if not hasattr( module, 'registerApi' ):
-        #         raise Exception( "Missing registerApi() in module {}".format( module ) )
-        #
-        #     sig = signature( module.registerApi )
-        #     if len( sig.parameters ) == 2:
-        #         module.registerApi( API.app, API.cors )
-        #
-        #     else:
-        #         module.registerApi()
-        #
 
     except Exception as exc:
         if API.app:

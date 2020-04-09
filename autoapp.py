@@ -17,13 +17,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import os
-from webapp.app import createApp
-import webapp.api as API
+import traceback
+import sys
 
 __version__     = "1.0"
 __author__      = 'Marc Bertens-Nguyen'
 __copyright__   = 'Copyright (C) 2018 - 2020'
 
-app = createApp( os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) ) )
+try:
+    import os
+    from webapp.app import createApp
+    import webapp.api as API
 
+
+    app = createApp( os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) ) )
+
+except Exception:
+    print( traceback.format_exc(), file=sys.stderr )
