@@ -19,6 +19,7 @@ including the SQLAlchemy database object and DB-related utilities."""
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import logging
 import threading
 import sqlalchemy.orm as ORM
 import sqlalchemy.types
@@ -26,6 +27,7 @@ import webapp.api as API
 from applic.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from flask import g, current_app, has_request_context
 
 # Fix described @ https://stackoverflow.com/questions/45527323/flask-sqlalchemy-upgrade-failing-after-updating-models-need-an-explanation-on-h
 naming_convention = {
@@ -49,17 +51,31 @@ def get_model_by_tablename( self, tablename ):
     return None
 
 
+# TODO: This is a quick hack to solve the pool connection timeouts with mariaDB
+def get_db():
+    logging.warning( "Get DB session for application context: {}".format( g ) )
+    if 'db' not in g:
+        db_ref = SQLAlchemy( metadata = MetaData( naming_convention = naming_convention ) )
+        logging.warning( "Setup DB session for application context: {}".format( db_ref ) )
+        # This to configure the database
+        db_ref.init_app( current_app )
+        g.db = db_ref
+
+    return g.db
+
+
 # MainThread db
 db              = None
 if db is None:
     # Make sure that the db is initialized only once!
-    db = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
+    db = SQLAlchemy( metadata = MetaData( naming_convention = naming_convention ) )
+    API.db = db
     db.get_model                = get_model
     db.get_model_by_tablename   = get_model_by_tablename
     # temp. vars
-    Column          = db.Column
-    relationship    = ORM.relationship
-    Model           = db.Model
+    # Column          = db.Column
+    # relationship    = ORM.relationship
+    # Model           = db.Model
     db.MEDIUMBLOB   = sqlalchemy.types._Binary
     db.LONGBLOB     = sqlalchemy.types._Binary
     db.MEDIUMTEXT   = sqlalchemy.types.TEXT
@@ -67,20 +83,29 @@ if db is None:
     db.MEDIUMCLOB   = sqlalchemy.types.TEXT
     db.LONGCLOB     = sqlalchemy.types.TEXT
     thread_db       = { threading.currentThread().name: db }
-    API.db = db
+
+
+# TODO: This is a quick hack to solve the pool connection timeouts with mariaDB
+def teardown_db( *args ):
+    # logging.debug( "ARGS: {}".format( args ) )
+    db_ref = g.pop( 'db', None )
+    if db_ref is not None:
+        logging.warning( "Teardown DB session for application context: {}".format( db_ref ) )
+        db_ref.close()
+
+    return
 
 
 def getDataBase( app = None ):
+    if has_request_context():
+        # TODO: This is a quick hack to solve the pool connection timeouts with mariaDB
+        return get_db()
+
     if threading.currentThread().name in thread_db:
         return thread_db[ threading.currentThread().name ]
 
-    if app is None:
-        from flask import current_app, has_request_context
-        app = current_app
-        if has_request_context():
-            return db
-
-    db_thread = SQLAlchemy( metadata=MetaData( naming_convention = naming_convention ) )
+    logging.warning( "Create new DB session for application context" )
+    db_thread = SQLAlchemy( metadata = MetaData( naming_convention = naming_convention ) )
     # This to configure the database
     db_thread.init_app( app )
     app.app_context().push()

@@ -111,6 +111,7 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
                          static_url_path    = "",
                          root_path          = root_path,
                          static_folder      = root_path )
+
         logDict = {}
         API.app.config.fromFile( os.path.join( config_path, config_file ) )
         # Setup logging for the application
