@@ -25,13 +25,13 @@ import logging.config
 import traceback
 import importlib
 from inspect import signature
-from webapp.common.logger import loadLoggingFile, updateLogging
-from webapp.extensions.register import registerExtensions
-from webapp.common.angular import registerAngular
-from webapp.commands.register import registerCommands
-from webapp.common.exceptions import InvalidUsage
-from webapp.extensions.flask import Flask
-import webapp.api as API
+from webapp2.common.logger import loadLoggingFile, updateLogging
+from webapp2.extensions.register import registerExtensions
+from webapp2.common.angular import registerAngular
+from webapp2.commands.register import registerCommands
+from webapp2.common.exceptions import InvalidUsage
+from webapp2.extensions.flask import Flask
+import webapp2.api as API
 
 
 def ResolveRootPath( path ):

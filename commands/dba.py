@@ -6,11 +6,11 @@ import json
 import csv
 from sqlalchemy.engine.reflection import Inspector
 import sqlalchemy.orm
-import webapp.api as API
+import webapp2.api as API
 from sqlalchemy.inspection import inspect
 from flask.cli import with_appcontext
 from flask.cli import AppGroup
-from webapp.commands.schema import ( listSchemas,
+from webapp2.commands.schema import ( listSchemas,
                                      getCurrentVersion,
                                      getCurrentSchema,
                                      copySchema,

@@ -17,10 +17,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import webapp.api as API
-from webapp.commands.misc import cli
-from webapp.commands.dba import dba
-from webapp.commands.serve import serve
+import webapp2.api as API
+from webapp2.commands.misc import cli
+from webapp2.commands.dba import dba
+from webapp2.commands.serve import serve
 
 
 def registerCommands():

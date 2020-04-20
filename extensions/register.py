@@ -17,16 +17,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import webapp.api as API
+import webapp2.api as API
 from inspect import signature
-import webapp.extensions.bcrypt
-import webapp.extensions.cache
-import webapp.extensions.database
-import webapp.extensions.cors
-import webapp.extensions.stompmq
-import webapp.extensions.jwt
-import webapp.extensions.marshmallow
-import webapp.extensions.migrate
+import webapp2.extensions.bcrypt
+import webapp2.extensions.cache
+import webapp2.extensions.database
+import webapp2.extensions.cors
+import webapp2.extensions.stompmq
+import webapp2.extensions.jwt
+import webapp2.extensions.marshmallow
+import webapp2.extensions.migrate
 
 def registerExtensions( module ):
     """Register Flask extensions.

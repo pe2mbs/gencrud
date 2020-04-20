@@ -19,7 +19,7 @@
 #
 
 from flask import Flask as BaseFlask
-from webapp.extensions.config import Config
+from webapp2.extensions.config import Config
 
 
 class Flask( BaseFlask ):

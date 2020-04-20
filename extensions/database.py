@@ -23,8 +23,8 @@ import logging
 import threading
 import sqlalchemy.orm as ORM
 import sqlalchemy.types
-import webapp.api as API
-from webapp.common.compat import basestring
+import webapp2.api as API
+from webapp2.common.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask import g, current_app, has_request_context

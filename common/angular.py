@@ -21,8 +21,8 @@ import os
 from flask import Blueprint, send_from_directory, current_app, request, jsonify
 from mako.template import Template
 from werkzeug.routing import BaseConverter
-import webapp.api as API
-from webapp.extensions.database import db
+import webapp2.api as API
+from webapp2.extensions.database import db
 import version
 
 ERROR_HTML = """<html>

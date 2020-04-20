@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import webapp.api as API
+import webapp2.api as API
 from flask_jwt_extended import JWTManager
 
 

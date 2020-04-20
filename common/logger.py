@@ -21,7 +21,7 @@ import logging
 import os
 import yaml
 import json
-from webapp.common.exceptions import InvalidFileType
+from webapp2.common.exceptions import InvalidFileType
 from functools import wraps
 
 logObject = None

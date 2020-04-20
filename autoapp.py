@@ -26,8 +26,8 @@ __copyright__   = 'Copyright (C) 2018 - 2020'
 
 try:
     import os
-    from webapp.app import createApp
-    import webapp.api as API
+    from webapp2.app import createApp
+    import webapp2.api as API
 
 
     app = createApp( os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) ) )

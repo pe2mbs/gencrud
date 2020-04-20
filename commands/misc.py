@@ -2,7 +2,7 @@ import click
 import os
 from glob import glob
 from subprocess import call
-import webapp.api as API
+import webapp2.api as API
 from flask.cli import with_appcontext
 from flask.cli import AppGroup
 from flask import current_app
