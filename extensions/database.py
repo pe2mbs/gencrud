@@ -24,7 +24,7 @@ import threading
 import sqlalchemy.orm as ORM
 import sqlalchemy.types
 import webapp.api as API
-from applic.compat import basestring
+from webapp.common.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask import g, current_app, has_request_context
@@ -51,19 +51,6 @@ def get_model_by_tablename( self, tablename ):
     return None
 
 
-# TODO: This is a quick hack to solve the pool connection timeouts with mariaDB
-def get_db():
-    logging.warning( "Get DB session for application context: {}".format( g ) )
-    if 'db' not in g:
-        db_ref = SQLAlchemy( metadata = MetaData( naming_convention = naming_convention ) )
-        logging.warning( "Setup DB session for application context: {}".format( db_ref ) )
-        # This to configure the database
-        db_ref.init_app( current_app )
-        g.db = db_ref
-
-    return g.db
-
-
 # MainThread db
 db              = None
 if db is None:
@@ -85,21 +72,9 @@ if db is None:
     thread_db       = { threading.currentThread().name: db }
 
 
-# TODO: This is a quick hack to solve the pool connection timeouts with mariaDB
-def teardown_db( *args ):
-    # logging.debug( "ARGS: {}".format( args ) )
-    db_ref = g.pop( 'db', None )
-    if db_ref is not None:
-        logging.warning( "Teardown DB session for application context: {}".format( db_ref ) )
-        db_ref.close()
-
-    return
-
-
 def getDataBase( app = None ):
     if has_request_context():
-        # TODO: This is a quick hack to solve the pool connection timeouts with mariaDB
-        return get_db()
+        return db
 
     if threading.currentThread().name in thread_db:
         return thread_db[ threading.currentThread().name ]
