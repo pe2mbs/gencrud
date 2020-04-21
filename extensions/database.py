@@ -79,6 +79,9 @@ def getDataBase( app = None ):
     if threading.currentThread().name in thread_db:
         return thread_db[ threading.currentThread().name ]
 
+    if app is None:
+        app = current_app
+
     logging.warning( "Create new DB session for application context" )
     db_thread = SQLAlchemy( metadata = MetaData( naming_convention = naming_convention ) )
     # This to configure the database
