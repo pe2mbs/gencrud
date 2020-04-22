@@ -17,23 +17,44 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
-
-
 import os
 
 app             = None
 menuItems       = []
 applicInfo      = {}
 plugins         = None
+
 bcrypt          = None
+if bcrypt is None:
+    import webapp2.extensions.bcrypt
+
 migrate         = None
+if migrate is None:
+    import webapp2.extensions.migrate
+
 cache           = None
+if cache is None:
+    import webapp2.extensions.cache
+
 cors            = None
+if cors is None:
+    import webapp2.extensions.cors
+
 jwt             = None
+if jwt is None:
+    import webapp2.extensions.jwt
+
 mm              = None
+if mm is None:
+    import webapp2.extensions.marshmallow
+
 stomp           = None
+if stomp is None:
+    import webapp2.extensions.stompmq
+
 db              = None
+if db is None:
+    import webapp2.extensions.database
 
 HERE            = os.path.abspath( os.path.dirname( __file__ ) )
 PROJECT_ROOT    = os.path.join( HERE, os.pardir )

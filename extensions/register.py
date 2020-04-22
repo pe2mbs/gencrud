@@ -19,14 +19,6 @@
 #
 import webapp2.api as API
 from inspect import signature
-import webapp2.extensions.bcrypt
-import webapp2.extensions.cache
-import webapp2.extensions.database
-import webapp2.extensions.cors
-import webapp2.extensions.stompmq
-import webapp2.extensions.jwt
-import webapp2.extensions.marshmallow
-import webapp2.extensions.migrate
 
 def registerExtensions( module ):
     """Register Flask extensions.
