@@ -31,6 +31,14 @@ from webapp2.common.angular import registerAngular
 from webapp2.commands.register import registerCommands
 from webapp2.common.exceptions import InvalidUsage
 from webapp2.extensions.flask import Flask
+import webapp2.extensions.stompmq
+import webapp2.extensions.database
+import webapp2.extensions.marshmallow
+import webapp2.extensions.jwt
+import webapp2.extensions.cors
+import webapp2.extensions.cache
+import webapp2.extensions.migrate
+import webapp2.extensions.bcrypt
 import webapp2.api as API
 
 
@@ -152,13 +160,15 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
         registerExtensions( module )
         registerCommands()
         if full_start:
+
             loadPlugins()
             API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
             API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
             API.app.url_map.strict_slashes = False
             if module is None and 'API_MODULE' in API.app.config:
                 API.app.logger.info("Loading module : {}".format( API.app.config[ 'API_MODULE' ] ) )
-                module = importlib.import_module( API.app.config[ 'API_MODULE' ] )
+                # import testrun.main to import registerApi,registerExtensions,registerShellContext,registerCommands,registerErrorHandler
+                module = importlib.import_module( API.app.config[ 'API_MODULE' ] + ".main" )
 
             API.app.logger.info("Application module : {}".format( module ) )
             registerAngular()
