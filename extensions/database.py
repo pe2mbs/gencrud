@@ -53,6 +53,7 @@ def get_model_by_tablename( self, tablename ):
 
 # MainThread db
 db              = None
+thread_db       = {}
 if db is None:
     # Make sure that the db is initialized only once!
     db = SQLAlchemy( metadata = MetaData( naming_convention = naming_convention ) )
@@ -71,6 +72,27 @@ if db is None:
     db.LONGCLOB     = sqlalchemy.types.TEXT
     thread_db       = { threading.currentThread().name: db }
 
+
+def destroyDatabaseObject( obj ):
+    global db, thread_db
+    if db == obj:
+        # delete the master, so everything goes !
+        API.db = None
+        del db
+        db = None
+        del thread_db
+        thread_db = {}
+
+    elif len( thread_db ):
+        for key, dbobj in thread_db.items():
+            if dbobj == obj:
+                # Delete one db object from the thread list
+                del dbobj
+                del thread_db[ key ]
+                # All done, get the hell out of here
+                break
+
+    return
 
 def getDataBase( app = None ):
     if has_request_context():
