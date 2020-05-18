@@ -77,10 +77,13 @@ def destroyDatabaseObject( obj ):
     global db, thread_db
     if db == obj:
         # delete the master, so everything goes !
+        for name, tdb in thread_db.items():
+            if tdb is not db:
+                del tdb
+
         API.db = None
         del db
         db = None
-        del thread_db
         thread_db = {}
 
     elif len( thread_db ):
