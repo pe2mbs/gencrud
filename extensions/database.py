@@ -29,6 +29,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask import g, current_app, has_request_context
 
+
 # Fix described @ https://stackoverflow.com/questions/45527323/flask-sqlalchemy-upgrade-failing-after-updating-models-need-an-explanation-on-h
 naming_convention = {
     "ix": 'ix_%(column_0_label)s',

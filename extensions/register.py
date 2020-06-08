@@ -29,7 +29,7 @@ def registerExtensions( module ):
     """
     API.app.logger.info( "Registering extensions" )
     API.db.init_app( API.app )
-    #API.app.teardown_appcontext( webapp.extensions.database.teardown_db )
+    API.app.db = API.db
     API.mm.init_app( API.app )
     API.migrate.init_app( API.app, API.db, render_as_batch = True )
     # Optional extensions

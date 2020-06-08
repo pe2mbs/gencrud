@@ -72,13 +72,13 @@ def loadPlugins():
     return
 
 
-def createApp( root_path, config_file = 'config.yaml', module = None, full_start = True, verbose = False ):
+def createApp( root_path, config_file = 'config.yaml', module = None, full_start = True, verbose = False, logging_name = None ):
     """An application factory, as explained here:
        http://flask.pocoo.org/docs/patterns/appfactories/.
 
         :param root_path:   The the root path of the application.
         :param config_file: The configuration file to be used.
-        :param module:       The actual application module.
+        :param module:      The actual application module.
 
         :return:            The application object.
     """
@@ -151,8 +151,12 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
                 print( "The logging key in config file is invalid", file = sys.stderr )
 
         logging.config.dictConfig( logDict )
+        if logging_name is not None:
+            API.app.logger  = logging.getLogger( logging_name )
+
+        API.logger      = API.app.logger
         API.app.logger.log( API.app.logger.level,
-                        "Logging Flask application: %s" % ( logging.getLevelName( API.app.logger.level ) ) )
+                            "Logging Flask application: %s" % ( logging.getLevelName( API.app.logger.level ) ) )
         API.app.logger.info( "Config file: {}".format( os.path.join( root_path, config_file ) ) )
         API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
         module = None
@@ -160,7 +164,6 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
         registerExtensions( module )
         registerCommands()
         if full_start:
-
             loadPlugins()
             API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
             API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
@@ -197,3 +200,10 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
         raise
 
     return API.app
+
+
+def SetApiReferences( api ):
+    api.app     = API.app
+    api.db      = API.app.db
+    api.logger  = API.app.logger
+    return

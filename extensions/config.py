@@ -21,109 +21,10 @@ import logging
 import os
 import errno
 import copy
-#import yaml
 import json
 import datetime
 from flask import Config as BaseConfig
 from webapp2.common.iterahead import lookahead
-#import yaml.composer
-
-# def compose_document( self ):
-#     self.get_event()
-#     node = self.compose_node( None, None )
-#     self.get_event()
-#     return node
-#
-# yaml.composer.Composer.compose_document = compose_document
-#
-#
-# class IncludeLoader( yaml.Loader ):
-#     """
-#     yaml.Loader subclass handles "!include path/to/foo.yml" directives in config
-#     files.  When constructed with a file object, the root path for includes
-#     defaults to the directory containing the file, otherwise to the current
-#     working directory. In either case, the root path can be overridden by the
-#     `root` keyword argument.
-#
-#     When an included file F contain its own !include directive, the path is
-#     relative to F's location.
-#
-#     Example:
-#         YAML file /home/frodo/one-ring.yml:
-#             ---
-#             Name: The One Ring
-#             Specials:
-#                 - resize-to-wearer
-#             Effects:
-#                 - !include path/to/invisibility.yml
-#
-#         YAML file /home/frodo/path/to/invisibility.yml:
-#             ---
-#             Name: invisibility
-#             Message: Suddenly you disappear!
-#
-#         Loading:
-#             data = IncludeLoader(open('/home/frodo/one-ring.yml', 'r')).get_data()
-#
-#         Result:
-#             {'Effects': [{'Message': 'Suddenly you disappear!', 'Name':
-#                 'invisibility'}], 'Name': 'The One Ring', 'Specials':
-#                 ['resize-to-wearer']}
-#     """
-#     def __init__( self, stream, *args, **kwargs ):
-#         self.root = None
-#         self.masterAnchors = {}
-#         if 'anchors' in kwargs:
-#             self.masterAnchors = kwargs[ 'anchors' ]
-#
-#         super( IncludeLoader, self ).__init__( stream )
-#         self.add_constructor( '!include', self._include )
-#         if 'root' in kwargs:
-#             self.root = kwargs[ 'root' ]
-#
-#         elif stream is not None:
-#             self.root = os.path.dirname( stream.name )
-#
-#         else:
-#             self.root = os.path.curdir
-#
-#
-#     def load_stream( self ):
-#         try:
-#             self.anchors = self.masterAnchors
-#             data = self.get_single_data()
-#             self.masterAnchors.update( self.anchors )
-#
-#         finally:
-#             self.dispose()
-#
-#         return data
-#
-#     def get_single_data( self ):
-#         # Ensure that the stream contains a single document and construct it.
-#         result= None
-#         node = self.get_single_node()
-#         if node is not None:
-#             result = self.construct_document( node )
-#             self.masterAnchors.update( self.anchors )
-#
-#         return result
-#
-#
-#     def _include( self, loader, node ):
-#         oldRoot = self.root
-#         filename = os.path.join( self.root, loader.construct_scalar(node))
-#         self.root = os.path.dirname( filename )
-#         # data = yaml.load( open( filename, 'r' ), Loader = IncludeLoader )
-#         loader = IncludeLoader( open( filename, 'r' ), anchors = self.masterAnchors )
-#         try:
-#             data = loader.get_single_data()
-#             self.root = oldRoot
-#             self.masterAnchors.update( loader.anchors )
-#             return data
-#
-#         finally:
-#             loader.dispose()
 from ruamel import yaml
 
 

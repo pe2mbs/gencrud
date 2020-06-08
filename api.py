@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
+from flask_marshmallow import Marshmallow
 
 app             = None
 menuItems       = []
@@ -29,7 +30,7 @@ migrate         = None
 cache           = None
 cors            = None
 jwt             = None
-mm              = None
+mm              = Marshmallow()
 stomp           = None
 db              = None
 

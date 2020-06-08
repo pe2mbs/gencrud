@@ -24,13 +24,27 @@ __version__     = "1.0"
 __author__      = 'Marc Bertens-Nguyen'
 __copyright__   = 'Copyright (C) 2018 - 2020'
 
+
+
+saved_out = None
+saved_err = None
 try:
     import os
+    import sys
     from webapp2.app import createApp
     import webapp2.api as API
-
+    FLASK_OPTION = os.environ.get( 'FLASK_OPTION', None )
+    saved_out = sys.stdout
+    saved_err = sys.stderr
+    if FLASK_OPTION is not None and FLASK_OPTION == 'service':
+        # For when flask is running from a service we need to point
+        # STDERR and STDOUT to the NULL device.
+        sys.stdout = open( os.devnull, 'w' )
+        sys.stderr = open( os.devnull, 'w' )
 
     app = createApp( os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) ) )
 
 except Exception:
-    print( traceback.format_exc(), file=sys.stderr )
+    sys.stderr = saved_err
+    sys.stdout = saved_out
+    print( traceback.format_exc(), file = sys.stderr )
