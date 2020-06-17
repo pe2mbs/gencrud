@@ -59,6 +59,11 @@ if db is None:
     # Make sure that the db is initialized only once!
     db = SQLAlchemy( metadata = MetaData( naming_convention = naming_convention ) )
     API.db = db
+    if "mysql" in db.session.bind.dialect.name:
+        # This is nessary for the QUERY below to read the changes make by other processes.
+        logging.info( "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED" )
+        db.session.execute( "SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED" )
+
     db.get_model                = get_model
     db.get_model_by_tablename   = get_model_by_tablename
     # temp. vars
