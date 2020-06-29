@@ -43,6 +43,27 @@ import webapp2.extensions.bcrypt
 import webapp2.api as API
 
 
+class LoggerWriter:
+    def __init__( self, function ):
+        # self.level is really like using log.debug(message)
+        # at least in my case
+        self.function = function
+        return
+
+    def write( self, message ):
+        # if statement reduces the amount of newlines that are
+        # printed to the logger
+        if message != '\n':
+            self.function( message.replace( '\n', '\\n' ) )
+
+        return
+
+    def flush(self):
+        # create a flush method so things can be flushed when the system wants to.
+        # Simply returning is good enough.
+        return
+
+
 def ResolveRootPath( path ):
     if path == '':
         path = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) )
@@ -156,10 +177,10 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
             API.app.logger  = logging.getLogger( logging_name )
 
         API.logger      = API.app.logger
-        API.app.logger.log( API.app.logger.level,
-                            "Logging Flask application: %s" % ( logging.getLevelName( API.app.logger.level ) ) )
+        API.app.logger.warning( "Logging Flask application: {}".format( logging.getLevelName( API.app.logger.level ) ) )
         API.app.logger.info( "Config file: {}".format( os.path.join( root_path, config_file ) ) )
         API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
+        sys.stderr = LoggerWriter( API.app.logger.warning )
         module = None
         sys.path.append( root_path )
         registerExtensions( module )
