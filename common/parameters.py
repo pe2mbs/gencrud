@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
+from marshmallow import fields
 import datetime
 
 
@@ -28,4 +28,23 @@ def getCurrentUser():
 def getCurrentUtcDateTime():
     return datetime.datetime.utcnow()
 
+class SerializationDictField( fields.Field ):
+    def __init__( self, default=fields.missing_, attribute=None, load_from=None, dump_to=None,
+                 error=None, validate=None, required=False, allow_none=None, load_only=False,
+                 dump_only=False, missing=fields.missing_, error_messages=None, dictionary = None, **metadata ):
+        self.VALUES = dictionary
+        fields.Field.__init__( self, default, attribute, load_from, dump_to,
+                                    error, validate, required, allow_none, load_only,
+                                    dump_only, missing, error_messages, **metadata )
+        return
+
+    def _serialize( self, value, attr, obj ):
+        if value is None:
+            return value
+        else:
+            if isinstance( value, ( bool, int ) ):
+                return self.VALUES[ value ]
+
+            else:
+                return value
 

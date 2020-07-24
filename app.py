@@ -54,7 +54,8 @@ class LoggerWriter:
         # if statement reduces the amount of newlines that are
         # printed to the logger
         if message != '\n':
-            self.function( message.replace( '\n', '\\n' ) )
+            # self.function( message.replace( '\n', '\\n' ) )
+            pass
 
         return
 
