@@ -34,9 +34,10 @@ try:
     from webapp2.app import createApp
     import webapp2.api as API
     FLASK_OPTION = os.environ.get( 'FLASK_OPTION', None )
+    SERVICE = os.environ.get( 'SERVICE', None )
     saved_out = sys.stdout
     saved_err = sys.stderr
-    if FLASK_OPTION is not None and FLASK_OPTION == 'service':
+    if ( FLASK_OPTION is not None and FLASK_OPTION == 'service' ) or SERVICE is not None:
         # For when flask is running from a service we need to point
         # STDERR and STDOUT to the NULL device.
         sys.stdout = open( os.devnull, 'w' )
