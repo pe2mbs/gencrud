@@ -3,18 +3,21 @@ import click
 import yaml
 from yamlinclude import YamlIncludeConstructor
 import json
-import csv
 from sqlalchemy.engine.reflection import Inspector
 import sqlalchemy.orm
 import webapp2.api as API
 from sqlalchemy.inspection import inspect
 from flask.cli import with_appcontext
 from flask.cli import AppGroup
+from webapp2.commands.exporter import dbExporters
+from webapp2.commands.inporter import dbInporters
 from webapp2.commands.schema import ( listSchemas,
                                      getCurrentVersion,
                                      getCurrentSchema,
-                                     copySchema,
+                                     copySchema, copySchema2,
                                      listTables )
+from webapp2.common.util import CommandBanner
+
 
 YamlIncludeConstructor.add_to_loader_class( loader_class= yaml.FullLoader, base_dir = '.' )
 
@@ -96,211 +99,101 @@ def restore( _list, name, schema ):
     return
 
 
-EXPORT_HELP = """Export the database to a YAML, JSON, SQL or CSV file.
+EXPORT_HELP = """Export the database to a {} file.
 
-    dba export [ --fmt <type> ] [ --table <table-name> ] <filename> 
+    dba export [ --fmt <type> ] [ --table <table-name> ] <filename>
 
 
 <filename>: The filename with or without the extension to be used to write the database information to.
-"""
+""".format( dbExporters.keysToString() )
 
 
-@dba.command( 'export', short_help = 'Export the database to a YAML, JSON, SQL or CSV file.',
+@dba.command( 'export', short_help = 'Export the database to a {} file.'.format( dbExporters.keysToString() ),
               help = EXPORT_HELP )
 @click.option( '--fmt',
                nargs = 1,
-               default = "yaml",
-               help = "Can be one of the following: YAML, JSON, SQL or CSV.",
-               type = click.Choice( [ 'yaml', 'json', 'sql', 'csv' ], case_sensitive = False ) )
+               default = "sql",
+               help = "Can be one of the following: {}.".format( dbExporters.keysToString() ),
+               type = click.Choice( dbExporters.keys(), case_sensitive = False ) )
 @click.option( '--table',
                nargs = 1,
                default = None,
                help = "The table name from the database." )
+@click.option( '--clear',
+               nargs = 0,
+               default = False,
+               help = "Clears the table before inserting (only for {}.)".format( dbExporters.hasClear2String() ) )
 @click.argument( 'filename' )
-def export( fmt, filename, table ):
-    if fmt == 'csv':
-        if filename.endswith( fmt ):
-            filename = filename.split( '.' )[ 0 ]
+def export( fmt, filename, table, clear ):
+    fmt = fmt.lower()
+    if not filename.endswith( fmt ):
+        filename += ".{}".format( fmt )
 
-        for tbl in listTables():
-            if table is not None and table != tbl:
-                continue
+    API.app.logger.info( "Output filename: {}".format( filename ) )
+    exporter = dbExporters[ fmt ]( filename )
+    for tbl in listTables():
+        exporter.open( filename )
+        API.app.logger.info( "TABLE: {}".format( tbl ) )
+        if table is not None and table != tbl:
+            API.app.logger.warning( "Incorrect table, looking for {}".format( table ) )
+            continue
 
-            model = API.db.get_model_by_tablename( tbl )
-            if model is None:
-                continue
+        model = API.db.get_model_by_tablename( tbl )
+        if model is None:
+            API.app.logger.warning( "Cannot detect MODEL of table {}".format( tbl ) )
+            continue
 
-            API.app.logger.info( "Table: {}".format( tbl ) )
-            records = API.db.session.query( model ).all()
-            if len( records ) > 0:
-                filename = "{}-{}.{}".format( filename, tbl, fmt )
-                API.app.logger.info( "Output filename: {}".format( filename ) )
-                with open( filename, 'w' ) as stream:
-                    csvwriter = csv.writer( stream, delimiter = ';', quotechar = '"' )
+        API.app.logger.info( "Table: {}".format( tbl ) )
+        exporter.writeTable( tbl, API.db.session.query( model ).all(), clear )
 
-                    csvwriter.writerow( records[ 0 ].toDict().keys() )
-                    for record in records:
-                        csvwriter.writerow( record.toDict().values() )
-
-                API.app.logger.info( "No of records: {}".format( len( records ) ) )
-
-            else:
-                API.app.logger.warning( "Nothing to export" )
-
-    else:
-        if not filename.endswith( fmt ):
-            filename += ".{}".format( fmt )
-
-        API.app.logger.info( "Output filename: {}".format( filename ) )
-        with open( filename, 'w' ) as stream:
-            from sqlalchemy import Table
-            # create dict per record ans save:
-            blob = []
-            for tbl in listTables():
-                if table is not None and table != tbl:
-                    continue
-
-                model = API.db.get_model_by_tablename( tbl )
-                if model is None:
-                    continue
-
-                API.app.logger.info( "Table: {}".format( tbl ) )
-                records = API.db.session.query( model ).all()
-                if 'sql' == fmt:
-                    stream.write( "-- TABLE {}\n".format( tbl ) )
-                    for record in records:
-                        stream.write( "{}\n".format( record.toSql() ) )
-
-                    API.app.logger.info( "No of records: {}".format( len( records ) ) )
-
-                else:
-                    blob.append( { 'table': tbl,
-                                   'records': [ rec.toDict() for rec in records ] } )
-
-                    API.app.logger.info( "No of records: {}".format( len( records ) ) )
-
-            if fmt == 'yaml':
-                yaml.dump( blob, stream, default_style = False, default_flow_style = False )
-
-            elif fmt == 'json':
-                json.dump( blob, stream, indent = 4 )
-
+    exporter.close()
     return
 
 
-INPORT_HELP = """Import the database from a YAML, JSON, SQL or CSV file.
+INPORT_HELP = """Import the database from a {} file.
 
-    dba export [ --fmt <type> ] [ --table <table-name> ] <filename> 
+    dba inport [ --fmt <type> ] [ --table <table-name> ] <filename>
 
 
 <filename>: The filename with or without the extension to be used to write the database information to.
-"""
+""".format( dbInporters.keysToString() )
 
 
 @dba.command( 'inport',
-              short_help = 'Inport the database from a YAML, JSON, SQL or CSV file.',
+              short_help = 'Inport the database from a {} file.'.format( dbInporters.keysToString() ),
               help = INPORT_HELP )
 @click.option( '--fmt',
                nargs = 1,
                default = "yaml",
-               help = "Can be one of the following: YAML, JSON, SQL or CSV.",
-               type = click.Choice( [ 'yaml', 'json', 'sql', 'csv' ], case_sensitive = False ) )
+               help = "Can be one of the following: {}.".format( dbInporters.keysToString() ),
+               type = click.Choice( dbInporters.keys(), case_sensitive = False ) )
 @click.option( '--table',
                nargs = 1,
                default = None,
                help = "The table name from the database to import from the data file." )
+@click.option( '--clear',
+               nargs = 0,
+               default = False,
+               help = "Clears the table before inserting (Only for {})".format( dbInporters.hasClear2String() ) )
 @click.argument( 'filename' )
-def inport( fmt, filename, table ):
-    if fmt in ( 'sql', 'yaml', 'json' ):
-        if not filename.endswith( fmt ):
-            filename += ".{}".format( fmt )
+def inport( fmt, filename, table, clear ):
+    fmt = fmt.lower()
+    importer = dbInporters[ fmt ]( filename )
+    importer.open( filename )
+    for tbl in listTables():
+        if table is not None and table != tbl:
+            API.app.logger.warning( "Incorrect table, looking for {}".format( table ) )
+            continue
 
-        if not os.path.isfile( filename ):
-            API.app.logger.error( "Filename {} doesn't exists".format( filename ) )
-            return
+        model = API.db.get_model_by_tablename( tbl )
+        if model is None:
+            API.app.logger.warning( "Cannot detect MODEL of table {}".format( tbl ) )
+            continue
 
-    if fmt == 'csv':
-        if filename.endswith( fmt ):
-            filename = filename.split( '.' )[ 0 ]
+        API.app.logger.info( "Table: {}".format( tbl ) )
+        importer.loadTable( table, model, clear )
 
-        if table is None and '-' in filename:
-            name, table = filename.split( '-', 1 )
-
-        else:
-            name = filename
-
-        for tbl in listTables():
-            if table is not None and table != tbl:
-                continue
-
-            model = API.db.get_model_by_tablename( tbl )
-            if model is None:
-                continue
-
-            filename = "{}-{}.{}".format( name, tbl, fmt )
-            API.app.logger.info( "Input filename: {}".format( filename ) )
-            if not os.path.isfile( filename ):
-                API.app.logger.error( "Filename must be formatted as input filename {} doesn't exists".format( filename ) )
-                continue
-
-            with open( filename, 'r' ) as stream:
-                csvreader = csv.reader( stream, delimiter = ';', quotechar = '"', quoting = csv.QUOTE_MINIMAL )
-                it = iter( csvreader )
-                header = it.__next__()
-                for row in it:
-                    obj = model()
-                    for field, value in zip( header, row ):
-                        setattr( obj, field, value )
-
-                    API.db.session.add( obj )
-
-                API.db.session.commit()
-
-    else:
-        with open( filename, 'r' ) as stream:
-            blob = None
-            if fmt == 'json':
-                blob = json.load( stream )
-
-            elif fmt == 'yaml':
-                blob = yaml.load( stream )
-
-            else: # sql
-                connection = API.db.session.connection()
-                for line in stream.readlines():
-                    if line.startswith( '--' ):
-                        continue
-
-                    try:
-                        line = line.replace( '\n', '' )
-                        API.app.logger.info( line )
-                        result = connection.execute( line )
-                        if result.rowcount != 1:
-                            raise Exception( "row not inserted" )
-
-
-                    except Exception as exc:
-                        API.app.logger.error( exc )
-
-                API.db.session.commit()
-
-            if blob:
-                # Handle the yaml/json data
-                for table_data in blob:
-                    records = table_data[ 'records' ]
-                    if len( records ) >  0:
-                        model = API.db.get_model_by_tablename( table_data[ 'table' ] )
-                        if model is None:
-                            continue
-
-                        for record in records:
-                            obj = model()
-                            for field, value in record.items():
-                                setattr( obj, field, value )
-
-                            API.db.session.add( obj )
-                            API.db.session.commit()
-
+    importer.close()
     return
 
 
@@ -345,7 +238,7 @@ def getReference( settings, table, field, value ):
 
 LOADER_HELP = """Load the database from a YAML or JSON file.
 
-    dba loader [ --fmt <type> ] [ --table <table-name> ] <filename> 
+    dba loader [ --fmt <type> ] [ --table <table-name> ] <filename>
 
 
 <filename>: The filename with or without the extension to be used to write the database information to.
@@ -466,12 +359,10 @@ def updateRecord( settings, model, table, table_data ):
 
 SAVER_HELP = """Save the database to a YAML or JSON file.
 
-    dba saver [ --fmt <type> ] [ --settings <filename-settings.yaml> ] <filename> 
-
+    dba saver [ --fmt <type> ] [ --settings <filename-settings.yaml> ] <filename>
 
 <filename>: The filename with or without the extension to be used to write the database information to.
 """
-
 
 @dba.command( 'saver',
               short_help = 'Save the database toa YAML or JSON file.',
@@ -480,8 +371,7 @@ SAVER_HELP = """Save the database to a YAML or JSON file.
                nargs = 1,
                default = "yaml",
                help = "Can be one of the following: YAML or JSON.",
-               type = click.Choice( [ 'yaml', 'json' ],
-                                    case_sensitive = False ) )
+               type = click.Choice( [ 'yaml', 'json' ], case_sensitive = False ) )
 @click.option( '--settings',
                nargs = 1,
                default = 'settings-dba-loader.yaml',
@@ -569,5 +459,64 @@ def saver( fmt, settings, filename, tables ):
 
         elif fmt == 'json':
             json.dump( data, stream )
+
+    return
+
+
+COPY_HELP = """Copy schema to another.
+
+"""
+
+@dba.command( 'copy',
+              short_help = 'Copy from another schema.',
+              help = COPY_HELP )
+@click.option( '--clear/--noclear',
+               default = False,
+               help = "Clears the table before copying." )
+@click.option( '--force/--noforce',
+               default = False,
+               help = "Copies even when version differ." )
+@click.argument( 'schema', nargs = -1)
+def copy( schema, clear, force ):
+    destSchema = getCurrentSchema()
+    oVersion = getCurrentVersion()
+    schemas = listSchemas( all = True, exclude = [ 'information_schema', 'mysql', 'performance_schema' ] )
+    if len( schema ) > 0:
+        schema = schema[ 0 ]
+
+    else:
+        schema = ""
+
+    CommandBanner( "DBA COPY TABLE.", "(C) Copyright 2020 - Marc Bertens, all rights reserved." )
+    if schema not in schemas:
+        print( "Invalid schema, available" )
+        for s in schemas:
+            try:
+                print( "* {}".format( s ) )
+                print( "  Version: {}\n".format( getCurrentVersion( s ) ) )
+
+            except:
+                pass
+
+    else:
+        if destSchema == schema:
+            print( "Schemas are the same cannot copy." )
+            return
+
+        # Check schema version
+        if not force and getCurrentVersion() != getCurrentVersion( schema ):
+            print( "Schema version differ" )
+            return
+
+        print( "You are copying from schema {} to {}".format( schema, destSchema ) )
+        if input( "Is this correct (y/N): " ) not in ( 'Y', 'y' ):
+            return
+
+        API.app.logger.info( "Clear: {}".format( clear ) )
+        resultTable, total = copySchema2( destSchema, schema, clear )
+        for key, value in resultTable.items():
+            print( "{:40}: {}".format( key, value ) )
+
+        print( "{:40}: {}".format( "total", total ) )
 
     return

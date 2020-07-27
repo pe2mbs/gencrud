@@ -40,12 +40,12 @@ naming_convention = {
 }
 
 
-def get_model( self, name ):
-    return self.Model._decl_class_registry.get( name, None )
+def get_model( name ):
+    return db.Model._decl_class_registry.get( name, None )
 
 
-def get_model_by_tablename( self, tablename ):
-    for c in self.Model._decl_class_registry.values():
+def get_model_by_tablename( tablename ):
+    for c in db.Model._decl_class_registry.values():
         if hasattr( c, '__tablename__' ) and c.__tablename__ == tablename:
             return c
 

@@ -45,7 +45,13 @@ try:
 
     app = createApp( os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) ) )
 
+except SystemExit:
+    print( "SystemExit exception" )
+    print( traceback.format_exc(),file = sys.stderr )
+
 except Exception:
+    print( traceback.format_exc(), file = sys.stderr )
+
+finally:
     sys.stderr = saved_err
     sys.stdout = saved_out
-    print( traceback.format_exc(), file = sys.stderr )

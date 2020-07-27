@@ -173,13 +173,13 @@ class Config( BaseConfig ):
         :param c:
         :return:
         """
-        delta_keys = ( "PERMANENT_SESSION_LIFETIME", 
+        delta_keys = ( "PERMANENT_SESSION_LIFETIME",
                        "SEND_FILE_MAX_AGE_DEFAULT",
-                       "JWT_ACCESS_TOKEN_EXPIRES", 
+                       "JWT_ACCESS_TOKEN_EXPIRES",
                        "JWT_REFRESH_TOKEN_EXPIRES" )
 
         if len( taskSection ):
-            print( "taskSection", taskSection )
+            # print( "taskSection", taskSection )
 
             def resolveKeys( path, keys, value ):
                 for key, more in lookahead( keys ):
