@@ -52,16 +52,15 @@ export class Dialog${ obj.cls }Component extends BaseDialog
  % if field.ui is not None:
   % if field.ui.isPassword():
     public hide_${ field.name }: boolean  = true;
-  % elif field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-    % if field.ui.service is not None:
+  % elif field.ui is not None:
+    % if field.ui.hasService():
       public ${ field.ui.service.name }List: PytSelectList[];
     % elif field.ui.hasResolveList():
-      public ${ field.name }List = ${ field.ui.typescriptResolveList() }
+      public ${ field.name }List = ${ field.ui.typescriptResolveList().replace( ' ', '' ) }
     % endif
   % endif
  % endif
 % endfor
-
     constructor( dialogRef: MatDialogRef<Dialog${ obj.cls }Component>
                  , @Inject( MAT_DIALOG_DATA ) public data: any
                  , dataService: ${ obj.cls }DataService
@@ -81,10 +80,9 @@ ${ obj.externalService } )
 % endfor
         } );
 % for field in obj.table.columns:
-  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+  % if field.ui is not None and field.ui.hasService():
     % if field.ui.service is not None:
         this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( dataList => {
-            console.log( '${ field.ui.service.name }Service.getSelectList => ', dataList );
             this.${ field.ui.service.name }List = dataList;
         } );
     % endif
@@ -94,15 +92,16 @@ ${ obj.externalService } )
     }
 
 % for field in obj.table.columns:
+%  if field.frontend:
     public get ${ field.name }()
     {
         return ( this.formGroup.get( '${ field.name }' ) );
     }
 
+%  endif
 % endfor
     onSaveClick(): void
     {
-        console.log( 'Dialog${ obj.cls }Component.onSaveClick() => ', this.formGroup.value );
         if ( !this.isEditMode() )
         {
             this.dataService.addRecord( this.formGroup.value );

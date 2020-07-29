@@ -23,6 +23,7 @@ import yaml
 import logging
 import shutil
 import datetime
+import hashlib
 import gencrud.version
 from mako.template import Template
 from gencrud.configuraton import TemplateConfiguration
@@ -41,6 +42,7 @@ MENU_DISPLAY_NAME_V2    = 'caption'
 MENU_ICON_NAME_V2       = 'icon'
 
 MENU_INDEX              = 'index'
+MENU_ID                 = 'id'
 MENU_ROUTE              = 'route'
 LABEL_LIST_MODULES      = 'listModules = ['
 LABEL_MENU_ITEMS        = 'menuItems = ['
@@ -121,6 +123,9 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
     sectionLines.append( LABEL_END_LIST + '\n' )
     gencrud.util.utils.replaceInList( lines, rangePos, sectionLines )
 
+    def makeMenuId( menu,prefix ):
+        return hashlib.md5( (prefix + menu.caption).encode('ascii') ).hexdigest().upper()
+
     if API.config.version == 1:
         sectionLines = gencrud.util.utils.searchSection( lines,
                                                          rangePos,
@@ -137,7 +142,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
 
             raise
 
-        def processMenuStructure_V1( menu_items, menu ):
+        def processMenuStructure_V1( menu_items, menu, id_prefix = "" ):
             """This is needed for reverse calling
 
             :param menu_items:
@@ -153,11 +158,15 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
                         if MENU_CHILDEREN_LABEL not in newMenuItem:
                             newMenuItem[ MENU_CHILDEREN_LABEL ] = []
 
-                        processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                        processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ],
+                                                 menu.menu,
+                                                 newMenuItem[ MENU_ID ] + '_' )
+
                     else:
                         newMenuItem[ MENU_DISPLAY_NAME ]   = menu.caption
                         newMenuItem[ MENU_ICON_NAME ]      = menu.icon
                         newMenuItem[ MENU_INDEX ]          = menu.index
+                        newMenuItem[ MENU_ID ]             = makeMenuId( menu, id_prefix )
                         if menu.route is not None:
                             newMenuItem[ MENU_ROUTE ]      = menu.route
 
@@ -165,18 +174,23 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
                             if MENU_CHILDEREN_LABEL not in newMenuItem:
                                 newMenuItem[ MENU_CHILDEREN_LABEL ] = []
 
-                            processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                            processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ],
+                                                     menu.menu,
+                                                     newMenuItem[ MENU_ID ] + '_' )
 
             if not foundMenu:
                 newMenuItem = { MENU_DISPLAY_NAME:   menu.caption,
                                 MENU_ICON_NAME:      menu.icon,
+                                MENU_ID:             makeMenuId( menu, id_prefix ),
                                 MENU_INDEX:          menu.index }
                 if menu.route is not None:
                     newMenuItem[ MENU_ROUTE ] = menu.route
 
                 elif menu.menu is not None:
                     newMenuItem[ MENU_CHILDEREN_LABEL ] = []
-                    processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                    processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ],
+                                             menu.menu,
+                                             newMenuItem[ MENU_ID ] + '_' )
 
                 menu_items.insert( menu.index if menu.index >= 0 else ( len( menu_items ) + menu.index + 1 ),
                                    newMenuItem )
@@ -210,7 +224,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
         else:
             menuItems = []
 
-        def processMenuStructure_V2( items, menu ):
+        def processMenuStructure_V2( items, menu, id_prefix = '' ):
             foundMenu = False
             for menuItem in items:
                 if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.caption:
@@ -220,11 +234,14 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
                         if MENU_CHILDEREN_LABEL not in menuItem:
                             menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
 
-                        processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                        processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                                                 menu.menu,
+                                                 menuItem[ MENU_ID ] + '_' )
 
                     else:
                         menuItem[ MENU_DISPLAY_NAME_V2 ] = menu.caption
                         menuItem[ MENU_ICON_NAME_V2 ] = menu.icon
+                        menuItem[ MENU_ID ] = makeMenuId( menu, id_prefix )
                         if menu.route is not None:
                             menuItem[ MENU_ROUTE ] = menu.route
 
@@ -232,17 +249,22 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
                         #     if MENU_CHILDEREN_LABEL not in menuItem:
                         #         menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
                         #
-                        #     processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                        #     processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                        #                              menu.menu,
+                        #                              menuItem[ MENU_ID ] + '_' )
 
             if not foundMenu:
                 newMenuItem = { MENU_DISPLAY_NAME_V2: menu.caption,
+                                MENU_ID: makeMenuId( menu, id_prefix ),
                                 MENU_ICON_NAME_V2: menu.icon }
                 if menu.route is not None:
                     newMenuItem[ MENU_ROUTE ] = menu.route
 
                 elif menu.menu is not None:
                     newMenuItem[ MENU_CHILDEREN_LABEL ] = [ ]
-                    processMenuStructure_V2( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
+                    processMenuStructure_V2( newMenuItem[ MENU_CHILDEREN_LABEL ],
+                                             menu.menu,
+                                             newMenuItem[ MENU_ID ] + '_' )
 
                 if menu.hasBeforeAfter():
                     index = -1
@@ -259,7 +281,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):
                     items.insert( index, newMenuItem )
 
                 else:
-                    items.insert( menu.index if menu.index >= 0 else (len( menu_items ) + menu.index + 1), newMenuItem )
+                    items.insert( menu.index if menu.index >= 0 else (len( items ) + menu.index + 1), newMenuItem )
 
             return
 
@@ -328,24 +350,21 @@ def generatePython( config: TemplateConfiguration, templates: list ):
         for column in cfg.table.columns:
             if column.ui is not None:
                 if column.ui.hasResolveList():
-                    constants.append( '' )
-                    constants.append( '# field {}.{} constants'.format( cfg.table.name, column.name ) )
+                    constants.append( '# field {}.{} constants\n'.format( cfg.table.name, column.name ) )
                     for line in column.ui.createResolveConstants():
                         if line not in constants:
-                            constants.append( line )
+                            constants.append( line + '\n' )
 
-                    constants.append( '' )
+                    constants.append( '\n' )
 
         if len( constants ) > 0:
-            constants.insert( 0, '' )
-            constants.insert( 0, '# Generated by gencrud' )
+            constants.insert( 0, '# Generated by gencrud\n' )
             filename = os.path.join( modulePath, 'constant.py' )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( filename )
 
             with open( filename, 'w' ) as stream:
-                for line in constants:
-                    stream.write( "{}\r\n".format( line ) )
+                stream.writelines( constants )
 
         entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
         if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):

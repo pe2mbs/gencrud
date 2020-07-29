@@ -246,6 +246,10 @@ class TemplateColumn( TemplateBase ):
     def label( self ) -> str:
         return self.__config.get( C_LABEL, '' )
 
+    @property
+    def frontend( self ):
+        return self.__config.get( 'frontend', True )
+
     def isPrimaryKey( self ) -> bool:
         return 'PRIMARY KEY' in self.__attrs
 

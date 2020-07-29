@@ -26,30 +26,22 @@ import { ${ obj.cls }DataService } from './service'
 
 @Component({
     selector: 'app-${ obj.name }-delete-dialog',
-    templateUrl: './delete.dialog.html',
+    templateUrl: '../../common/delete.dialog.html',
     styleUrls: ['../../common/dialog.scss']
 })
 export class Delete${ obj.cls }Dialog extends BaseDialog
 {
-
+    title: string       = "${ obj.cls }";
     constructor( dialogRef: MatDialogRef<Delete${ obj.cls }Dialog>,
                  @Inject( MAT_DIALOG_DATA ) public data: any, 
                  dataService: ${ obj.cls }DataService )
     { 
         super( dialogRef, dataService )
-
         return;
     }
 
-    onCancelClick(): void 
+    onSaveClick(): void
     {
-        this.dialogRef.close();
-        return;
-    }
-
-    onSaveClick(): void 
-    {
-        console.log( "Delete${ obj.cls }Dialog.onSaveClick() ${ obj.table.primaryKey } => ", this.data.record.${ obj.table.primaryKey } );
         this.dataService.deleteRecord( this.data.record.${ obj.table.primaryKey } );
         return;
     }

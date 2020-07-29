@@ -19,12 +19,16 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 */
-import { NgModule, ModuleWithProviders } from '@angular/core';
+import { NgModule, ModuleWithProviders, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CustomMaterialModule } from './../../material.module';
-import { GenCrudModule } from './../../common/gencrud.module';
+import { CustomMaterialModule } from '../../material.module';
+import { GenCrudModule } from '../../common/gencrud.module';
+import { SpinnerService } from '../../common/spinner-service';
+import { CustomHttpInterceptor } from '../../common/http-interceptor';
+<%  componentList = []  %>
 % for action in obj.actions.unique:
 %  if action.position != 'none':
 %   if action.type == 'dialog':
@@ -33,36 +37,36 @@ import { Delete${ obj.cls }Dialog } from './delete.dialog';
 %    else:
 import { Dialog${ obj.cls }Component } from './dialog.component';
 %    endif
-%   elif action.isAngularRoute():
-import { ${ action.route.cls } } from '${ action.route.module }';
-%   else:
+%   elif action.type == 'screen' and "Screen${ obj.cls }Component" not in componentList:
 import { Screen${ obj.cls }Component } from './screen.component';
+<%  componentList.append( "Screen${ obj.cls }Component" )   %>
+%   elif action.type == 'screen' and action.route.cls not in componentList:
+%    if "Table" in action.route.cls:
+import { ${ action.route.cls } } from '../${ action.route.module }/table.component';
+%    else:
+import { ${ action.route.cls } } from '../${ action.route.module }/screen.component';
+%    endif
+<%  componentList.append( "${ action.route.cls }" )   %>
 %   endif
 %  endif
 % endfor
 import { ${ obj.cls }TableComponent } from './table.component';
 import { ${ obj.cls }DataService } from './service';
-% if obj.hasExtra():
-%  for inp in obj.extra.getTypeScriptInports( 'module' ):
-import { ${ inp.module } } from '${ inp.path }';
-%  endfor
-%  for inp in obj.extra.getTypeScriptComponents( 'module' ):
-import { ${ inp.component } } from '${ inp.path }';
-%  endfor
-% endif
+% for mod in obj.modules:
+import { ${ mod.cls } } from '${ mod.importPath }';
+% endfor
 
 
-% if obj.menu:
-/*
-*   This Route in injected into the app-routing.module. Instead of at least 4 components that are added
-*   to the app-routing.module.ts it injects it in the main route definition through is module.
-*/
 export const ${ obj.name }Route: Route = {
+% if obj.menu:
 %  if root.options.lazyLoading:
     path:           '',
 %  else:
     path:           '${ obj.menu.activateItem() }',
 %  endif
+% elif obj.route:
+    path:           '${ obj.route }',
+% endif
     data:
     {
         breadcrumb: '${ obj.title }',
@@ -97,7 +101,6 @@ export const ${ obj.name }Route: Route = {
 %  endfor
     ]
 }
-% endif
 /*
 *   This NgModule is injected in the app-module.ts. This deals with declaring, importing,
 *   creating entry point and providing the services for the ${ obj.name } screens and dialogs.
@@ -132,20 +135,25 @@ export const ${ obj.name }Route: Route = {
 % endif
     ],
     providers: [
-        ${ obj.cls }DataService
+        ${ obj.cls }DataService,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: CustomHttpInterceptor,
+            multi: true
+        },
+        SpinnerService
     ],
+    schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
     imports: [
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
         CustomMaterialModule,
         GenCrudModule,
-% if obj.hasExtra():
-%  for inp in obj.extra.getTypeScriptInports( 'module' ):
-        ${ inp.module },
-%  endfor
-% endif
-% if obj.menu:
+% for mod in obj.modules:
+        ${ mod.cls },
+% endfor
+% if obj.menu or obj.route:
         RouterModule.forChild( [ ${ obj.name }Route ] )
 % endif
     ],

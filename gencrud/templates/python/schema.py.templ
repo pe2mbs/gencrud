@@ -18,16 +18,11 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 #
-import webapp.api as API
-from ${ root.application }.${ obj.name }.model import ${ obj.cls }
+import webapp2.api as API
+from webapp2.common.parameters import SerializationDictField
 % if obj.table.Mixin.Schema.Available:
 from ${obj.table.Mixin.Schema.Module} import ${obj.table.Mixin.Schema.Class}
 % endif
-% for field in obj.table.columns:
- % if field.hasRelationship():
-from ${ root.application }.${ field.relationship.name }.schema import ${ field.relationship.name }Schema
- % endif
-% endfor
 
 
 class ${ obj.cls }Schema( API.mm.ModelSchema
@@ -42,17 +37,30 @@ class ${ obj.cls }Schema( API.mm.ModelSchema
         #model = ${ obj.cls }
         fields = [
 % for field in obj.table.columns:
- % if field.pType != '':
+ % if field.pType != '' and field.frontend:
             '${ field.name }',
  % endif
 % endfor
+% for field in obj.table.columns:
+%  if field.ui is not None:
+%   if field.hasForeignKey() and field.ui.hasService():
+            '${ field.name + '_FK' }',
+%   elif field.hasResolveList():
+            '${ field.name + '_LABEL' }',
+%   endif
+%  endif
+% endfor
         ]
 % for field in obj.table.columns:
- % if field.hasRelationship():
-        ${ field.relationship.fieldName }    = mm.Nested( ${ field.relationship.name }Schema )
- % endif
+%  if field.ui is not None:
+%   if field.hasForeignKey() and field.ui.hasService():
+    ${ '{:20}'.format( field.name + '_FK' ) }    = API.mm.Nested( '${ field.ui.service.baseClass }Schema' )
+%   elif field.hasResolveList():
+    ${ '{:20}'.format( field.name + '_LABEL' ) }    = SerializationDictField( attribute="${field.name}",
+                                                      dictionary = ${field.ui.resolveListPy } )
+%   endif
+%  endif
 % endfor
-
 
 ${ obj.name }Schema   = ${ obj.cls }Schema()
 ${ obj.name }sSchema  = ${ obj.cls }Schema( many = True )

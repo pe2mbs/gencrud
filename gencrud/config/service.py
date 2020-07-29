@@ -26,16 +26,16 @@ class TemplateService( TemplateBase ):
         TemplateBase.__init__( self, None )
         self.__config = cfg
         if C_NAME not in self.__config:
-            raise MissingAttribute( S_SERVICE, C_NAME )
+            raise MissingAttribute( C_SERVICE, C_NAME )
 
         if C_VALUE not in self.__config:
-            raise MissingAttribute( S_SERVICE, C_VALUE )
+            raise MissingAttribute( C_SERVICE, C_VALUE )
 
         if C_LABEL not in self.__config:
-            raise MissingAttribute( S_SERVICE, C_LABEL )
+            raise MissingAttribute( C_SERVICE, C_LABEL )
 
         if C_CLASS not in self.__config:
-            raise MissingAttribute( S_SERVICE, C_CLASS )
+            raise MissingAttribute( C_SERVICE, C_CLASS )
 
         return
 
@@ -50,6 +50,10 @@ class TemplateService( TemplateBase ):
     @property
     def label( self ):
         return self.__config.get( C_LABEL, None )
+
+    @property
+    def baseClass( self ):
+        return self.__config.get( C_CLASS,None )
 
     @property
     def cls( self ):

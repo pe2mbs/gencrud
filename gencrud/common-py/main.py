@@ -17,7 +17,7 @@
 #   Boston, MA 02110-1301 USA
 #
 from flask import Blueprint, jsonify
-import webapp.app as API
+import webapp2.app as API
 
 __version__     = '1.1.0'
 __copyright__   = '(c) Copyright 2018-2020, all rights reserved, GPL2 only'

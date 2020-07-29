@@ -29,9 +29,6 @@ class RouteTemplate( TemplateBase ):
         if C_CLASS not in self.__config:
             raise MissingAttribute( C_TABLE, C_CLASS )
 
-        if C_MODULE not in self.__config:
-            raise MissingAttribute( C_TABLE, C_MODULE )
-
         return
 
     @property
@@ -48,7 +45,11 @@ class RouteTemplate( TemplateBase ):
 
     @property
     def module( self ):
-        return self.__config.get( C_MODULE, None )
+        return self.__config.get( C_MODULE, self.get_default( 'module' ) )
+
+    @property
+    def route( self ):
+        return self.__config.get( C_ROUTE, None )
 
     def params( self ):
         return self.__config.get( C_PARAMS, {} )

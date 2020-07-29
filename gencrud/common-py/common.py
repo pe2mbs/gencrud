@@ -18,7 +18,7 @@
 #
 import datetime
 import sqlalchemy.sql.sqltypes
-import webapp.api as API
+import webapp2.api as API
 
 
 def fieldConversion( record, key, value, default = None ):
@@ -34,11 +34,19 @@ def fieldConversion( record, key, value, default = None ):
                             sqlalchemy.sql.sqltypes.BigInteger,
                             sqlalchemy.sql.sqltypes.INT,
                             sqlalchemy.sql.sqltypes.BIGINT ) ):
-        if value is not None:
-            value = int( str( value ) )
+        try:
+            if value is not None:
+                value = int( str( value ) )
 
-        elif default is not None:
-            value = default
+            elif default is not None:
+                value = default
+
+        except:
+            if isinstance( default,int ):
+                value = default
+
+            else:
+                value = 0
 
     elif isinstance( _type, ( sqlalchemy.sql.sqltypes.REAL,
                               sqlalchemy.sql.sqltypes.Float,
@@ -46,23 +54,39 @@ def fieldConversion( record, key, value, default = None ):
                               sqlalchemy.sql.sqltypes.DECIMAL,
                               sqlalchemy.sql.sqltypes.Numeric,
                               sqlalchemy.sql.sqltypes.NUMERIC ) ):
-        if value is not None:
-            value = float( str( value ) )
+        try:
+            if value is not None:
+                value = float( str( value ) )
 
-        elif default is not None:
-            value = default
+            elif default is not None:
+                value = default
+
+        except:
+            if isinstance( default, float ):
+                value = default
+
+            else:
+                value = 0.0
 
     elif isinstance( _type, ( sqlalchemy.sql.sqltypes.DateTime,
                               sqlalchemy.sql.sqltypes.DATETIME,
                               sqlalchemy.sql.sqltypes.TIMESTAMP ) ):
         if value is not None:
-            value = value[0:22] + value[23:]
+            value = value[ 0:22 ] + value[ 23: ]
             API.app.logger.debug( 'datetime.datetime.value: {}'.format( value ) )
-            if value.endswith( 'Z' ):
-                value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S.00Z' )
+            if value.startswith( '0000-00-00' ):
+                value = datetime.datetime.utcnow()
+
+            elif not value[ 0 ].isdigit():
+                # 'Tue Aug 19 1975 23:15:30 GMT+0200 (CEST)'
+                value = value.split( '{' )[ 0 ].strip()
+                value = datetime.datetime.strptime( value,'%a %b %-d %Y %H:%M:%S %Z%z' )
+
+            elif value.endswith( 'Z' ):
+                value = datetime.datetime.strptime( value,'%Y-%m-%dT%H:%M:%S.00Z' )
 
             else:
-                value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S%z' )
+                value = datetime.datetime.strptime( value,'%Y-%m-%dT%H:%M:%S%z' )
 
         elif default is not None:
             value = default

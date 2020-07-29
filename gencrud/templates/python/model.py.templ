@@ -18,9 +18,9 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 #
-import webapp.api as API
+import webapp2.api as API
 from sqlalchemy import event
-import webapp.common
+import webapp2.common   as common
 % if obj.table.Mixin.Model.Available:
 from ${obj.table.Mixin.Model.Module} import ${obj.table.Mixin.Model.Class}
 % endif
@@ -39,12 +39,14 @@ class ${obj.cls}( API.db.Model
     """
     __tablename__        = '${ obj.table.name }'
 % for field in obj.table.columns:
-    ${field.name + ' ' * ( 20 - len(field.name) )} = ${ field.sqlAlchemyDef() }
- % if field.hasRelationship():
-    ${field.relationship.fieldName + ' ' * ( 20 - len(field.name) )} = db.relationship( "${ field.relationship.cls }",
-                                     backref = "${ field.relationship.tableName }",
-                                     lazy = ${ field.relationship.lazy } )
- % endif
+    ${ '{:20}'.format( field.name ) } = ${ field.sqlAlchemyDef() }
+% endfor
+
+% for field in obj.table.columns:
+%  if field.ui is not None and field.hasForeignKey() and field.ui.hasService():
+    ${ '{:20}'.format( field.name + '_FK' ) } = db.relationship( '${ field.ui.service.baseClass }', backref = '${ obj.table.name }', lazy = True )
+%  endif
+
 % endfor
 
 % for field in obj.table.columns:

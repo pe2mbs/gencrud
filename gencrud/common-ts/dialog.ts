@@ -21,9 +21,10 @@
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatDialogRef } from '@angular/material/dialog';
 import { CrudDataService } from './crud-dataservice';
+import { Subscribers } from './subscribers';
 
 
-export class BaseDialog
+export class BaseDialog extends Subscribers
 {
     protected debug: boolean = false;
     public dialogRef: MatDialogRef<any>;
@@ -34,6 +35,7 @@ export class BaseDialog
 
     constructor( dialogRef: MatDialogRef<any>, dataService: CrudDataService<any>, mode: string = 'edit' ) 
     {
+        super();
         this.dialogRef = dialogRef;
         this.dataService = dataService;
         this.mode = mode;

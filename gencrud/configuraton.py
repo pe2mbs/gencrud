@@ -76,6 +76,10 @@ class TemplateConfiguration( object ):
         return
 
     @property
+    def parent( self ):
+        return None
+
+    @property
     def python( self ) -> TemplateSourcePython:
         return self.__python
 

@@ -19,7 +19,8 @@
 #   gencrud: ${date} version ${version} by user ${username}
 #
 from flask import Blueprint, request, jsonify
-import webapp.api as API
+import webapp2.api as API
+from common.sql import getSqlStatement
 from ${ root.application }.${ obj.name }.model import ${ obj.cls }
 from ${ root.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
 from ${ root.application }.common import fieldConversion
@@ -31,7 +32,8 @@ db = API.db
 ${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
 
 
-def registerApi():
+# Args is for downwards compatibility !!!!!
+def registerApi( *args ):
     # Set the logger for the users module
     API.app.logger.info( 'Register ${ obj.cls } routes' )
     API.app.register_blueprint( ${ obj.name }Api )
@@ -47,7 +49,26 @@ def registerApi():
     API.app.logger.info( 'Registering ${ obj.cls } view mixin' )
     API.app.register_blueprint( ${obj.table.Mixin.View.Class}.blueprint )
 % endif
+    # TODO: Here we need to add dynamically the menus for this module
     return
+
+def removeGeneratedFieldsFromRecord( record ):
+    for field in (
+                    '${ obj.table.primaryKey }',
+% for field in obj.table.columns:
+%  if field.ui is not None:
+%   if field.hasForeignKey() and field.ui.hasService():
+                    '${ field.name }_FK',
+%   elif field.hasResolveList():
+                    '${ field.name }_LABEL',
+%   endif
+%  endif
+% endfor
+                                                ):
+        if field in record:
+            del record[ field ]
+
+    return record
 
 
 @${ obj.name }Api.route( '${ obj.uri }/list/<id>/<value>', methods=[ 'GET' ] )
@@ -76,11 +97,9 @@ def api${ obj.cls }New():
         return "Invalid request, missing ${ obj.cls }Record", 500
 
     API.app.logger.info( 'POST: {0}'.format( repr( data ) ) )
-    if '${ obj.table.primaryKey }' in data:
-        del data[ '${ obj.table.primaryKey }' ]
-
+    data = removeGeneratedFieldsFromRecord( data )
     record = ${ obj.cls }()
-    for key, value in request.json.items():
+    for key, value in data.items():
         if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
             setattr( record, key, fieldConversion( record, key, value ) )
 
@@ -132,6 +151,7 @@ def api${ obj.cls }Put():
 
     API.app.logger.info( 'PUT: {0}'.format( repr( data ) ) )
     record = ${obj.cls}.query.get( data[ '${ obj.table.primaryKey }' ] )
+    data = removeGeneratedFieldsFromRecord( data )
     for key, value in data.items():
         if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
             setattr( record, key, fieldConversion( record, key, value ) )
@@ -147,6 +167,7 @@ def api${ obj.cls }Patch():
     data    = request.json
     API.app.logger.info( 'PATCH: {0}'.format( repr( data ) ) )
     record = ${ obj.cls }.query.get( data[ '${ obj.table.primaryKey }' ] )
+    data = removeGeneratedFieldsFromRecord( data )
     for key, value in data.items():
         if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
             setattr( record, key, fieldConversion( record, key, value ) )
@@ -166,15 +187,17 @@ def api${ obj.cls }Select():
         value = data[ 'value' ]
         label = data[ 'label' ]
         if ',' in label:
-            labels = label.split( ',' )
+            label, *labels = label.split( ',' )
 
     else:
         value = request.args.get( 'value', '${ obj.table.primaryKey }' )    # primary key
+        # TODO: This should be the first TEXT field
         label = request.args.get( 'label', '${ obj.table.columns[ 1 ].name }' )  # first field name
 
     result = []
-    recordList = db.session.query( ${ obj.cls } ).order_by( ${ obj.cls }.${ obj.table.primaryKey } ).all()
-    for record in recordList:
+    q = db.session.query( ${ obj.cls } ).order_by( getattr( ${ obj.cls }, label ) )
+    API.app.logger.debug( "api${ obj.cls }SQL: {}".format( getSqlStatement( q ) ) )
+    for record in q.all():
         if len( labels ) > 0:
             fields = [ getattr( record, label ) for label in labels ]
             result.append( { 'value': getattr( record, value ),
@@ -204,4 +227,3 @@ def api${ obj.cls }Unlock():
     # TODO: This needs to be implemented for correct multiuser support
 
     return jsonify( { 'result': 'OK' } )
-

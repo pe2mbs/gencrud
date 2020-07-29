@@ -122,7 +122,7 @@ class TemplateAction( TemplateBase ):
             for key, value in params.items():
                 items[ key ] = value
 
-            return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
+            return '{{ queryParams: {} }}'.format( items )
 
         return '{ }'
 
@@ -183,14 +183,24 @@ class TemplateAction( TemplateBase ):
             BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
                             ({on})="router.navigate( ['/{route}'], {params} )" 
                             id="{objname}.{name}">{content}</a>'''
-            route = "/".join( [ self.parent.name, self.route.name ] )
+            if self.route.name.startswith( '/' ):
+                route = self.route.name[1:]
+
+            else:
+                route = "/".join( [ self.parent.name, self.route.name ] )
+
             params = self.route.routeParams()
 
         elif self.type == 'screen' and self.name in ( 'new', 'edit' ):
             BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
                             ({on})="router.navigate( ['/{route}'], {params} )" 
                             id="{objname}.{name}">{content}</a>'''
-            route = "/".join( [ self.parent.name, self.name ] )
+            if self.route.name.startswith( '/' ):
+                route = self.route.name[1:]
+
+            else:
+                route = "/".join( [ self.parent.name, self.name ] )
+
             params = '{ }'
 
         else:

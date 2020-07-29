@@ -19,7 +19,8 @@
 #
 */
 import { BehaviorSubject, Observable } from 'rxjs';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams, HttpHeaders } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
 
 
 export interface PytSelectList
@@ -82,6 +83,12 @@ export class CrudDataService<T>
             }
         );
         return;
+    }
+
+    public getSelectListSimple( value: string, label: string ): Observable<PytSelectList[]>
+    {
+        const params = new HttpParams().set('label', label ).set('value', value );
+        return this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } );
     }
 
     public getSelectList( value: string, label: string ): Observable<PytSelectList[]>
@@ -239,6 +246,7 @@ export class CrudDataService<T>
             {
                 console.log ( result );
             }
+            this.getAll( this._backend_filter );
         },
         (error: HttpErrorResponse) => {
             console.log( error.name + ' ' + error.message );
@@ -254,6 +262,7 @@ export class CrudDataService<T>
             {
                 console.log ( result );
             }
+            this.getAll( this._backend_filter );
         },
         (error: HttpErrorResponse) => {
             console.log ( error.name + ' ' + error.message );
@@ -280,5 +289,25 @@ export class CrudDataService<T>
     {
         console.log( 'genericGet', uri, params );
         return this.httpClient.get( this._uri + uri, params );
+    }
+
+    public genericPost( uri: string, body: any | null, options: any | null ): Observable<any>
+    {
+        console.log( 'genericPost', this._uri + uri, body, options );
+        return this.httpClient.post( this._uri + uri, body );
+    }
+
+    public downloadFile( filename: string, reqParams: any ): Observable<any>
+    {
+        let options = new HttpHeaders( { 'Content-Type': 'application/octet-stream' } );
+        return this.httpClient.get( this._uri + '/' + filename, { headers: options,
+                                                                  params: reqParams,
+                                                                  responseType: 'blob' } ).pipe (
+            tap (
+              // Log the result or error
+              data => console.log('You received data'),
+              error => console.log(error)
+            )
+        );
     }
 }

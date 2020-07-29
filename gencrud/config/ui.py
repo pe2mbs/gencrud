@@ -360,6 +360,44 @@ class TemplateUi( TemplateBase ):
 
         return json.dumps( result ).replace( "'", "\'" ).replace( '"', "'" )
 
+    @property
+    def resolveListPy( self ):
+        if C_RESOLVE_LIST_OLD in self.__cfg:
+            resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
+
+        else:
+            resolveList = self.__cfg.get( C_RESOLVE_LIST,[ ] )
+
+        '''
+        resolve-list:
+        -   label:          Disabled
+            value:          false
+        -   label:          Enabled
+            value:          true
+        OR
+        resolve-list:
+        -   label:          Disabled
+            value:          0
+        -   label:          Enabled      
+            value:          1
+        OR
+        resolve-list:
+            0:              Disabled     
+            1:              Disabled
+        '''
+        result = { }
+        for item in resolveList:
+            if isinstance( item,dict ):
+                result[ item[ C_VALUE ] ] = item[ C_LABEL ]
+
+            elif isinstance( item, ( str,int,float ) ):  # key
+                result[ item ] = resolveList[ item ]
+
+            else:
+                raise Exception( "Invalid format in resolve-list" )
+
+        return result
+
     def createResolveConstants( self ):
         def normalizeConstant( value ):
             last = ''
@@ -383,7 +421,7 @@ class TemplateUi( TemplateBase ):
 
         lines = []
         if self.hasResolveList():
-            constant_format = self.__cfg.get( C_CONSTANT_FORMAT, '"{0:50} = {1}".format( label, value )' )
+            constant_format = self.__cfg.get( C_CONSTANT_FORMAT, '"C_{0:50} = {1}".format( label.upper(), value )' )
             if C_RESOLVE_LIST_OLD in self.__cfg:
                 resolveList = self.__cfg.get( C_RESOLVE_LIST_OLD, {} )
 

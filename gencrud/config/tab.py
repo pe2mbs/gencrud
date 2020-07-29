@@ -86,9 +86,16 @@ class TemplateTabs( TemplateBase ):
         value = self.__comps.get( label, '' )
         return value
 
+    def variable2typescript( self, value ):
+        if isinstance( value, bool ):
+            value = str( value ).lower()
+
+        return value
+
     def params( self, label ):
         result = ''
         for key, value in self.__params[ label ].items():
+            value = self.variable2typescript( value )
             result += '[{}]="{}" '.format( key, value )
             if key == C_VALUE:
                 result += '*ngIf="{}" '.format( value )

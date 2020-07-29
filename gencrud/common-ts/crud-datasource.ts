@@ -31,17 +31,6 @@ import * as moment from 'moment';
 export class CrudDataSource<T> extends DataSource<T> 
 {
     protected _filterChange = new BehaviorSubject( '' );
-
-    public get filter(): string
-    {
-        return this._filterChange.value;
-    }
-
-    public set filter( filter: string ) 
-    {
-        this._filterChange.next( filter );
-    }
-
     public filteredData: T[] = [];
     public renderedData: T[] = [];
 
@@ -54,6 +43,21 @@ export class CrudDataSource<T> extends DataSource<T>
         super();
         // Reset to the first page when the user changes the filter.
         this._filterChange.subscribe(() => this._paginator.pageIndex = 0);
+    }
+
+    public get filterChange()
+    {
+        return ( this._filterChange );
+    }
+
+    public get filter(): string
+    {
+        return this._filterChange.value;
+    }
+
+    public set filter( filter: string )
+    {
+        this._filterChange.next( filter );
     }
 
     protected castRecord( record: any ) : T
@@ -129,22 +133,6 @@ export class CrudDataSource<T> extends DataSource<T>
         } );
     }
 
-    public resolveListItem( list: any, id: any ): string
-    {
-        let result: string;
-        // console.log( 'resolveListItem', list, id );
-        list.forEach( function ( value )
-        {
-            // console.log( value[ 'value' ], id );
-            if ( value[ 'value' ] === id )
-            {
-                result = value[ 'label' ];
-                return;
-            }
-        } );
-        return ( result );
-    }
-
     public reFormat( value: string, pipe: string, format: string ): string
     {
         if ( value === undefined || value === null || value === '' )
@@ -172,5 +160,4 @@ export class CrudDataSource<T> extends DataSource<T>
         }
         return ( value );
     }
-
 }

@@ -46,7 +46,7 @@ export class Subscribers {
         for ( let subscription of this.observableSubscriptions )
         {
             subscription.unsubscribe();
-            console.log( 'kill subscriptions' );
+            // console.log( 'kill subscriptions' );
         }
     }
 }

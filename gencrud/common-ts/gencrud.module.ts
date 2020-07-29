@@ -37,16 +37,6 @@ import { PytSliderToggleInputComponent } from './input-component/slidertoggle.co
 import { PytSliderInputComponent } from './input-component/slider.component';
 import { CustomMaterialModule } from '../material.module';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
-import { MatButtonModule, MatDialogModule, MatInputModule,
-         MatTableModule, MatFormFieldModule, MatIconModule,
-         MatListModule, MatPaginatorModule, MatSortModule,
-         MatCheckboxModule, MatRadioModule, MatSelectModule,
-         MatDatepickerModule, MatNativeDateModule, MatCardModule,
-         MatGridListModule, MatTooltipModule, MatSliderModule,
-         MatAutocompleteModule, MatSlideToggleModule,
-         MatTabsModule } from '@angular/material';
-
 
 @NgModule({
     declarations: [
@@ -74,30 +64,9 @@ import { MatButtonModule, MatDialogModule, MatInputModule,
     ],
     imports: [
         CommonModule,
-        MatButtonModule,
-        MatInputModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatListModule,
-        MatPaginatorModule,
-        MatSortModule,
-        MatSliderModule,
-        MatSlideToggleModule,
-        MatCheckboxModule,
-        MatRadioModule,
-        MatSelectModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatTableModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTooltipModule,
-        MatAutocompleteModule,
-        MatTabsModule,
+        CustomMaterialModule,
         FormsModule,
-        ReactiveFormsModule,
-        NgxMaterialTimepickerModule.forRoot(),
+        ReactiveFormsModule
     ],
     exports: [
         PytTextInputComponent,
