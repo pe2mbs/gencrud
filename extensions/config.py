@@ -102,7 +102,7 @@ class Config( BaseConfig ):
         """
 
         # Get the Flask environment variable, if not exist assume development.
-        env = os.environ.get( 'FLASK_ENV', 'DEVELOPMENT' )
+        env = os.environ.get( 'FLASK_ENV', 'DEVELOPMENT' ).upper()
         self[ 'ENVIRONMENT' ] = env.lower()
         try:
             with open( config_file ) as f:
