@@ -23,7 +23,11 @@ from mako.template import Template
 from werkzeug.routing import BaseConverter
 import webapp2.api as API
 from webapp2.extensions.database import db
-import version
+
+__version__         = '2.0.0'
+__copyright__       = '(c) Copyright 2018-2020 Marc Bertens-Nguyen, all rights reserved'
+__author__          = 'Marc Bertens-Nguyen'
+
 
 ERROR_HTML = """<html>
 <head>
@@ -84,8 +88,8 @@ def index():
             return renderErrorPage( "Angular application is missing",
                                     "The frontend application was not found at {}".format( angular_path ),
                                     """Correct the ANGULAR_PATH in the configuration
-                                     or perform the <pre># ng build</pre> in the frontend folder to 
-                                     (re-)create the Angular application.   
+                                     or perform the <pre># ng build</pre> in the frontend folder to
+                                     (re-)create the Angular application.
                                      """ )
         else:
             current_app.logger.info( "ANGULAR_PATH incorrect {}.".format( angular_path ) )
@@ -153,6 +157,6 @@ def getDatabaseConfig():
 
 @bluePrint.route( "/api/version", methods=[ 'GET' ] )
 def getVersionInfo():
-    return jsonify( version = version.version,
-                    copyright = version.copyright,
-                    author = version.author )
+    return jsonify( version = __version__,
+                    copyright = __copyright__,
+                    author = __author__ )

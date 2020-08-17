@@ -31,12 +31,12 @@ class StompCallback( object ):
         self.__cb = cb
         self.__filterArgs = kwargs
         return
-    
+
     def __call__( self, args, kwargs ):
         logger.debug( "StompCallback.__call__( {1}, {2} )".format( self.__cb, args, kwargs ) )
         if len( self.__filterArgs ) == 0:
             return self.__cb( *args, **kwargs )
-        
+
         logger.debug( "{0}( {1}, {2} ) => filterArgs {3}".format( self.__cb, args, kwargs, self.__filterArgs ) )
         headers = args[0]
         for key, value in self.__filterArgs.items():
@@ -45,19 +45,19 @@ class StompCallback( object ):
             if compare:
                 logger.debug( "call {0}( {1} )".format( self.__cb, args ) )
                 return self.__cb( *args, **kwargs )
-               
-        return None 
+
+        return None
 
     @property
     def subscription( self ):
         return self.__filterArgs
-    
+
 
 class StompCallbackList( object ):
     def __init__( self ):
-        self.__cbList = [] 
+        self.__cbList = []
         return
-    
+
     def append( self, cb, **kwargs ):
         self.__cbList.append( StompCallback( cb, **kwargs ) )
         return
@@ -65,7 +65,7 @@ class StompCallbackList( object ):
     def set( self, cb, **kwargs ):
         self.__cbList = [ StompCallback( cb, **kwargs ) ]
         return
-    
+
     def __call__( self, *args, **kwargs ):
         result = None
         args = list( args )
@@ -76,19 +76,19 @@ class StompCallbackList( object ):
                 if type( result ) in ( list, tuple ) and len( result ) > 0:
                     for idx, value in enumerate( result ):
                         args[ idx ] = value
-                        
+
                 else:
                     args[ 0 ] = result
-                               
+
         return result
 
     def getSubscriptions( self ):
         rList = []
         for item in self.__cbList:
             rList.append( item.subscription )
-            
-        return rList 
-    
+
+        return rList
+
 
 class FlaskStompListener( stomp.ConnectionListener ):
     def __init__( self ):
@@ -117,9 +117,9 @@ class FlaskStompListener( stomp.ConnectionListener ):
     """
     def on_receiver_loop_completed( self, headers, message ):
         """Calls the receiver loop completed callback
-        
-        :param headers: 
-        :param message: 
+
+        :param headers:
+        :param message:
         :rtype: None
         """
         logger.debug( 'on_receiver_loop_completed an error %s "%s"' % ( headers, message ) )
@@ -128,9 +128,9 @@ class FlaskStompListener( stomp.ConnectionListener ):
 
     def on_error( self, headers, message ):
         """Calls the error callback
-        
-        :param headers: 
-        :param message: 
+
+        :param headers:
+        :param message:
         :rtype: None
         """
         logger.debug( 'received an error %s "%s"' % ( headers, message ) )
@@ -139,7 +139,7 @@ class FlaskStompListener( stomp.ConnectionListener ):
 
     def on_connecting( self, host_and_port ):
         """Calls the connecting callback
-        
+
         :param (str,int) host_and_port:
         :rtype: None
         """
@@ -149,7 +149,7 @@ class FlaskStompListener( stomp.ConnectionListener ):
 
     def on_connected( self, headers, message ):
         """Calls the connected callback
-        
+
         :param dict headers:
         :param message:
         :rtype: None
@@ -160,7 +160,7 @@ class FlaskStompListener( stomp.ConnectionListener ):
 
     def on_disconnected( self ):
         """Calls the disconnect callback
-        
+
         :rtype: None
         """
         logger.info( 'on_disconnected' )
@@ -169,8 +169,8 @@ class FlaskStompListener( stomp.ConnectionListener ):
 
     def on_heartbeat( self ):
         """Calls the heartbeat callback
-        
-        :return: 
+
+        :return:
         """
         logger.debug( 'on_heartbeat' )
         self._onHeartbeat()
@@ -178,8 +178,8 @@ class FlaskStompListener( stomp.ConnectionListener ):
 
     def on_heartbeat_timeout( self ):
         """Calls the heartbeat timeout callback
-        
-        :return: 
+
+        :return:
         """
         logger.debug( 'on_heartbeat_timeout' )
         self._onHeartbeatTimeout()
@@ -189,8 +189,8 @@ class FlaskStompListener( stomp.ConnectionListener ):
         Message callbacks
     """
     def on_before_message( self, headers, message ):
-        """The callback for on before message 
-        
+        """The callback for on before message
+
         :param dict headers:
         :param message:
         """
@@ -198,33 +198,33 @@ class FlaskStompListener( stomp.ConnectionListener ):
         return self._onBeforeMessage( headers, message, **headers )
 
     def on_message( self, headers, message ):
-        """The callback for on message 
-        
+        """The callback for on message
+
         :param dict headers:
         :param message:
         """
         logger.debug( 'received a message %s "%s"' % ( headers, message ) )
         return self._onMessage( headers, message, **headers )
- 
+
 
     def on_receipt( self, headers, message ):
-        """The callback for on receipt 
-        
+        """The callback for on receipt
+
         :param dict headers:
         :param message:
         """
         logger.debug( 'received a message "%s"' % message )
         return self._onReceipt( headers, message, **headers )
-        
+
 
     def on_send( self, frame ):
-        """The callback for on send 
-        
+        """The callback for on send
+
         :param Frame frame:
         """
         logger.debug( 'on_send %s %s %s' % ( frame.cmd, frame.headers, frame.body ) )
         return self._onSend( frame, **frame.headers )
-        
+
 
 class FlaskStomp( object ):
     """Main Mqtt class."""
@@ -246,7 +246,7 @@ class FlaskStomp( object ):
 
     def init_app( self, app ):
         """Init the Flask-Stomp addon.
-        
+
         :param Flask app:
         """
         if not app.config.get( "STOMPMQ_ENABLED", False ):
@@ -258,10 +258,10 @@ class FlaskStomp( object ):
         version             = app.config.get( "STOMPMQ_VERSION", "1.1" )
         broker_hosts        = app.config.get( "STOMPMQ_BROKER_HOSTS", [] )
         if len( broker_hosts ) == 0:
-            broker_hosts.append( [ app.config.get( "STOMPMQ_BROKER_URL", "localhost" ), 
+            broker_hosts.append( [ app.config.get( "STOMPMQ_BROKER_URL", "localhost" ),
                                    app.config.get( "STOMPMQ_BROKER_PORT", 61613 ) ] )
         global logger
-        #logger = app.logger  
+        #logger = app.logger
         logger.info( 'MQ username     : %s' % ( self.__username ) )
         logger.info( 'MQ password     : %s' % ( self.__password ) )
         logger.info( 'MQ version      : %s' % ( version ) )
@@ -302,7 +302,7 @@ class FlaskStomp( object ):
         # type: () -> None
         if self.__connected:
             return
-        
+
         logger.debug( 'Connect to Broker' )
         self.__broker.start()
         self.__broker.connect( self.__username, self.__password, wait = True )
@@ -331,7 +331,7 @@ class FlaskStomp( object ):
 
         :param destination: a string specifying the subscription queue to
                             subscribe to.
-        :param queue_id: 
+        :param queue_id:
         :param ack:
         :param headers:
         :param keyword_headers:
@@ -346,13 +346,13 @@ class FlaskStomp( object ):
         """
         if not self.__connected:
             self._reconnect()
-            
+
         # try to subscribe
         self.__broker.subscribe( destination, id, ack, headers, **keyword_headers )
-        self.__onSubscribe( destination = destination, 
-                            id = id, 
-                            ack = ack, 
-                            header = headers, 
+        self.__onSubscribe( destination = destination,
+                            id = id,
+                            ack = ack,
+                            header = headers,
                             keyword_headers = keyword_headers )
         return
 
@@ -387,7 +387,6 @@ class FlaskStomp( object ):
 
     def publish( self, destination, payload, content_type=None,
                  headers=None, **keyword_headers ):
-        # type: ( str, bytes )
         """
         Send a message to the broker.
 
@@ -479,7 +478,7 @@ class FlaskStomp( object ):
             return handler
 
         return decorator
-    
+
     def onConnecting( self ):
         # type: () -> Callable
         """Decorator.
@@ -596,7 +595,7 @@ class FlaskStomp( object ):
         are not handled via the `on_message` decorator.
 
         :param queue:
-        
+
         **Example Usage:**::
 
             @stompConnector.on_message()
@@ -618,10 +617,10 @@ class FlaskStomp( object ):
 
         Decorator to handle all messages that have been subscribed and that
         are not handled via the `on_message` decorator.
-        
+
         :param queue:
-        
-        
+
+
         **Example Usage:**::
 
             @stompConnector.on_message()
@@ -643,7 +642,7 @@ class FlaskStomp( object ):
 
         Decorator to handle all messages that have been published by the
         client.
-        
+
         :param queue:
 
         **Example Usage:**::
