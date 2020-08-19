@@ -24,6 +24,7 @@ from werkzeug.routing import BaseConverter
 import webapp2.api as API
 from webapp2.extensions.database import db
 
+
 __version__         = '2.0.0'
 __copyright__       = '(c) Copyright 2018-2020 Marc Bertens-Nguyen, all rights reserved'
 __author__          = 'Marc Bertens-Nguyen'
