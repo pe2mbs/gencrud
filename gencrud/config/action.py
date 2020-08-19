@@ -34,6 +34,10 @@ class TemplateAction( TemplateBase ):
         return
 
     @property
+    def module( self ):
+        return self.parent.module
+
+    @property
     def name( self ):
         result = self.__cfg.get( C_NAME, None )
         if result is None:
@@ -67,7 +71,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def label( self ):
-        return self.__cfg.get( C_LABEL, '' )
+        return self.__cfg.get( C_LABEL, "{}{}".format( self.name[0].upper(), self.name[1:].lower() ) )
 
     @property
     def icon( self ):

@@ -24,6 +24,7 @@ from gencrud.config.extra import TemplateExtra
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import MissingAttribute
+from gencrud.config.mixin import TemplateMixin
 import posixpath
 
 
@@ -87,6 +88,7 @@ class TemplateObject( TemplateBase ):
         self.__actions      = TemplateActions( self, self.name, self.__config.get( C_ACTIONS, [] ) )
         self.__table        = TemplateTable( self, **self.__config.get( C_TABLE, {} ) )
         self.__extra        = TemplateExtra( self, **self.__config.get( C_EXTRA, {} ) )
+        self.__mixin        = TemplateMixin( self, **self.__config.get( C_MIXIN, {} ) )
         return
 
     #
@@ -113,6 +115,10 @@ class TemplateObject( TemplateBase ):
         return self.__config.get( C_CLASS, '' )
 
     @property
+    def Mixin( self ):
+        return self.__mixin
+
+    @property
     def uri( self ) -> str:
         return self.__config.get( C_URI, '' )
 
@@ -120,11 +126,15 @@ class TemplateObject( TemplateBase ):
         return self.__menu is not None
 
     def hasRoute( self ):
-        return self.route is not None
+        return self.__menu is None
 
     @property
     def route( self ) -> str:
-        return self.__config.get( C_ROUTE, None )
+        route = self.__config.get( C_ROUTE, self.__config.get( C_NAME, '' ) )
+        if route.startswith( '/' ):
+            return route[ 1 : ]
+
+        return route
 
     @property
     def actions( self ) -> TemplateActions:

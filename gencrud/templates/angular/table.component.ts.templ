@@ -24,7 +24,11 @@ import { Router, ActivatedRoute } from  '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { SpinnerService } from '../../common/spinner-service';
-import { TableBaseComponent } from '../../common/crud-table-component'
+% if obj.Mixin.Angular.hasTableComponent():
+import { ${obj.Mixin.Angular.TableComponent.cls} } from '${obj.Mixin.Angular.TableComponent.filename}';
+% else:
+import { TableBaseComponent } from '../../common/crud-table-component';
+% endif
 import { ${ obj.cls }Record } from './model';
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
 import { Dialog${ obj.cls }Component } from './dialog.component';
@@ -46,9 +50,13 @@ import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
 @Component({
     selector: 'app-${ obj.name }-table',
     templateUrl: './table.component.html',
-    styleUrls: ['./table.component.scss']
+    styleUrls: [ './table.component.scss' ]
 })
+% if obj.Mixin.Angular.hasTableComponent():
+export class ${ obj.cls }TableComponent extends ${ obj.Mixin.Angular.TableComponent.cls } implements OnInit, OnDestroy
+% else:
 export class ${ obj.cls }TableComponent extends TableBaseComponent<${ obj.cls }Record> implements OnInit, OnDestroy
+% endif
 {
     displayedColumns = [
 % for field in obj.table.listViewColumns:

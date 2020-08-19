@@ -25,6 +25,7 @@ from gencrud.config.tab import TemplateTabs
 from gencrud.config.sort import SortInfo
 from gencrud.config.mixin import TemplateMixin
 import gencrud.util.utils as root
+from gencrud.util.exceptions import *
 from gencrud.constants import *
 from gencrud.util.exceptions import InvalidViewSize
 
@@ -63,7 +64,6 @@ class TemplateTable( TemplateBase ):
             else:
                 raise InvalidViewSize()
 
-        self.__mixin = TemplateMixin( table[ C_MIXIN ] if C_MIXIN in table else None )
         return
 
     @property
@@ -78,14 +78,16 @@ class TemplateTable( TemplateBase ):
         return self.object.config
 
     def hasTabs( self, tp = C_DIALOG ) -> bool:
+        if C_TABS in self.__table:
+            return len( self.__table.get( C_TABS,[ ] ) ) > 0
+
         return len( self.__table.get( tp + C_TABS, [] ) ) > 0
 
     def tabs( self, tp = C_DIALOG ) -> TemplateTabs:
-        return TemplateTabs( self, **self.__table.get( tp + C_TABS, {} ) )
+        if C_TABS in self.__table:
+            return TemplateTabs( self,**self.__table.get( C_TABS,{ } ) )
 
-    @property
-    def Mixin( self ) -> TemplateMixin:
-        return self.__mixin
+        return TemplateTabs( self, **self.__table.get( tp + C_TABS, {} ) )
 
     def sortedInfo( self ) -> str:
         if self.__viewSort is not None:

@@ -85,15 +85,31 @@ export class CrudDataService<T>
         return;
     }
 
-    public getSelectListSimple( value: string, label: string ): Observable<PytSelectList[]>
+    public getSelectListSimple( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
     {
-        const params = new HttpParams().set('label', label ).set('value', value );
+        const params = new HttpParams().set('label', label ).set('value', value )
+        if ( initial != null )
+        {
+            params.set( 'initial', initial );
+        }
+        if ( final != null )
+        {
+            params.set( 'final', final );
+        }
         return this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } );
     }
 
-    public getSelectList( value: string, label: string ): Observable<PytSelectList[]>
+    public getSelectList( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
     {
         const params = new HttpParams().set('label', label ).set('value', value );
+        if ( initial != null )
+        {
+            params.set( 'initial', initial );
+        }
+        if ( final != null )
+        {
+            params.set( 'final', final );
+        }
         return ( Observable.create( observer => {
             this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
             .subscribe( ( data ) => {
@@ -111,9 +127,17 @@ export class CrudDataService<T>
         } ) );
     }
 
-    public getSelectionList( value: string, label: string ): Observable<Array<string>>
+    public getSelectionList( value: string, label: string, initial: any = null, final: any = null ): Observable<Array<string>>
     {
         const params = new HttpParams().set('label', label ).set('value', value );
+        if ( initial != null )
+        {
+            params.set( 'initial', initial );
+        }
+        if ( final != null )
+        {
+            params.set( 'final', final );
+        }
         return ( Observable.create( observer => {
             this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
             .subscribe( ( data ) => {

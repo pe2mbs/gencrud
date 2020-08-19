@@ -376,25 +376,26 @@ class TemplateUi( TemplateBase ):
             value:          true
         OR
         resolve-list:
-        -   label:          Disabled
-            value:          0
-        -   label:          Enabled      
-            value:          1
-        OR
-        resolve-list:
             0:              Disabled     
             1:              Disabled
         '''
         result = { }
-        for item in resolveList:
-            if isinstance( item,dict ):
-                result[ item[ C_VALUE ] ] = item[ C_LABEL ]
+        if isinstance( resolveList, ( list, tuple ) ):
+            for item in resolveList:
+                if isinstance( item,dict ):
+                    result[ item[ C_VALUE ] ] = item[ C_LABEL ]
 
-            elif isinstance( item, ( str,int,float ) ):  # key
-                result[ item ] = resolveList[ item ]
+                elif isinstance( item, ( str,int,float ) ):  # key
+                    result[ item ] = resolveList[ item ]
 
-            else:
-                raise Exception( "Invalid format in resolve-list" )
+                else:
+                    raise Exception( "Invalid format in resolve-list" )
+
+        elif isinstance( resolveList, dict ):
+            return resolveList
+
+        else:
+            raise Exception( "Invalid resolve-list, needs to be a dictionary or a list with value/label attributes" )
 
         return result
 
@@ -421,7 +422,7 @@ class TemplateUi( TemplateBase ):
 
         lines = []
         if self.hasResolveList():
-            constant_format = self.__cfg.get( C_CONSTANT_FORMAT, '"C_{0:50} = {1}".format( label.upper(), value )' )
+            constant_format = self.__cfg.get( C_CONSTANT_FORMAT, '"C_{field}_{label:50} = {value}".format( label = label.upper(), value = value, field = field.upper() )' )
             if C_RESOLVE_LIST_OLD in self.__cfg:
                 resolveList = self.__cfg.get( C_RESOLVE_LIST_OLD, {} )
 

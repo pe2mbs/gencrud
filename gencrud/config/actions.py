@@ -190,5 +190,9 @@ class TemplateActions( TemplateBase ):
 
         return False
 
+    @property
+    def module( self ):
+        return self.parent.module
+
     def __repr__( self ):
         return "<TemplateActions {}>".format( ", ".join( action.name for action in self.__actions ) )

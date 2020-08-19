@@ -95,7 +95,7 @@ class TemplateColumn( TemplateBase ):
         self.__dbField  = self.__field = tokens[ 0 ]
         self.__sqlType  = tokens[ 1 ]
         if self.__sqlType not in self.TS_TYPES_FROM_SQL:
-            raise InvalidSetting( C_FIELD, self.__tableName, self.__field )
+            raise InvalidSetting( C_FIELD, self.__tableName, self.__field, expected = self.TS_TYPES_FROM_SQL )
 
         offset = 2
         if offset < len( tokens ) and tokens[ offset ] == '(':
@@ -204,6 +204,9 @@ class TemplateColumn( TemplateBase ):
 
     def hasService( self ) -> bool:
         return self.__ui is not None and self.__ui.hasService()
+
+    def __repr__(self):
+        return "<TemplateColumn name='{}' label='{}'".format( self.name, self.label )
 
     @property
     def tableName( self ) -> str:

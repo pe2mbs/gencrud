@@ -26,14 +26,33 @@ class ModuleExistsAlready( Exception ):
 
 
 class InvalidSetting( Exception ):
-    def __init__( self, prop, entity, name ):
+    def __init__( self, prop, entity, name, expected = None ):
         self.__property = prop
         self.__entity   = entity
         self.__name     = name
-        super( InvalidSetting, self ).__init__( '{prop} in {entity} with name {name} has an invalid value.'.format(
-            prop = prop,
-            entity = entity,
-            name = name ) )
+        TEXT = '{prop} in {entity} with name {name} has an invalid value.'
+        if isinstance( expected, str ):
+            TEXT += '\nExpected : {expected}'
+            self.__expected = expected
+
+        elif isinstance( expected, ( list, tuple ) ):
+            TEXT += '\nExpected one of {expected}'
+            self.__expected = ', '.join( expected[:-1] )
+            self.__expected += "  or {}".format( expected[ :-1 ] )
+
+        elif isinstance( expected, dict ):
+            TEXT += '\nExpected one of {expected}'
+            keys = list( expected.keys() )
+            self.__expected = ', '.join( keys[ : -1 ] )
+            self.__expected += "  or {}".format( keys[ -1 ] )
+
+        else:
+            self.__expected = None
+
+        super( InvalidSetting, self ).__init__( TEXT.format( prop = prop,
+                                                             entity = entity,
+                                                             name = name,
+                                                             expected = self.__expected ) )
         return
 
 

@@ -104,6 +104,10 @@ def doWork( inputFile ):
     with open( inputFile, 'r' ) as stream:
         config = TemplateConfiguration( **yaml.load( stream, Loader = IncludeLoader ) )
 
+    if config.nogen:
+        print( "This template is blocked for generation" )
+        return
+
     if C_VERSION in config:
         gencrud.util.utils.version = config[ C_VERSION ]
         if gencrud.util.utils.version != 1:

@@ -32,6 +32,7 @@ template_list   = [ 'templates/angular/*.templ',
                     'common-ts/input-component/*.ts',
                     'common-ts/*.ts',
                     'common-ts/*.scss',
+                    'common-ts/*.html',
                     'common-py/*.py',
                     'common-py/*.templ',
                     'screen.yaml' ]

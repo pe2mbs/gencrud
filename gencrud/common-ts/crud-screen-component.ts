@@ -13,6 +13,7 @@ export class ScreenBaseComponent<T> extends Subscribers
     public formGroup: FormGroup;
     public mode: string;
     public sub: any;
+    protected fixedValues: any = null;
     @Input( 'id' )      id: any;
     @Input( 'value' )   value: any;
     protected debug: boolean = false;
@@ -30,10 +31,54 @@ export class ScreenBaseComponent<T> extends Subscribers
         return;
     }
 
+    protected updateFixedValues( fixed_values: any = null ): void
+    {
+        if ( fixed_values != null )
+        {
+            this.fixedValues = fixed_values;
+        }
+        if ( this.fixedValues != null )
+        {
+            for ( let key in this.fixedValues )
+            {
+                if ( key.endsWith( '_ID' ) )
+                {
+                    let value: number = +this.fixedValues[ key ];
+                    let ctrl = this.formGroup.get( key );
+                    if ( ctrl != null )
+                    {
+                        ctrl.setValue( value );
+                        if ( !this.isEditMode() )
+                        {
+                            ctrl.disable( { onlySelf: true } );
+                        }
+                    }
+                }
+            }
+        }
+        return;
+    }
+
     public onSaveClick(): void
     {
         if ( !this.isEditMode() )
         {
+            if ( this.fixedValues != null )
+            {
+                for ( let key in this.fixedValues )
+                {
+                    if ( key.endsWith( '_ID' ) )
+                    {
+                        let value: number = +this.fixedValues[ key ];
+                        let ctrl = this.formGroup.get( key );
+                        if ( ctrl != null )
+                        {
+                            ctrl.enable( { onlySelf: true } );
+                            ctrl.setValue( value );
+                        }
+                    }
+                }
+            }
             this.dataService.addRecord( this.formGroup.value );
         }
         else

@@ -69,3 +69,56 @@ class TemplateService( TemplateBase ):
             return self.__config[ C_PATH ]
 
         return '../{}/service'.format( self.__config[ C_NAME ] )
+
+    def hasInitial( self ):
+        return 'initial' in self.__config
+
+    @property
+    def initial( self ):
+        return dict2typeScript( self.__config[ 'initial' ] )
+
+    def hasFinal( self ):
+        return 'final' in self.__config
+
+    @property
+    def final( self ):
+        return dict2typeScript( self.__config[ 'final' ] )
+
+
+def list2typeScript( array ):
+    result = []
+    for item in array:
+        if isinstance( item, dict ):
+            result.append( dict2typeScript( item ) )
+
+        elif isinstance( item, ( list, tuple )  ):
+            result.append( list2typeScript( item ) )
+
+        elif isinstance( item, bool ):
+            result.append( '{}'.format( 'true' if item else 'false' ) )
+
+        else:
+            result.append( '{}'.format( item ) )
+
+    return ', '.join( result )
+
+
+def dict2typeScript( dictionary ):
+    result = []
+    for key, value in dictionary.items():
+        if isinstance( value, str ):
+            result.append( '{}: "{}"'.format( key, value ) )
+
+        elif isinstance( value, ( list, tuple )  ):
+            result.append( list2typeScript( value ) )
+
+        elif isinstance( value, dict ):
+            result.append( dict2typeScript( value ) )
+
+        elif isinstance( value, bool ):
+            result.append( '{}: {}'.format( key, 'true' if value else 'false' ) )
+
+        else:
+            result.append( '{}: {}'.format( key,value ) )
+
+    return "{{ {} }}".format( ', '.join( result ) )

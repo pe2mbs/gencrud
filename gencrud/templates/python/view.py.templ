@@ -24,8 +24,8 @@ from common.sql import getSqlStatement
 from ${ root.application }.${ obj.name }.model import ${ obj.cls }
 from ${ root.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
 from ${ root.application }.common import fieldConversion
-% if obj.table.Mixin.View.Available:
-from ${obj.table.Mixin.View.Module} import ${obj.table.Mixin.View.Class}
+% if obj.Mixin.Python.hasView():
+from ${obj.Mixin.Python.View.filename} import ${obj.Mixin.Python.View.cls}
 % endif
 
 db = API.db
@@ -45,9 +45,9 @@ def registerApi( *args ):
     except:
         pass
 
-% if obj.table.Mixin.View.Available:
+% if obj.Mixin.Python.hasView():
     API.app.logger.info( 'Registering ${ obj.cls } view mixin' )
-    API.app.register_blueprint( ${obj.table.Mixin.View.Class}.blueprint )
+    API.app.register_blueprint( ${obj.Mixin.Python.View.cls}.blueprint )
 % endif
     # TODO: Here we need to add dynamically the menus for this module
     return
@@ -74,9 +74,7 @@ def removeGeneratedFieldsFromRecord( record ):
 @${ obj.name }Api.route( '${ obj.uri }/list/<id>/<value>', methods=[ 'GET' ] )
 def get${ obj.cls }ListFiltered( id, value ):
     filter = { id: value }
-    recordList = db.session.query( ${ obj.cls } ). \
-                 filter_by( **filter ).\
-                 ${ obj.orderBy() }.all()
+    recordList = db.session.query( ${ obj.cls } ).filter_by( **filter ).${ obj.orderBy() }.all()
     result = ${ obj.name }sSchema.jsonify( recordList )
     API.app.logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
     return result
@@ -100,8 +98,7 @@ def api${ obj.cls }New():
     data = removeGeneratedFieldsFromRecord( data )
     record = ${ obj.cls }()
     for key, value in data.items():
-        if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
-            setattr( record, key, fieldConversion( record, key, value ) )
+        setattr( record, key, fieldConversion( record, key, value ) )
 
     API.db.session.add( record )
     API.db.session.commit()
@@ -138,7 +135,7 @@ def api${ obj.cls }Delete( id ):
     record = ${ obj.cls }.query.get( int( id ) )
     API.db.session.delete( record )
     API.db.session.commit()
-    result = ${ obj.name }Schema.jsonify( record )
+    result = jsonify( ok = True )
     API.app.logger.debug( 'get${ obj.cls }Delete() => {0}'.format( result ) )
     return result
 
@@ -189,10 +186,15 @@ def api${ obj.cls }Select():
         if ',' in label:
             label, *labels = label.split( ',' )
 
+        initialItem = data.get( 'initialItem', None )
+        finalItem   = data.get( 'finalItem', None )
+
     else:
-        value = request.args.get( 'value', '${ obj.table.primaryKey }' )    # primary key
+        value       = request.args.get( 'value', '${ obj.table.primaryKey }' )    # primary key
         # TODO: This should be the first TEXT field
-        label = request.args.get( 'label', '${ obj.table.columns[ 1 ].name }' )  # first field name
+        label       = request.args.get( 'label', '${ obj.table.columns[ 1 ].name }' )  # first field name
+        initialItem = None
+        finalItem   = None
 
     result = []
     q = db.session.query( ${ obj.cls } ).order_by( getattr( ${ obj.cls }, label ) )
@@ -206,6 +208,12 @@ def api${ obj.cls }Select():
         else:
             result.append( { 'value': getattr( record, value ),
                              'label': getattr( record, label ) } )
+
+    if initialItem is not None:
+        result.insert( 0, initialItem )
+
+    if finalItem is not None:
+        result.append( finalItem )
 
     API.app.logger.debug( 'api${ obj.cls }Select => {0}'.format( result ) )
     return jsonify( result )

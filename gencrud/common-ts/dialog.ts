@@ -31,14 +31,16 @@ export class BaseDialog extends Subscribers
     public dataService: CrudDataService<any>;
     public formControl: FormControl;
     public formGroup: FormGroup;
+    protected fixedValues: any = null;
     public mode: string;
 
-    constructor( dialogRef: MatDialogRef<any>, dataService: CrudDataService<any>, mode: string = 'edit' ) 
+    constructor( dialogRef: MatDialogRef<any>, dataService: CrudDataService<any>, mode: string = 'edit', fixed_values: any = null )
     {
         super();
         this.dialogRef = dialogRef;
         this.dataService = dataService;
         this.mode = mode;
+        this.fixedValues = fixed_values;
         return;
     }
 
@@ -90,9 +92,30 @@ export class BaseDialog extends Subscribers
         return ( result );
     }
 
+    protected updateFixedValues(): void
+    {
+        if ( this.fixedValues != null )
+        {
+            this.formGroup.patchValue( this.fixedValues );
+        }
+        if ( this.isEditMode() )
+        {
+            // For the fixed value fields, they should be "readonly" !!!
+            for ( let key in this.fixedValues )
+            {
+                let ctrl = this.formGroup.get( key );
+                if ( ctrl != null )
+                {
+                    ctrl.disable( { onlySelf: true } );
+                }
+            }
+        }
+        return;
+    }
+
     submit() 
     {
-        // emppty stuff
+        // empty stuff
         return;
     }
 

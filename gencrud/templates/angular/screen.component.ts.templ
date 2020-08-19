@@ -23,7 +23,6 @@ import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ${obj.cls}DataService } from './service';
 import { ActivatedRoute, RouterLink, Router } from "@angular/router";
-import { Subscribers } from '../../common/subscribers';
 import { ${obj.cls}Record } from './model';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
@@ -87,9 +86,10 @@ ${ obj.externalService }  )
         {
             this.registerSubscription( this.route.queryParams.subscribe( params => {
                 console.log( params );
-                this.id     = params.id;    // Contains the key field, currently only the primary key is supported.
-                this.value  = params.value; // Contains val value for the key field.
-                this.mode   = params.mode;  // edit or new, filter only supported on the table component.
+                this.id             = params.id;    // Contains the key field, currently only the primary key is supported.
+                this.value          = params.value; // Contains val value for the key field.
+                this.mode           = params.mode;  // edit or new, filter only supported on the table component.
+                this.updateFixedValues( params )
             } ) );
         }
         if ( this.value != null || this.value != undefined )
@@ -101,13 +101,22 @@ ${ obj.externalService }  )
                     ${ field.name }: this.row.${ field.name },
 % endfor
                 } );
+                this.updateFixedValues();
                 this.dataService.lockRecord( this.row );
             } ) );
         }
 % for field in obj.table.columns:
 %  if field.ui is not None:
 %   if field.ui.hasService():
-        this.registerSubscription( this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }', '${ field.ui.service.label }' ).subscribe( dataList => {
+        this.registerSubscription( this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }'
+                                    , '${ field.ui.service.label }'
+%    if field.ui.service.hasInitial():
+                                    , ${ field.ui.service.initial }
+%    endif
+%    if field.ui.service.hasInitial():
+                                    , ${ field.ui.service.final }
+%    endif
+                                     ).subscribe( dataList => {
             this.${ field.ui.service.name }List = dataList;
         } ) );
 %   endif
