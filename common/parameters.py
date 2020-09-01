@@ -28,6 +28,7 @@ def getCurrentUser():
 def getCurrentUtcDateTime():
     return datetime.datetime.utcnow()
 
+
 class SerializationDictField( fields.Field ):
     def __init__( self, default=fields.missing_, attribute=None, load_from=None, dump_to=None,
                  error=None, validate=None, required=False, allow_none=None, load_only=False,
@@ -43,7 +44,11 @@ class SerializationDictField( fields.Field ):
             return value
         else:
             if isinstance( value, ( bool, int ) ):
-                return self.VALUES[ value ]
+                try:
+                    return self.VALUES[ value ]
+
+                except KeyError:
+                    return value
 
             else:
                 return value
