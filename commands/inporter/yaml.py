@@ -1,6 +1,8 @@
 import yaml
 import os
+import datetime
 from webapp2.commands.inporter.base import DbInporter
+import sqlalchemy.sql.sqltypes as SQLTYPES
 import webapp2.api as API
 
 
@@ -18,18 +20,33 @@ class YamlDbInporter( DbInporter ):
         return
 
     def _insertList( self, records, model, clear ):
+        connection = API.db.session.connection()
         if clear:
-            API.db.session.delete( model )
-            API.db.session.commit()
+            connection.execute( "SET FOREIGN_KEY_CHECKS=0;" )
+            connection.execute( "BEGIN WORK;" )
+            connection.execute( "DELETE FROM {};".format( model.__table__ ) )
 
         for record in records:
             obj = model()
-            for field,value in record.items():
-                setattr( obj,field,value )
+            API.app.logger.info( "Record: {}".format( record ) )
+            for field, value in record.items():
+                attr = model.__table__.c[ field ].type
+                API.app.logger.info( "Field {} ({}) := {}".format( field, attr.python_type, value ) )
+                if attr.python_type is datetime.datetime:
+                    if value == '':
+                        value = None
+
+                    else:
+                        # Some conversion is needed
+                        value = datetime.datetime.strptime( value, '%Y-%m-%d %H:%M:%S' )
+
+                setattr( obj, field.upper(), value )
 
             API.db.session.add( obj )
-            API.db.session.commit()
 
+        API.db.session.commit()
+        connection = API.db.session.connection()
+        connection.execute( "SET FOREIGN_KEY_CHECKS=0;" )
         return
 
     def loadTable( self, table, model, clear ):
@@ -40,6 +57,7 @@ class YamlDbInporter( DbInporter ):
 
         elif isinstance( self._blob, dict ):
             self._insertDict( self._blob[ table ], model, clear )
+
 
         return
 

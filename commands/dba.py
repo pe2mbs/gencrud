@@ -171,8 +171,7 @@ INPORT_HELP = """Import the database from a {} file.
                nargs = 1,
                default = None,
                help = "The table name from the database to import the data file." )
-@click.option( '--clear',
-               nargs = 0,
+@click.option( '--clear/--noclear',
                default = False,
                help = "Clears the table before inserting (Only for {})".format( dbInporters.hasClear2String() ) )
 @click.argument( 'filename' )
