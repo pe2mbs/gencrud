@@ -76,7 +76,7 @@ def get${ obj.cls }ListFiltered( id, value ):
     filter = { id: value }
     recordList = db.session.query( ${ obj.cls } ).filter_by( **filter ).${ obj.orderBy() }.all()
     result = ${ obj.name }sSchema.jsonify( recordList )
-    API.app.logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
+    API.app.logger.debug( 'GET: ${ obj.uri }/list/{0}/{1} => {2}'.format( id, value, result ) )
     return result
 
 
@@ -84,7 +84,7 @@ def get${ obj.cls }ListFiltered( id, value ):
 def get${ obj.cls }List():
     recordList = db.session.query( ${ obj.cls } ).${ obj.orderBy() }.all()
     result = ${ obj.name }sSchema.jsonify( recordList )
-    API.app.logger.debug( 'get${ obj.cls }List() => {0}'.format( result ) )
+    API.app.logger.debug( 'GET: ${ obj.uri }/list => {0}'.format( result ) )
     return result
 
 
@@ -94,7 +94,7 @@ def api${ obj.cls }New():
     if data is None:
         return "Invalid request, missing ${ obj.cls }Record", 500
 
-    API.app.logger.info( 'POST: {0}'.format( repr( data ) ) )
+    API.app.logger.info( 'POST: ${ obj.uri }/new {0}'.format( repr( data ) ) )
     data = removeGeneratedFieldsFromRecord( data )
     record = ${ obj.cls }()
     for key, value in data.items():
@@ -113,7 +113,7 @@ def api${ obj.cls }Get():
     if data is None:
         return "Invalid request, missing ${ obj.cls }Record", 500
 
-    API.app.logger.info( 'GET: {0}'.format( repr( data ) ) )
+    API.app.logger.info( 'GET: ${ obj.uri }/get {0}'.format( repr( data ) ) )
     record = ${ obj.cls }.query.get( int( data[ '${ obj.table.primaryKey }' ] ) )
     result = ${ obj.name }Schema.jsonify( record )
     API.app.logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
@@ -122,7 +122,7 @@ def api${ obj.cls }Get():
 
 @${ obj.name }Api.route( '${ obj.uri }/get/<int:id>', methods = [ 'GET' ] )
 def api${ obj.cls }GetId( id ):
-    API.app.logger.info( 'GET: {0}'.format( id ) )
+    API.app.logger.info( 'GET: ${ obj.uri }/get/{0}'.format( id ) )
     record = ${ obj.cls }.query.get( int( id ) )
     result = ${ obj.name }Schema.jsonify( record )
     API.app.logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
@@ -131,7 +131,7 @@ def api${ obj.cls }GetId( id ):
 
 @${ obj.name }Api.route( '${ obj.uri }/<int:id>', methods = [ 'DELETE' ] )
 def api${ obj.cls }Delete( id ):
-    API.app.logger.info( 'DELETE: {0}'.format( id ) )
+    API.app.logger.info( 'DELETE: ${ obj.uri }/delete {0}'.format( id ) )
     record = ${ obj.cls }.query.get( int( id ) )
     API.db.session.delete( record )
     API.db.session.commit()
@@ -146,7 +146,7 @@ def api${ obj.cls }Put():
     if data is None:
         return "Invalid request, missing ${ obj.cls }Record", 500
 
-    API.app.logger.info( 'PUT: {0}'.format( repr( data ) ) )
+    API.app.logger.info( 'POST: ${ obj.uri }/put {0}'.format( repr( data ) ) )
     record = ${obj.cls}.query.get( data[ '${ obj.table.primaryKey }' ] )
     data = removeGeneratedFieldsFromRecord( data )
     for key, value in data.items():
@@ -162,7 +162,7 @@ def api${ obj.cls }Put():
 @${ obj.name }Api.route( '${ obj.uri }/update', methods=[ 'POST' ] )
 def api${ obj.cls }Patch():
     data    = request.json
-    API.app.logger.info( 'PATCH: {0}'.format( repr( data ) ) )
+    API.app.logger.info( 'POST: ${ obj.uri }/update {0}'.format( repr( data ) ) )
     record = ${ obj.cls }.query.get( data[ '${ obj.table.primaryKey }' ] )
     data = removeGeneratedFieldsFromRecord( data )
     for key, value in data.items():
@@ -179,31 +179,38 @@ def api${ obj.cls }Patch():
 def api${ obj.cls }Select():
     labels = []
     data    = request.json
-    API.app.logger.info( 'POST: {0}'.format( repr( data ) ) )
-    if data is not None:
-        value = data[ 'value' ]
-        label = data[ 'label' ]
-        if ',' in label:
-            label, *labels = label.split( ',' )
+    if data is None:
+        data = request.args
 
-        initialItem = data.get( 'initialItem', None )
-        finalItem   = data.get( 'finalItem', None )
+    API.app.logger.info( 'GET ${ obj.uri }/select: {0}'.format( repr( data ) ) )
+    value = data.get( 'value', '${ obj.table.primaryKey }' )    # primary key
+    label = data.get( 'label', '${ obj.table.firstTextField }' )  # first field name
+    if ',' in label:
+        labels = label.strip().split( ',' )
+        separator = ' '
+        label = labels[ 0 ]
 
-    else:
-        value       = request.args.get( 'value', '${ obj.table.primaryKey }' )    # primary key
-        # TODO: This should be the first TEXT field
-        label       = request.args.get( 'label', '${ obj.table.columns[ 1 ].name }' )  # first field name
-        initialItem = None
-        finalItem   = None
+    elif '-' in label:
+        labels = label.strip().split( '-' )
+        separator = '-'
+        label = labels[ 0 ]
+
+    elif ';' in label:
+        labels = label.strip().split( ';' )
+        separator = '; '
+        label = labels[ 0 ]
+
+    initialItem = data.get( 'initialItem', None )
+    finalItem   = data.get( 'finalItem', None )
 
     result = []
     q = db.session.query( ${ obj.cls } ).order_by( getattr( ${ obj.cls }, label ) )
     API.app.logger.debug( "api${ obj.cls }SQL: {}".format( getSqlStatement( q ) ) )
     for record in q.all():
         if len( labels ) > 0:
-            fields = [ getattr( record, label ) for label in labels ]
+            fields = [ getattr( record, lbl.strip() ) for lbl in labels ]
             result.append( { 'value': getattr( record, value ),
-                             'label': ' - '.join( fields ) } )
+                             'label': separator.join( fields ) } )
 
         else:
             result.append( { 'value': getattr( record, value ),
@@ -222,16 +229,14 @@ def api${ obj.cls }Select():
 @${ obj.name }Api.route( '${ obj.uri }/lock', methods=[ 'POST' ] )
 def api${ obj.cls }Lock():
     data    = request.json
-    API.app.logger.info( 'LOCK: {0}'.format( repr( data ) ) )
+    API.app.logger.info( 'POST: ${ obj.uri }/lock {0}'.format( repr( data ) ) )
     # TODO: This needs to be implemented for correct multiuser support
-
     return jsonify( { 'result': 'OK' } )
 
 
 @${ obj.name }Api.route( '${ obj.uri }/unlock', methods=[ 'POST' ] )
 def api${ obj.cls }Unlock():
     data    = request.json
-    API.app.logger.info( 'UNLOCK: {0}'.format( repr( data ) ) )
+    API.app.logger.info( 'POST: ${ obj.uri }/unlock {0}'.format( repr( data ) ) )
     # TODO: This needs to be implemented for correct multiuser support
-
     return jsonify( { 'result': 'OK' } )

@@ -26,8 +26,8 @@ class RouteTemplate( TemplateBase ):
     def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__config = cfg
-        if C_CLASS not in self.__config:
-            raise MissingAttribute( C_TABLE, C_CLASS )
+        # if C_CLASS not in self.__config:
+        #     raise MissingAttribute( C_TABLE, C_CLASS )
 
         return
 
@@ -41,7 +41,14 @@ class RouteTemplate( TemplateBase ):
 
     @property
     def cls( self ):
-        return self.__config.get( C_CLASS, None )
+        klasse = self.__config.get( C_CLASS, None )
+        if klasse is None:
+            if self.parent.type == 'screen':
+                return "Screen{}Component".format( self.getObject().cls )
+
+            return "Dialog{}Component".format( self.getObject().cls )
+
+        return klasse
 
     @property
     def module( self ):

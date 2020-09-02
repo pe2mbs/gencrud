@@ -20,11 +20,11 @@
 #   gencrud: ${date} version ${version} by user ${username}
 -->
 <mat-card>
-    <mat-card-title>
+    <mat-card-title id="${ obj.name }.title">
         {{ mode }} ${ obj.title }
     </mat-card-title>
     <mat-card-content>
-        <form class="" (ngSubmit)="onSaveClick" [formGroup]="formGroup">
+        <form class="" (ngSubmit)="onSaveClick" [formGroup]="formGroup" id="${ obj.name }.form">
 % for field in obj.table.columns:
  % if field.hasLabel() and not field.hasTab:
             ${ field.angularUiInput() }
@@ -33,7 +33,7 @@
 % if obj.table.hasTabs( 'screen' ):
             <${ obj.table.tabs( 'screen' ).groupTag }>
 % for label in obj.table.tabs( 'screen' ).labels:
-                <${ obj.table.tabs( 'screen' ).tabTag } label="${ label }">
+                <${ obj.table.tabs( 'screen' ).tabTag } label="${ label }" id="${obj.name}.tab.${ label.lower().replace(' ', '_' ) }">
 
 %   if obj.table.tabs( 'screen' ).hasComponent( label ):
                     <${obj.table.tabs( 'screen' ).component( label )} ${obj.table.tabs( 'screen' ).params( label ) }>
@@ -57,12 +57,12 @@
     </mat-card-content>
     <mat-card-actions>
         <button mat-button
-                id="${ obj.cls }.submit"
+                id="${ obj.name }.submit"
                 [disabled]="!formGroup.valid"
                 (click)="onSaveClick()">Save</button>
         <button mat-button
                 (click)="onCancelClick()"
-                id="${ obj.cls }.cancel"
+                id="${ obj.name }.cancel"
                 tabindex="-1">Cancel</button>
     </mat-card-actions>
 </mat-card>

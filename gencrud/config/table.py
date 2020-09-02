@@ -157,6 +157,14 @@ class TemplateTable( TemplateBase ):
         return self.__primaryKey
 
     @property
+    def firstTextField( self ):
+        for col in self.__columns:
+            if col.isString():
+                return col.name
+
+        return self.__columns[ 1 ].name
+
+    @property
     def listViewColumns( self ) -> list:
         return sorted( [ col for col in self.__columns if col.listview.index is not None ],
                        key = lambda col: col.listview.index )

@@ -112,3 +112,34 @@ class ${obj.cls}Memory( object ):
             setattr( self, key, value )
 
         return
+
+    @classmethod
+    def fetch( cls, *args, **kwargs ):
+        query = API.db.session.query( ${obj.cls} )
+        for condition in args:
+            query = query.filter( condition )
+
+        return cls( query.one() )
+
+    @classmethod
+    def fetch_many( cls, *args, **kwargs ):
+        result = []
+        query = API.db.session.query( ${obj.cls} )
+        for condition in args:
+            query = query.filter( condition )
+
+        if 'order_by' in kwargs:
+            query = query.order_by( kwargs[ 'order_by' ] )
+
+        return [ cls( record ) for record in query.all() ]
+
+    def __repr__( self ):
+        result = "<${obj.cls}Memory "
+% for field in obj.table.columns:
+        result += "${field.name} = {}, ".format( self.${field.name} )
+% endfor
+        result += ">"
+        return result
+
+    def __str__( self ):
+        return self.__repr__()

@@ -19,9 +19,9 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 -->
-<div class="container">
-    <h3 mat-dialog-title>{{ mode }} ${ obj.title }</h3>
-    <form class="mat-dialog-content" (ngSubmit)="submit" [formGroup]="formGroup">
+<div class="container" id="${ obj.name }">
+    <h3 mat-dialog-title id="${ obj.name }.title">{{ mode }} ${ obj.title }</h3>
+    <form class="mat-dialog-content" (ngSubmit)="submit" [formGroup]="formGroup" id="${ obj.name }.form">
 % for field in obj.table.columns:
  % if field.hasLabel() and not field.hasTab:
         ${ field.angularUiInput() }
@@ -30,7 +30,7 @@
 % if obj.table.hasTabs( 'dialog' ):
         <${ obj.table.tabs( 'dialog' ).groupTag }>
 % for label in obj.table.tabs( 'dialog' ).labels:
-            <${ obj.table.tabs( 'dialog' ).tabTag } label="${ label }">
+            <${ obj.table.tabs( 'dialog' ).tabTag } label="${ label }" id="${ obj.name }.tab.${label.lower().replace( ' ', '_' )}">
 %   if obj.table.tabs( 'dialog' ).hasComponent( label ):
                     <${obj.table.tabs( 'dialog' ).component( label )}>
                     </${obj.table.tabs( 'dialog' ).component( label )}>
@@ -52,13 +52,13 @@
         <div mat-dialog-actions>
             <button mat-button
                     [type]="submit"
-                    id="${ obj.cls }.submit"
+                    id="${ obj.name }.submit"
                     [disabled]="!formGroup.valid"
                     [mat-dialog-close]="1"
                     (click)="onSaveClick()">Save</button>
             <button mat-button
                     (click)="onCancelClick()"
-                    id="${ obj.cls }.cancel"
+                    id="${ obj.name }.cancel"
                     tabindex="-1">Cancel</button>
         </div>
     </form>

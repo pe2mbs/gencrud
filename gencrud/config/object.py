@@ -17,6 +17,7 @@
 #   Boston, MA 02110-1301 USA
 #
 from typing import List
+import logging
 from gencrud.config.menuitem import TemplateMenuItem
 from gencrud.config.table import TemplateTable
 from gencrud.config.actions import TemplateActions
@@ -26,6 +27,9 @@ from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import MissingAttribute
 from gencrud.config.mixin import TemplateMixin
 import posixpath
+
+
+logger = logging.getLogger()
 
 
 class AngularModule( TemplateBase ):
@@ -158,6 +162,35 @@ class TemplateObject( TemplateBase ):
     @property
     def actionWidth( self ) -> str:
         return self.__config.get( C_ACTION_WIDTH, '5%' )
+
+    def hasAutoUpdate( self ):
+        return 'autoupdate' in self.__config
+
+    def ignoreTemplates( self, templateFilename: str ):
+        if templateFilename.endswith( 'module.ts.templ' ):
+            logger.info( "Ignore template {} ".format( templateFilename ) )
+            return True
+
+        for item in self.__config.get( 'ignore_templates', [] ):
+            if not item.strip().endswith( '.templ' ):
+                item = item.strip() + '.templ'
+
+            if templateFilename.endswith( item ):
+                logger.info( "Ignore template {} ".format( templateFilename ) )
+                return True
+
+        return False
+
+    @property
+    def AutoUpdate( self ):
+        autoUpdate = self.__config.get( 'autoupdate', '' )
+        if isinstance( autoUpdate, str ):
+            if autoUpdate.isdigit():
+                return int( autoUpdate )
+
+            autoUpdate = 120
+
+        return autoUpdate
 
     #
     #   internal functions and properties to gencrud

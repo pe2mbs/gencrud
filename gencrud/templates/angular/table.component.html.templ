@@ -19,21 +19,21 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 -->
-<mat-card>
-    <mat-card-title *ngIf="caption">
+<mat-card id="${ obj.name }">
+    <mat-card-title *ngIf="caption" id="${ obj.name }.title">
         ${ obj.title }
     </mat-card-title>
     <mat-card-content>
         <div class="navigator-row form">
             <mat-form-field floatPlaceholder="never" color="accent">
-                <input matInput #filter placeholder="Filter ${ obj.title }" [value]="dataSource.filter">
+                <input matInput #filter placeholder="Filter ${ obj.title }" [value]="dataSource.filter" id="${ obj.name }.filter">
             </mat-form-field>
             <span class="spacer-search"></span>
 % for action in obj.actions.getHeaderButtons():
                 ${ action.buttonObject() }
 % endfor
             <span class="spacer-search"></span>
-            <span id="User.paginator">
+            <span id="${ obj.name }.header.paginator">
                 <mat-paginator #top_paginator
                        [length]="dataSource.filteredData.length"
                        [pageIndex]="pageIndex"
@@ -42,16 +42,29 @@
                        (page)="pagingEvent( $event )">
                 </mat-paginator>
             </span>
+% if obj.hasAutoUpdate():
+            <span>
+                <button mat-icon-button
+                        color="primary"
+                        (click)="toggleAutoUpdate()"
+                        id="${ obj.name }.header.autoupdate">
+                    <mat-icon *ngIf="toggleUpdate == false; else isAutoRefresh" aria-label="Autoupdate">update</mat-icon>
+                    <ng-template #isAutoRefresh>
+                        <mat-icon *ngIf="toggleUpdate" aria-label="Stop autoupdate">link_off</mat-icon>
+                    </ng-template>
+                </button>
+            </span>
+% endif
             <span>
                 <button mat-icon-button
                         color="primary"
                         (click)="refresh()"
-                        id="User.refresh">
+                        id="${ obj.name }.header.refresh">
                     <mat-icon aria-label="Refresh the view">refresh</mat-icon>
                 </button>
             </span>
         </div>
-        <mat-table #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell" ${obj.table.sortedInfo()}>
+        <mat-table id="${ obj.name }.table" #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell" ${obj.table.sortedInfo()}>
 % for field in obj.table.listViewColumns:
             <!-- ${ field.name } Column -->
             <ng-container matColumnDef="${ field.name }" class="column_${ field.name }">
@@ -112,7 +125,7 @@
 % endfor
             </span>
             <span class="spacer"></span>
-            <span id="${ obj.cls }.paginator">
+            <span id="${ obj.name }.botton.paginator">
                 <mat-paginator #bot_paginator
                        [length]="dataSource.filteredData.length"
                        [pageIndex]="pageIndex"
@@ -125,7 +138,7 @@
                 <button mat-icon-button
                         color="primary"
                         (click)="refresh()"
-                        id="${ obj.cls }.refresh">
+                        id="${ obj.name }.botton.refresh">
                     <mat-icon aria-label="Refresh the view">refresh</mat-icon>
                 </button>
             </span>

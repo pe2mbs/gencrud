@@ -225,8 +225,10 @@ def generatePython( config: TemplateConfiguration, templates: list ):
             logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
 
         for templ in templates:
-            logger.info( 'template    : {0}'.format( templ ) )
+            if cfg.ignoreTemplates( templ ):
+                continue
 
+            logger.info( 'template    : {0}'.format( templ ) )
             if not os.path.isdir( config.python.sourceFolder ):
                 os.makedirs( config.python.sourceFolder )
 
@@ -279,8 +281,9 @@ def generatePython( config: TemplateConfiguration, templates: list ):
             templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
 
             with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                for line in Template( filename = templateFile ).render( obj = cfg, root = config ).split( '\n' ):
-                    stream.write( line + '\n' )
+                with open( templateFile, 'r' ) as templateStream:
+                    for line in Template( templateStream ).render( obj = cfg, root = config ).split( '\n' ):
+                        stream.write( line + '\n' )
 
     updatePythonProject( config, '' )
     return

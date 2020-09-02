@@ -385,7 +385,7 @@ class TemplateUi( TemplateBase ):
                 if isinstance( item,dict ):
                     result[ item[ C_VALUE ] ] = item[ C_LABEL ]
 
-                elif isinstance( item, ( str,int,float ) ):  # key
+                elif isinstance( item, ( str, int, float ) ):  # key
                     result[ item ] = resolveList[ item ]
 
                 else:

@@ -35,3 +35,10 @@ class TemplateBase( object ):
             p = p.parent
 
         return None
+
+    def getObject( self ):
+        from gencrud.config.object import TemplateObject
+        if isinstance( self, TemplateObject ):
+            return self
+
+        return self.__parent.getObject()

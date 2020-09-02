@@ -45,7 +45,9 @@ import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
    % endif
  % endif
 % endfor
-
+% if obj.hasAutoUpdate():
+import { Observable, interval, Subscription } from 'rxjs';
+% endif
 
 @Component({
     selector: 'app-${ obj.name }-table',
@@ -58,6 +60,10 @@ export class ${ obj.cls }TableComponent extends ${ obj.Mixin.Angular.TableCompon
 export class ${ obj.cls }TableComponent extends TableBaseComponent<${ obj.cls }Record> implements OnInit, OnDestroy
 % endif
 {
+% if obj.hasAutoUpdate():
+    public toggleUpdate = false;
+    private updateSubscription: Subscription = null;
+% endif
     displayedColumns = [
 % for field in obj.table.listViewColumns:
                             '${ field.name }',
@@ -116,6 +122,28 @@ ${ obj.externalService } )
                                                );
         return;
     }
+
+% if obj.hasAutoUpdate():
+    public toggleAutoUpdate()
+    {
+        if ( !this.toggleUpdate )
+        {
+            this.toggleUpdate = true;
+            this.updateSubscription = interval( ${ obj.AutoUpdate * 1000 } ).subscribe( (val) => {
+                this.loadData()
+            } )
+            this.registerSubscription( this.updateSubscription );
+        }
+        else
+        {
+            this.toggleUpdate = false
+            this.unregisterSubscription( this.updateSubscription );
+            this.updateSubscription = null;
+        }
+        // console.log( "toggleUpdate", this.toggleUpdate );
+        return;
+    }
+% endif
 
     public newRecord()
     {

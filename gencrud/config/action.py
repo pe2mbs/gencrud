@@ -146,6 +146,16 @@ class TemplateAction( TemplateBase ):
                                position = self.position,
                                function = self.function )
 
+    def hasNgIf( self ):
+        return "ngIf" in self.__cfg
+    
+    @property
+    def ngIf( self ):
+        if self.hasNgIf():
+            return '*ngIf="{}"'.format( self.__cfg.get( 'ngIf', '' ) )
+
+        return ''
+
     def buttonObject( self ) -> str:
         tooltip = ''
         if self.type == C_NONE:
@@ -179,16 +189,20 @@ class TemplateAction( TemplateBase ):
             cls = 'class="{}"'.format( self.css )
 
         if function != '':
-            BUTTON_STR = '''<button {cls} {button} {tooltip} color="{color}" ({on})="{function}" id="{objname}.{name}">{content}</button>'''
+            BUTTON_STR = '''<button {cls} {condition} {button} {tooltip} color="{color}" ({on})="{function}" id="{objname}.{name}">{content}</button>'''
             route = ''
             params = ''
 
         elif self.isAngularRoute():
-            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
+            BUTTON_STR = '''<a {cls} {condition} {button} {tooltip} color="{color}" 
                             ({on})="router.navigate( ['/{route}'], {params} )" 
-                            id="{objname}.{name}">{content}</a>'''
-            if self.route.name.startswith( '/' ):
-                route = self.route.name[1:]
+                            id="{objname}.{name}" angular_route="true">{content}</a>'''
+            if isinstance( self.route.route, str ):
+                if self.route.route.startswith( '/' ):
+                    route = self.route.route[1:]
+
+                else:
+                    route = self.route.name[1:]
 
             else:
                 route = "/".join( [ self.parent.name, self.route.name ] )
@@ -196,9 +210,9 @@ class TemplateAction( TemplateBase ):
             params = self.route.routeParams()
 
         elif self.type == 'screen' and self.name in ( 'new', 'edit' ):
-            BUTTON_STR = '''<a {cls} {button} {tooltip} color="{color}" 
+            BUTTON_STR = '''<a {cls} {condition} {button} {tooltip} color="{color}" 
                             ({on})="router.navigate( ['/{route}'], {params} )" 
-                            id="{objname}.{name}">{content}</a>'''
+                            id="{objname}.{name}" screen_route="true">{content}</a>'''
             if self.route.name.startswith( '/' ):
                 route = self.route.name[1:]
 
@@ -210,9 +224,14 @@ class TemplateAction( TemplateBase ):
         else:
             raise Exception( 'Missing function or route for {}'.format( self ) )
 
+        condition = ''
+        if self.hasNgIf():
+            condition = self.ngIf
+
         return button + BUTTON_STR.format( button = button_type,
                                            route = route,
                                            cls = cls,
+                                           condition = condition,
                                            params = params,
                                            color = self.color,
                                            function = function,

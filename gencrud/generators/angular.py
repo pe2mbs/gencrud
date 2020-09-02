@@ -338,18 +338,17 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
         logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
         for templ in templates:
-            logger.info( 'template    : {0}'.format( templ ) )
             templateFilename = os.path.join( config.angular.sourceFolder,
                                              config.application,
                                              cfg.name,
                                              gencrud.util.utils.sourceName( templ ) )
-            if templ.endswith( 'module.ts.templ' ):
-                # This handled by createAngularComponentModule()
+            if cfg.ignoreTemplates( templ ):
                 continue
 
             if not config.options.overWriteFiles and os.path.isfile( templateFilename ):
                 continue
 
+            logger.info( 'template    : {0}'.format( templ ) )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( templateFilename )
 
@@ -410,7 +409,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                     logger.error( "Mako done" )
                     raise
 
-    appModule = None
+    appModule = {}
     exportsModules = []
     for app, mod, source, export in modules:
         # Update 'app.module.json'

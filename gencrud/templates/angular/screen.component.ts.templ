@@ -56,7 +56,7 @@ export class Screen${obj.cls}Component extends ScreenBaseComponent<${obj.cls}Rec
 %    if field.ui.hasService():
     public ${ field.ui.service.name }List: PytSelectList[];
 %    elif field.ui.hasResolveList():
-    public ${ field.name }List = ${ field.ui.typescriptResolveList().replace( ' ', '' ) }
+    public ${ field.name }List = ${ field.ui.typescriptResolveList() }
 %    endif
 %   endif
 %  endif
@@ -113,7 +113,7 @@ ${ obj.externalService }  )
 %    if field.ui.service.hasInitial():
                                     , ${ field.ui.service.initial }
 %    endif
-%    if field.ui.service.hasInitial():
+%    if field.ui.service.hasFinal():
                                     , ${ field.ui.service.final }
 %    endif
                                      ).subscribe( dataList => {
