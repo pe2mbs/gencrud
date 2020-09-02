@@ -72,17 +72,23 @@ def dev( info, host, port, reload, debugger, eager_loading,
 
     show_server_banner( get_env(), debug, info.app_import_path, eager_loading )
     app = DispatchingApp( info.load_app, use_eager_loading = eager_loading )
-    applic = info.load_app()
-    host = applic.config.get( 'HOST', host )
-    port = applic.config.get( 'PORT', port )
-
+    applic      = info.load_app()
+    host        = applic.config.get( 'HOST', host )
+    port        = applic.config.get( 'PORT', port )
+    appPath     = applic.config.get( 'APP_PATH', os.curdir )
+    appApiMod   = applic.config.get( 'API_MODULE', '' )
+    # As those files may change, but are only loaded when the application starts
+    # we monitor them, so that the application restart when they change
+    extra_files = [ os.path.join( appPath, appApiMod, 'menu.yaml' ),
+                    os.path.join( appPath, appApiMod, 'release.yaml' ) ]
     from werkzeug.serving import run_simple
     run_simple( host, port, app,
                 use_reloader = reload,
                 reloader_type = 'stat',
                 use_debugger = debugger,
                 threaded = with_threads,
-                ssl_context = cert )
+                ssl_context = cert,
+                extra_files = extra_files )
     return
 
 
@@ -101,7 +107,6 @@ def production( info, host, port, *args, **kwargs ):
     applic = info.load_app()
     host = applic.config.get( 'HOST', host )
     port = applic.config.get( 'PORT', port )
-
     waitress.serve( app, host = host, port = port )
     return
 
@@ -186,11 +191,18 @@ def ssl( info, host, port, reload, debugger, eager_loading,
         except Exception as exc:
             raise
 
+    appPath     = applic.config.get( 'APP_PATH', os.curdir )
+    appApiMod   = applic.config.get( 'API_MODULE', '' )
+    # As those files may change, but are only loaded when the application starts
+    # we monitor them, so that the application restart when they change
+    extra_files = [ os.path.join( appPath, appApiMod, 'menu.yaml' ),
+                    os.path.join( appPath, appApiMod, 'release.yaml' ) ]
     from werkzeug.serving import run_simple
     run_simple( host, port, app,
                 use_reloader = reload,
                 reloader_type = 'stat',
                 use_debugger = debugger,
                 threaded = with_threads,
-                ssl_context = cert )
+                ssl_context = cert,
+                extra_files = extra_files )
     return
