@@ -10,24 +10,37 @@ class YamlDbInporter( DbInporter ):
         self._blob = yaml.load( self._stream )
         return
 
-    def _insert( self, blob, model, clear ):
+    def _insertDict( self, blob, model, clear ):
         # Handle the yaml/json data
-        records = blob[ 'records' ]
         if len( records ) > 0:
-            if clear:
-                API.db.session.delete( model )
-                API.db.session.commit()
+            self._insertList( blob[ 'records' ], model, clear )
 
-            for record in records:
-                obj = model()
-                for field,value in record.items():
-                    setattr( obj, field, value )
+        return
 
-                API.db.session.add( obj )
-                API.db.session.commit()
+    def _insertList( self, records, model, clear ):
+        if clear:
+            API.db.session.delete( model )
+            API.db.session.commit()
+
+        for record in records:
+            obj = model()
+            for field,value in record.items():
+                setattr( obj,field,value )
+
+            API.db.session.add( obj )
+            API.db.session.commit()
+
+        return
 
     def loadTable( self, table, model, clear ):
-        self._insert( self._blob[ table ], model, clear )
+        if isinstance( self._blob, ( list, tuple ) ):
+            # When importing json/yaml files without table info,
+            # export maybe from MySQL workbench
+            self._insertList( self._blob, model, clear )
+
+        elif isinstance( self._blob, dict ):
+            self._insertDict( self._blob[ table ], model, clear )
+
         return
 
 

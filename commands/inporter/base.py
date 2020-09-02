@@ -32,5 +32,6 @@ class DbInporter( object ):
         return
 
 
-class DbInporters( DbExporterInporters ): pass
+class DbInporters( DbExporterInporters ):
+    pass
 

@@ -170,7 +170,7 @@ INPORT_HELP = """Import the database from a {} file.
 @click.option( '--table',
                nargs = 1,
                default = None,
-               help = "The table name from the database to import from the data file." )
+               help = "The table name from the database to import the data file." )
 @click.option( '--clear',
                nargs = 0,
                default = False,
