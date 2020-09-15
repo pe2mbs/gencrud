@@ -18,8 +18,10 @@
 #*/
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { PytTextInputComponent } from './input-component/textbox.component';
 import { PytChoiceInputComponent } from './input-component/choice.component';
+import { PytChoiceAutoInputComponent } from './input-component/choice.auto.component';
 import { PytComboInputComponent } from './input-component/combobox.component';
 import { PytDateInputComponent } from './input-component/date.component';
 import { PytDatePickerInputComponent } from './input-component/date.picker.component';
@@ -42,6 +44,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     declarations: [
         PytTextInputComponent,
         PytChoiceInputComponent,
+        PytChoiceAutoInputComponent,
         PytComboInputComponent,
         PytDateInputComponent,
         PytDatePickerInputComponent,
@@ -66,11 +69,13 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
         CommonModule,
         CustomMaterialModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        NgSelectModule
     ],
     exports: [
         PytTextInputComponent,
         PytChoiceInputComponent,
+        PytChoiceAutoInputComponent,
         PytComboInputComponent,
         PytDateInputComponent,
         PytDatePickerInputComponent,

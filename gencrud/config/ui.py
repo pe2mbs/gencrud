@@ -211,6 +211,7 @@ class TemplateUi( TemplateBase ):
             C_TEXTBOX:              'pyt-text-input-box',
             C_TEXT:                 'pyt-text-input-box',
             C_CHECKBOX:             'pyt-checkbox-input-box',
+            C_CHECKBOX_AUTO:        'pyt-choice-autocomplete-input-box',
             C_PASSWORD:             'pyt-password-input-box',
             C_TEXTAREA:             'pyt-textarea-input-box',
             C_NUMBER:               'pyt-number-input-box',

@@ -85,6 +85,17 @@ export class CrudDataService<T>
         return;
     }
 
+    public list( _backend_filter: any ): Observable<T[]>
+    {
+        let uri = '/list'
+        if ( _backend_filter !== null )
+        {
+            this._backend_filter = _backend_filter;
+            uri += '/' + _backend_filter.id + '/' + _backend_filter.value
+        }
+        return this.httpClient.get<T[]>( this._uri + uri );
+    }
+
     public getSelectListSimple( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
     {
         const params = new HttpParams().set('label', label ).set('value', value )

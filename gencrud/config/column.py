@@ -64,8 +64,8 @@ class TemplateColumn( TemplateBase ):
                           'BLOB': 'db.LargeBinary',
                           'NUMERIC': 'db.Numeric',
                           'DECIMAL': 'db.Numeric',
-                          'CLOB': 'db.Text',
-                          'TEXT': 'db.Text',
+                          'CLOB': 'db.LONGTEXT',
+                          'TEXT': 'db.LONGTEXT',
                           'TIME': 'db.Time' }
 
     def __init__( self, parent, table_name, **cfg ):

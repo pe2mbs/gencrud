@@ -77,6 +77,15 @@ class ${obj.cls}( API.db.Model
                                                              ", ".join( data.keys() ),
                                                              values )
 
+    def __repr__( self ):
+        result_fields = []
+% for field in obj.table.columns:
+        result_fields.append( "${field.name} = {}, ".format( self.${field.name} ) )
+% endfor
+        return "<${{obj.cls}} {}>".format( ", ".join( result_fields ) )
+
+    def __str__( self ):
+        return self.__repr__()
 
 % if obj.table.hasAutoUpdate:
 # standard decorator style
