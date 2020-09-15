@@ -52,6 +52,31 @@ def get_model_by_tablename( tablename ):
     return None
 
 
+class LONGTEXT( sqlalchemy.types.Text ):
+
+    """The CLOB type.
+
+    This type is found in Oracle and Informix.
+    """
+
+    __visit_name__ = 'LONGTEXT'
+
+
+class MEDIUMTEXT( sqlalchemy.types.Text ):
+
+    """The CLOB type.
+
+    This type is found in Oracle and Informix.
+    """
+
+    __visit_name__ = 'MEDIUMTEXT'
+
+# Inject the two types we need
+sqlalchemy.types.MEDIUMTEXT = MEDIUMTEXT
+sqlalchemy.types.LONGTEXT = LONGTEXT
+sqlalchemy.MEDIUMTEXT = MEDIUMTEXT
+sqlalchemy.LONGTEXT = LONGTEXT
+
 # MainThread db
 db              = None
 thread_db       = {}
@@ -72,10 +97,10 @@ if db is None:
     # Model           = db.Model
     db.MEDIUMBLOB   = sqlalchemy.types._Binary
     db.LONGBLOB     = sqlalchemy.types._Binary
-    db.MEDIUMTEXT   = sqlalchemy.types.TEXT
-    db.LONGTEXT     = sqlalchemy.types.TEXT
-    db.MEDIUMCLOB   = sqlalchemy.types.TEXT
-    db.LONGCLOB     = sqlalchemy.types.TEXT
+    db.MEDIUMTEXT   = MEDIUMTEXT
+    db.LONGTEXT     = LONGTEXT
+    db.MEDIUMCLOB   = MEDIUMTEXT
+    db.LONGCLOB     = LONGTEXT
     thread_db       = { threading.currentThread().name: db }
 
 
