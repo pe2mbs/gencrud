@@ -125,6 +125,9 @@ export const ${ obj.name }Route: Route = {
         ${ inp.component },
 %  endfor
 % endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasDeclarations():
+        ${ obj.injection.moduleTs.declarations },
+% endif
     ],
     entryComponents: [
 % if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
@@ -132,6 +135,9 @@ export const ${ obj.name }Route: Route = {
 % endif
 % if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
         Delete${ obj.cls }Dialog,
+% endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasEntryComponents():
+        ${ obj.injection.moduleTs.entryComponents },
 % endif
     ],
     providers: [
@@ -141,7 +147,10 @@ export const ${ obj.name }Route: Route = {
             useClass: CustomHttpInterceptor,
             multi: true
         },
-        SpinnerService
+        SpinnerService,
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasProviders():
+        ${ obj.injection.moduleTs.providers }
+% endif
     ],
     schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
     imports: [
@@ -155,6 +164,9 @@ export const ${ obj.name }Route: Route = {
 % endfor
 % if obj.menu or obj.route:
         RouterModule.forChild( [ ${ obj.name }Route ] )
+% endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasImports():
+        ${ obj.injection.moduleTs.imports },
 % endif
     ],
     exports: [
@@ -173,6 +185,9 @@ export const ${ obj.name }Route: Route = {
         ${ inp.component },
 %  endfor
 % endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasExports():
+        ${ obj.injection.moduleTs.exports },
+% endif
     ]
 } )
 export class ${ obj.cls }Module
@@ -181,7 +196,10 @@ export class ${ obj.cls }Module
         return {
             ngModule: ${ obj.cls }Module,
             providers: [
-                ${ obj.cls }DataService
+                ${ obj.cls }DataService,
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasProviders():
+                ${ obj.injection.moduleTs.providers },
+% endif
             ]
         }
     }

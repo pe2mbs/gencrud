@@ -75,6 +75,121 @@ class AngularModules( TemplateBase ):
         return iter( self.__config )
 
 
+class InjectionBlockTemplate( TemplateBase ):
+    def __init__( self, parent, cfg ):
+        TemplateBase.__init__( self,parent )
+        self.__config = cfg
+        return
+
+    def hasDeclarations( self ):
+        return self.hasDialog() or self.hasScreen()
+
+    @property
+    def declarations( self ):
+        declare = []
+        if self.hasDialog():
+            declare.append( self.dialogComponent() )
+
+        if self.hasScreen():
+            declare.append( self.screenComponent() )
+
+        if len( declare ) > 0:
+            return ", ".join( declare )
+
+        return ""
+
+    def hasEntryComponents( self ):
+        return self.hasDialog()
+
+    @property
+    def entryComponents( self ):
+        declare = [ ]
+        if self.hasDialog():
+            declare.append( self.dialogComponent() )
+
+        if len( declare ) > 0:
+            return ", ".join( declare )
+
+        return ""
+
+    def hasExports( self ):
+        return self.hasDialog() or self.hasScreen() or self.hasProviders()
+
+    @property
+    def exports( self ):
+        declare = []
+        if self.hasDialog():
+            declare.append( self.dialogComponent() )
+
+        if self.hasScreen():
+            declare.append( self.screenComponent() )
+
+        if self.hasImports():
+            declare.append( self.imports )
+
+        if len( declare ) > 0:
+            return ", ".join( declare )
+
+        return ""
+
+    def hasScreen( self ):
+        return 'screen' in self.__config
+
+    def screenComponent( self ):
+        return self.__config.get( 'screen', None )
+
+    def hasDialog( self ):
+        return 'dialog' in self.__config
+
+    def dialogComponent( self ):
+        return self.__config.get( 'dialog', None )
+
+    def hasProviders( self ):
+        return 'providers' in self.__config
+
+    @property
+    def providers( self ):
+        declare = [ ]
+        if self.hasProviders():
+            for provider in self.__config.get( 'providers',[ ] ):
+                declare.append( provider )
+
+        if len( declare ) > 0:
+            return ", ".join( declare )
+
+        return ""
+
+    def hasImports( self ):
+        return 'imports' in self.__config
+
+    @property
+    def imports( self ):
+        declare = []
+        if self.hasImports():
+            for filename, objectName in self.__config.get( 'imports', {} ).items():
+                declare.append( objectName )
+
+        if len( declare ) > 0:
+            return ", ".join( declare )
+
+        return ""
+
+
+class InjectionTemplate( TemplateBase ):
+    def __init__( self,parent, cfg ):
+        TemplateBase.__init__( self,parent )
+        self.__config = cfg
+        self.__moduleTs = InjectionBlockTemplate( self,self.__config.get( 'module.ts',None ) )
+        return
+
+    def hasModuleTs( self ):
+        return 'module.ts' in self.__config
+
+    @property
+    def moduleTs( self ):
+        return self.__moduleTs
+
+
 class TemplateObject( TemplateBase ):
     def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
@@ -165,6 +280,10 @@ class TemplateObject( TemplateBase ):
 
     def hasAutoUpdate( self ):
         return 'autoupdate' in self.__config
+
+    @property
+    def injection( self ):
+        return InjectionTemplate( self, self.__config.get( 'injection', {} ) )
 
     def ignoreTemplates( self, templateFilename: str ):
         if templateFilename.endswith( 'module.ts.templ' ):

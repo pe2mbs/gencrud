@@ -173,13 +173,13 @@ class TemplateUi( TemplateBase ):
         return self.uiObject.lower() == C_NUMBER
 
     def isChoice( self ):
-        return self.uiObject.lower() == C_CHOICE
+        return self.uiObject.lower() in ( C_CHOICE, C_CHOICE_AUTO )
 
     def isEmail( self ):
         return self.uiObject.lower() == C_EMAIL
 
     def isCombobox( self ):
-        return self.uiObject.lower() == C_COMBOBOX or self.uiObject.lower() == C_COMBO
+        return self.uiObject.lower() in ( C_COMBOBOX, C_COMBO )
 
     def isDate( self ):
         return self.uiObject.lower() == C_DATE_PICKER or self.uiObject.lower() == C_DATE
@@ -211,12 +211,12 @@ class TemplateUi( TemplateBase ):
             C_TEXTBOX:              'pyt-text-input-box',
             C_TEXT:                 'pyt-text-input-box',
             C_CHECKBOX:             'pyt-checkbox-input-box',
-            C_CHECKBOX_AUTO:        'pyt-choice-autocomplete-input-box',
             C_PASSWORD:             'pyt-password-input-box',
             C_TEXTAREA:             'pyt-textarea-input-box',
             C_NUMBER:               'pyt-number-input-box',
             C_EMAIL:                'pyt-email-input-box',
             C_CHOICE:               'pyt-choice-input-box',
+            C_CHOICE_AUTO:          'pyt-choice-autocomplete-input-box',
             C_COMBOBOX:             'pyt-combo-input-box',
             C_COMBO:                'pyt-combo-input-box',
             C_SLIDER:               'pyt-slider-input-box',
@@ -228,6 +228,9 @@ class TemplateUi( TemplateBase ):
             C_TIME_PICKER:          'pyt-timepicker-input-box',
             C_DATE_TIME_PICKER:     'pyt-datetimepicker-input-box'
         }
+        if self.hasNgIf():
+            options.append( '*ngIf="{}"'.format( self.ngIf ) )
+
         if C_HINT in  self.__cfg:
             options.append( 'hint="{0}"'.format( self.__cfg[ C_HINT ] ) )
 
@@ -290,6 +293,13 @@ class TemplateUi( TemplateBase ):
                         placeholder = label,
                         option = ' '.join( options ),
                         field = field )
+
+    def hasNgIf( self ):
+        return 'ngif' in self.__cfg
+
+    @property
+    def ngIf( self ):
+        return self.__cfg.get( 'ngif', '' )
 
     def hasService( self ):
         return self.__service is not None
