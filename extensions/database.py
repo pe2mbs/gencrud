@@ -22,7 +22,7 @@ including the SQLAlchemy database object and DB-related utilities."""
 import logging
 import threading
 import sqlalchemy.orm as ORM
-import sqlalchemy.types
+import sqlalchemy.types as types
 import webapp2.api as API
 from webapp2.common.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
@@ -52,30 +52,45 @@ def get_model_by_tablename( tablename ):
     return None
 
 
-class LONGTEXT( sqlalchemy.types.Text ):
+class LONGTEXT( types.UserDefinedType ):
+    def __init__( self ):
+        return
 
-    """The CLOB type.
+    def get_col_spec( self, **kw ):
+        return "LONGTEXT"
 
-    This type is found in Oracle and Informix.
-    """
+    def bind_processor( self, dialect ):
+        def process( value ):
+            return value
 
-    __visit_name__ = 'LONGTEXT'
+        return process
+
+    def result_processor( self, dialect, coltype ):
+        def process( value ):
+            return value
+
+        return process
 
 
-class MEDIUMTEXT( sqlalchemy.types.Text ):
+class MEDIUMTEXT( types.UserDefinedType ):
+    def __init__( self ):
+        return
 
-    """The CLOB type.
+    def get_col_spec( self, **kw ):
+        return "MEDIUMTEXT"
 
-    This type is found in Oracle and Informix.
-    """
+    def bind_processor( self, dialect ):
+        def process( value ):
+            return value
 
-    __visit_name__ = 'MEDIUMTEXT'
+        return process
 
-# Inject the two types we need
-sqlalchemy.types.MEDIUMTEXT = MEDIUMTEXT
-sqlalchemy.types.LONGTEXT = LONGTEXT
-sqlalchemy.MEDIUMTEXT = MEDIUMTEXT
-sqlalchemy.LONGTEXT = LONGTEXT
+    def result_processor( self, dialect, coltype ):
+        def process( value ):
+            return value
+
+        return process
+
 
 # MainThread db
 db              = None
@@ -95,8 +110,8 @@ if db is None:
     # Column          = db.Column
     # relationship    = ORM.relationship
     # Model           = db.Model
-    db.MEDIUMBLOB   = sqlalchemy.types._Binary
-    db.LONGBLOB     = sqlalchemy.types._Binary
+    db.MEDIUMBLOB   = types._Binary
+    db.LONGBLOB     = types._Binary
     db.MEDIUMTEXT   = MEDIUMTEXT
     db.LONGTEXT     = LONGTEXT
     db.MEDIUMCLOB   = MEDIUMTEXT
