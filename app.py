@@ -206,13 +206,6 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
                 else:
                     module.registerApi()
 
-        def errorhandler( error ):
-            response = error.to_json()
-            response.status_code = error.status_code
-            return response
-
-        API.app.errorhandler( InvalidUsage )( errorhandler )
-
     except Exception as exc:
         if API.app:
             API.app.logger.error( traceback.format_exc() )

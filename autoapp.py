@@ -19,13 +19,15 @@
 #
 import traceback
 import sys
+from flask import json, request, jsonify, render_template, make_response
+from werkzeug.exceptions import HTTPException
 
 __version__     = "1.0"
 __author__      = 'Marc Bertens-Nguyen'
 __copyright__   = 'Copyright (C) 2018 - 2020'
 
 
-
+app = None
 saved_out = None
 saved_err = None
 try:
@@ -55,3 +57,20 @@ except Exception:
 finally:
     sys.stderr = saved_err
     sys.stdout = saved_out
+
+
+@app.errorhandler( Exception )
+def handle_exception( e: Exception ):
+    """Return JSON instead of HTML for HTTP errors."""
+    # start with the correct headers and status code from the error
+    print( "Error handler" )
+    response = make_response( "", 500 )
+    # replace the body with JSON
+    response.data = json.dumps( {
+        "code":         500,
+        "name":         str( e ),
+        "message":      e.args,
+        "traceback":    traceback.format_exc()
+    } )
+    response.content_type = "application/json"
+    return response
