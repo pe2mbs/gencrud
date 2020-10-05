@@ -80,7 +80,7 @@ class ${obj.cls}( API.db.Model
     def __repr__( self ):
         result_fields = []
 % for field in obj.table.columns:
-        result_fields.append( "${field.name} = {}, ".format( self.${field.name} ) )
+        result_fields.append( "${field.name} = {}".format( self.${field.name} ) )
 % endfor
         return "<${obj.cls} {}>".format( ", ".join( result_fields ) )
 

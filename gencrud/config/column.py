@@ -222,10 +222,14 @@ class TemplateColumn( TemplateBase ):
 
     @property
     def uniqueKey( self ) -> str:
-        return self.__config.get( C_UNIQUE_KEY, '' )
+        result = self.__config.get( C_UNIQUE, self.__config.get( C_UNIQUE_KEY, '' ) )
+        if isinstance( result, bool ):
+            result = "{}_IDX".format( self.name )
+
+        return result
 
     def hasUniqueKey( self ) -> bool:
-        return C_UNIQUE_KEY in self.__config
+        return C_UNIQUE_KEY in self.__config or C_UNIQUE in self.__config
 
     def hasForeignKey( self ) -> bool:
         return any( 'FOREIGN KEY' in x for x in self.__attrs )

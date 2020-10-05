@@ -80,6 +80,13 @@ class TemplateUi( TemplateBase ):
     def max( self ):
         return self.__cfg.get( C_MAX, 100 )
 
+    def hasAttributes( self ):
+        return 'attributes' in self.__cfg
+
+    @property
+    def attributes( self ):
+        return self.__cfg.get( 'attributes', { } )
+
     # def hasPrefix( self ):
     #     return C_PREFIX in self.__cfg
 
@@ -160,6 +167,9 @@ class TemplateUi( TemplateBase ):
     def isTextbox( self ):
         return self.uiObject.lower() == C_TEXTBOX
 
+    def isEditor( self ):
+        return self.uiObject.lower() == C_EDITOR
+
     def isCheckbox( self ):
         return self.uiObject.lower() == C_CHECKBOX
 
@@ -213,6 +223,7 @@ class TemplateUi( TemplateBase ):
             C_CHECKBOX:             'pyt-checkbox-input-box',
             C_PASSWORD:             'pyt-password-input-box',
             C_TEXTAREA:             'pyt-textarea-input-box',
+            C_EDITOR:               'pyt-monaco-editor-box',
             C_NUMBER:               'pyt-number-input-box',
             C_EMAIL:                'pyt-email-input-box',
             C_CHOICE:               'pyt-choice-input-box',
@@ -233,6 +244,14 @@ class TemplateUi( TemplateBase ):
 
         if C_HINT in  self.__cfg:
             options.append( 'hint="{0}"'.format( self.__cfg[ C_HINT ] ) )
+
+        if self.hasAttributes():
+            for attr,  value in self.attributes.items():
+                if value.startswith( '^' ):
+                    value = value[1:]
+                    attr = "[{}]".format( attr )
+
+                options.append( '{0}="{1}"'.format( attr, value ) )
 
         options.append( 'error="{0}"'.format( self.error.lower() ) )
 

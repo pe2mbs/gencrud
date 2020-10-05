@@ -6,20 +6,21 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class SpinnerService
 {
-    public visibility: BehaviorSubject<boolean>;
-
+    public visibility: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
     constructor()
     {
-        this.visibility = new BehaviorSubject<boolean>(false);
+        return;
     }
 
     show()
     {
         this.visibility.next(true);
+        return;
     }
 
     hide()
     {
         this.visibility.next(false);
+        return;
     }
 }

@@ -37,8 +37,13 @@ import { PytLabelComponent } from './input-component/label.component';
 import { PytCheckboxInputComponent } from './input-component/checkbox.component';
 import { PytSliderToggleInputComponent } from './input-component/slidertoggle.component';
 import { PytSliderInputComponent } from './input-component/slider.component';
+import { PytMonacoEditorComponent } from './input-component/monaco.component';
 import { CustomMaterialModule } from '../material.module';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { MonacoEditorModule } from 'ngx-monaco-editor';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from './confirm-dialog/confirm-service';
+
 
 @NgModule({
     declarations: [
@@ -53,24 +58,29 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
         PytNumberInputComponent,
         PytPasswordInputComponent,
         PytTextareaInputComponent,
+        PytMonacoEditorComponent,
         PytTimeInputComponent,
         PytTimePickerInputComponent,
         PytEmailInputComponent,
         PytLabelComponent,
         PytCheckboxInputComponent,
         PytSliderToggleInputComponent,
-        PytSliderInputComponent
+        PytSliderInputComponent,
+        ConfirmDialogComponent
     ],
     entryComponents: [
+        ConfirmDialogComponent
     ],
     providers: [
+        ConfirmDialogService
     ],
     imports: [
         CommonModule,
         CustomMaterialModule,
         FormsModule,
         ReactiveFormsModule,
-        NgSelectModule
+        NgSelectModule,
+        MonacoEditorModule.forRoot()
     ],
     exports: [
         PytTextInputComponent,
@@ -85,12 +95,14 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
         PytNumberInputComponent,
         PytPasswordInputComponent,
         PytTextareaInputComponent,
+        PytMonacoEditorComponent,
         PytTimeInputComponent,
         PytTimePickerInputComponent,
         PytLabelComponent,
         PytCheckboxInputComponent,
         PytSliderToggleInputComponent,
         PytSliderInputComponent,
+        ConfirmDialogComponent,
     ]
 })
 export class GenCrudModule

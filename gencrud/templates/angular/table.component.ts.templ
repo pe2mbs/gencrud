@@ -19,7 +19,7 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 */
-import { Component, ElementRef, OnInit, OnDestroy, ViewChild, EventEmitter, Input } from '@angular/core';
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild, EventEmitter, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Router, ActivatedRoute } from  '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -48,8 +48,12 @@ import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
 % if obj.hasAutoUpdate():
 import { Observable, interval, Subscription } from 'rxjs';
 % endif
+import { ConfirmDialogService } from 'src/app/common/confirm-dialog/confirm-service';
+import { environment } from './../../../environments/environment';
+
 
 @Component({
+    changeDetection: ChangeDetectionStrategy.OnPush,
     selector: 'app-${ obj.name }-table',
     templateUrl: './table.component.html',
     styleUrls: [ './table.component.scss' ]
@@ -128,8 +132,17 @@ ${ obj.externalService } )
     {
         if ( !this.toggleUpdate )
         {
+            let pollIntervalLocal: number = 12000;
             this.toggleUpdate = true;
-            this.updateSubscription = interval( ${ obj.AutoUpdate * 1000 } ).subscribe( (val) => {
+            if ( environment.pollInterval && environment.pollInterval < ${ obj.AutoUpdate } )
+            {
+                pollIntervalLocal = environment.pollInterval * 1000
+            }
+            else
+            {
+                pollIntervalLocal = ${ obj.AutoUpdate * 1000 }
+            }
+            this.updateSubscription = interval( pollIntervalLocal ).subscribe( (val) => {
                 this.loadData()
             } )
             this.registerSubscription( this.updateSubscription );
