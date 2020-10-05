@@ -1,0 +1,10 @@
+<div class="header" *ngIf="data.title != undefined">
+    <h1 mat-dialog-title>{{ data.title }}</h1>
+</div>
+<div mat-dialog-content>
+    <p class="dialog-message">{{ data.message }}</p>
+</div>
+<div mat-dialog-actions>
+    <button mat-button *ngIf="data.cancelText != undefined" class="btn btn-cancel" style="margin-right:10px;" (click)="cancel()">{{ data.cancelText }}</button>
+    <button mat-button *ngIf="data.confirmText != undefined" class="btn" (click)="confirm()">{{ data.confirmText }}</button>
+</div>
