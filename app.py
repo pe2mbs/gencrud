@@ -41,6 +41,8 @@ import webapp2.extensions.cache
 import webapp2.extensions.migrate
 import webapp2.extensions.bcrypt
 import webapp2.api as API
+import json
+import flask.json
 
 
 class LoggerWriter:
@@ -93,6 +95,15 @@ def loadPlugins():
                     API.app.logger.error( "Loading plugin {} with error {}".format( pluginFolder, exc ) )
 
     return
+
+
+class WebAppJsonEncoder( flask.json.JSONEncoder ):
+    def default( self, obj ):
+        if isinstance( obj, ( bytes, bytearray ) ):
+            return obj.decode('utf-8')
+
+        # default, if not bytes/byte-array object. Let Flask do it thing
+        return flask.json.JSONEncoder.default( self, obj )
 
 
 def createApp( root_path, config_file = 'config.yaml', module = None, full_start = True, verbose = False, logging_name = None ):
@@ -184,6 +195,7 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
         sys.stderr = LoggerWriter( API.app.logger.warning )
         module = None
         sys.path.append( root_path )
+        API.app.json_encoder = WebAppJsonEncoder
         registerExtensions( module )
         registerCommands()
         if full_start:
