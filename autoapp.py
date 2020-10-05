@@ -19,8 +19,8 @@
 #
 import traceback
 import sys
-from flask import json, request, jsonify, render_template, make_response
-from werkzeug.exceptions import HTTPException
+from flask import json, request, jsonify, render_template, make_response, Response
+import werkzeug.exceptions
 
 __version__     = "1.0"
 __author__      = 'Marc Bertens-Nguyen'
@@ -63,14 +63,73 @@ finally:
 def handle_exception( e: Exception ):
     """Return JSON instead of HTML for HTTP errors."""
     # start with the correct headers and status code from the error
-    print( "Error handler" )
-    response = make_response( "", 500 )
-    # replace the body with JSON
-    response.data = json.dumps( {
-        "code":         500,
-        "name":         str( e ),
-        "message":      e.args,
-        "traceback":    traceback.format_exc()
-    } )
+    print( "Error handler", type( e ), e )
+    if isinstance( e, werkzeug.exceptions.HTTPException ):
+        response: Response = make_response( e.description, e.code )
+        description = e.description
+
+    elif isinstance( e, Exception ):
+        response: Response = make_response( str( e ), 500 )
+        description = str( e )
+
+    else:
+        response: Response= make_response( str( e ), 500 )
+        description = str( e )
+
+    response_data = {}
+    try:
+        # replace the body with JSON
+        response_data = {
+            "code":         response.status_code,
+            "name":         str( type( e ) ),
+            "message":      description,
+            "codeString":   werkzeug.exceptions.HTTP_STATUS_CODES[ response.status_code ],
+            "url":          request.url,
+            "request": {
+                #"environ": request.environ,                        # This is a class
+                "path": request.path,
+                "full_path": request.full_path,
+                "script_root": request.script_root,
+                "url": request.url,
+                "base_url": request.base_url,
+                "url_root": request.url_root,
+                "access_route": request.access_route,
+                "args": request.args,
+                "authorization": request.authorization,
+                "blueprint": request.blueprint,
+                "cache_control": str( request.cache_control ),
+                "content_encoding": request.content_encoding,
+                "content_length": request.content_length,
+                "content_md5": request.content_md5,
+                "content_type": request.content_type,
+                "cookies": request.cookies,
+                "data": request.data.decode( 'utf-8' ),
+                "date": request.date,
+                # "dict_storage_class": request.dict_storage_class, # This is a class
+                "endpoint": request.endpoint,
+                "files": request.files,
+                "form": request.form,
+                # "headers": request.headers,                       # This is a class
+                "host": request.host,
+                "host_url": request.host_url,
+                "if_match": str( request.if_match ),
+                "if_modified_since": str( request.if_modified_since ),
+                "if_none_match": str( request.if_none_match ),
+                "if_range": str( request.if_range ),
+                "if_unmodified_since": str( request.if_unmodified_since ),
+                "is_json": request.is_json,
+                "is_multiprocess": request.is_multiprocess,
+                "is_multithread": request.is_multithread,
+                "is_run_once": request.is_run_once,
+                "is_secure": request.is_secure,
+                "json": request.json,
+            },
+            "traceback":    traceback.format_exc().splitlines( keepends = False )
+        }
+    except Exception:
+        print( traceback.format_exc() )
+
+    response.data = json.dumps( response_data, indent = 4 )
+
     response.content_type = "application/json"
     return response
