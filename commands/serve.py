@@ -111,6 +111,24 @@ def production( info, host, port, *args, **kwargs ):
     return
 
 
+@serve.command( 'staged',
+                short_help = 'Runs a production server.' )
+@click.option( '--host', '-h',
+               default = '127.0.0.1',
+               help = 'The interface to bind to.' )
+@click.option( '--port', '-p',
+               default = 8000,
+               help = 'The port to bind to.' )
+@pass_script_info
+def staged( info, host, port, *args, **kwargs ):
+    import waitress
+    app = DispatchingApp( info.load_app, use_eager_loading = True )
+    applic = info.load_app()
+    host = applic.config.get( 'HOST', host )
+    port = applic.config.get( 'PORT', port )
+    waitress.serve( app, host = host, port = port )
+    return
+
 @serve.command( 'ssl',
                 short_help = 'Runs a SSL/TLS server.')
 @click.option( '--host', '-h',
