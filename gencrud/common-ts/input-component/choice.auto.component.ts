@@ -66,7 +66,7 @@ export class PytChoiceAutoInputComponent extends PytBaseComponent
     public get itemValue()
     {
         let result  = this.control.value;
-        if ( this.items )
+        if ( Array.isArray( this.items ) )
         {
             this.items.forEach(element => {
                 if ( element.value == this.control.value )

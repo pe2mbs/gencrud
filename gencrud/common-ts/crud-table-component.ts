@@ -213,7 +213,7 @@ export class TableBaseComponent<T> extends Subscribers
                 const foundIndex = this.dataService.dataChange.value.findIndex( x =>
                                     x[ 0 ] === this.id );
                 console.log( 'deleteItem() removing index ', foundIndex );
-                this.dataService.dataChange.value.splice( foundIndex, 1 );
+                this.dataService.dataChange.value.splice( foundIndex, 0 );
                 this.refreshTable();
             }
             else
