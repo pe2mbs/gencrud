@@ -45,7 +45,7 @@
 /*
 *   To avoid scrollbars in the dialog window
 */
-/deep/.mat-dialog-content 
+::ng-deep.mat-dialog-content
 {
     overflow-y: hidden !important;
 }

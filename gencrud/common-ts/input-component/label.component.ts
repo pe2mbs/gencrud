@@ -115,8 +115,8 @@ export class PytLabelComponent extends PytBaseComponent
                 }
                 let dt = moment( value );
                 value = dt.format( defFormat );
+                this.control.setValue( value, { emitEvent: false } );
             }
-            this.control.setValue( value );
         }
         return;
     }

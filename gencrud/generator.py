@@ -64,7 +64,7 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
         with open( os.path.join( root.sourceFolder, configFile ),
                    gencrud.util.utils.C_FILEMODE_READ ) as stream:
             if configFile.endswith( '.yaml' ):
-                data = yaml.load( stream )
+                data = yaml.load( stream, Loader = yaml.Loader )
 
             else:
                 data = json.load( stream )
@@ -103,6 +103,10 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
 def doWork( inputFile ):
     with open( inputFile, 'r' ) as stream:
         config = TemplateConfiguration( **yaml.load( stream, Loader = IncludeLoader ) )
+
+    if config.nogen:
+        print( "This template is blocked for generation" )
+        return
 
     if C_VERSION in config:
         gencrud.util.utils.version = config[ C_VERSION ]

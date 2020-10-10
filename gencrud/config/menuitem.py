@@ -31,10 +31,10 @@ class TemplateMenuItem( TemplateBase ):
         self.__config = cfg[ key ]
         self.__item = cfg[ key ]
         self.__submenu = None
-        if 'caption' not in self.__config:
-            raise MissingAttribute( C_MENU, 'caption' )
+        if C_CAPTION not in self.__config:
+            raise MissingAttribute( C_MENU, C_CAPTION )
 
-        if 'route' not in self.__config and 'menu' not in self.__config:
+        if C_ROUTE not in self.__config and C_MENU not in self.__config:
             raise MissingAttribute( C_MENU, 'route OR menu' )
 
         if C_MENU in self.__item:

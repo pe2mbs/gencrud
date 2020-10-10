@@ -18,8 +18,10 @@
 #*/
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { PytTextInputComponent } from './input-component/textbox.component';
 import { PytChoiceInputComponent } from './input-component/choice.component';
+import { PytChoiceAutoInputComponent } from './input-component/choice.auto.component';
 import { PytComboInputComponent } from './input-component/combobox.component';
 import { PytDateInputComponent } from './input-component/date.component';
 import { PytDatePickerInputComponent } from './input-component/date.picker.component';
@@ -35,23 +37,19 @@ import { PytLabelComponent } from './input-component/label.component';
 import { PytCheckboxInputComponent } from './input-component/checkbox.component';
 import { PytSliderToggleInputComponent } from './input-component/slidertoggle.component';
 import { PytSliderInputComponent } from './input-component/slider.component';
+import { PytMonacoEditorComponent } from './input-component/monaco.component';
 import { CustomMaterialModule } from '../material.module';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
-import { MatButtonModule, MatDialogModule, MatInputModule,
-         MatTableModule, MatFormFieldModule, MatIconModule,
-         MatListModule, MatPaginatorModule, MatSortModule,
-         MatCheckboxModule, MatRadioModule, MatSelectModule,
-         MatDatepickerModule, MatNativeDateModule, MatCardModule,
-         MatGridListModule, MatTooltipModule, MatSliderModule,
-         MatAutocompleteModule, MatSlideToggleModule,
-         MatTabsModule } from '@angular/material';
+import { MonacoEditorModule } from 'ngx-monaco-editor';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import { ConfirmDialogService } from './confirm-dialog/confirm-service';
 
 
 @NgModule({
     declarations: [
         PytTextInputComponent,
         PytChoiceInputComponent,
+        PytChoiceAutoInputComponent,
         PytComboInputComponent,
         PytDateInputComponent,
         PytDatePickerInputComponent,
@@ -60,48 +58,34 @@ import { MatButtonModule, MatDialogModule, MatInputModule,
         PytNumberInputComponent,
         PytPasswordInputComponent,
         PytTextareaInputComponent,
+        PytMonacoEditorComponent,
         PytTimeInputComponent,
         PytTimePickerInputComponent,
         PytEmailInputComponent,
         PytLabelComponent,
         PytCheckboxInputComponent,
         PytSliderToggleInputComponent,
-        PytSliderInputComponent
+        PytSliderInputComponent,
+        ConfirmDialogComponent
     ],
     entryComponents: [
+        ConfirmDialogComponent
     ],
     providers: [
+        ConfirmDialogService
     ],
     imports: [
         CommonModule,
-        MatButtonModule,
-        MatInputModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatIconModule,
-        MatListModule,
-        MatPaginatorModule,
-        MatSortModule,
-        MatSliderModule,
-        MatSlideToggleModule,
-        MatCheckboxModule,
-        MatRadioModule,
-        MatSelectModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatTableModule,
-        MatCardModule,
-        MatGridListModule,
-        MatTooltipModule,
-        MatAutocompleteModule,
-        MatTabsModule,
+        CustomMaterialModule,
         FormsModule,
         ReactiveFormsModule,
-        NgxMaterialTimepickerModule.forRoot(),
+        NgSelectModule,
+        MonacoEditorModule.forRoot()
     ],
     exports: [
         PytTextInputComponent,
         PytChoiceInputComponent,
+        PytChoiceAutoInputComponent,
         PytComboInputComponent,
         PytDateInputComponent,
         PytDatePickerInputComponent,
@@ -111,12 +95,14 @@ import { MatButtonModule, MatDialogModule, MatInputModule,
         PytNumberInputComponent,
         PytPasswordInputComponent,
         PytTextareaInputComponent,
+        PytMonacoEditorComponent,
         PytTimeInputComponent,
         PytTimePickerInputComponent,
         PytLabelComponent,
         PytCheckboxInputComponent,
         PytSliderToggleInputComponent,
         PytSliderInputComponent,
+        ConfirmDialogComponent,
     ]
 })
 export class GenCrudModule

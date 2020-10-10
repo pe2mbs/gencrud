@@ -31,6 +31,7 @@ from gencrud.configuraton import TemplateConfiguration
 from gencrud.util.typescript import TypeScript
 from gencrud.util.positon import PositionInterface
 from gencrud.util.sha import sha256sum
+import posixpath
 
 logger = logging.getLogger()
 
@@ -143,6 +144,9 @@ def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exports
 
 
 def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module ):
+    if config.options.useModule:
+        return []
+
     del app_module  # unused
     if not os.path.isfile( os.path.join( config.angular.sourceFolder,
                                          config.references.app_routing.module ) ):
@@ -271,9 +275,15 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
 
         routeIdx = -1
         for idx, route in enumerate( appRoutes ):
-            if route[ C_PATH ] == entry[ C_PATH ]:
+            if route == entry:
+                logger.error( "Found route: {}".format( route ) )
+                logger.error( json.dumps( appRoutes ) )
+                routeIdx = idx
+                break
+
+            if route[ C_PATH ] == entry:
                 logger.info( "Found route: {}".format( route[ C_PATH ] ) )
-                logger.info( json.dumps( route ) )
+                logger.info( json.dumps( appRoutes ) )
                 routeIdx = idx
                 break
 
@@ -328,18 +338,17 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
         logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
         for templ in templates:
-            logger.info( 'template    : {0}'.format( templ ) )
             templateFilename = os.path.join( config.angular.sourceFolder,
                                              config.application,
                                              cfg.name,
                                              gencrud.util.utils.sourceName( templ ) )
-            if templ.endswith( 'module.ts.templ' ):
-                # This handled by createAngularComponentModule()
+            if cfg.ignoreTemplates( templ ):
                 continue
 
             if not config.options.overWriteFiles and os.path.isfile( templateFilename ):
                 continue
 
+            logger.info( 'template    : {0}'.format( templ ) )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( templateFilename )
 
@@ -400,7 +409,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                     logger.error( "Mako done" )
                     raise
 
-    appModule = None
+    appModule = {}
     exportsModules = []
     for app, mod, source, export in modules:
         # Update 'app.module.json'
@@ -430,6 +439,13 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                                  'source':        source,
                                  'export':        export } )
 
+    # We need to un-double the 'files' entry
+    newFiles = []
+    for entry in appModule[ 'files' ]:
+        if entry not in newFiles:
+            newFiles.append( entry )
+
+    appModule[ 'files' ] = newFiles
     # Write update 'app.module.json'
     with open( os.path.join( config.angular.sourceFolder, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
@@ -497,6 +513,12 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
         imp = "{cls}Module".format( cls = cfg.cls )
         if imp not in imports:
             imports.append( imp )
+
+        # for mod in cfg.modules:
+        #     if mod.cls not in imports:
+        #         imports.append( mod.cls )
+        #         files.append( "import {{ {modCls} }} from '{path}';".format( modCls = mod.cls,
+        #                                                                      path = mod.importPath ) )
 
     appModule = {
         "files": [  "import { BrowserModule } from '@angular/platform-browser';",

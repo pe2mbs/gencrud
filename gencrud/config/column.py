@@ -64,8 +64,8 @@ class TemplateColumn( TemplateBase ):
                           'BLOB': 'db.LargeBinary',
                           'NUMERIC': 'db.Numeric',
                           'DECIMAL': 'db.Numeric',
-                          'CLOB': 'db.Text',
-                          'TEXT': 'db.Text',
+                          'CLOB': 'db.LONGTEXT',
+                          'TEXT': 'db.LONGTEXT',
                           'TIME': 'db.Time' }
 
     def __init__( self, parent, table_name, **cfg ):
@@ -95,7 +95,7 @@ class TemplateColumn( TemplateBase ):
         self.__dbField  = self.__field = tokens[ 0 ]
         self.__sqlType  = tokens[ 1 ]
         if self.__sqlType not in self.TS_TYPES_FROM_SQL:
-            raise InvalidSetting( C_FIELD, self.__tableName, self.__field )
+            raise InvalidSetting( C_FIELD, self.__tableName, self.__field, expected = self.TS_TYPES_FROM_SQL )
 
         offset = 2
         if offset < len( tokens ) and tokens[ offset ] == '(':
@@ -205,6 +205,9 @@ class TemplateColumn( TemplateBase ):
     def hasService( self ) -> bool:
         return self.__ui is not None and self.__ui.hasService()
 
+    def __repr__(self):
+        return "<TemplateColumn name='{}' label='{}'".format( self.name, self.label )
+
     @property
     def tableName( self ) -> str:
         return self.__tableName
@@ -218,8 +221,15 @@ class TemplateColumn( TemplateBase ):
         return TemplateTab( self, **self.__config.get( C_TAB, {} ) )
 
     @property
-    def unique( self ) -> bool:
-        return self.__config.get( C_UNIQUE, False )
+    def uniqueKey( self ) -> str:
+        result = self.__config.get( C_UNIQUE, self.__config.get( C_UNIQUE_KEY, '' ) )
+        if isinstance( result, bool ):
+            result = "{}_IDX".format( self.name )
+
+        return result
+
+    def hasUniqueKey( self ) -> bool:
+        return C_UNIQUE_KEY in self.__config or C_UNIQUE in self.__config
 
     def hasForeignKey( self ) -> bool:
         return any( 'FOREIGN KEY' in x for x in self.__attrs )
@@ -242,6 +252,10 @@ class TemplateColumn( TemplateBase ):
     @property
     def label( self ) -> str:
         return self.__config.get( C_LABEL, '' )
+
+    @property
+    def frontend( self ):
+        return self.__config.get( 'frontend', True )
 
     def isPrimaryKey( self ) -> bool:
         return 'PRIMARY KEY' in self.__attrs

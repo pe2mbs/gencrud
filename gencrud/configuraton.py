@@ -59,6 +59,7 @@ class TemplateConfiguration( object ):
         if 'application' not in self.__config:
             raise MissingAttribute( 'root', 'application' )
 
+        self.__noGenerate   = cfg.get( 'nogen', False )
         controls            = cfg.get( 'controls', None )
         if controls is not None:
             self.__controls = DymanicControls( controls )
@@ -74,6 +75,14 @@ class TemplateConfiguration( object ):
             self.__objects.append( TemplateObject( self, **obj ) )
 
         return
+
+    @property
+    def nogen( self ):
+        return self.__noGenerate
+
+    @property
+    def parent( self ):
+        return None
 
     @property
     def python( self ) -> TemplateSourcePython:

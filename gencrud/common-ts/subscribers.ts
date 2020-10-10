@@ -37,6 +37,12 @@ export class Subscribers {
         return;
     }
 
+    public unregisterSubscription( subscription: Subscription ): void
+    {
+        this.observableSubscriptions.splice( this.observableSubscriptions.indexOf( subscription ), 1 )
+        return;
+    }
+
     /***************************************************************************************************
     / To prevent memory leajs, make sure to unsubscribe from your subscriptions, when the component is destroyed.
     / One good place to do so, would be the ngOnDestroy lifecycle hook.
@@ -46,7 +52,7 @@ export class Subscribers {
         for ( let subscription of this.observableSubscriptions )
         {
             subscription.unsubscribe();
-            console.log( 'kill subscriptions' );
+            // console.log( 'kill subscriptions' );
         }
     }
 }

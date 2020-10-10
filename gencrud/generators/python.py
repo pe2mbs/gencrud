@@ -23,6 +23,7 @@ import yaml
 import logging
 import shutil
 import datetime
+import hashlib
 import gencrud.version
 from mako.template import Template
 from gencrud.configuraton import TemplateConfiguration
@@ -41,10 +42,11 @@ MENU_DISPLAY_NAME_V2    = 'caption'
 MENU_ICON_NAME_V2       = 'icon'
 
 MENU_INDEX              = 'index'
+MENU_ID                 = 'id'
 MENU_ROUTE              = 'route'
-LABEL_LIST_MODULES      = 'listModules = ['
-LABEL_MENU_ITEMS        = 'menuItems = ['
-LABEL_END_LIST          = ']'
+#LABEL_LIST_MODULES      = 'listModules = ['
+#LABEL_MENU_ITEMS        = 'menuItems = ['
+#LABEL_END_LIST          = ']'
 
 
 def makePythonModules( root_path, *args ):
@@ -69,213 +71,138 @@ def makePythonModules( root_path, *args ):
     return
 
 
-def updatePythonProject( config: TemplateConfiguration, app_module ):
-    del app_module  # unused
+def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
     logger.debug( config.python.sourceFolder )
-    lines = []
-    filename = os.path.join( config.python.sourceFolder, config.application, 'main.py' )
-    if os.path.isfile( filename ):
-        if config.options.backupFiles:
-            gencrud.util.utils.backupFile( filename )
-
-        lines = open( filename, 'r' ).readlines()
-
-    if len( lines ) <= 2:
-        lines = open( os.path.join( os.path.dirname( __file__ ),
-                                    '..',
-                                    'common-py',
-                                    'main.py' ), 'r' ).readlines()
-
-    rangePos            = gencrud.util.utils.findImportSection( lines )
     # Copy the following files from the common-py folder to the source folder of the project
-    for src_filename in ( 'common.py', ):
-        fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py', src_filename ) )
+    for src_filename in ( 'common.py', 'main.py' ):
         fnd = os.path.abspath( os.path.join( config.python.sourceFolder, config.application, src_filename ) )
-        logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
-        shutil.copy( fns, fnd )
+        if not os.path.isfile( fnd ):
+            fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py', src_filename ) )
+            logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
+            shutil.copy( fns, fnd )
 
-    # update import section
-    modules = []
-    for table in config:
-        line = 'import {0}.{1}   # import maintained by gencrud.py'.format( config.application,
-                                                                            table.name )
-        gencrud.util.utils.insertLinesUnique( lines, rangePos, line )
-        modules.append( '{0}.{1}'.format( config.application, table.name ) )
+    def makeMenuId( menu,prefix ):
+        return hashlib.md5( (prefix + menu.caption).encode('ascii') ).hexdigest().upper()
 
-    sectionLines = gencrud.util.utils.searchSection( lines,
-                                                     rangePos,
-                                                     LABEL_LIST_MODULES,
-                                                     LABEL_END_LIST )
-    del sectionLines[ 0 ]
-    del sectionLines[ -1 ]
-    for line in sectionLines:
-        line = line.strip( ' ,\n' )
-        if line not in modules:
-            modules.append( line )
-
-    sectionLines = [ LABEL_LIST_MODULES + '\n' ]
-    for idx, mod in enumerate( modules ):
-        sectionLines.append( '    {0}{1}\n'.format( mod,
-                                                    '' if len( modules ) - 1 == idx else ',' ) )
-
-    sectionLines.append( LABEL_END_LIST + '\n' )
-    gencrud.util.utils.replaceInList( lines, rangePos, sectionLines )
-
-    if API.config.version == 1:
-        sectionLines = gencrud.util.utils.searchSection( lines,
-                                                         rangePos,
-                                                         LABEL_MENU_ITEMS,
-                                                         LABEL_END_LIST )
-        pos = sectionLines[ 0 ].find( '[' )
-        sectionLines[ 0 ] = sectionLines[ 0 ][ pos: ]
-        try:
-            menuItems = json.loads( ''.join( sectionLines ) )
-
-        except Exception:
-            for line_no, line in enumerate( sectionLines ):
-                logger.error( '{:04} : {}'.format( line_no, line.replace( '\n', '' ).replace( '\r', '' ) ) )
-
-            raise
-
-        def processMenuStructure_V1( menu_items, menu ):
-            """This is needed for reverse calling
-
-            :param menu_items:
-            :param menu:
-            :return:
-            """
-            foundMenu = False
-            for newMenuItem in menu_items:
-                if newMenuItem[ MENU_DISPLAY_NAME ] == menu.caption:
-                    foundMenu = True
-                    if menu.menu is not None:
-                        # sub menu
-                        if MENU_CHILDEREN_LABEL not in newMenuItem:
-                            newMenuItem[ MENU_CHILDEREN_LABEL ] = []
-
-                        processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
-                    else:
-                        newMenuItem[ MENU_DISPLAY_NAME ]   = menu.caption
-                        newMenuItem[ MENU_ICON_NAME ]      = menu.icon
-                        newMenuItem[ MENU_INDEX ]          = menu.index
-                        if menu.route is not None:
-                            newMenuItem[ MENU_ROUTE ]      = menu.route
-
-                        elif menu.menu is not None:
-                            if MENU_CHILDEREN_LABEL not in newMenuItem:
-                                newMenuItem[ MENU_CHILDEREN_LABEL ] = []
-
-                            processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
-
-            if not foundMenu:
-                newMenuItem = { MENU_DISPLAY_NAME:   menu.caption,
-                                MENU_ICON_NAME:      menu.icon,
-                                MENU_INDEX:          menu.index }
-                if menu.route is not None:
-                    newMenuItem[ MENU_ROUTE ] = menu.route
-
-                elif menu.menu is not None:
-                    newMenuItem[ MENU_CHILDEREN_LABEL ] = []
-                    processMenuStructure_V1( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
-
-                menu_items.insert( menu.index if menu.index >= 0 else ( len( menu_items ) + menu.index + 1 ),
-                                   newMenuItem )
-
-            return
-
-        for cfg in config:
-            if cfg.menu is None:
-                continue
-
-            processMenuStructure_V1( menuItems, cfg.menu )
-
-        for idx, menuItem in enumerate( menuItems ):
-            menuItem[ MENU_INDEX ] = idx
-            if MENU_CHILDEREN_LABEL in menuItem:
-                # Re-number the submenu
-                for subIdx, subMenuItem in enumerate( menuItem[ MENU_CHILDEREN_LABEL ] ):
-                    subMenuItem[ MENU_INDEX ] = subIdx
-
-        menuItemsBlock = ( "menuItems = " + json.dumps( menuItems, indent = 4 )).split( '\n' )
-        gencrud.util.utils.replaceInList( lines, rangePos, menuItemsBlock )
+    menuFilename = os.path.join( config.python.sourceFolder, config.application, 'menu.yaml' )
+    if os.path.isfile( menuFilename ):
+        with open( menuFilename, 'r' )  as stream:
+            menuItems = yaml.load( stream, Loader = yaml.Loader )
+            if menuItems is None:
+                menuItems = []
 
     else:
-        menuFilename = os.path.join( config.python.sourceFolder, config.application, 'menu.yaml' )
-        if os.path.isfile( menuFilename ):
-            with open( menuFilename, 'r' )  as stream:
-                menuItems = yaml.load( stream, Loader = yaml.Loader )
-                if menuItems is None:
-                    menuItems = []
+        menuItems = []
 
-        else:
-            menuItems = []
+    def processMenuStructure_V2( items, menu, id_prefix = '' ):
+        foundMenu = False
+        for menuItem in items:
+            if menuItem[ MENU_DISPLAY_NAME ] == menu.caption:
+                foundMenu = True
+                if menu.menu is not None:
+                    # sub menu
+                    if MENU_CHILDEREN_LABEL not in menuItem:
+                        menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
 
-        def processMenuStructure_V2( items, menu ):
-            foundMenu = False
-            for menuItem in items:
-                if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.caption:
-                    foundMenu = True
-                    if menu.menu is not None:
-                        # sub menu
-                        if MENU_CHILDEREN_LABEL not in menuItem:
-                            menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
-
-                        processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
-
-                    else:
-                        menuItem[ MENU_DISPLAY_NAME_V2 ] = menu.caption
-                        menuItem[ MENU_ICON_NAME_V2 ] = menu.icon
-                        if menu.route is not None:
-                            menuItem[ MENU_ROUTE ] = menu.route
-
-                        # elif menu.menu is not None:
-                        #     if MENU_CHILDEREN_LABEL not in menuItem:
-                        #         menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
-                        #
-                        #     processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
-
-            if not foundMenu:
-                newMenuItem = { MENU_DISPLAY_NAME_V2: menu.caption,
-                                MENU_ICON_NAME_V2: menu.icon }
-                if menu.route is not None:
-                    newMenuItem[ MENU_ROUTE ] = menu.route
-
-                elif menu.menu is not None:
-                    newMenuItem[ MENU_CHILDEREN_LABEL ] = [ ]
-                    processMenuStructure_V2( newMenuItem[ MENU_CHILDEREN_LABEL ], menu.menu )
-
-                if menu.hasBeforeAfter():
-                    index = -1
-                    if menu.after is not None:
-                        for idx, menuItem in enumerate( items ):
-                            if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.after:
-                                index = idx + 1
-
-                    else: # before
-                        for idx, menuItem in enumerate( items ):
-                            if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.before:
-                                index = idx
-
-                    items.insert( index, newMenuItem )
+                    processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                                             menu.menu,
+                                             menuItem[ MENU_ID ] + '_' )
 
                 else:
-                    items.insert( menu.index if menu.index >= 0 else (len( menuItems ) + menu.index + 1), newMenuItem )
+                    menuItem[ MENU_DISPLAY_NAME ] = menu.caption
+                    menuItem[ MENU_ICON_NAME ] = menu.icon
+                    menuItem[ MENU_ID ] = makeMenuId( menu, id_prefix )
+                    if menu.route is not None:
+                        menuItem[ MENU_ROUTE ] = menu.route
 
-            return
+                    # elif menu.menu is not None:
+                    #     if MENU_CHILDEREN_LABEL not in menuItem:
+                    #         menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                    #
+                    #     processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                    #                              menu.menu,
+                    #                              menuItem[ MENU_ID ] + '_' )
 
+        if not foundMenu:
+            newMenuItem = { MENU_DISPLAY_NAME: menu.caption,
+                            MENU_ID: makeMenuId( menu, id_prefix ),
+                            MENU_ICON_NAME: menu.icon }
+            if menu.route is not None:
+                newMenuItem[ MENU_ROUTE ] = menu.route
 
-        for cfg in config:
-            if cfg.menu is None:
-                continue
+            elif menu.menu is not None:
+                newMenuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                processMenuStructure_V2( newMenuItem[ MENU_CHILDEREN_LABEL ],
+                                         menu.menu,
+                                         newMenuItem[ MENU_ID ] + '_' )
 
-            processMenuStructure_V2( menuItems, cfg.menu )
+            if menu.hasBeforeAfter():
+                index = -1
+                if menu.after is not None:
+                    for idx, menuItem in enumerate( items ):
+                        if menuItem[ MENU_DISPLAY_NAME ] == menu.after:
+                            index = idx + 1
 
-        with open( menuFilename, 'w' )  as stream:
-            yaml.dump( menuItems, stream, default_style=False, default_flow_style=False )
+                else: # before
+                    for idx, menuItem in enumerate( items ):
+                        if menuItem[ MENU_DISPLAY_NAME ] == menu.before:
+                            index = idx
 
-    open( filename, 'w' ).writelines( lines )
+                items.insert( index, newMenuItem )
+
+            else:
+                items.insert( menu.index if menu.index >= 0 else (len( items ) + menu.index + 1), newMenuItem )
+
+        return
+
+    for cfg in config:
+        if cfg.menu is None:
+            continue
+
+        processMenuStructure_V2( menuItems, cfg.menu )
+
+    with open( menuFilename, 'w' )  as stream:
+        yaml.dump( menuItems, stream, default_style=False, default_flow_style=False )
+
     return
 
+
+def updatePythonModels( config:  TemplateConfiguration ):
+    modelsFilename = os.path.join( config.python.sourceFolder, config.application, 'modules.yaml' )
+    if os.path.isfile( modelsFilename ):
+        with open( modelsFilename, 'r' ) as stream:
+            modules = yaml.load( stream, Loader = yaml.Loader )
+
+    else:
+        modules = []
+
+    for cfg in config:
+        """
+        - module: testrun.cal
+          model: Calendar
+        """
+        module_name = "{}.{}".format( config.application, cfg.name )
+        found = False
+        for module in modules:
+            if module.get( 'module' ) == module_name:
+                module[ 'model' ] = cfg.cls
+                found = True
+                break
+
+
+        if not found:
+            modules.append( { 'module': module_name, 'model': cfg.cls } )
+
+    with open( modelsFilename, 'w' ) as stream:
+        yaml.dump( modules, stream, Dumper = yaml.Dumper )
+
+    # Now generate the models.py module
+    template = os.path.abspath( os.path.join( os.path.dirname( __file__ ),'..','common-py', 'models.py.templ' ) )
+    modeles_py_file = os.path.join( config.python.sourceFolder, config.application, 'models.py' )
+    with open( modeles_py_file, 'w' ) as stream:
+        stream.write( Template( filename = template ).render( config = config, modules = modules ) )
+
+    return
 
 def generatePython( config: TemplateConfiguration, templates: list ):
     modules = []
@@ -284,6 +211,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
     dt = datetime.datetime.now()
     generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
     userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
+    updatePythonModels( config )
     for cfg in config:
         modulePath = os.path.join( config.python.sourceFolder,
                                    config.application,
@@ -297,8 +225,10 @@ def generatePython( config: TemplateConfiguration, templates: list ):
             logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
 
         for templ in templates:
-            logger.info( 'template    : {0}'.format( templ ) )
+            if cfg.ignoreTemplates( templ ):
+                continue
 
+            logger.info( 'template    : {0}'.format( templ ) )
             if not os.path.isdir( config.python.sourceFolder ):
                 os.makedirs( config.python.sourceFolder )
 
@@ -328,24 +258,24 @@ def generatePython( config: TemplateConfiguration, templates: list ):
         for column in cfg.table.columns:
             if column.ui is not None:
                 if column.ui.hasResolveList():
-                    constants.append( '' )
-                    constants.append( '# field {}.{} constants'.format( cfg.table.name, column.name ) )
+                    constants.append( '# field {}.{} constants\n'.format( cfg.table.name, column.name ) )
                     for line in column.ui.createResolveConstants():
                         if line not in constants:
-                            constants.append( line )
+                            constants.append( line + '\n' )
 
-                    constants.append( '' )
+                    constants.append( '\n' )
+                    constants.append( "C_{}_MAPPING = {}\n".format( column.name,
+                                                                    column.ui.resolveListPy ) )
+                    constants.append( '\n\n' )
 
         if len( constants ) > 0:
-            constants.insert( 0, '' )
-            constants.insert( 0, '# Generated by gencrud' )
+            constants.insert( 0, '# Generated by gencrud\n' )
             filename = os.path.join( modulePath, 'constant.py' )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( filename )
 
             with open( filename, 'w' ) as stream:
-                for line in constants:
-                    stream.write( "{}\r\n".format( line ) )
+                stream.writelines( constants )
 
         entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
         if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
@@ -354,8 +284,9 @@ def generatePython( config: TemplateConfiguration, templates: list ):
             templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
 
             with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                for line in Template( filename = templateFile ).render( obj = cfg, root = config ).split( '\n' ):
-                    stream.write( line + '\n' )
+                with open( templateFile, 'r' ) as templateStream:
+                    for line in Template( templateStream ).render( obj = cfg, root = config ).split( '\n' ):
+                        stream.write( line + '\n' )
 
     updatePythonProject( config, '' )
     return

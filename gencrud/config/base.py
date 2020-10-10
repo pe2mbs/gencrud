@@ -26,3 +26,19 @@ class TemplateBase( object ):
     def parent( self ):
         return self.__parent
 
+    def get_default( self, name ):
+        p = self.parent
+        while p is not None:
+            if hasattr( p, name ):
+                return getattr( p, name )
+
+            p = p.parent
+
+        return None
+
+    def getObject( self ):
+        from gencrud.config.object import TemplateObject
+        if isinstance( self, TemplateObject ):
+            return self
+
+        return self.__parent.getObject()

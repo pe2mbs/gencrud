@@ -18,8 +18,40 @@
 #   Boston, MA 02110-1301 USA
 #
 */
-import { BehaviorSubject, Observable } from 'rxjs';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams, HttpHeaders } from '@angular/common/http';
+import { tap } from 'rxjs/operators';
+
+export interface BackEndInfo
+{
+    code: number;
+    name: string;
+    message: string;
+    url: string;
+    traceback: any;
+    request: any;
+}
+
+
+export class BackendError extends Error
+{
+    public code: number;
+    public backend: string;
+    public trace: string;
+    public url: string;
+    public backendInfo: BackEndInfo
+    constructor( message: string, backend_info: BackEndInfo )
+    {
+        const trueProto = new.target.prototype;
+        super( message );
+        Object.setPrototypeOf(this, trueProto);
+        this.code = backend_info.code;
+        this.backend = backend_info.message;
+        this.trace = backend_info.traceback;
+        this.url = backend_info.url;
+        this.backendInfo = backend_info;
+    }
+}
 
 
 export interface PytSelectList
@@ -29,7 +61,7 @@ export interface PytSelectList
 }
 
 
-export class CrudDataService<T> 
+export class CrudDataService<T>
 {
     protected debug: boolean = false;
     protected _uri: string;
@@ -38,7 +70,7 @@ export class CrudDataService<T>
     // Temporarily stores data from dialogs
     dialogData: T;
 
-    constructor ( protected httpClient: HttpClient ) 
+    constructor ( protected httpClient: HttpClient )
     {
         return;
     }
@@ -54,12 +86,12 @@ export class CrudDataService<T>
       return;
     }
 
-    public get data(): T[] 
+    public get data(): T[]
     {
         return this.dataChange.value;
     }
 
-    public getDialogData() 
+    public getDialogData()
     {
         return this.dialogData;
     }
@@ -78,15 +110,49 @@ export class CrudDataService<T>
                 this.dataChange.next( data );
             },
             (error: HttpErrorResponse) => {
-                console.log (error.name + ' ' + error.message);
+
+                throw new BackendError( error.message, error.error );
             }
         );
         return;
     }
 
-    public getSelectList( value: string, label: string ): Observable<PytSelectList[]>
+    public list( _backend_filter: any ): Observable<T[]>
+    {
+        let uri = '/list'
+        if ( _backend_filter !== null )
+        {
+            this._backend_filter = _backend_filter;
+            uri += '/' + _backend_filter.id + '/' + _backend_filter.value
+        }
+        return this.httpClient.get<T[]>( this._uri + uri );
+    }
+
+    public getSelectListSimple( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
+    {
+        const params = new HttpParams().set('label', label ).set('value', value )
+        if ( initial != null )
+        {
+            params.set( 'initial', initial );
+        }
+        if ( final != null )
+        {
+            params.set( 'final', final );
+        }
+        return this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } );
+    }
+
+    public getSelectList( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
     {
         const params = new HttpParams().set('label', label ).set('value', value );
+        if ( initial != null )
+        {
+            params.set( 'initial', initial );
+        }
+        if ( final != null )
+        {
+            params.set( 'final', final );
+        }
         return ( Observable.create( observer => {
             this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
             .subscribe( ( data ) => {
@@ -98,15 +164,23 @@ export class CrudDataService<T>
                     observer.complete();
                 },
                 ( error: HttpErrorResponse ) => {
-                    console.log (error.name + ' ' + error.message);
+                    throw new BackendError( error.message, error.error );
                 }
             );
         } ) );
     }
 
-    public getSelectionList( value: string, label: string ): Observable<Array<string>>
+    public getSelectionList( value: string, label: string, initial: any = null, final: any = null ): Observable<Array<string>>
     {
         const params = new HttpParams().set('label', label ).set('value', value );
+        if ( initial != null )
+        {
+            params.set( 'initial', initial );
+        }
+        if ( final != null )
+        {
+            params.set( 'final', final );
+        }
         return ( Observable.create( observer => {
             this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
             .subscribe( ( data ) => {
@@ -135,13 +209,13 @@ export class CrudDataService<T>
                     observer.complete();
                 },
                 ( error: HttpErrorResponse ) => {
-                    console.log (error.name + ' ' + error.message);
+                    throw new BackendError( error.message, error.error );
                 }
             );
         } ) );
     }
 
-    public lockRecord( record: T ): void 
+    public lockRecord( record: T ): void
     {
         this.dialogData = record;
         this.httpClient.post<T>( this._uri + '/lock', record ).subscribe(result => {
@@ -151,12 +225,12 @@ export class CrudDataService<T>
             }
         },
         (error: HttpErrorResponse) => {
-            console.log( error.name + ' ' + error.message );
+            throw new BackendError( error.message, error.error );
         });
         return;
     }
 
-    public unlockRecord( record: T ): void 
+    public unlockRecord( record: T ): void
     {
         this.dialogData = null;
         this.httpClient.post<T>( this._uri + '/unlock', record ).subscribe(result => {
@@ -166,7 +240,7 @@ export class CrudDataService<T>
             }
         },
         (error: HttpErrorResponse) => {
-            console.log( error.name + ' ' + error.message );
+            throw new BackendError( error.message, error.error );
         });
         return;
     }
@@ -186,7 +260,7 @@ export class CrudDataService<T>
             this.getAll( this._backend_filter );
         },
         (error: HttpErrorResponse) => {
-            console.log( error.name + ' ' + error.message );
+            throw new BackendError( error.message, error.error );
         });
         return;
     }
@@ -200,7 +274,7 @@ export class CrudDataService<T>
         return this.httpClient.get<T>( this._uri + '/get/' + id );
     }
 
-    public getRecord( record: T ): void 
+    public getRecord( record: T ): void
     {
         if ( this.debug )
         {
@@ -214,12 +288,12 @@ export class CrudDataService<T>
             }
         },
         (error: HttpErrorResponse) => {
-            console.log( error.name + ' ' + error.message );
+            throw new BackendError( error.message, error.error );
         });
         return;
     }
 
-    public updateRecord( record: T ): void 
+    public updateRecord( record: T ): void
     {
         if ( this.debug )
         {
@@ -239,14 +313,15 @@ export class CrudDataService<T>
             {
                 console.log ( result );
             }
+            this.getAll( this._backend_filter );
         },
         (error: HttpErrorResponse) => {
-            console.log( error.name + ' ' + error.message );
+            throw new BackendError( error.message, error.error );
         });
         return;
     }
 
-    public deleteRecord( record: string ): void 
+    public deleteRecord( record: string ): void
     {
         console.log( 'deleteRecord', record );
         this.httpClient.delete<T>( this._uri + '/' + record ).subscribe( result => {
@@ -254,9 +329,10 @@ export class CrudDataService<T>
             {
                 console.log ( result );
             }
+            this.getAll( this._backend_filter );
         },
         (error: HttpErrorResponse) => {
-            console.log ( error.name + ' ' + error.message );
+            throw new BackendError( error.message, error.error );
         });
         return;
     }
@@ -271,7 +347,7 @@ export class CrudDataService<T>
             }
         },
         (error: HttpErrorResponse) => {
-            console.log ( error.name + ' ' + error.message );
+            throw new BackendError( error.message, error.error );
         });
         return;
     }
@@ -280,5 +356,27 @@ export class CrudDataService<T>
     {
         console.log( 'genericGet', uri, params );
         return this.httpClient.get( this._uri + uri, params );
+    }
+
+    public genericPost( uri: string, body: any | null, options: any | null ): Observable<any>
+    {
+        console.log( 'genericPost', this._uri + uri, body, options );
+        return this.httpClient.post( this._uri + uri, body );
+    }
+
+    public downloadFile( filename: string, reqParams: any ): Observable<any>
+    {
+        let options = new HttpHeaders( { 'Content-Type': 'application/octet-stream' } );
+        return this.httpClient.get( this._uri + '/' + filename, { headers: options,
+                                                                  params: reqParams,
+                                                                  responseType: 'blob' } ).pipe (
+            tap ( data => {
+                console.log('You received data') ;
+            },
+            error => {
+                console.log(error);
+                throw new BackendError( error.message, error.error );
+            } )
+        );
     }
 }

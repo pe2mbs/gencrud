@@ -18,6 +18,10 @@
 #
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
+import logging
+
+
+logger = logging.getLogger()
 
 
 class TemplateTab( TemplateBase ):
@@ -34,6 +38,10 @@ class TemplateTab( TemplateBase ):
     def label( self ):
         return self.__cfg.get( C_LABEL, None )
 
+    def __repr__(self):
+        return "<TemplateTab label='{}' index={} parent='{}'>".format( self.label,
+                                                                       self.index,
+                                                                       self.parent )
 
 class TemplateTabs( TemplateBase ):
     def __init__( self, parent, **cfg ):
@@ -44,6 +52,7 @@ class TemplateTabs( TemplateBase ):
         self.__params   = { l: None for l in self.labels }
         for col in self.parent.columns:
             if col.hasTab:
+                logging.info( col.tab )
                 self.__fields[ col.tab.label ].append( col )
 
         for key in self.__fields.keys():
@@ -68,7 +77,7 @@ class TemplateTabs( TemplateBase ):
 
     @property
     def contentTag( self ):
-        return self.__cfg.get( C_TAB_CONTENT_TAG, None )
+        return self.__cfg.get( C_TAB_CONTENT_TAG, 'mat-card' )
 
     @property
     def groupTag( self ):
@@ -86,9 +95,16 @@ class TemplateTabs( TemplateBase ):
         value = self.__comps.get( label, '' )
         return value
 
+    def variable2typescript( self, value ):
+        if isinstance( value, bool ):
+            value = str( value ).lower()
+
+        return value
+
     def params( self, label ):
         result = ''
         for key, value in self.__params[ label ].items():
+            value = self.variable2typescript( value )
             result += '[{}]="{}" '.format( key, value )
             if key == C_VALUE:
                 result += '*ngIf="{}" '.format( value )

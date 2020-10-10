@@ -109,15 +109,6 @@ class TemplateActions( TemplateBase ):
 
         return result
 
-    # def getRowDblClick( self ):
-    #     for action in self.__actions:
-    #         if action.position == 'row' and action.type != 'none':
-    #             logger.info( "getRowAction() => {}".format( action ) )
-    #             if action.function != '':
-    #                 return '(dblclick)="{}"'.format( action.function )
-    #
-    #     return ''
-
     def isRowActionFunction( self ):
         for action in self.__actions:
             if action.position == C_ROW and action.type != C_NONE:
@@ -133,7 +124,6 @@ class TemplateActions( TemplateBase ):
                 if action.isAngularRoute():
                     # return 'routerLink="/{}/{}" {}'.format( self.__name, action.route.name, action.route.routeParams() )
                     route = "/".join( [ self.parent.name, action.name ] )
-
                     ACTION_STR = '''({on})="router.navigate( ['/{route}'], {params} )"'''
                     params = action.route.routeParams()
 
@@ -160,7 +150,7 @@ class TemplateActions( TemplateBase ):
 
     def hasRowButtons( self ):
         for action in self.__actions:
-            if action.position == C_ROW and action.type != C_NONE:
+            if action.position == C_CELL and action.type != C_NONE:
                 return True
 
         return False
@@ -189,6 +179,10 @@ class TemplateActions( TemplateBase ):
                 return action.position != C_NONE
 
         return False
+
+    @property
+    def module( self ):
+        return self.parent.module
 
     def __repr__( self ):
         return "<TemplateActions {}>".format( ", ".join( action.name for action in self.__actions ) )

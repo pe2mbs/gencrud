@@ -80,6 +80,13 @@ class TemplateUi( TemplateBase ):
     def max( self ):
         return self.__cfg.get( C_MAX, 100 )
 
+    def hasAttributes( self ):
+        return 'attributes' in self.__cfg
+
+    @property
+    def attributes( self ):
+        return self.__cfg.get( 'attributes', { } )
+
     # def hasPrefix( self ):
     #     return C_PREFIX in self.__cfg
 
@@ -160,6 +167,9 @@ class TemplateUi( TemplateBase ):
     def isTextbox( self ):
         return self.uiObject.lower() == C_TEXTBOX
 
+    def isEditor( self ):
+        return self.uiObject.lower() == C_EDITOR
+
     def isCheckbox( self ):
         return self.uiObject.lower() == C_CHECKBOX
 
@@ -173,13 +183,13 @@ class TemplateUi( TemplateBase ):
         return self.uiObject.lower() == C_NUMBER
 
     def isChoice( self ):
-        return self.uiObject.lower() == C_CHOICE
+        return self.uiObject.lower() in ( C_CHOICE, C_CHOICE_AUTO )
 
     def isEmail( self ):
         return self.uiObject.lower() == C_EMAIL
 
     def isCombobox( self ):
-        return self.uiObject.lower() == C_COMBOBOX or self.uiObject.lower() == C_COMBO
+        return self.uiObject.lower() in ( C_COMBOBOX, C_COMBO )
 
     def isDate( self ):
         return self.uiObject.lower() == C_DATE_PICKER or self.uiObject.lower() == C_DATE
@@ -213,9 +223,11 @@ class TemplateUi( TemplateBase ):
             C_CHECKBOX:             'pyt-checkbox-input-box',
             C_PASSWORD:             'pyt-password-input-box',
             C_TEXTAREA:             'pyt-textarea-input-box',
+            C_EDITOR:               'pyt-monaco-editor-box',
             C_NUMBER:               'pyt-number-input-box',
             C_EMAIL:                'pyt-email-input-box',
             C_CHOICE:               'pyt-choice-input-box',
+            C_CHOICE_AUTO:          'pyt-choice-autocomplete-input-box',
             C_COMBOBOX:             'pyt-combo-input-box',
             C_COMBO:                'pyt-combo-input-box',
             C_SLIDER:               'pyt-slider-input-box',
@@ -227,8 +239,19 @@ class TemplateUi( TemplateBase ):
             C_TIME_PICKER:          'pyt-timepicker-input-box',
             C_DATE_TIME_PICKER:     'pyt-datetimepicker-input-box'
         }
+        if self.hasNgIf():
+            options.append( '*ngIf="{}"'.format( self.ngIf ) )
+
         if C_HINT in  self.__cfg:
             options.append( 'hint="{0}"'.format( self.__cfg[ C_HINT ] ) )
+
+        if self.hasAttributes():
+            for attr,  value in self.attributes.items():
+                if value.startswith( '^' ):
+                    value = value[1:]
+                    attr = "[{}]".format( attr )
+
+                options.append( '{0}="{1}"'.format( attr, value ) )
 
         options.append( 'error="{0}"'.format( self.error.lower() ) )
 
@@ -289,6 +312,13 @@ class TemplateUi( TemplateBase ):
                         placeholder = label,
                         option = ' '.join( options ),
                         field = field )
+
+    def hasNgIf( self ):
+        return 'ngif' in self.__cfg
+
+    @property
+    def ngIf( self ):
+        return self.__cfg.get( 'ngif', '' )
 
     def hasService( self ):
         return self.__service is not None
@@ -360,6 +390,45 @@ class TemplateUi( TemplateBase ):
 
         return json.dumps( result ).replace( "'", "\'" ).replace( '"', "'" )
 
+    @property
+    def resolveListPy( self ):
+        if C_RESOLVE_LIST_OLD in self.__cfg:
+            resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
+
+        else:
+            resolveList = self.__cfg.get( C_RESOLVE_LIST,[ ] )
+
+        '''
+        resolve-list:
+        -   label:          Disabled
+            value:          false
+        -   label:          Enabled
+            value:          true
+        OR
+        resolve-list:
+            0:              Disabled     
+            1:              Disabled
+        '''
+        result = { }
+        if isinstance( resolveList, ( list, tuple ) ):
+            for item in resolveList:
+                if isinstance( item,dict ):
+                    result[ item[ C_VALUE ] ] = item[ C_LABEL ]
+
+                elif isinstance( item, ( str, int, float ) ):  # key
+                    result[ item ] = resolveList[ item ]
+
+                else:
+                    raise Exception( "Invalid format in resolve-list" )
+
+        elif isinstance( resolveList, dict ):
+            return resolveList
+
+        else:
+            raise Exception( "Invalid resolve-list, needs to be a dictionary or a list with value/label attributes" )
+
+        return result
+
     def createResolveConstants( self ):
         def normalizeConstant( value ):
             last = ''
@@ -383,7 +452,7 @@ class TemplateUi( TemplateBase ):
 
         lines = []
         if self.hasResolveList():
-            constant_format = self.__cfg.get( C_CONSTANT_FORMAT, '"{0:50} = {1}".format( label, value )' )
+            constant_format = self.__cfg.get( C_CONSTANT_FORMAT, '"C_{field}_{label:50} = {value}".format( label = label.upper(), value = value, field = field.upper() )' )
             if C_RESOLVE_LIST_OLD in self.__cfg:
                 resolveList = self.__cfg.get( C_RESOLVE_LIST_OLD, {} )
 

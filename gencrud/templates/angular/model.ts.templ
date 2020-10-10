@@ -19,10 +19,17 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 */
-
 export class ${ obj.cls }Record
 {
 % for field in obj.table.columns:
     ${ field.name }: ${ field.tsType };
 % endfor
+% for field in obj.table.columns:
+%  if field.hasService():
+    ${ field.name }_FK: any;
+%  elif field.hasResolveList():
+    ${ field.name }_LABEL: String;
+%  endif
+% endfor
+
 }

@@ -33,7 +33,7 @@ export const CUSTOM_ANIMATIONS_CONTROLE: any = [ trigger(
 
 export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit, AfterViewInit
 {
-    @Input( 'debug' )       debug:              boolean = true;
+    @Input( 'debug' )       debug:              boolean = false;
     @Input( 'error' )       error:              boolean = false;
     // ID attribute for the field and for attribute for the label
     @Input()                id:                 string;
@@ -117,7 +117,10 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
         }
         if ( this.readonly )
         {
-            console.log( 'base-ngOnInit disable the control', this.formControlName )
+            if ( this.debug )
+            {
+                console.log( 'base-ngOnInit disable the control', this.formControlName )
+            }
             this.control.disable();
         }
         if ( this.debug )
@@ -198,7 +201,10 @@ export class PytBaseComponent implements ControlValueAccessor, OnChanges, OnInit
 
     onControlChange()
     {
-        console.log( 'base-onControlChange', this.formControlName, this.control );
+        if ( this.debug )
+        {
+            console.log( 'base-onControlChange', this.formControlName, this.control );
+        }
         if ( this.readonly || this.disabled )
         {
             return;
