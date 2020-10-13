@@ -106,7 +106,7 @@ class WebAppJsonEncoder( flask.json.JSONEncoder ):
         return flask.json.JSONEncoder.default( self, obj )
 
 
-def createApp( root_path, config_file = 'config.yaml', module = None, full_start = True, verbose = False, logging_name = None ):
+def createApp( root_path, config_file = 'config.yaml', module = None, full_start = True, verbose = False, logging_name = None, process_name = 'app' ):
     """An application factory, as explained here:
        http://flask.pocoo.org/docs/patterns/appfactories/.
 
@@ -163,10 +163,15 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
         if 'LOGGING' in API.app.config:
             logDict = API.app.config[ 'LOGGING' ]
 
+        logArgs = {
+            'pid': os.getpid(),
+            'name': process_name
+        }
         if len( logDict ) == 0:
             logDict = loadLoggingFile( root_path,
                                        folder = API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in API.app.config else None,
-                                       verbose = verbose )
+                                       verbose = verbose,
+                                       **logArgs )
 
         else:
             if isinstance( logDict, str ):
@@ -174,12 +179,14 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
                 logDict = loadLoggingFile( root_path,
                                            logDict,
                                            API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in API.app.config else None,
-                                           verbose )
+                                           verbose,
+                                           **logArgs )
 
             elif isinstance( logDict, dict ):
                 logDict = updateLogging( logDict,
                                          API.app.config[ 'LOGGING_FOLDER' ] if 'LOGGING_FOLDER' in API.app.config else None,
-                                         verbose )
+                                         verbose,
+                                         **logArgs )
 
             else:
                 print( "The logging key in config file is invalid", file = sys.stderr )

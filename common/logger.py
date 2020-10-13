@@ -67,7 +67,7 @@ def appLogger( func ):
     return wrapper
 
 
-def updateLogging( tree, folder, verbose = False, level = None ):
+def updateLogging( tree, folder, verbose = False, level = None, **kwargs ):
     if folder is None:
         return tree
 
@@ -76,10 +76,10 @@ def updateLogging( tree, folder, verbose = False, level = None ):
         if key == 'filename':
             filepath, filename = os.path.split( tree[ key ] )
             if filepath == '':
-                tree[ key ] = os.path.join( folder, tree[ key ] ).format( pid = os.getpid() )
+                tree[ key ] = os.path.join( folder, tree[ key ] ).format( **kwargs )
 
             else:
-                tree[ key ] = os.path.abspath( tree[ key ] ).format( pid = os.getpid() )
+                tree[ key ] = os.path.abspath( tree[ key ] ).format( **kwargs )
 
         elif key == 'level':
             if verbose:
@@ -89,16 +89,16 @@ def updateLogging( tree, folder, verbose = False, level = None ):
                 tree[ key ] = level
 
         elif isinstance( tree[ key ], dict ):
-            updateLogging( tree[ key ], folder )
+            updateLogging( tree[ key ], folder, **kwargs )
 
         elif isinstance( tree[ key ], list ):
             for item in tree[ key ]:
                 if isinstance( item, dict ):
-                    updateLogging( item, folder )
+                    updateLogging( item, folder, **kwargs )
 
     return tree
 
-def loadLoggingFile( root_path, filename = None, folder = None, verbose = False ):
+def loadLoggingFile( root_path, filename = None, folder = None, verbose = False, **kwargs ):
     def loadLoggingFileExt( root_path, filename ):
         logDict = { }
         if os.path.isfile( os.path.join( root_path, filename ) ):
@@ -120,8 +120,8 @@ def loadLoggingFile( root_path, filename = None, folder = None, verbose = False 
     if filename is None:
         for filename in ( 'logging.yaml', 'logging.json' ):
             if os.path.isfile( os.path.join( root_path, filename ) ):
-                return updateLogging( loadLoggingFileExt( root_path, filename ), folder, verbose )
+                return updateLogging( loadLoggingFileExt( root_path, filename ), folder, verbose, **kwargs )
 
         raise FileNotFoundError( root_path )
 
-    return updateLogging( loadLoggingFileExt( root_path,filename ), folder, verbose )
+    return updateLogging( loadLoggingFileExt( root_path,filename ), folder, verbose, **kwargs )
