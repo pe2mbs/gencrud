@@ -50,9 +50,11 @@ try:
 except SystemExit:
     print( "SystemExit exception" )
     print( traceback.format_exc(),file = sys.stderr )
+    raise
 
 except Exception:
     print( traceback.format_exc(), file = sys.stderr )
+    raise
 
 finally:
     sys.stderr = saved_err

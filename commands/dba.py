@@ -479,6 +479,10 @@ COPY_HELP = """Copy schema to another.
 def copy( schema, clear, force ):
     destSchema = getCurrentSchema()
     oVersion = getCurrentVersion()
+    if oVersion is None:
+        print( "Invalid schema, missing tables. execute '# flask db upgrade'" )
+        return
+
     schemas = listSchemas( all = True, exclude = [ 'information_schema', 'mysql', 'performance_schema' ] )
     if len( schema ) > 0:
         schema = schema[ 0 ]

@@ -48,9 +48,13 @@ def getCurrentVersion( schema = None ):
     if schema is None:
         schema = getCurrentSchema()
 
-    data = API.db.session.connection().execute( "SELECT version_num FROM {}.alembic_version".format( schema ) )
-    if data.rowcount > 0:
-        version_num = data.fetchone()[0]
+    try:
+        data = API.db.session.connection().execute( "SELECT version_num FROM {}.alembic_version".format( schema ) )
+        if data.rowcount > 0:
+            version_num = data.fetchone()[0]
+
+    except:
+        return None
 
     return version_num
 
