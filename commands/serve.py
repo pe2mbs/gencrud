@@ -18,10 +18,8 @@ def serve():
 @serve.command( 'dev',
                 short_help = 'Runs a development server.' )
 @click.option( '--host', '-h',
-               default = '127.0.0.1',
                help = 'The interface to bind to.')
 @click.option( '--port', '-p',
-               default = 5000,
                help = 'The port to bind to.' )
 @click.option( '--cert',
                type = CertParamType(),
@@ -73,8 +71,17 @@ def dev( info, host, port, reload, debugger, eager_loading,
     show_server_banner( get_env(), debug, info.app_import_path, eager_loading )
     app = DispatchingApp( info.load_app, use_eager_loading = eager_loading )
     applic      = info.load_app()
-    host        = applic.config.get( 'HOST', host )
-    port        = applic.config.get( 'PORT', port )
+    print( "HOST {} PORT {}".format( host,port ) )
+    if host is None:
+        host        = applic.config.get( 'HOST', 'localhost' )
+
+    if port is None:
+        port        = applic.config.get( 'PORT', 5000 )
+
+    else:
+        port = int( port )
+
+    print( "HOST {} PORT {}".format( host, port ) )
     appPath     = applic.config.get( 'APP_PATH', os.curdir )
     appApiMod   = applic.config.get( 'API_MODULE', '' )
     # As those files may change, but are only loaded when the application starts
