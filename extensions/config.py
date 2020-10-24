@@ -39,13 +39,12 @@ def my_compose_document(self):
 yaml.SafeLoader.compose_document = my_compose_document
 
 
-# adapted from http://code.activestate.com/recipes/577613-yaml-include-support/
 def yaml_include(loader, node):
     with open(node.value) as inputfile:
-        return list(my_safe_load(inputfile, master=loader).values())[0]
-#              leave out the [0] if your include file drops the key ^^^
+        data = my_safe_load( inputfile, master = loader )
+        return data
 
-yaml.add_constructor("!include", yaml_include, Loader=yaml.SafeLoader)
+yaml.add_constructor( "!include", yaml_include, Loader=yaml.SafeLoader )
 
 
 def my_safe_load(stream, Loader=yaml.SafeLoader, master=None):
@@ -90,7 +89,7 @@ class Config( BaseConfig ):
         result = {}
         if os.path.isdir( config_folder ):
             # Master configuration
-            configFile = os.path.join( config_folder, 'config.yaml' )
+            configFile = os.path.join( config_folder, 'config.conf' )
             if os.path.isfile( configFile ):
                 with open( configFile, 'r' ) as stream:
                     result = my_safe_load( stream )
@@ -101,7 +100,7 @@ class Config( BaseConfig ):
             env = os.environ.get( 'FLASK_ENV', 'DEVELOPMENT' ).upper()
             envFolder = os.path.join( config_folder, 'env' )
             if os.path.isdir( envFolder ):
-                configFile = os.path.join( envFolder, '{}.yaml'.format( env ) )
+                configFile = os.path.join( envFolder, '{}.conf'.format( env.upper() ) )
                 if os.path.isfile( configFile ):
                     with open( configFile, 'r' ) as stream:
                         result = self._configOverRide( result, my_safe_load( stream ) )
@@ -113,12 +112,11 @@ class Config( BaseConfig ):
                 # no custom configutions at all.
                 print( "No 'env' folder for ENVIRONEMNT configurations" )
 
-            self[ 'ENV' ] = env.upper()
             self[ 'ENVIRONMENT' ] = env.lower()
-            tsk = os.environ.get( 'FLASK_TASK', 'webapp' ).upper()
+            tsk = os.environ.get( 'FLASK_TASK', 'WEBAPP' ).upper()
             tskFolder = os.path.join( config_folder, 'tsk' )
             if os.path.isdir( tskFolder ):
-                configFile = os.path.join( tskFolder, '{}.yaml'.format( tsk ) )
+                configFile = os.path.join( tskFolder, '{}.conf'.format( tsk.upper() ) )
                 if os.path.isfile( configFile ):
                     with open( configFile, 'r' ) as stream:
                         result = self._configOverRide( result, my_safe_load( stream ) )
