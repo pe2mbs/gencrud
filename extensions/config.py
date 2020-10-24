@@ -63,6 +63,77 @@ def my_safe_load(stream, Loader=yaml.SafeLoader, master=None):
 class Config( BaseConfig ):
     """Flask config enhanced with a `from_yaml` and `from_json` methods."""
 
+    def _configOverRide( self, result, override ):
+        for key, value in override.items():
+            if isinstance( value, dict ):
+                result[ key ] = self._configOverRide( result[ key ], value )
+
+            else:
+                result[ key ] = value
+
+        return result
+
+    def fromFolder( self, config_folder, silent = False ):
+        """First the config/config.yal is loaded as the master configuration.
+
+        Second in sub-folder config/env is checked that a <{FLASK_ENV}>.yaml is located,
+        If so it loaded and the attributes from this file are overriding the config.
+
+        Third in sub-folder config/tsk is checked that a <{FLASK_TASK}>.yaml is located,
+        If so it loaded and the attributes from this file are overriding the config.
+
+
+        :param config_folder:
+        :param silent:
+        :return:
+        """
+        result = {}
+        if os.path.isdir( config_folder ):
+            # Master configuration
+            configFile = os.path.join( config_folder, 'config.yaml' )
+            if os.path.isfile( configFile ):
+                with open( configFile, 'r' ) as stream:
+                    result = my_safe_load( stream )
+
+            else:
+                raise Exception( 'No master configuration present {}'.format( configFile ) )
+
+            env = os.environ.get( 'FLASK_ENV', 'DEVELOPMENT' ).upper()
+            envFolder = os.path.join( config_folder, 'env' )
+            if os.path.isdir( envFolder ):
+                configFile = os.path.join( envFolder, '{}.yaml'.format( env ) )
+                if os.path.isfile( configFile ):
+                    with open( configFile, 'r' ) as stream:
+                        result = self._configOverRide( result, my_safe_load( stream ) )
+
+                else:
+                    print( "No ENVIRONENT config" )
+
+            else:
+                # no custom configutions at all.
+                print( "No 'env' folder for ENVIRONEMNT configurations" )
+
+            self[ 'ENV' ] = env.upper()
+            self[ 'ENVIRONMENT' ] = env.lower()
+            tsk = os.environ.get( 'FLASK_TASK', 'webapp' ).upper()
+            tskFolder = os.path.join( config_folder, 'tsk' )
+            if os.path.isdir( tskFolder ):
+                configFile = os.path.join( tskFolder, '{}.yaml'.format( tsk ) )
+                if os.path.isfile( configFile ):
+                    with open( configFile, 'r' ) as stream:
+                        result = self._configOverRide( result, my_safe_load( stream ) )
+
+                else:
+                    print( "No TASK config" )
+
+            self[ 'WEBAPP_TASK' ] = tsk.lower()
+
+        else:
+            raise Exception( "Configuration folder not present: {}".format( config_folder ) )
+
+        return self._modify( result )
+
+
     def fromFile( self, config_file, silent=False ):
         """Load the configuration from a file, currently JSON and YAML formats
         are supported
@@ -107,9 +178,6 @@ class Config( BaseConfig ):
         try:
             with open( config_file ) as f:
                 c = my_safe_load( f )
-                # loader = IncludeLoader( f )
-                # c = loader.load_stream()
-                #c = yaml.load( f, Loader = IncludeLoader )
 
         except IOError as e:
             if silent and e.errno in (errno.ENOENT, errno.EISDIR):
@@ -167,7 +235,7 @@ class Config( BaseConfig ):
 
         return self._modify( segment, taskSection )
 
-    def _modify( self, c, taskSection ):
+    def _modify( self, c, taskSection = None ):
         """Internal updater to fix PATH's and DATABASE uri
 
         :param c:
@@ -178,7 +246,7 @@ class Config( BaseConfig ):
                        "JWT_ACCESS_TOKEN_EXPIRES",
                        "JWT_REFRESH_TOKEN_EXPIRES" )
 
-        if len( taskSection ):
+        if isinstance( taskSection, dict ):
             # print( "taskSection", taskSection )
 
             def resolveKeys( path, keys, value ):

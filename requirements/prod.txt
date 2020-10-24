@@ -26,5 +26,5 @@ marshmallow-sqlalchemy
 # for postgresql
 # psycopg2==2.7.5
 lxml==4.2.5
-pyyaml
+pyyaml==5.3.1
 deprecated

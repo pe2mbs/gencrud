@@ -155,7 +155,16 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
                          static_folder      = root_path )
 
         logDict = {}
-        API.app.config.fromFile( os.path.join( config_path, config_file ) )
+        try:
+            print( "Config path: {}".format( os.path.join( config_path, 'config' ) ) )
+            API.app.config.fromFolder( os.path.join( config_path, 'config' ) )
+
+        except Exception as exc:
+            print( exc )
+            print( "Config file: {}".format( os.path.join( root_path, config_file ) ) )
+            API.app.config.fromFile( os.path.join( config_path, config_file ) )
+
+        # print( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
         # Setup logging for the application
         if 'logging' in API.app.config:
             logDict = API.app.config[ 'logging' ]
