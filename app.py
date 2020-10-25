@@ -44,9 +44,6 @@ import webapp2.extensions.cache
 import webapp2.extensions.migrate
 import webapp2.extensions.bcrypt
 import webapp2.api as API
-
-import json
-import flask.json
 from webapp2.version import version_no, date, author
 
 __version__     = version_no
