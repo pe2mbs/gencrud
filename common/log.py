@@ -27,6 +27,27 @@ from functools import wraps
 logObject = None
 
 
+class LoggerWriter:
+    def __init__( self, function ):
+        # self.level is really like using log.debug(message)
+        # at least in my case
+        self.function = function
+        return
+
+    def write( self, message ):
+        # if statement reduces the amount of newlines that are
+        # printed to the logger
+        if message != '\n':
+            # self.function( message.replace( '\n', '\\n' ) )
+            pass
+
+        return
+
+    def flush(self):
+        # create a flush method so things can be flushed when the system wants to.
+        # Simply returning is good enough.
+        return
+
 def getLogger( root = 'flask.app' ):
     """Gets the logger instance
 

@@ -17,9 +17,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import flask.json
 import json
 import decimal
 import datetime
+
+
+class WebAppJsonEncoder( flask.json.JSONEncoder ):
+    def default( self, obj ):
+        if isinstance( obj, ( bytes, bytearray ) ):
+            return obj.decode('utf-8')
+
+        # default, if not bytes/byte-array object. Let Flask do it thing
+        return flask.json.JSONEncoder.default( self, obj )
+
 
 
 class JsonEncoder( json.JSONEncoder ):
@@ -45,4 +56,3 @@ class JsonEncoder( json.JSONEncoder ):
             pass
 
         return str( obj )
-

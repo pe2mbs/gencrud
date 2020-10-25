@@ -26,9 +26,12 @@ import logging.handlers
 import traceback
 import importlib
 from inspect import signature
-from webapp2.common.logger import loadLoggingFile, updateLogging
-from webapp2.extensions.register import registerExtensions
+from webapp2.common.log import loadLoggingFile, updateLogging, LoggerWriter
+from webapp2.common.util import ResolveRootPath
+from webapp2.common.jsonenc import WebAppJsonEncoder
 from webapp2.common.angular import registerAngular
+from webapp2.common.plugins import loadPlugins
+from webapp2.extensions.register import registerExtensions
 from webapp2.commands.register import registerCommands
 from webapp2.common.exceptions import InvalidUsage
 from webapp2.extensions.flask import Flask
@@ -41,69 +44,14 @@ import webapp2.extensions.cache
 import webapp2.extensions.migrate
 import webapp2.extensions.bcrypt
 import webapp2.api as API
+
 import json
 import flask.json
+from webapp2.version import version_no, date, author
 
-
-class LoggerWriter:
-    def __init__( self, function ):
-        # self.level is really like using log.debug(message)
-        # at least in my case
-        self.function = function
-        return
-
-    def write( self, message ):
-        # if statement reduces the amount of newlines that are
-        # printed to the logger
-        if message != '\n':
-            # self.function( message.replace( '\n', '\\n' ) )
-            pass
-
-        return
-
-    def flush(self):
-        # create a flush method so things can be flushed when the system wants to.
-        # Simply returning is good enough.
-        return
-
-
-def ResolveRootPath( path ):
-    if path == '':
-        path = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..' ) )
-
-    elif path == '.':
-        path = os.path.abspath( path )
-
-    return path
-
-
-def loadPlugins():
-    # Now check if there are plugins
-    pluginsFolder = os.path.abspath( os.path.join(os.path.dirname(__file__), '..', 'plugins') )
-    if os.path.isdir( pluginsFolder ):
-        for plugin in os.listdir( pluginsFolder ):
-            # Found something
-            pluginFolder = os.path.join( pluginsFolder, plugin )
-            if os.path.isfile( os.path.join( pluginFolder,'__init__.py' ) ) and \
-                    os.path.isfile(os.path.join(pluginFolder, '__main__.py') ):
-                # It seems to be plugin, import it
-                import importlib
-                try:
-                    API.plugins[ plugin ] = importlib.import_module( pluginFolder )
-
-                except Exception as exc:
-                    API.app.logger.error( "Loading plugin {} with error {}".format( pluginFolder, exc ) )
-
-    return
-
-
-class WebAppJsonEncoder( flask.json.JSONEncoder ):
-    def default( self, obj ):
-        if isinstance( obj, ( bytes, bytearray ) ):
-            return obj.decode('utf-8')
-
-        # default, if not bytes/byte-array object. Let Flask do it thing
-        return flask.json.JSONEncoder.default( self, obj )
+__version__     = version_no
+__date__        = date
+__author__      = author
 
 
 def createApp( root_path, config_file = 'config.yaml', module = None, full_start = True, verbose = False, logging_name = None, process_name = 'app' ):
@@ -144,10 +92,6 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
             config_path = root_path
             config_file = 'config.json'
 
-        if not os.path.isfile( os.path.join( config_path, config_file ) ):
-            print( "The config file is missing", file = sys.stderr )
-            exit( -1 )
-
         print( "Starting Flask application, loading configuration." )
         API.app = Flask( __name__.split( '.' )[ 0 ],
                          static_url_path    = "",
@@ -161,6 +105,10 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
 
         except Exception as exc:
             print( exc )
+            if not os.path.isfile( os.path.join( config_path, config_file ) ):
+                print( "The config file is missing", file = sys.stderr )
+                exit( -1 )
+
             print( "Config file: {}".format( os.path.join( root_path, config_file ) ) )
             API.app.config.fromFile( os.path.join( config_path, config_file ) )
 
@@ -215,7 +163,7 @@ def createApp( root_path, config_file = 'config.yaml', module = None, full_start
         registerExtensions( module )
         registerCommands()
         if full_start:
-            loadPlugins()
+            loadPlugins( root_path )
             API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
             API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
             API.app.url_map.strict_slashes = False

@@ -39,10 +39,18 @@ def my_compose_document(self):
 yaml.SafeLoader.compose_document = my_compose_document
 
 
-def yaml_include(loader, node):
-    with open(node.value) as inputfile:
+def yaml_include( loader, node ):
+    if node.value.startswith( '.' ):
+        include_name = os.path.join( os.path.dirname( node.start_mark.name ), node.value )
+
+    else:
+        include_name = node.value
+
+    include_name = os.path.abspath( include_name )
+    with open( include_name, 'r' ) as inputfile:
         data = my_safe_load( inputfile, master = loader )
         return data
+
 
 yaml.add_constructor( "!include", yaml_include, Loader=yaml.SafeLoader )
 

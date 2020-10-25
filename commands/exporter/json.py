@@ -1,5 +1,5 @@
 import json
-from webapp2.common.logjson import JsonEncoder
+from webapp2.common.jsonenc import JsonEncoder
 import webapp2.api as API
 from webapp2.commands.exporter.base import DbExporter
 from webapp2.commands.exporter.yaml import YamlDbExporter
