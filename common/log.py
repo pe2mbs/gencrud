@@ -48,6 +48,7 @@ class LoggerWriter:
         # Simply returning is good enough.
         return
 
+
 def getLogger( root = 'flask.app' ):
     """Gets the logger instance
 
@@ -146,3 +147,40 @@ def loadLoggingFile( root_path, filename = None, folder = None, verbose = False,
         raise FileNotFoundError( root_path )
 
     return updateLogging( loadLoggingFileExt( root_path,filename ), folder, verbose, **kwargs )
+
+LOGGING_INFO = {
+    'version': 1,
+    'formatters': {
+        'default': {
+            'format': "[%(asctime)s] %(levelname)s %(name)s in %(module)s.%(funcName)s( %(lineno)s ): %(message)s"
+        },
+        'console': {
+        'format': "%(asctime)s %(levelname)s %(name)s in %(module)s: %(message)s"
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://sys.stdout',
+            'formatter': 'console',
+            'level': 'DEBUG',
+        },
+        'logfile': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'webapp2.log',
+            'maxBytes': 10485760,
+            'backupCount': 7,
+            'formatter': 'default',
+            'level': 'DEBUG',
+        }
+    },
+    'root': {
+        'level': 'DEBUG',
+        'handlers': [ 'console', 'logfile' ]
+    },
+    'loggers': {
+        'flask.app': {
+            'level': 'DEBUG'
+        }
+    }
+}

@@ -19,6 +19,7 @@
 #
 import logging
 import os
+import sys
 import errno
 import copy
 import json
@@ -26,6 +27,7 @@ import datetime
 from flask import Config as BaseConfig
 from webapp2.common.iterahead import lookahead
 from ruamel import yaml
+
 
 
 def my_compose_document(self):
@@ -114,11 +116,11 @@ class Config( BaseConfig ):
                         result = self._configOverRide( result, my_safe_load( stream ) )
 
                 else:
-                    print( "No ENVIRONENT config" )
+                    print( "No ENVIRONENT config", file = sys.stderr )
 
             else:
                 # no custom configutions at all.
-                print( "No 'env' folder for ENVIRONEMNT configurations" )
+                print( "No 'env' folder for ENVIRONEMNT configurations", file = sys.stderr )
 
             self[ 'ENVIRONMENT' ] = env.lower()
             tsk = os.environ.get( 'FLASK_TASK', 'WEBAPP' ).upper()
@@ -130,7 +132,7 @@ class Config( BaseConfig ):
                         result = self._configOverRide( result, my_safe_load( stream ) )
 
                 else:
-                    print( "No TASK config" )
+                    print( "No TASK config", file = sys.stderr )
 
             self[ 'WEBAPP_TASK' ] = tsk.lower()
 

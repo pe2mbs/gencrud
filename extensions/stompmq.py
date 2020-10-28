@@ -18,8 +18,10 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import logging
+import webapp2.api as API
 from typing import Callable, Tuple
 import stomp
+
 
 __version__ = "0.1.0"
 
@@ -719,4 +721,5 @@ class FlaskStomp( object ):
 
         return decorator
 
-stomp = FlaskStomp()
+
+API.stomp = FlaskStomp()

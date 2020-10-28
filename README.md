@@ -43,20 +43,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 # Structure.
 ```
 <project-root-folder>
-+-  webapp              this repro
-    __init__.py
-    angular.py
-    app.py
-    app.logger.py
-    commands.py
-    compat.py
-    config.py
-    database.py
-    exceptions.py
-    extensions.py
-    autoapp.py
-    config.json
-    config.yml
++-  webapp2              this repro
+    ...
     requirements.txt
     +-- requirements
         dev.txt
@@ -67,13 +55,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 +-- frontend
     (the angular source tree)
         (the angular project files)      
+
 ```
 
 
 ## Python.
-``` 
-Python 3.5.2
-``` 
+Tested on the following versions on Linux: 
+* Python 3.5.2 
+* Python 3.6.9
+* Python 3.8.0
+
+Tested on the following versions on Version:
+* Python 3.6.6
 
 
 ## Flask.
@@ -100,7 +93,6 @@ pyyaml==5.3.1
 ## Standard development modes.
 ```bash
 # export FLASK_APP=webapp/autoapp.py
-# export FLASK_APP_CONFIG=devconfig.yaml
 # export FLASK_DEBUG=1
 # export FLASK_ENV=DEVELOPMENT 
 # flask run
@@ -120,7 +112,6 @@ pyyaml==5.3.1
 ## Standard test modes.
 ```bash 
 # export FLASK_APP=webapp/autoapp.py
-# export FLASK_APP_CONFIG=testconfig.yaml
 # export FLASK_ENV=STAGING 
 # flask run --no-reload --with-threads 
 ```
@@ -129,7 +120,6 @@ pyyaml==5.3.1
 ## Standard production modes.
 ```bash 
 # export FLASK_APP=webapp/autoapp.py
-# export FLASK_APP_CONFIG=prodconfig.yaml
 # export FLASK_ENV=PRODUCTION 
 # flask run --no-reload --with-threads 
 ```

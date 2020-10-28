@@ -41,14 +41,14 @@ COMMON: &common
     PORT:                               8000
     DEBUG:                              false
     TESTING:                            false
-    API_MODULE:                         application
+    API_MODULE:                         backend
     LOGGING:
         <<: *logging
         handlers:
             <<: *logging_handlers
             logfile:
                 <<: *logging_handler_logfile
-                filename: /var/log/dev/webapp.log
+                filename:               /var/log/dev/webapp.log
     APP_PATH:                           /opt/application
     ANGULAR_PATH:                       ./frontend/dist/angular-app
     BCRYPT_LOG_ROUNDS:                  13
@@ -82,7 +82,7 @@ DEVELOPMENT:    &development
             <<: *logging_handlers
             logfile:
                 <<: *logging_handler_logfile
-                filename: ~/log/webapp.log
+                filename:           ./log/webapp.log
     DATABASE:
         <<: *database
         SCHEMA:                     schema
@@ -101,7 +101,7 @@ STAGING:
             <<: *logging_handlers
             logfile:
                 <<: *logging_handler_logfile
-                filename: /var/log/staging/webapp.log
+                filename:           /var/log/staging/webapp.log
     DATABASE:
         <<: *database
         SCHEMA:                     schema
@@ -118,7 +118,7 @@ PRODUCTION:
             <<: *logging_handlers
             logfile:
                 <<: *logging_handler_logfile
-                filename: /var/log/prod/webapp.log
+                filename:           /var/log/prod/webapp.log
     ENV:                            prod
     DATABASE:
         <<: *database

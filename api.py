@@ -24,7 +24,7 @@ app             = None
 menuItems       = []
 applicInfo      = {}
 plugins         = None
-
+loggingInfo     = {}
 bcrypt          = None
 migrate         = None
 cache           = None
