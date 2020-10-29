@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
+import traceback
 import logging
 import os
 import sys
@@ -75,6 +76,9 @@ class Config( BaseConfig ):
     def _configOverRide( self, result, override ):
         for key, value in override.items():
             if isinstance( value, dict ):
+                if key not in result:
+                    result[ key ] = {}
+
                 result[ key ] = self._configOverRide( result[ key ], value )
 
             else:
@@ -97,50 +101,54 @@ class Config( BaseConfig ):
         :return:
         """
         result = {}
-        if os.path.isdir( config_folder ):
-            # Master configuration
-            configFile = os.path.join( config_folder, 'config.conf' )
-            if os.path.isfile( configFile ):
-                with open( configFile, 'r' ) as stream:
-                    result = my_safe_load( stream )
-
-            else:
-                raise Exception( 'No master configuration present {}'.format( configFile ) )
-
-            env = os.environ.get( 'FLASK_ENV', 'DEVELOPMENT' ).upper()
-            envFolder = os.path.join( config_folder, 'env' )
-            if os.path.isdir( envFolder ):
-                configFile = os.path.join( envFolder, '{}.conf'.format( env.upper() ) )
+        try:
+            if os.path.isdir( config_folder ):
+                # Master configuration
+                configFile = os.path.join( config_folder, 'config.conf' )
                 if os.path.isfile( configFile ):
                     with open( configFile, 'r' ) as stream:
-                        result = self._configOverRide( result, my_safe_load( stream ) )
+                        result = my_safe_load( stream )
 
                 else:
-                    print( "No ENVIRONENT config", file = sys.stderr )
+                    raise Exception( 'No master configuration present {}'.format( configFile ) )
+
+                env = os.environ.get( 'FLASK_ENV', 'DEVELOPMENT' ).upper()
+                envFolder = os.path.join( config_folder, 'env' )
+                if os.path.isdir( envFolder ):
+                    configFile = os.path.join( envFolder, '{}.conf'.format( env.upper() ) )
+                    if os.path.isfile( configFile ):
+                        with open( configFile, 'r' ) as stream:
+                            result = self._configOverRide( result, my_safe_load( stream ) )
+
+                    else:
+                        print( "No ENVIRONENT config", file = sys.stderr )
+
+                else:
+                    # no custom configutions at all.
+                    print( "No 'env' folder for ENVIRONEMNT configurations", file = sys.stderr )
+
+                self[ 'ENVIRONMENT' ] = env.lower()
+                tsk = os.environ.get( 'FLASK_TASK', 'WEBAPP' ).upper()
+                tskFolder = os.path.join( config_folder, 'tsk' )
+                if os.path.isdir( tskFolder ):
+                    configFile = os.path.join( tskFolder, '{}.conf'.format( tsk.upper() ) )
+                    if os.path.isfile( configFile ):
+                        with open( configFile, 'r' ) as stream:
+                            result = self._configOverRide( result, my_safe_load( stream ) )
+
+                    else:
+                        print( "No TASK config", file = sys.stderr )
+
+                self[ 'WEBAPP_TASK' ] = tsk.lower()
 
             else:
-                # no custom configutions at all.
-                print( "No 'env' folder for ENVIRONEMNT configurations", file = sys.stderr )
+                raise Exception( "Configuration folder not present: {}".format( config_folder ) )
 
-            self[ 'ENVIRONMENT' ] = env.lower()
-            tsk = os.environ.get( 'FLASK_TASK', 'WEBAPP' ).upper()
-            tskFolder = os.path.join( config_folder, 'tsk' )
-            if os.path.isdir( tskFolder ):
-                configFile = os.path.join( tskFolder, '{}.conf'.format( tsk.upper() ) )
-                if os.path.isfile( configFile ):
-                    with open( configFile, 'r' ) as stream:
-                        result = self._configOverRide( result, my_safe_load( stream ) )
+            return self._modify( result )
 
-                else:
-                    print( "No TASK config", file = sys.stderr )
-
-            self[ 'WEBAPP_TASK' ] = tsk.lower()
-
-        else:
-            raise Exception( "Configuration folder not present: {}".format( config_folder ) )
-
-        return self._modify( result )
-
+        except Exception:
+            print( traceback.format_exc() )
+            raise
 
     def fromFile( self, config_file, silent=False ):
         """Load the configuration from a file, currently JSON and YAML formats
