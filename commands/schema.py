@@ -1,5 +1,6 @@
 import webapp2.api as API
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, InternalError, ProgrammingError
+
 
 def getCurrentSchema():
     return API.app.config[ 'DATABASE' ][ 'SCHEMA' ]
@@ -72,13 +73,15 @@ def copySchema( oSchema, nSchema ):
 
     return
 
-def copySchema2( destSchema, srcSchema, clear ):
+def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
     resultTable = {}
+    errorTable = {}
     connection = API.db.session.connection()
     API.app.logger.info( "Begin work" )
     connection.execute( "SET FOREIGN_KEY_CHECKS=0;" )
     connection.execute( "BEGIN WORK;" )
     total = 0
+    errors = 0
     table = ''
     try:
         for table in listTables( destSchema, exclude = [ 'alembic_version' ] ):
@@ -97,21 +100,49 @@ def copySchema2( destSchema, srcSchema, clear ):
                                                                                                               srcSchema = srcSchema,
                                                                                                               table = table,
                                                                                                               fields = fieldList )
+            try:
+                connection.execute( cmd )
+                count = 0
+                for rec in connection.execute( "select count(*) from {}.{};".format( destSchema, table ) ):
+                    count = rec[ 0 ]
 
-            connection.execute( cmd )
-            count = 0
-            for rec in connection.execute( "select count(*) from {}.{};".format( destSchema, table ) ):
-                count = rec[ 0 ]
+                resultTable[ table ] = count
+                API.app.logger.info( "{} Inserted into '{}' table".format( count, table ) )
+                total += count
 
-            resultTable[ table ] = count
-            API.app.logger.info( "{} Inserted into '{}' table".format( count, table ) )
-            total += count
+            except ProgrammingError:
+                if ignore_errors:
+                    API.app.logger.error( "Skipping '{}' table".format( table ) )
+
+                else:
+                    raise
+
+            except IntegrityError:
+                if ignore_errors:
+                    errors += count
+                    API.app.logger.error( "InternalError {} not inserted into '{}' table".format( count,table ) )
+                    errorTable[ table ] = count
+
+                else:
+                    raise
+
+            except InternalError:
+                if ignore_errors:
+                    errors += count
+                    API.app.logger.error( "InternalError {} not inserted into '{}' table".format( count,table ) )
+                    errorTable[ table ] = count
+                else:
+                    raise
+
+            except Exception as exc:
+                API.app.logger.error( exc )
+                API.app.logger.error( "{} {} not inserted into '{}' table".format( type(exc), count, table ) )
 
         API.app.logger.info( "Commit work" )
         connection.execute( "COMMIT WORK;" )
         API.app.logger.info( "{} records copied".format( total ) )
 
-    except IntegrityError as exc:
+    except ( IntegrityError, InternalError, ProgrammingError ) as exc:
         if exc.orig is not None:
             API.app.logger.error( "{} in table {}".format( exc.orig.args[ 1 ], table ) )
 
@@ -127,4 +158,4 @@ def copySchema2( destSchema, srcSchema, clear ):
         connection.execute( "ROLLBACK WORK;" )
 
     connection.execute( "SET FOREIGN_KEY_CHECKS=1;" )
-    return resultTable, total
+    return resultTable, errorTable, total, errors

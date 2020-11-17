@@ -516,10 +516,13 @@ def copy( schema, clear, force ):
             return
 
         API.app.logger.info( "Clear: {}".format( clear ) )
-        resultTable, total = copySchema2( destSchema, schema, clear )
+        resultTable, errorTable, total, errors = copySchema2( destSchema, schema, clear )
         for key, value in resultTable.items():
-            print( "{:40}: {}".format( key, value ) )
+            print( "{:40}: {} inserted.".format( key, value ) )
 
-        print( "{:40}: {}".format( "total", total ) )
+        print( "Total records inserted: {:40}: {}".format( "total", total ) )
+        for key, value in errorTable.items():
+            print( "{:40}: {} skipped.".format( key, value ) )
 
+        print( "Total Errors: {:40}: {}".format( "total",total ) )
     return
