@@ -17,24 +17,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import os
-from flask_marshmallow import Marshmallow
+from flask_socketio import SocketIO
+import webapp2.api as API
 
-app             = None
-menuItems       = []
-applicInfo      = {}
-plugins         = None
-loggingInfo     = {}
-bcrypt          = None
-migrate         = None
-cache           = None
-cors            = None
-jwt             = None
-mm              = Marshmallow()
-stomp           = None
-db              = None
-socketio        = None
 
-HERE            = os.path.abspath( os.path.dirname( __file__ ) )
-PROJECT_ROOT    = os.path.join( HERE, os.pardir )
-
+API.socketio = SocketIO()
+print( "SocketIO() done" )

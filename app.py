@@ -45,31 +45,44 @@ try:
     import webapp2.extensions.stompmq
 
 except ModuleNotFoundError:
+    print( "webapp2.extensions.stompmq NOT loaded" )
     pass
 
 try:
     import webapp2.extensions.jwt
 
 except ModuleNotFoundError:
+    print( "webapp2.extensions.jwt NOT loaded" )
     pass
 
 try:
     import webapp2.extensions.cors
 
 except ModuleNotFoundError:
+    print( "webapp2.extensions.cors NOT loaded" )
     pass
 
 try:
     import webapp2.extensions.cache
 
 except ModuleNotFoundError:
+    print( "webapp2.extensions.cache NOT loaded" )
     pass
 
 try:
     import webapp2.extensions.bcrypt
 
 except ModuleNotFoundError:
+    print( "webapp2.extensions.bcrypt NOT loaded" )
     pass
+
+try:
+    import webapp2.extensions.websocket
+
+except ModuleNotFoundError:
+    print( "webapp2.extensions.websocket NOT loaded" )
+    pass
+
 
 
 __version__     = version_no

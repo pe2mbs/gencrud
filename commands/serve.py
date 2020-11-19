@@ -1,5 +1,6 @@
 import os
 from flask.cli import AppGroup
+import webapp2.api as API
 import click
 from flask.cli import ( pass_script_info,
                         CertParamType,
@@ -82,20 +83,34 @@ def dev( info, host, port, reload, debugger, eager_loading,
         port = int( port )
 
     print( "HOST {} PORT {}".format( host, port ) )
-    appPath     = applic.config.get( 'APP_PATH', os.curdir )
-    appApiMod   = applic.config.get( 'API_MODULE', '' )
+    # appPath     = applic.config.get( 'APP_PATH', os.curdir )
+    # appApiMod   = applic.config.get( 'API_MODULE', '' )
     # As those files may change, but are only loaded when the application starts
     # we monitor them, so that the application restart when they change
-    extra_files = [ os.path.join( appPath, appApiMod, 'menu.yaml' ),
-                    os.path.join( appPath, appApiMod, 'release.yaml' ) ]
-    from werkzeug.serving import run_simple
-    run_simple( host, port, app,
-                use_reloader = reload,
-                reloader_type = 'stat',
-                use_debugger = debugger,
-                threaded = with_threads,
-                ssl_context = cert,
-                extra_files = extra_files )
+    extra_files = applic.config.get( 'EXTRA_FILES', [] )
+    # extra_files = [ os.path.join( appPath, appApiMod, 'menu.yaml' ),
+    #                 os.path.join( appPath, appApiMod, 'release.yaml' ) ]
+    if API.socketio is not None:
+        app.debug = True
+        API.socketio.run( app, host, port,
+                          debug = debugger,
+                          use_reloader = reload,
+#                         reloader_type = 'stat',
+#                         threaded = with_threads,
+#                          ssl_context = cert,
+                          extra_files = extra_files
+                        )
+    else:
+        from werkzeug.serving import run_simple
+        run_simple( host, port, app,
+                    use_reloader = reload,
+                    reloader_type = 'stat',
+                    use_debugger = debugger,
+                    threaded = with_threads,
+                    ssl_context = cert,
+                    extra_files = extra_files )
+
+
     return
 
 

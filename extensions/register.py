@@ -54,6 +54,20 @@ def registerExtensions( module ):
     if EXTENSIONS.get( "STOMP", False ):
         API.stomp.init_app( API.app )
 
+    if API.socketio is not None:
+        API.socketio.init_app( API.app, async_mode='eventlet' )
+
+
+        @API.socketio.on( 'message' )
+        def handle_unnamed_message( message ):
+            API.app.logger.error( "Received unnamed WebSocket message: '{}'".format( message ) )
+            return
+
+        @API.socketio.on( 'json' )
+        def handle_unnamed_json( message ):
+            API.app.logger.error( "Received unnamed WebSocket json data: '{}'".format( message ) )
+            return
+
     if module:
         if hasattr( module,'registerExtensions' ):
             sig = signature( module.registerExtensions )
