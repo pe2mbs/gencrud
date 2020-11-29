@@ -305,10 +305,11 @@ class TemplateUi( TemplateBase ):
         if C_DEBUG in self.__cfg:
             options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
-        return '''<{tag} id="{table}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
+        return '''<{tag} id="{name}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
                 format( tag = type2component[ self.uiObject ],
                         id = field,
                         table = table,
+                        name = self.parent.name,
                         placeholder = label,
                         option = ' '.join( options ),
                         field = field )
