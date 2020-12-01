@@ -138,6 +138,7 @@ def feedback():
 
     API.db.session.add( record )
     API.db.session.commit()
+    current_app.sendMail( record )
     current_app.logger.debug( 'feedback() => ok' )
     return jsonify( status = 'ok' )
 

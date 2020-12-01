@@ -23,6 +23,14 @@ from webapp2.extensions.config import Config
 
 
 class Flask( BaseFlask ):
+    def __init__( self, import_name, static_url_path=None, static_folder='static', static_host=None,
+                        host_matching=False, subdomain_matching=False, template_folder='templates',
+                        instance_path=None, instance_relative_config=False, root_path=None ):
+        BaseFlask.__init__( self, import_name, static_url_path, static_folder, static_host, host_matching, subdomain_matching,
+                                  template_folder, instance_path, instance_relative_config, root_path )
+        self.__sendEmail = None
+        return
+
     """Extended version of `Flask` that implements custom config class
     """
     def make_config( self, instance_relative = False ):
@@ -31,3 +39,19 @@ class Flask( BaseFlask ):
             root_path = self.instance_path
 
         return Config( root_path, self.default_config )
+
+    def sendMail( self, record ):
+        if callable( self.__sendEmail ):
+            self.__sendEmail( record )
+
+        return
+
+    @property
+    def sendMailFunction( self ):
+        return self.__sendEmail
+
+    @sendMailFunction.setter
+    def sendMailFunction( self, value ):
+        self.__sendEmail = value
+        return
+

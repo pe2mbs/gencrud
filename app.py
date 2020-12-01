@@ -193,7 +193,7 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
         API.logger      = API.app.logger
         API.app.logger.warning( "Logging Flask application: {}".format( logging.getLevelName( API.app.logger.level ) ) )
         API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
-
+        API.logger = API.app.logger
         sys.stderr = LoggerWriter( API.app.logger.warning )
         module = None
         sys.path.append( root_path )
