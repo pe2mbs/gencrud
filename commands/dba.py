@@ -475,8 +475,11 @@ COPY_HELP = """Copy schema to another.
 @click.option( '--force/--noforce',
                default = False,
                help = "Copies even when version differ." )
+@click.option( '--ignore_errors/--noignore_errors',
+               default = False,
+               help = "Copies even when version differ." )
 @click.argument( 'schema', nargs = -1)
-def copy( schema, clear, force ):
+def copy( schema, clear, force, ignore_errors ):
     destSchema = getCurrentSchema()
     oVersion = getCurrentVersion()
     if oVersion is None:
@@ -516,7 +519,7 @@ def copy( schema, clear, force ):
             return
 
         API.app.logger.info( "Clear: {}".format( clear ) )
-        resultTable, errorTable, total, errors = copySchema2( destSchema, schema, clear )
+        resultTable, errorTable, total, errors = copySchema2( destSchema, schema, clear, ignore_errors )
         for key, value in resultTable.items():
             print( "{:40}: {} inserted.".format( key, value ) )
 

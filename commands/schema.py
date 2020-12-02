@@ -1,6 +1,6 @@
 import webapp2.api as API
 from sqlalchemy.exc import IntegrityError, InternalError, ProgrammingError
-
+from datetime import datetime, time, date
 
 def getCurrentSchema():
     return API.app.config[ 'DATABASE' ][ 'SCHEMA' ]
@@ -73,7 +73,82 @@ def copySchema( oSchema, nSchema ):
 
     return
 
+def mapFieldLists( connection, destination, source ):
+    def Diff( li1, li2 ):
+        return ( list( list( set( li1 ) - set( li2 ) ) + list( set( li2 ) - set( li1 ) ) ) )
+
+    def Common( li1, li2 ):
+        return list( set( li1 ).intersection( li2 ) )
+
+    def GetFieldList( table_schema ):
+        result = connection.execute( "SHOW FULL COLUMNS FROM {};".format( table_schema ) )
+        fieldList = [ ]
+        fieldData = {}
+        for field, field_type, _, field_null, field_index, *field_options in result:
+            fieldList.append( field )
+            field_type, *field_type1 = field_type.split('(')
+            field_len = 0
+            if len( field_type1 ) > 0:
+                field_len = int( field_type1[0].split(')')[0] )
+
+            fieldData[ field ] = {
+                'type': field_type,
+                'length': field_len,
+                'null': field_null,
+                'index': field_index,
+                'option': field_options
+            }
+
+        return fieldData, list( sorted( fieldList ) )
+
+    destInfo, destFields = GetFieldList( destination )
+    srcInfo, srcFields = GetFieldList( source )
+    if len( Diff( destFields, srcFields ) ) > 0:
+        srcAppendFields = [ ]
+        destAppendFields = [ ]
+        commonFields = Common( destFields,srcFields )
+        # Get fields from destination not in common, therefor we need default values
+        for field in Diff( commonFields, destFields ):
+            fieldData = destInfo[ field ]
+            if fieldData[ 'null' ].lower() == 'no':
+                if fieldData[ 'type' ].lower() in ( 'char', 'varchar', 'text', 'longtext', 'blob' ):
+                    srcAppendFields.append( '""' )
+                    destAppendFields.append( field )
+
+                elif fieldData[ 'type' ].lower() in ( 'int', 'long', 'tinyint' ):
+                    srcAppendFields.append( '0' )
+                    destAppendFields.append( field )
+
+                elif fieldData[ 'type' ].lower() == 'datetime':
+                    srcAppendFields.append( datetime.utcnow() )
+                    destAppendFields.append( field )
+
+                elif fieldData[ 'type' ].lower() == 'date':
+                    srcAppendFields.append( datetime.utcnow().date() )
+                    destAppendFields.append( field )
+
+                elif fieldData[ 'type' ].lower() == 'time':
+                    srcAppendFields.append( datetime.utcnow().time() )
+                    destAppendFields.append( field )
+
+        srcFields = commonFields + srcAppendFields
+        destFields = commonFields + destAppendFields
+
+    return ", ".join( destFields ), ", ".join( srcFields )
+
+
 def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
+    def reccount( connection, schema_table ):
+        try:
+            for rec in connection.execute( "select count(*) from {};".format( schema_table ) ):
+                return rec[ 0 ]
+
+        except Exception:
+            pass
+
+        return 0
+
+    INSERT_INTO = "INSERT INTO {destSchema}.{table} ( {destFields} ) SELECT {srcFields} FROM {srcSchema}.{table};"
     resultTable = {}
     errorTable = {}
     connection = API.db.session.connection()
@@ -85,40 +160,57 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
     table = ''
     try:
         for table in listTables( destSchema, exclude = [ 'alembic_version' ] ):
-            result = connection.execute( "SHOW COLUMNS FROM {}.{};".format( destSchema,table ) )
-            fields = [ ]
-            for field, *args in result:
-                fields.append( field )
+            # Now map the two field lists
+            try:
+                destFieldList, srcFieldList = mapFieldLists( connection,
+                                                             "{}.{};".format( destSchema, table ),
+                                                             "{}.{};".format( srcSchema, table ) )
+            except ProgrammingError:
+                if ignore_errors:
+                    API.app.logger.error( "Skipping '{}' table".format( table ) )
+                    continue
 
-            fieldList = ", ".join( fields )
+                raise
+
+            except Exception:
+                raise
+
             if clear:
                 API.app.logger.info( "Clear '{}' table".format( table ) )
                 connection.execute( "DELETE FROM {}.{};".format( destSchema, table ) )
 
             print( "Copying table '{}'".format( table ) )
-            cmd = "INSERT INTO {destSchema}.{table} ( {fields} ) SELECT {fields} FROM {srcSchema}.{table};".format( destSchema = destSchema,
-                                                                                                              srcSchema = srcSchema,
-                                                                                                              table = table,
-                                                                                                              fields = fieldList )
+            cmd = INSERT_INTO.format( destSchema = destSchema, destFields = destFieldList,
+                                      srcSchema = srcSchema, srcFields = srcFieldList,
+                                      table = table )
+
+            count = 0
             try:
                 connection.execute( cmd )
-                count = 0
-                for rec in connection.execute( "select count(*) from {}.{};".format( destSchema, table ) ):
-                    count = rec[ 0 ]
-
+                count = reccount( connection, "{}.{};".format( destSchema, table ) )
                 resultTable[ table ] = count
                 API.app.logger.info( "{} Inserted into '{}' table".format( count, table ) )
                 total += count
 
-            except ProgrammingError:
+            except ProgrammingError as exc:
+                API.app.logger.error( "Exception on table {}: {} ".format( table, exc ) )
                 if ignore_errors:
+                    if count == 0:
+                        count = reccount( connection,"{}.{};".format( srcSchema,table ) )
+
+                    errors += count
+                    errorTable[ table ] = count
                     API.app.logger.error( "Skipping '{}' table".format( table ) )
 
                 else:
                     raise
 
-            except IntegrityError:
+            except IntegrityError as exc:
+                API.app.logger.error( "Exception on table {}: {} ".format( table,exc ) )
                 if ignore_errors:
+                    if count == 0:
+                        count = reccount( connection,"{}.{};".format( srcSchema,table ) )
+
                     errors += count
                     API.app.logger.error( "InternalError {} not inserted into '{}' table".format( count,table ) )
                     errorTable[ table ] = count
@@ -126,8 +218,12 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
                 else:
                     raise
 
-            except InternalError:
+            except InternalError as exc:
+                API.app.logger.error( "Exception on table {}: {} ".format( table,exc ) )
                 if ignore_errors:
+                    if count == 0:
+                        count = reccount( connection,"{}.{};".format( srcSchema,table ) )
+
                     errors += count
                     API.app.logger.error( "InternalError {} not inserted into '{}' table".format( count,table ) )
                     errorTable[ table ] = count
