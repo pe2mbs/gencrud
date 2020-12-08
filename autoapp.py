@@ -78,6 +78,7 @@ def handle_exception( e: Exception ):
         response: Response= make_response( str( e ), 500 )
         description = str( e )
 
+    app.logger.error( traceback.format_exc() )
     response_data = {}
     try:
         # replace the body with JSON
@@ -132,6 +133,5 @@ def handle_exception( e: Exception ):
         app.logger.error( traceback.format_exc() )
 
     response.data = json.dumps( response_data, indent = 4 )
-    app.logger.error( response.data )
     response.content_type = "application/json"
     return response
