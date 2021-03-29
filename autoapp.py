@@ -80,6 +80,11 @@ def handle_exception( e: Exception ):
 
     app.logger.error( traceback.format_exc() )
     response_data = {}
+    if e is MemoryError:
+        # This is to shutdown the application to clean up the memory
+        # and let Process monitor restart the application.
+        raise SystemExit
+
     try:
         # replace the body with JSON
         response_data = {
