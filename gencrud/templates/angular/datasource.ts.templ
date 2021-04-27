@@ -21,12 +21,12 @@
 */
 import { EventEmitter } from '@angular/core';
 import { CrudDataSource } from '../../common/crud-datasource';
-import { CrudDataService, PytSelectList } from '../../common/crud-dataservice';
+import { CrudDataService, GcSelectList } from '../../common/crud-dataservice';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { ${ obj.cls }Record } from './model';
 % for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+ % if field.ui is not None and field.ui.isUiType( 'choice', 'choice-auto-complete', 'combo' ):
    % if field.hasService():
 import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
    % endif
@@ -47,7 +47,7 @@ ${ obj.externalService } )
         return;
     }
 
-    sortActive( active: string, a: any, b: any ) : string[] 
+    sortActive( active: string, a: any, b: any ): string[]
     {
         switch ( active ) 
         {
@@ -55,7 +55,14 @@ ${ obj.externalService } )
 %  if field.hasService():
         case '${ field.name }':
             // TODO: fix the the resolved items
+%   if field.hasAttribute( "NULL" ):
+            if ( a.${ field.name }_FK && b.${ field.name }_FK )
+            {
+                return ( [ a.${ field.name }_FK.${ field.ui.service.label }, b.${ field.name }_FK.${ field.ui.service.label } ] );
+            }
+%   else:
             return ( [ a.${ field.name }_FK.${ field.ui.service.label }, b.${ field.name }_FK.${ field.ui.service.label } ] );
+%   endif
 %  elif field.hasResolveList():
         case '${ field.name }':
             return ( [ a.${ field.name }_LABEL, b.${ field.name }_LABEL ] );
@@ -68,16 +75,27 @@ ${ obj.externalService } )
         return ( [ null, null ] );        
     }
 
-    public makeSearchString( record: any ) : string
+    public makeSearchString( record: any ): string
     {
         let searchString: string = '';
 % for field in obj.table.listViewColumns:
 %  if field.hasService():
-        searchString += record.${ field.name }_FK.${ field.ui.service.label }
+%   if field.hasAttribute( "NULL" ):
+        if ( record.${ field.name }_FK )
+        {
+            searchString += record.${ field.name }_FK.${ field.ui.service.label };
+        }
+        else
+        {
+            searchString += "N/A";
+        }
+%   else:
+        searchString += record.${ field.name }_FK.${ field.ui.service.label };
+%   endif
 %  elif field.hasResolveList():
-        searchString += record.${ field.name }_LABEL
+        searchString += record.${ field.name }_LABEL;
 %  else:
-        searchString += record.${ field.name }
+        searchString += record.${ field.name };
 %  endif
 % endfor
         return ( searchString.toLowerCase() );

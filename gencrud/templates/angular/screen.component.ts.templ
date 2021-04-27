@@ -22,11 +22,11 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ${obj.cls}DataService } from './service';
-import { ActivatedRoute, RouterLink, Router } from "@angular/router";
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { ${obj.cls}Record } from './model';
 % for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-import { PytSelectList } from '../../common/crud-dataservice';
+ % if field.ui is not None and field.ui.isUiType( 'choice', 'choice-auto-complete', 'combo' ):
+import { GcSelectList } from '../../common/crud-dataservice';
 <%
     break
 %>
@@ -43,20 +43,22 @@ import { ScreenBaseComponent } from 'src/app/common/crud-screen-component';
 
 
 @Component({
+    // tslint:disable-next-line:component-selector
     selector: 'app-${obj.name}-screen',
-    templateUrl: './screen.component.html'
+    templateUrl: './screen.component.html',
+    styleUrls: [ '../../common/common-mat-card.scss' ]
 })
 export class Screen${obj.cls}Component extends ScreenBaseComponent<${obj.cls}Record> implements OnInit, OnDestroy
 {
 % for field in obj.table.columns:
 %  if field.ui is not None:
-%   if field.ui.isPassword():
+%   if field.ui.isUiType( 'password' ):
     public hide_${ field.name }: boolean  = true;
 %   elif field.ui is not None:
 %    if field.ui.hasService():
-    public ${ field.ui.service.name }List: PytSelectList[];
+    public ${ field.ui.service.name }List: GcSelectList[];
 %    elif field.ui.hasResolveList():
-    public ${ field.name }List = ${ field.ui.typescriptResolveList() }
+    public ${ field.name }List = ${ field.ui.typescriptResolveList() };
 %    endif
 %   endif
 %  endif
@@ -89,10 +91,10 @@ ${ obj.externalService }  )
                 this.id             = params.id;    // Contains the key field, currently only the primary key is supported.
                 this.value          = params.value; // Contains val value for the key field.
                 this.mode           = params.mode;  // edit or new, filter only supported on the table component.
-                this.updateFixedValues( params )
+                this.updateFixedValues( params );
             } ) );
         }
-        if ( this.value != null || this.value != undefined )
+        if ( this.value != null || this.value !== undefined )
         {
             this.registerSubscription( this.dataService.getRecordById( this.value ).subscribe( record => {
                 this.row = record;

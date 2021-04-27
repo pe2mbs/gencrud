@@ -28,17 +28,11 @@ from gencrud.config.base import TemplateBase
 
 
 class TemplateSource( TemplateBase ):
-    def __init__( self, tp, **cfg ):
+    def __init__( self, tp, cfg ):
         TemplateBase.__init__( self, None )
-        platf = get_platform()
-        if platf not in C_PLATFORMS:
-            raise Exception( "Unsupported platform: {}".format( platf ) )
-
         self.__config = cfg
         self.__key = tp
-        self.__source = self.__config.get( platf, self.__config ).get( C_SOURCE, {} )
-        self.__template = self.__config.get( platf, self.__config ).get( C_TEMPLATE,
-                        os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'templates' ) ) )
+        self.__source = self.__config.get( self.platform, self.__config ).get( C_SOURCE, {} )
         return
 
     @property
@@ -55,7 +49,7 @@ class TemplateSource( TemplateBase ):
         if folder is None:
             raise KeyNotFoundException( "{}.{}".format( C_SOURCE, self.__key ) )
 
-        if not folder.startswith( os.path.pathsep ):
+        if not folder.startswith( os.path.sep ):
             # not absolute path
             # first test with baseFolder
             if os.path.isdir( os.path.join( self.baseFolder, folder ) ):
@@ -65,23 +59,6 @@ class TemplateSource( TemplateBase ):
 
         if not os.path.isdir( folder ):
             raise MissingSourceFolder( folder )
-
-        return folder
-
-    @property
-    def templateFolder( self ) -> str:
-        folder = os.path.join( self.__template, self.__key )
-        if not os.path.isdir( folder ):
-            raise MissingTemplateFolder( folder )
-
-        # Now check if the templates exists
-        cnt = 0
-        for templ_file in os.listdir( folder ):
-            if os.path.splitext( templ_file )[ 1 ] == '.templ':
-                cnt += 1
-
-        if cnt == 0:
-            raise MissingTemplate( self.__template )
 
         return folder
 
@@ -96,12 +73,12 @@ class TemplateSource( TemplateBase ):
 
 
 class TemplateSourcePython( TemplateSource ):
-    def __init__( self, **cfg ):
-        TemplateSource.__init__( self, C_PYTHON, **cfg )
+    def __init__( self, cfg ):
+        TemplateSource.__init__( self, C_PYTHON, cfg )
         return
 
 
 class TemplateSourceAngular( TemplateSource ):
-    def __init__( self, **cfg ):
-        TemplateSource.__init__( self, C_ANGULAR, **cfg )
+    def __init__( self, cfg ):
+        TemplateSource.__init__( self, C_ANGULAR, cfg )
         return

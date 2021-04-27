@@ -26,14 +26,14 @@ export class CustomHttpInterceptor implements HttpInterceptor
                 tap((event: HttpEvent<any>) => {
                     if (event instanceof HttpResponse) {
                         this.counter--;
-                        if ( this.counter == 0 )
+                        if ( this.counter === 0 )
                         {
                             this.spinnerService.hide();
                         }
                     }
                 }, (error) => {
                     this.counter--;
-                    if ( this.counter == 0 )
+                    if ( this.counter === 0 )
                     {
                         this.spinnerService.hide();
                     }

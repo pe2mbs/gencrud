@@ -1,21 +1,21 @@
 import { Subscribers } from "./subscribers";
 import { CrudDataService } from './crud-dataservice';
 import { FormControl, FormGroup, FormBuilder } from '@angular/forms';
-import { Input } from '@angular/core';
+import { Input, OnDestroy } from '@angular/core';
 
 
 
-export class ScreenBaseComponent<T> extends Subscribers
+export class ScreenBaseComponent<T> extends Subscribers implements OnDestroy
 {
-    public dataService: CrudDataService<T>
+    public dataService: CrudDataService<T>;
     public row: T;
     public formControl: FormControl;
     public formGroup: FormGroup;
     public mode: string;
     public sub: any;
     protected fixedValues: any = null;
-    @Input( 'id' )      id: any;
-    @Input( 'value' )   value: any;
+    @Input() id: any;
+    @Input() value: any;
     protected debug: boolean = false;
 
     constructor()
@@ -24,7 +24,7 @@ export class ScreenBaseComponent<T> extends Subscribers
         return;
     }
 
-    ngOnDestroy()
+    public ngOnDestroy()
     {
         this.dataService.unlockRecord( this.row );
         super.ngOnDestroy();
@@ -39,12 +39,12 @@ export class ScreenBaseComponent<T> extends Subscribers
         }
         if ( this.fixedValues != null )
         {
-            for ( let key in this.fixedValues )
+            for ( const key in this.fixedValues )
             {
                 if ( key.endsWith( '_ID' ) )
                 {
-                    let value: number = +this.fixedValues[ key ];
-                    let ctrl = this.formGroup.get( key );
+                    const value: number = +this.fixedValues[ key ];
+                    const ctrl = this.formGroup.get( key );
                     if ( ctrl != null )
                     {
                         ctrl.setValue( value );
@@ -65,12 +65,12 @@ export class ScreenBaseComponent<T> extends Subscribers
         {
             if ( this.fixedValues != null )
             {
-                for ( let key in this.fixedValues )
+                for ( const key in this.fixedValues )
                 {
                     if ( key.endsWith( '_ID' ) )
                     {
-                        let value: number = +this.fixedValues[ key ];
-                        let ctrl = this.formGroup.get( key );
+                        const value: number = +this.fixedValues[ key ];
+                        const ctrl = this.formGroup.get( key );
                         if ( ctrl != null )
                         {
                             ctrl.enable( { onlySelf: true } );
@@ -100,7 +100,7 @@ export class ScreenBaseComponent<T> extends Subscribers
         return ( this.mode === 'edit' );
     }
 
-    public getErrorMessage( ctrl_name: any ) : string
+    public getErrorMessage( ctrl_name: any ): string
     {
         let ctrl = null;
         if ( typeof ctrl_name === 'string' )

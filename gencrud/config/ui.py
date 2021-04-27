@@ -24,9 +24,51 @@ from gencrud.config.service import TemplateService
 from gencrud.constants import *
 
 
+class TypeComponents( object ):
+    _Component = {
+        C_LABEL: { 'tag': 'gc-label', 'fxflex': '60px' },
+        C_TEXTBOX: { 'tag': 'gc-text-input', 'fxflex': '60px' },
+        C_TEXT: { 'tag': 'gc-text-input', 'fxflex': '60px' },
+        C_CHECKBOX: { 'tag': 'gc-checkbox-input', 'fxflex': '60px' },
+        C_PASSWORD: { 'tag': 'gc-password-input', 'fxflex': '60px' },
+        C_TEXTAREA: { 'tag': 'gc-textarea-input', 'fxflex': '98' },
+        C_EDITOR: { 'tag': 'gc-monaco-editor', 'fxflex': '98' },
+        C_NUMBER: { 'tag': 'gc-number-input', 'fxflex': '60px' },
+        C_EMAIL: { 'tag': 'gc-mail-input', 'fxflex': '60px' },
+        C_CHOICE: { 'tag': 'gc-choice-input', 'fxflex': '60px' },
+        C_CHOICE_AUTO: { 'tag': 'gc-choice-autocomplete-input', 'fxflex': '60px' },
+        C_COMBOBOX: { 'tag': 'gc-combo-input', 'fxflex': '60px' },
+        C_COMBO: { 'tag': 'gc-combo-input', 'fxflex': '60px' },
+        C_SLIDER: { 'tag': 'gc-slider-input', 'fxflex': '30px' },
+        C_SLIDER_TOGGLE: { 'tag': 'gc-slidertoggle-input', 'fxflex': '30px' },
+        C_DATE: { 'tag': 'gc-date-input', 'fxflex': '60px' },
+        C_TIME: { 'tag': 'gc-time-input', 'fxflex': '60px' },
+        C_DATE_TIME: { 'tag': 'gc-datetime-input', 'fxflex': '60px' },
+        C_DATE_PICKER: { 'tag': 'gc-datepicker-input', 'fxflex': '60px' },
+        C_TIME_PICKER: { 'tag': 'gc-timepicker-input', 'fxflex': '60px' },
+        C_DATE_TIME_PICKER: { 'tag': 'gc-datetimepicker-input', 'fxflex': '60px' } }
+
+    def getCompnentTag( self, component ):
+        if component in TypeComponents._Component:
+            return TypeComponents._Component[ component ].get( 'tag' )
+
+        raise Exception( "Unknown component '{}' allowed: {}".format( component, ', '.join( list( TypeComponents._Component.keys() ) ) ) )
+
+    def getFlex( self, component ):
+        if component in TypeComponents._Component:
+            c = TypeComponents._Component[ component ]
+            if c.get( 'fxflex' ) is not None:
+                return 'fxFlex="{}"'.format( c.get( 'fxflex' ) )
+
+            return ""
+
+        raise Exception( "Unknown component '{}' allowed: {}".format( component, ', '.join( list( TypeComponents._Component.keys() ) ) ) )
+
+
 class TemplateUi( TemplateBase ):
     def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
+        self.__components = TypeComponents()
         self.__cfg = cfg
         if C_SERVICE in cfg:
             self.__service = TemplateService( **cfg[ C_SERVICE ] )
@@ -50,7 +92,7 @@ class TemplateUi( TemplateBase ):
 
     @property
     def uiObject( self ):
-        return self.__cfg.get( C_TYPE, C_TEXTBOX )
+        return self.__cfg.get( C_TYPE, C_TEXTBOX ).lower()
 
     @property
     def type( self ):
@@ -87,9 +129,6 @@ class TemplateUi( TemplateBase ):
     def attributes( self ):
         return self.__cfg.get( 'attributes', { } )
 
-    # def hasPrefix( self ):
-    #     return C_PREFIX in self.__cfg
-
     @property
     def prefixType( self ):
         return self.__cfg.get( C_PREFIX_TYPE, C_TEXT )
@@ -97,9 +136,6 @@ class TemplateUi( TemplateBase ):
     @property
     def prefix( self ):
         return self.__cfg.get( C_PREFIX, '' )
-
-    # def hasSuffix( self ):
-    #     return C_SUFFIX in self.__cfg
 
     @property
     def suffixType( self ):
@@ -164,50 +200,53 @@ class TemplateUi( TemplateBase ):
     def get( self, property, default = None ):
         return self.__cfg.get( property, default )
 
-    def isTextbox( self ):
-        return self.uiObject.lower() == C_TEXTBOX
+    def isUiType( self, *args ):
+        return self.uiObject in args
 
-    def isEditor( self ):
-        return self.uiObject.lower() == C_EDITOR
-
-    def isCheckbox( self ):
-        return self.uiObject.lower() == C_CHECKBOX
-
-    def isTextArea( self ):
-        return self.uiObject.lower() == C_TEXTAREA
-
-    def isPassword( self ):
-        return self.uiObject.lower() == C_PASSWORD
-
-    def isNumber( self ):
-        return self.uiObject.lower() == C_NUMBER
-
-    def isChoice( self ):
-        return self.uiObject.lower() in ( C_CHOICE, C_CHOICE_AUTO )
-
-    def isEmail( self ):
-        return self.uiObject.lower() == C_EMAIL
-
-    def isCombobox( self ):
-        return self.uiObject.lower() in ( C_COMBOBOX, C_COMBO )
-
-    def isDate( self ):
-        return self.uiObject.lower() == C_DATE_PICKER or self.uiObject.lower() == C_DATE
-
-    def isDateTime( self ):
-        return self.uiObject.lower() == C_DATE_TIME_PICKER or self.uiObject.lower() == C_DATE_TIME
-
-    def isTime( self ):
-        return self.uiObject.lower() == C_TIME_PICKER or self.uiObject.lower() == C_TIME
-
-    def isLabel( self ):
-        return self.uiObject.lower() == C_LABEL
-
-    def isSlider( self ):
-        return self.uiObject.lower() == C_SLIDER
-
-    def isSliderToggle( self ):
-        return self.uiObject.lower() == C_SLIDER_TOGGLE
+    # def isTextbox( self ):
+    #     return self.uiObject == C_TEXTBOX
+    #
+    # def isEditor( self ):
+    #     return self.uiObject == C_EDITOR
+    #
+    # def isCheckbox( self ):
+    #     return self.uiObject == C_CHECKBOX
+    #
+    # def isTextArea( self ):
+    #     return self.uiObject == C_TEXTAREA
+    #
+    # def isPassword( self ):
+    #     return self.uiObject == C_PASSWORD
+    #
+    # def isNumber( self ):
+    #     return self.uiObject == C_NUMBER
+    #
+    # def isChoice( self ):
+    #     return self.uiObject in ( C_CHOICE, C_CHOICE_AUTO )
+    #
+    # def isEmail( self ):
+    #     return self.uiObject == C_EMAIL
+    #
+    # def isCombobox( self ):
+    #     return self.uiObject in ( C_COMBOBOX, C_COMBO )
+    #
+    # def isDate( self ):
+    #     return self.uiObject == C_DATE_PICKER or self.uiObject == C_DATE
+    #
+    # def isDateTime( self ):
+    #     return self.uiObject == C_DATE_TIME_PICKER or self.uiObject == C_DATE_TIME
+    #
+    # def isTime( self ):
+    #     return self.uiObject == C_TIME_PICKER or self.uiObject == C_TIME
+    #
+    # def isLabel( self ):
+    #     return self.uiObject == C_LABEL
+    #
+    # def isSlider( self ):
+    #     return self.uiObject == C_SLIDER
+    #
+    # def isSliderToggle( self ):
+    #     return self.uiObject == C_SLIDER_TOGGLE
 
     def isSet( self, property ):
         return property in self.__cfg or self.parent.isSet( property )
@@ -216,29 +255,7 @@ class TemplateUi( TemplateBase ):
         if options is None:
             options = []
 
-        type2component = {
-            C_LABEL:                'pyt-label-box',
-            C_TEXTBOX:              'pyt-text-input-box',
-            C_TEXT:                 'pyt-text-input-box',
-            C_CHECKBOX:             'pyt-checkbox-input-box',
-            C_PASSWORD:             'pyt-password-input-box',
-            C_TEXTAREA:             'pyt-textarea-input-box',
-            C_EDITOR:               'pyt-monaco-editor-box',
-            C_NUMBER:               'pyt-number-input-box',
-            C_EMAIL:                'pyt-email-input-box',
-            C_CHOICE:               'pyt-choice-input-box',
-            C_CHOICE_AUTO:          'pyt-choice-autocomplete-input-box',
-            C_COMBOBOX:             'pyt-combo-input-box',
-            C_COMBO:                'pyt-combo-input-box',
-            C_SLIDER:               'pyt-slider-input-box',
-            C_SLIDER_TOGGLE:        'pyt-slidertoggle-input-box',
-            C_DATE:                 'pyt-date-input-box',
-            C_TIME:                 'pyt-time-input-box',
-            C_DATE_TIME:            'pyt-datetime-input-box',
-            C_DATE_PICKER:          'pyt-datepicker-input-box',
-            C_TIME_PICKER:          'pyt-timepicker-input-box',
-            C_DATE_TIME_PICKER:     'pyt-datetimepicker-input-box'
-        }
+        options.append( self.__components.getFlex( self.uiObject ) )
         if self.hasNgIf():
             options.append( '*ngIf="{}"'.format( self.ngIf ) )
 
@@ -261,20 +278,20 @@ class TemplateUi( TemplateBase ):
         if self.isSet( 'suffix-type' ) or self.isSet( 'suffix' ):
             options.append( 'suffix="{0}" suffix-type="{1}"'.format( self.suffix, self.suffixType ) )
 
-        if self.isCombobox() or self.isChoice():
+        if self.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO ):
             if self.__service is None:
                 options.append( '[items]="{}List"'.format( self.parent.name ) )
 
             else:
                 options.append( '[items]="{}List"'.format( self.__service.name ) )
 
-        elif self.isTextArea():
+        elif self.isUiType( C_TEXTAREA ):
             options.append( 'rows="{0}" cols="{1}"'.format( self.rows, self.cols ) )
 
-        elif self.isCheckbox():
+        elif self.isUiType( C_CHECKBOX ):
             options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
 
-        elif self.isSlider():
+        elif self.isUiType( C_SLIDER ):
             options.append( 'min="{0}" max="{1}"'.format( self.min, self.max ) )
             options.append( 'interval="{0}"'.format( self.interval ) )
             options.append( 'vertical="{0}"'.format( self.vertical ) )
@@ -295,24 +312,31 @@ class TemplateUi( TemplateBase ):
         if C_COLOR in self.__cfg:
             options.append( 'color="{0}"'.format( self.color ) )
 
-        if self.isLabel():
+        if self.isUiType( C_LABEL ):
             options.append( 'format="{0}"'.format( self.format ) )
             options.append( 'pipe="{0}"'.format( self.pipe ) )
 
-        if self.isDate() or self.isTime() or self.isDateTime():
+        if self.isUiType( C_DATE, C_DATE_PICKER, C_DATE_TIME, C_DATE_TIME_PICKER, C_TIME, C_TIME_PICKER ):
             options.append( 'format="{0}"'.format( self.format ) )
+
+        if self.hasDetailButton():
+            s = self.detailButton()
+            if isinstance( s, dict ):
+                route = s.get( 'route', None )
+                if route is not None:
+                    options.append( 'detail_button="{}"'.format( route ) )
+                    options.append( 'detail_id="{}"'.format( s.get( 'id', None ) ) )
 
         if C_DEBUG in self.__cfg:
             options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
-        return '''<{tag} id="{name}.{id}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
-                format( tag = type2component[ self.uiObject ],
-                        id = field,
-                        table = table,
-                        name = self.parent.name,
+        return '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
+                format( tag         = self.__components.getCompnentTag( self.uiObject ),
+                        table       = self.table.name,
+                        name        = self.parent.name,
                         placeholder = label,
-                        option = ' '.join( options ),
-                        field = field )
+                        option      = ' '.join( options ),
+                        field       = field )
 
     def hasNgIf( self ):
         return 'ngif' in self.__cfg
@@ -328,15 +352,25 @@ class TemplateUi( TemplateBase ):
     def service( self ):
         return self.__service
 
+    def defaultResolveList( self ):
+        if self.isUiType( C_CHECKBOX ):
+            return { True: "Yes", False: "No" }
+
+        return []
+
     def hasResolveList( self ):
-        return C_RESOLVE_LIST in self.__cfg or C_RESOLVE_LIST_OLD in self.__cfg
+        result = C_RESOLVE_LIST in self.__cfg or C_RESOLVE_LIST_OLD in self.__cfg
+        if not result and self.isUiType( C_CHECKBOX ):
+            return True
+
+        return result
 
     def typescriptResolveList( self ):
         if C_RESOLVE_LIST_OLD in self.__cfg:
             resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
 
         else:
-            resolveList = self.__cfg.get( C_RESOLVE_LIST, [ ] )
+            resolveList = self.__cfg.get( C_RESOLVE_LIST, self.defaultResolveList() )
 
         if isinstance( resolveList, dict ):
             # Short hand resolveList, need to convert
@@ -351,7 +385,8 @@ class TemplateUi( TemplateBase ):
             newResolveList = resolveList
 
         # result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
-        return "{}".format( json.dumps( newResolveList, indent = 12 ) )
+        result = "{}".format( json.dumps( newResolveList, indent = 4 ) )
+        return result.replace( '\n', '\n{}'.format( " " * 4 ) )
 
     @property
     def resolveList( self ):
@@ -359,7 +394,7 @@ class TemplateUi( TemplateBase ):
             resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
 
         else:
-            resolveList = self.__cfg.get( C_RESOLVE_LIST, [] )
+            resolveList = self.__cfg.get( C_RESOLVE_LIST, self.defaultResolveList() )
 
         '''
         resolve-list:
@@ -397,7 +432,7 @@ class TemplateUi( TemplateBase ):
             resolveList = self.__cfg[ C_RESOLVE_LIST_OLD ]
 
         else:
-            resolveList = self.__cfg.get( C_RESOLVE_LIST,[ ] )
+            resolveList = self.__cfg.get( C_RESOLVE_LIST, self.defaultResolveList() )
 
         '''
         resolve-list:
@@ -485,3 +520,8 @@ class TemplateUi( TemplateBase ):
 
         return lines
 
+    def hasDetailButton( self ):
+        return 'detail-button' in self.__cfg
+
+    def detailButton( self ):
+        return self.__cfg.get( 'detail-button', {} )

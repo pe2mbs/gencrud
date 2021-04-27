@@ -49,7 +49,7 @@ class TemplateImport( TemplateBase ):
 
 
 class TemplateExtra( object ):
-    def __init__( self, parent, **cfg ):
+    def __init__( self, parent, cfg ):
         self.__config       = cfg
         self.__parent       = parent
         self.__modules      = []

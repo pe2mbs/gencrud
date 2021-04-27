@@ -18,10 +18,11 @@
 #   Boston, MA 02110-1301 USA
 #
 */
-import { Component, Input, forwardRef, ViewChild, ElementRef, AfterContentChecked, OnInit, OnChanges, AfterViewInit} from '@angular/core';
-import { HostListener } from "@angular/core";
-import { NG_VALUE_ACCESSOR, FormGroupDirective} from '@angular/forms';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import { Component, Input, forwardRef, ViewChild, ElementRef,
+		 OnInit, OnChanges, AfterViewInit } from '@angular/core';
+import { NG_VALUE_ACCESSOR, FormGroupDirective } from '@angular/forms';
+import { trigger, state, style,
+	     transition, animate } from '@angular/animations';
 import { PytBaseComponent } from './base.input.component';
 import { NgxMonacoEditorConfig } from "ngx-monaco-editor";
 import { NgxEditorModel } from 'ngx-monaco-editor';
@@ -37,7 +38,7 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 export function OnLoadMonaco(): void
 {
     // here monaco object will be available as window.monaco use this function to extend monaco editor functionalities.
-    console.log( "OnLoadMonaco", (<any>window).monaco );
+    console.log( "OnLoadMonaco", (window as any).monaco );
     return;
 }
 
@@ -47,25 +48,52 @@ export const monacoConfig: NgxMonacoEditorConfig = {
     defaultOptions:     // pass default options to be used
     {
         scrollBeyondLastLine: false,
-        automaticLayout: true
+        automaticLayout: false
     },
     onMonacoLoad: OnLoadMonaco
 };
 
-
 @Component( {
+    // tslint:disable-next-line:component-selector
     selector: 'pyt-monaco-editor-box',
-    template: `<div #editor class="monaco-code-editor" [style.height.px]="internalHeight">
-    <label style="font-size: inherit; font-weight: 400; line-height: 1.125; font-family: Roboto, monospace; font-size: 14px; color: rgba(0, 0, 0, 0.54); ">
+    template: `<div #editor class="monaco-code-editor">
+    <label class="label-style">
     <span>{{ placeholder }}</span>
     </label>
-    <ngx-monaco-editor  style="height: 97%; border: 1px solid rgba(0, 0, 0, 0.10) !important;"
-                    (onInit)="onEditorInit($event)"
-                    [options]="monacoOptions"
-                    [(ngModel)]="code">
+    <ngx-monaco-editor (onInit)="onEditorInit($event)"
+                       [options]="monacoOptions"
+                       [(ngModel)]="code" class="ngx-monaco-editor">
     </ngx-monaco-editor>
     </div>`,
-    styles: [ '.monaco-code-editor { width: 100%; height: 200px; min-height: 200px; padding-bottom: 35px; box-sizing: content-box; }' ],
+	styles: [ `:host
+    {
+        height: calc( 100% - 40px );
+    }
+
+    .monaco-code-editor
+    {
+		width: 100%;
+		min-height: 200px;
+		height: calc( 100% - 20px );
+		padding-bottom: 35px;
+		box-sizing: content-box;
+	}
+
+	.ngx-monaco-editor
+	{
+		height: calc( 100% - 16px );
+		border: 1px solid rgba(0, 0, 0, 0.10) !important;
+	}
+
+	.label-style
+	{
+		font-size: inherit;
+		font-weight: 400;
+		line-height: 1.125;
+		font-family: Roboto, monospace;
+		font-size: 14px;
+		color: rgba(0, 0, 0, 0.54);`
+	],
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
     animations: [ trigger(
     'visibilityChanged', [
@@ -75,24 +103,15 @@ export const monacoConfig: NgxMonacoEditorConfig = {
     ] )
     ]
 } )
-export class PytMonacoEditorComponent extends PytBaseComponent implements AfterContentChecked, OnChanges, OnInit, AfterViewInit
+export class PytMonacoEditorComponent extends PytBaseComponent implements OnChanges, OnInit, AfterViewInit
 {
     @Input() height: string = 'auto';
     @Input() language: string = "plaintext";
     @Input() minimap: boolean = true;
-    @Input() heightAdjust: number = 0;
-    public internalHeight: number = 200;
     public monacoOptions = monacoConfig.defaultOptions;
     public code: string = "";
     private _editorInstance: monaco.editor.IStandaloneCodeEditor;
-    private _screenHeight = window.innerHeight;
     @ViewChild( "editor", { static: true } ) editorContent: ElementRef;
-    @HostListener( 'window:resize', [ '$event' ] ) onResize( event$ )
-    {
-        this._screenHeight = window.innerHeight;
-        this.ngAfterContentChecked();
-        return;
-    }
 
     constructor( formGroupDir: FormGroupDirective )
     {
@@ -111,117 +130,22 @@ export class PytMonacoEditorComponent extends PytBaseComponent implements AfterC
         return;
     }
 
-    public ngOnChanges()
-    {
-         super.ngOnChanges();
-    }
-
-    public ngAfterViewInit()
-    {
-        super.ngAfterViewInit();
-    }
-
     public onEditorInit( $event ): void
     {
-        this._editorInstance = $event
+        this._editorInstance = $event;
         this._editorInstance.updateOptions( { readOnly: this.readonly,
                                               minimap: { enabled: this.minimap }
         } );
-        var model = this._editorInstance.getModel(); // we'll create a model for you if the editor created from string value.
+        const model = this._editorInstance.getModel(); // we'll create a model for you if the editor created from string value.
         monaco.editor.setModelLanguage( model, this.language );
         this._editorInstance.onDidChangeModelContent( () => {
             this.control.patchValue( this._editorInstance.getValue() );
             this.control.markAsPending();
             this.control.updateValueAndValidity();
         } );
-        return;
-    }
-
-    public ngAfterContentChecked(): void
-    {
-        if ( this.editorContent && this.height == 'auto' )
-        {
-            const x = this.editorContent.nativeElement.getBoundingClientRect();
-            this.internalHeight = ( this._screenHeight - x.top ) + ( this.heightAdjust );
-        }
-        else if ( this.height != 'auto' )
-        {
-            this.internalHeight = -this.height;
-        }
+		setInterval( () => {
+			this._editorInstance.layout();
+		}, 500 );
         return;
     }
 }
-
-/*
-abap
-aes
-apex
-azcli
-bat
-c
-cameligo
-clojure
-coffeescript
-cpp
-csharp
-csp
-css
-dart
-dockerfile
-fsharp
-go
-graphql
-handlebars
-hcl
-html
-ini
-java
-javascript
-json
-julia
-kotlin
-less
-lexon
-lua
-markdown
-mips
-msdax
-mysql
-objective-c
-pascal
-pascaligo
-perl
-pgsql
-php
-plaintext
-postiats
-powerquery
-powershell
-pug
-python
-r
-razor
-redis
-redshift
-restructuredtext
-ruby
-rust
-sb
-scala
-scheme
-scss
-shell
-sol
-sql
-st
-swift
-systemverilog
-tcl
-twig
-typescript
-vb
-verilog
-xml
-yaml
-
-*/

@@ -29,6 +29,12 @@ class TemplateListView( TemplateBase ):
         self.__cfg      = cfg
         return
 
+    def __len__( self ):
+        return len( self.__cfg )
+
+    def get( self, name, def_value ):
+        return self.__cfg.get( name, def_value )
+
     @property
     def width( self ):
         if C_WIDTH not in self.__cfg:
@@ -44,3 +50,11 @@ class TemplateListView( TemplateBase ):
                 return self.parent.index
 
         return self.__cfg.get( C_INDEX, None )
+
+    @property
+    def filter( self ):
+        return self.__cfg.get( C_FILTER, False )
+
+    @property
+    def sort( self ):
+        return self.__cfg.get( C_SORT, False )

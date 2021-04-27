@@ -22,13 +22,15 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { Component, Inject } from '@angular/core';
 import { BaseDialog } from '../../common/dialog';
-import { ${ obj.cls }DataService } from './service'
+import { ${ obj.cls }DataService } from './service';
 
 @Component({
+    // tslint:disable-next-line:component-selector
     selector: 'app-${ obj.name }-delete-dialog',
     templateUrl: '../../common/delete.dialog.html',
     styleUrls: ['../../common/dialog.scss']
 })
+// tslint:disable-next-line:component-class-suffix
 export class Delete${ obj.cls }Dialog extends BaseDialog
 {
     title: string       = "${ obj.cls }";
@@ -36,7 +38,7 @@ export class Delete${ obj.cls }Dialog extends BaseDialog
                  @Inject( MAT_DIALOG_DATA ) public data: any, 
                  dataService: ${ obj.cls }DataService )
     { 
-        super( dialogRef, dataService )
+        super( dialogRef, dataService );
         return;
     }
 

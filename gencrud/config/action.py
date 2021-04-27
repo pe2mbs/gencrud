@@ -33,6 +33,15 @@ class TemplateAction( TemplateBase ):
         self.__cfg = cfg
         return
 
+    def isDialog( self ):
+        return self.position != 'none' and self.type == 'dialog'
+
+    def isScreen( self ):
+        return self.position != 'none' and self.type == 'screen'
+
+    def isMixin( self ):
+        return self.position != 'none' and self.type == 'mixin'
+
     @property
     def module( self ):
         return self.parent.module
@@ -47,7 +56,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def type( self ):
-        result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] )
+        result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] ).lower()
         if result not in C_ACTION_TYPES:
             raise InvalidSetting( C_TYPE, C_ACTION, self.name )
 
@@ -55,7 +64,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def position( self ):
-        result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] )
+        result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] ).lower()
         if result not in C_ACTION_POSITIONS:
             raise InvalidSetting( C_POSITION, C_ACTION, self.name )
 
@@ -130,6 +139,20 @@ class TemplateAction( TemplateBase ):
 
         return '{ }'
 
+    @property
+    def width( self ):
+        return self.__cfg.get( 'width', "80%" )
+
+    def hasWidth( self ):
+        return self.__cfg.get( 'width' ) is not None
+
+    @property
+    def height( self ):
+        return self.__cfg.get( 'height', "80%" )
+
+    def hasHeight( self ):
+        return self.__cfg.get( 'height' ) is not None
+
     #
     #   Internal functions and properies to gencrud
     #
@@ -194,9 +217,7 @@ class TemplateAction( TemplateBase ):
             params = ''
 
         elif self.isAngularRoute():
-            BUTTON_STR = '''<a {cls} {condition} {button} {tooltip} color="{color}" 
-                            ({on})="router.navigate( ['/{route}'], {params} )" 
-                            id="{objname}.{name}" angular_route="true">{content}</a>'''
+            BUTTON_STR = '''<a {cls} {condition} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}" angular_route="true">{content}</a>'''
             if isinstance( self.route.route, str ):
                 if self.route.route.startswith( '/' ):
                     route = self.route.route[1:]
@@ -210,9 +231,7 @@ class TemplateAction( TemplateBase ):
             params = self.route.routeParams()
 
         elif self.type == 'screen' and self.name in ( 'new', 'edit' ):
-            BUTTON_STR = '''<a {cls} {condition} {button} {tooltip} color="{color}" 
-                            ({on})="router.navigate( ['/{route}'], {params} )" 
-                            id="{objname}.{name}" screen_route="true">{content}</a>'''
+            BUTTON_STR = '''<a {cls} {condition} {button} {tooltip} color="{color}" ({on})="router.navigate( ['/{route}'], {params} )" id="{objname}.{name}" screen_route="true">{content}</a>'''
             if self.route.name.startswith( '/' ):
                 route = self.route.name[1:]
 

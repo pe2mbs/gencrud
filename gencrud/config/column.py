@@ -49,24 +49,43 @@ class TemplateColumn( TemplateBase ):
                           'CLOB': 'string',
                           'TEXT': 'string' }
 
-    PY_TYPES_FROM_SQL = { 'CHAR': 'db.String',
-                          'VARCHAR': 'db.String',
-                          'INT': 'db.Integer',
-                          'BIGINT': 'db.BigInteger',
-                          'BOOLEAN': 'db.Boolean',
-                          'BOOL': 'db.Boolean',
-                          'TIMESTAMP': 'db.DateTime',
-                          'DATETIME': 'db.DateTime',
-                          'DATE': 'db.Date',
-                          'FLOAT': 'db.Float',
-                          'REAL': 'db.Float',
-                          'INTERVAL': 'db.Interval',
-                          'BLOB': 'db.LargeBinary',
-                          'NUMERIC': 'db.Numeric',
-                          'DECIMAL': 'db.Numeric',
-                          'CLOB': 'db.LONGTEXT',
-                          'TEXT': 'db.LONGTEXT',
-                          'TIME': 'db.Time' }
+    PY_TYPES_FROM_SQL = { 'CHAR': 'API.db.String',
+                          'VARCHAR': 'API.db.String',
+                          'INT': 'API.db.Integer',
+                          'BIGINT': 'API.db.BigInteger',
+                          'BOOLEAN': 'API.db.Boolean',
+                          'BOOL': 'API.db.Boolean',
+                          'TIMESTAMP': 'API.db.DateTime',
+                          'DATETIME': 'API.db.DateTime',
+                          'DATE': 'API.db.Date',
+                          'FLOAT': 'API.db.Float',
+                          'REAL': 'API.db.Float',
+                          'INTERVAL': 'API.db.Interval',
+                          'BLOB': 'API.db.LargeBinary',
+                          'NUMERIC': 'API.db.Numeric',
+                          'DECIMAL': 'API.db.Numeric',
+                          'CLOB': 'API.db.LONGTEXT',
+                          'TEXT': 'API.db.LONGTEXT',
+                          'TIME': 'API.db.Time' }
+
+    SCHEMA_TYPES_FROM_SQL = { 'CHAR': 'String',
+                          'VARCHAR': 'String',
+                          'INT': 'Integer',
+                          'BIGINT': 'Integer',
+                          'BOOLEAN': 'Boolean',
+                          'BOOL': 'Boolean',
+                          'TIMESTAMP': 'DateTime',
+                          'DATETIME': 'DateTime',
+                          'DATE': 'Date',
+                          'FLOAT': 'Float',
+                          'REAL': 'Float',
+                          'INTERVAL': 'Integer',
+                          'BLOB': 'String',
+                          'NUMERIC': 'Decimal',
+                          'DECIMAL': 'Decimal',
+                          'CLOB': 'String',
+                          'TEXT': 'String',
+                          'TIME': 'Time' }
 
     def __init__( self, parent, table_name, **cfg ):
         """
@@ -87,6 +106,7 @@ class TemplateColumn( TemplateBase ):
         self.__ui           = None
         self.__leadIn       = []
         self.__dbField      = ''
+        self.unique         = False
         if C_FIELD not in self.__config:
             raise MissingAttribute( C_TABLE, C_FIELD )
 
@@ -154,6 +174,17 @@ class TemplateColumn( TemplateBase ):
 
         return
 
+    def hasAttribute( self,attr ):
+        if attr in self.__attrs:
+            return True
+
+        if attr in ( 'FOREIGN KEY', 'DEFAULT' ):
+            for item in self.__attrs:
+                if item[ :len( attr ) ] == attr:
+                    return True
+
+        return False
+
     @property
     def table( self ):
         return self.parent
@@ -218,7 +249,7 @@ class TemplateColumn( TemplateBase ):
 
     @property
     def tab( self ) -> TemplateTab:
-        return TemplateTab( self, **self.__config.get( C_TAB, {} ) )
+        return TemplateTab( self, self.__config.get( C_TAB, {} ) )
 
     @property
     def uniqueKey( self ) -> str:
@@ -314,6 +345,13 @@ class TemplateColumn( TemplateBase ):
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
+    @property
+    def schemaType( self ):
+        if self.__sqlType in self.TS_TYPES_FROM_SQL:
+            return self.SCHEMA_TYPES_FROM_SQL[ self.__sqlType ]
+
+        raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
+
     def isNumericField( self ) -> bool:
         return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'number'
 
@@ -340,10 +378,10 @@ class TemplateColumn( TemplateBase ):
         :return:
         """
         if root.config.options.ignoreCaseDbIds:
-            result = 'db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
+            result = 'API.db.Column( "{0}", {1}'.format( self.__dbField, self.pType )
 
         else:
-            result = 'db.Column( {0}'.format( self.pType )
+            result = 'API.db.Column( {0}'.format( self.pType )
 
         if self.__length != 0:
             result += '( {0} )'.format( self.__length )
@@ -360,10 +398,10 @@ class TemplateColumn( TemplateBase ):
 
             elif attr.startswith( 'FOREIGN KEY' ):
                 if root.config.options.ignoreCaseDbIds:
-                    result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ].lower() )
+                    result += ', API.db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ].lower() )
 
                 else:
-                    result += ', db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
+                    result += ', API.db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
 
             elif attr.startswith( 'DEFAULT' ):
                 value = attr.split( ' ' )[ 1 ]

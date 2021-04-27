@@ -18,22 +18,21 @@
 #   Boston, MA 02110-1301 USA
 #
 */
-import { Component,
-         forwardRef, Input } from '@angular/core';
-import { NG_VALUE_ACCESSOR, 
-         FormGroupDirective} from '@angular/forms';
+import { Component, forwardRef, Input } from '@angular/core';
+import { NG_VALUE_ACCESSOR, FormGroupDirective } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { PytBaseComponent } from './base.input.component';
 import * as moment_ from 'moment';
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef( () => PytDateInputComponent ),
+    useExisting: forwardRef( () => PytDatePickerInputComponent ),
     multi: true
 };
 
 @Component( {
-  selector: 'pyt-date-input-box',
+  // tslint:disable-next-line:component-selector
+  selector: 'pyt-datepicker-input-box',
   template: `<div class="form">
     <mat-form-field color="accent">
         <input id="{{ id }}_DATE"
@@ -72,14 +71,14 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     )
   ]
 } )
-export class PytDateInputComponent extends PytBaseComponent
+export class PytDatePickerInputComponent extends PytBaseComponent
 {
     public                  maxDate: number;
     public                  minDate: number;
     public                  startView: string = 'month'; // | 'year' | 'multi-year';;
     public                  touchUi: boolean = false;
     // TODO: Check why thisis needed
-    @Input( 'disabled' )    disabled: boolean = false;
+    @Input()                disabled: boolean = false;
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

@@ -20,7 +20,7 @@
 #   gencrud: ${date} version ${version} by user ${username}
 */
 import { Component, ElementRef, OnInit, OnDestroy, ViewChild, EventEmitter, Input, ChangeDetectionStrategy } from '@angular/core';
-import { Router, ActivatedRoute } from  '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { SpinnerService } from '../../common/spinner-service';
@@ -39,7 +39,7 @@ import { Delete${ obj.cls }Dialog } from './delete.dialog';
 import { ${ obj.cls }DataService } from './service';
 import { ${ obj.cls }DataSource } from './datasource';
 % for field in obj.table.columns:
- % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+ % if field.ui is not None and field.ui.isUiType( 'choice', 'choice-auto-complete', 'combo' ):
    % if field.ui.service is not None:
 import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
    % endif
@@ -48,15 +48,27 @@ import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
 % if obj.hasAutoUpdate():
 import { Observable, interval, Subscription } from 'rxjs';
 % endif
-import { ConfirmDialogService } from 'src/app/common/confirm-dialog/confirm-service';
 import { environment } from './../../../environments/environment';
+<%
+    def displayColumnList( obj ):
+        result = []
+        for field in obj.table.listViewColumns:
+            result.append( "'{}'".format( field.name ) )
 
+        if obj.actions.hasRowButtons():
+            result.append( "'actions'" )
+
+        return ', '.join( result )
+
+%>
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
+    // tslint:disable-next-line:component-selector
     selector: 'app-${ obj.name }-table',
     templateUrl: './table.component.html',
-    styleUrls: [ './table.component.scss' ]
+    styleUrls: [ './table.component.scss',
+                 '../../common/common-mat-card.scss' ]
 })
 % if obj.Mixin.Angular.hasTableComponent():
 export class ${ obj.cls }TableComponent extends ${ obj.Mixin.Angular.TableComponent.cls } implements OnInit, OnDestroy
@@ -64,18 +76,13 @@ export class ${ obj.cls }TableComponent extends ${ obj.Mixin.Angular.TableCompon
 export class ${ obj.cls }TableComponent extends TableBaseComponent<${ obj.cls }Record> implements OnInit, OnDestroy
 % endif
 {
+    public filterRecord: ${ obj.cls }Record = new ${ obj.cls }Record();
+    public searchValue: any = {};
 % if obj.hasAutoUpdate():
     public toggleUpdate = false;
     private updateSubscription: Subscription = null;
 % endif
-    displayedColumns = [
-% for field in obj.table.listViewColumns:
-                            '${ field.name }',
-% endfor
-% if obj.actions.hasRowButtons():
-                            'actions'
-% endif
-                        ];
+    displayedColumns = [ ${ displayColumnList( obj ) } ];
     constructor( public httpClient: HttpClient
                  , public route: ActivatedRoute
                  , public dialog: MatDialog
@@ -160,7 +167,7 @@ ${ obj.externalService } )
 
     public newRecord()
     {
-        return ( new ${ obj.cls }Record );
+        return ( new ${ obj.cls }Record() );
     }
 
     public setFilter( filter: string )

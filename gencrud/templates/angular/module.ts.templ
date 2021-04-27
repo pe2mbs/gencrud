@@ -24,8 +24,8 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { CustomMaterialModule } from '../../material.module';
 import { GenCrudModule } from '../../common/gencrud.module';
+import { DefaultModule } from '../../layouts/default.module';
 import { SpinnerService } from '../../common/spinner-service';
 import { CustomHttpInterceptor } from '../../common/http-interceptor';
 <%  componentList = []  %>
@@ -55,52 +55,60 @@ import { ${ obj.cls }DataService } from './service';
 % for mod in obj.modules:
 import { ${ mod.cls } } from '${ mod.importPath }';
 % endfor
+import { DefaultComponent } from '../../layouts/default.component';
 
 
 export const ${ obj.name }Route: Route = {
-% if obj.menu:
-%  if root.options.lazyLoading:
-    path:           '',
-%  else:
-    path:           '${ obj.menu.activateItem() }',
-%  endif
-% elif obj.route:
-    path:           '${ obj.route }',
-% endif
-    data:
-    {
-        breadcrumb: '${ obj.title }',
-        title:      '${ obj.title }'
-    },
+    path: '',
+    component: DefaultComponent,
     children: [
         {
-            path: '',
-            component: ${ obj.cls }TableComponent,
+% if obj.menu:
+%  if root.options.lazyLoading:
+            path:           '',
+%  else:
+            path:           '${ obj.menu.activateItem() }',
+%  endif
+% elif obj.route:
+            path:           '${ obj.route }',
+% endif
             data:
             {
-                breadcrumb: '',
-                title:      ''
-            }
-        },
+                breadcrumb: '${ obj.title }',
+                title:      '${ obj.title }'
+            },
+            children: [
+                {
+                    path: '',
+                    component: ${ obj.cls }TableComponent,
+                    data:
+                    {
+                        breadcrumb: 'Overview',
+                        title:      ''
+                    }
+                },
 %  for action in obj.actions:
 %   if action.type == 'screen' and action.position != 'none':
-        {
-            path: '${ action.name }',
+                {
+                    path: '${ action.name }',
 %    if action.isAngularRoute():
-            component: ${ action.route.cls },
+                    component: ${ action.route.cls },
 %    else:
-            component: Screen${ obj.cls }Component,
+                    component: Screen${ obj.cls }Component,
 %    endif
-            data:
-            {
-                breadcrumb: '${ action.label }',
-                title:      '${ action.label }'
-            }
-        },
+                    data:
+                    {
+                        breadcrumb: '${ action.label }',
+                        title:      '${ action.label }'
+                    }
+                },
 %   endif
 %  endfor
+            ]
+        }
     ]
-}
+};
+
 /*
 *   This NgModule is injected in the app-module.ts. This deals with declaring, importing,
 *   creating entry point and providing the services for the ${ obj.name } screens and dialogs.
@@ -157,7 +165,7 @@ export const ${ obj.name }Route: Route = {
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        CustomMaterialModule,
+        DefaultModule,
         GenCrudModule,
 % for mod in obj.modules:
         ${ mod.cls },
@@ -201,7 +209,7 @@ export class ${ obj.cls }Module
                 ${ obj.injection.moduleTs.providers },
 % endif
             ]
-        }
+        };
     }
     static forChild(): ModuleWithProviders
     {

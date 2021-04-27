@@ -19,102 +19,31 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 */
-.spacer
-{
-    flex: 1 1 auto;
-}
-
-.spacer-nav
-{
-    width: 10px;
-}
-
-#User-paginator
-{
-    width: 400px;
-}
-
-.spacer-end
-{
-    width: 10px;
-}
-
-.navigator-row
-{
-    display: flex;
-    box-sizing: border-box;
-    padding: 16px 1%;
-    width: 100%;
-    flex-direction: row;
-    align-items: center;
-    white-space: nowrap;
-}
-
-/* Filter */
-.form 
-{
-    min-height: 56px;
-    max-height: 56px;
-    display: flex;
-    align-items: center;
-    padding: 0px 0px 8px 24px;
-    font-size: 20px;
-    justify-content: space-between;
-    border-bottom: 1px solid transparent;
-}
-
-h2
-{
-    display: block;
-    font-size: 1.5em;
-    margin-top: 0.24em;
-    margin-bottom: 0;
-    margin-left: 24px;
-    margin-right: 0;
-    font-weight: bold;
-}
-  
-.mat-form-field 
-{
-    font-size: 14px;
-    flex-grow: 1;
-    margin-top: 8px;
-}
-  
-/* Mat table */
-.no-results 
-{
-    display: flex;
-    justify-content: center;
-    padding: 14px;
-    font-size: 14px;
-    font-style: italic;
-}
-
 % for idx, field in enumerate( obj.table.listViewColumns ):
-.mat-cell:nth-child( ${ idx + 1 } ),
-.mat-header-cell:nth-child( ${ idx + 1 } )
+.mat-cell:nth-child( ${ idx + 1 } ), .mat-header-cell:nth-child( ${ idx + 1 } )
 {
     // Field ${ field.name }
+%if '%' in field.listview.width:
+    // using variable width
+    flex: 1 1 ${ field.listview.width };
+%else:
+    // using fixed width
     flex: 0 0 ${ field.listview.width };
+%endif
 }
 % endfor
-
-.mat-cell:nth-child( ${ len( obj.table.listViewColumns ) + 1 } ),
-.mat-header-cell:nth-child( ${ len( obj.table.listViewColumns ) + 1 } )
+.mat-cell:nth-child( ${ len( obj.table.listViewColumns )+1 } ), .mat-header-cell:nth-child( ${ len( obj.table.listViewColumns )+1 } )
 {
-    flex: 0 0 ${ obj.actionWidth };
+    // Options, using fixed with
+    flex: 0 0 ${ 50 * len( obj.actions.getCellButtons() ) }px;
 }
 
-.http-spinner
+.mat-row:nth-child( even )
 {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background-color: #f5f5f5;
 }
 
-.http-spinner-inner
+.mat-row:nth-child( odd )
 {
-    height: 60px;
-    padding: 12px;
+    background-color: white;
 }

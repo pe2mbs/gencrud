@@ -20,14 +20,14 @@
 from __future__ import print_function    # (at top of module)
 import getopt
 import json
-import yaml
 import os
 import sys
 import glob
 import traceback
 import logging
 import gencrud.util.utils
-from gencrud.configuraton import TemplateConfiguration, IncludeLoader
+from mako.exceptions import CompileException
+from gencrud.configuraton import TemplateConfiguration, my_safe_load
 from gencrud.generators.python import generatePython
 from gencrud.generators.angular import generateAngular
 from gencrud.version import __version__, __author__, __email__, __copyright__
@@ -36,47 +36,62 @@ from gencrud.util.exceptions import ( InvalidEnvironment,
                                       MissingAngularEnvironment,
                                       FlaskEnvironmentNotFound,
                                       ModuleExistsAlready,
-                                      InvalidSetting )
+                                      InvalidSetting,
+                                      ErrorInTemplate )
 from gencrud.constants import *
 logger = logging.getLogger()
 
+def loadPythonConfig( config: TemplateConfiguration ):
+    configFile = None
+    for folder in ( "config", "." ):
+        for ext in ( "conf", "yaml", "json" ):
+            testFile = os.path.join( config.source.python, folder, 'config.{}'.format( ext ) )
+            if os.path.isfile( testFile ):
+                configFile = os.path.abspath( testFile )
+                break
 
-def verifyLoadProject( config: TemplateConfiguration, env ):
-    if env == C_ANGULAR:
-        configFile  = os.path.join( '..', '..', 'angular.json' )
-        root        = config.angular
+    if configFile is None:
+        raise Exception( "Could not find the Python Flask configuation file."  )
 
-    elif env == C_PYTHON:
-        root = config.python
-        if os.path.isfile( os.path.join( root.sourceFolder, 'config.yaml' ) ):
-            configFile = 'config.yaml'
-
-        elif os.path.isfile( os.path.join( root.sourceFolder, 'config.json' ) ):
-            configFile = 'config.json'
+    with open( os.path.join( configFile ), gencrud.util.utils.C_FILEMODE_READ ) as stream:
+        if configFile.endswith( ( '.yaml', '.conf' ) ):
+            data = my_safe_load( stream )
 
         else:
-            raise Exception( "Could not fint the Python Flask configuation file."  )
+            data = json.load( stream )
 
-    else:
-        raise InvalidEnvironment( env )
+    if data is None:
+        raise EnvironmentInvalidMissing( C_PYTHON, config.source.python, configFile )
 
-    if os.path.isdir( root.sourceFolder ) and os.path.isfile( os.path.join( root.sourceFolder, configFile ) ):
-        with open( os.path.join( root.sourceFolder, configFile ),
-                   gencrud.util.utils.C_FILEMODE_READ ) as stream:
-            if configFile.endswith( '.yaml' ):
-                data = yaml.load( stream, Loader = yaml.Loader )
+    logger.debug( 'Configuration for {}: {}'.format( C_PYTHON, json.dumps( data, indent = 4 ) ) )
+    return data
+
+
+def loadAngularConfig( config: TemplateConfiguration ):
+    configFile  = os.path.abspath( os.path.join( config.source.angular,
+                                                 '..',
+                                                 '..', 'angular.json' ) )
+    if os.path.isdir( config.source.angular ) and os.path.isfile( configFile ):
+        with open( os.path.join( configFile ), gencrud.util.utils.C_FILEMODE_READ ) as stream:
+            if configFile.endswith( ( '.yaml', '.conf' ) ):
+                data = my_safe_load( stream )
 
             else:
                 data = json.load( stream )
 
         if data is None:
-            raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
+            raise EnvironmentInvalidMissing( C_ANGULAR, config.source.angular, configFile )
 
     else:
-        raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
+        raise EnvironmentInvalidMissing( C_ANGULAR, config.source.angular, configFile )
 
-    logger.debug( 'Configuration for {}: {}'.format( env, json.dumps( data, indent = 4 ) ) )
+    logger.debug( 'Configuration for {}: {}'.format( C_ANGULAR, json.dumps( data, indent = 4 ) ) )
+    return data
+
+
+def verifyLoadProject( config: TemplateConfiguration, env ):
     if env == C_ANGULAR:
+        data = loadAngularConfig( config )
         # Check if we have a valid Angular environment
         if 'defaultProject' in data and 'projects' in data:
             if data[ 'defaultProject' ] not in data[ 'projects' ]:
@@ -89,20 +104,30 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
             raise MissingAngularEnvironment( 'tag defaultProject' )
 
     elif env == C_PYTHON:
+        data = loadPythonConfig( config )
         # Check if we have a valid Python-Flask environment
-        if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
-            raise FlaskEnvironmentNotFound()
+        if 'API_MODULE' in data:
+            pass
 
-        logging.info( "Application: {} target application: {}".format( config.application, data[ 'COMMON' ][ 'API_MODULE' ] ) )
-        if data[ 'COMMON' ][ 'API_MODULE' ] != config.application:
-            raise FlaskEnvironmentNotFound()
+        else:
+            if not ( 'COMMON' in data and 'API_MODULE' in data[ 'COMMON' ] ):
+                raise FlaskEnvironmentNotFound()
+
+            logging.info( "Application: {} target application: {}".format( config.application, data[ 'COMMON' ][ 'API_MODULE' ] ) )
+            if data[ 'COMMON' ][ 'API_MODULE' ] != config.application:
+                raise FlaskEnvironmentNotFound()
+
+            data = data[ 'COMMON' ]
+
+    else:
+        raise InvalidEnvironment( env )
 
     return data
 
 
 def doWork( inputFile ):
     with open( inputFile, 'r' ) as stream:
-        config = TemplateConfiguration( **yaml.load( stream, Loader = IncludeLoader ) )
+        config = TemplateConfiguration( stream )
 
     if config.nogen:
         print( "This template is blocked for generation" )
@@ -128,14 +153,14 @@ def doWork( inputFile ):
     if config.options.generateBackend:
         logger.info( "*** Generating Python backend source code.***" )
         generatePython( config,
-                        [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
-                                   for t in os.listdir( config.python.templateFolder ) ] )
+                        [ os.path.abspath( os.path.join( config.template.python, t ) )
+                                   for t in os.listdir( config.template.python ) ] )
 
     if config.options.generateFrontend:
         logger.info( "*** Generating Typescript Angular frontend source code. ***" )
         generateAngular( config,
-                         [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
-                                        for t in os.listdir( config.angular.templateFolder ) ] )
+                         [ os.path.abspath( os.path.join( config.template.angular, t ) )
+                                        for t in os.listdir( config.template.angular ) ] )
     return
 
 
@@ -237,6 +262,9 @@ def main():
             if '*' in arg:
                 # Wild card handling
                 for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
+                    if not os.path.isfile( filename ):
+                        continue
+
                     print( "Filename: {} from wildcard".format( filename ) )
                     if filename.lower().endswith( '.yaml' ):
                         doWork( filename )
@@ -263,6 +291,14 @@ def main():
         else:
             logger.debug( traceback.format_exc() )
             logger.error( exc )
+
+    except CompileException as exc:
+        logger.error( "Mako Exception" )
+        logger.error( exc )
+
+    except ErrorInTemplate as exc:
+        logger.error( "Mako Exception" )
+        logger.error( exc )
 
     except Exception as exc:
         logger.error( "Exception" )

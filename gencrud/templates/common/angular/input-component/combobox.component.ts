@@ -18,44 +18,38 @@
 #   Boston, MA 02110-1301 USA
 #
 */
-import { Component,
-         Input, 
-         forwardRef, 
-         AfterViewInit, 
-         OnChanges, 
-         ViewEncapsulation, 
-         OnInit} from '@angular/core';
-import { NG_VALUE_ACCESSOR, 
-         ControlValueAccessor, 
-         FormGroupDirective} from '@angular/forms';
+import { Component, Input, forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR, FormGroupDirective} from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { PytBaseComponent } from './base.input.component';
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef( () => PytChoiceInputComponent ),
+    useExisting: forwardRef( () => PytComboInputComponent ),
     multi: true
 };
 
 @Component( {
-  selector: 'pyt-choice-input-box',
+    // tslint:disable-next-line:component-selector
+  selector: 'pyt-combo-input-box',
   template: `<div class="form">
     <mat-form-field color="accent">
-        <mat-select [(value)]="selected"
-                    class="custom-input__input"
-                    id="{{ id }}"
-                   [attr.readonly]="readonly"
-                   [attr.readonly]="disabled"
-                    placeholder="{{ placeholder }}"
-                    [formControl]="control">
-            <mat-option *ngFor="let item of items" [value]="item.value">
-                {{item.label}}
+        <input  matInput [matAutocomplete]="auto"
+                class="custom-input__input"
+                id="{{ id }}"
+               [attr.readonly]="readonly"
+               [attr.readonly]="disabled"
+                placeholder="{{ placeholder }}"
+                [formControl]="control"/>
+        <mat-autocomplete #auto="matAutocomplete">
+            <mat-option *ngFor="let item of items" [value]="item.label">
+                {{ item.label }}
             </mat-option>
-        </mat-select>
+        </mat-autocomplete>
         <mat-icon matPrefix *ngIf="prefixType == 'icon'">{{ prefix }}</mat-icon>
         <mat-icon matSuffix *ngIf="suffixType == 'icon'">{{ suffix }}</mat-icon>
         <span matPrefix *ngIf="prefixType == 'text'">{{ prefix }}</span>
-        <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>
+        <span matSuffix *ngIf="suffixType == 'text'">{{ suffix }}</span>             
     </mat-form-field>
 </div>`,
   styles: [   'custom-input { width: 100%; }',
@@ -70,10 +64,10 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     )
   ]
 } )
-export class PytChoiceInputComponent extends PytBaseComponent
+export class PytComboInputComponent extends PytBaseComponent
 {
     @Input() items;
-    public selected: any;
+
     constructor( formGroupDir: FormGroupDirective ) 
     {
         super( formGroupDir );

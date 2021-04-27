@@ -30,7 +30,7 @@ import { BaseDialog } from '../../common/dialog';
 import { ${ obj.cls }DataService } from './service';
 % for field in obj.table.columns:
  % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
-import { PytSelectList } from '../../common/crud-dataservice';
+import { GcSelectList } from '../../common/crud-dataservice';
 <%
     break
 %>
@@ -63,7 +63,7 @@ export class Dialog${ obj.cls }Component extends BaseDialog
     public hide_${ field.name }: boolean  = true;
   % elif field.ui is not None:
     % if field.ui.hasService():
-      public ${ field.ui.service.name }List: PytSelectList[];
+      public ${ field.ui.service.name }List: GcSelectList[];
     % elif field.ui.hasResolveList():
       public ${ field.name }List = ${ field.ui.typescriptResolveList().replace( ' ', '' ) }
     % endif

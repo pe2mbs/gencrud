@@ -19,6 +19,7 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgSelectModule } from '@ng-select/ng-select';
+import { NgxMaterialTimepickerModule } from 'ngx-material-timepicker';
 import { PytTextInputComponent } from './input-component/textbox.component';
 import { PytChoiceInputComponent } from './input-component/choice.component';
 import { PytChoiceAutoInputComponent } from './input-component/choice.auto.component';
@@ -38,11 +39,11 @@ import { PytCheckboxInputComponent } from './input-component/checkbox.component'
 import { PytSliderToggleInputComponent } from './input-component/slidertoggle.component';
 import { PytSliderInputComponent } from './input-component/slider.component';
 import { PytMonacoEditorComponent } from './input-component/monaco.component';
-import { CustomMaterialModule } from '../material.module';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MonacoEditorModule } from 'ngx-monaco-editor';
-import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
-import { ConfirmDialogService } from './confirm-dialog/confirm-service';
+import { DefaultModule } from '../layouts/default.module';
+import { FilterHeaderComponent, FilterItemDirective } from './filter-header.component';
+import { ClickStopPropagation } from './click-stop-propagation';
 
 
 @NgModule({
@@ -66,20 +67,21 @@ import { ConfirmDialogService } from './confirm-dialog/confirm-service';
         PytCheckboxInputComponent,
         PytSliderToggleInputComponent,
         PytSliderInputComponent,
-        ConfirmDialogComponent
+        FilterHeaderComponent,
+        ClickStopPropagation,
+        FilterItemDirective
     ],
     entryComponents: [
-        ConfirmDialogComponent
     ],
     providers: [
-        ConfirmDialogService
     ],
     imports: [
         CommonModule,
-        CustomMaterialModule,
+        DefaultModule,
         FormsModule,
         ReactiveFormsModule,
         NgSelectModule,
+        NgxMaterialTimepickerModule,
         MonacoEditorModule.forRoot()
     ],
     exports: [
@@ -102,7 +104,7 @@ import { ConfirmDialogService } from './confirm-dialog/confirm-service';
         PytCheckboxInputComponent,
         PytSliderToggleInputComponent,
         PytSliderInputComponent,
-        ConfirmDialogComponent,
+        FilterHeaderComponent
     ]
 })
 export class GenCrudModule

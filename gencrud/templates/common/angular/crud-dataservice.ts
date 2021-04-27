@@ -32,6 +32,31 @@ export interface BackEndInfo
     request: any;
 }
 
+export interface FilterColumn
+{
+    column: string;
+}
+
+export interface BackendColumnSort
+{
+    column: string;
+}
+
+export interface FilteredListReq
+{
+    page: number;
+    pageSize: number;
+    columns?: FilterColumn[];
+    columnSort?: BackendColumnSort;
+}
+
+export interface FilteredList<T>
+{
+    page: number;
+    pageSize: number;
+    recordCount: number;
+    records: T;
+}
 
 export class BackendError extends Error
 {
@@ -39,7 +64,7 @@ export class BackendError extends Error
     public backend: string;
     public trace: string;
     public url: string;
-    public backendInfo: BackEndInfo
+    public backendInfo: BackEndInfo;
     constructor( message: string, backend_info: BackEndInfo )
     {
         const trueProto = new.target.prototype;
@@ -54,10 +79,10 @@ export class BackendError extends Error
 }
 
 
-export interface PytSelectList
+export interface GcSelectList
 {
-    value:  any;
-    label:  string;
+    value: any;
+    label: string;
 }
 
 
@@ -66,16 +91,19 @@ export class CrudDataService<T>
     protected debug: boolean = false;
     protected _uri: string;
     protected _backend_filter: string = null;
+    public _pageIndex: number;
+    public _pageSize: number;
+    public _recordCount: number;
     dataChange: BehaviorSubject<T[]> = new BehaviorSubject<T[]>([]);
     // Temporarily stores data from dialogs
     dialogData: T;
 
-    constructor ( protected httpClient: HttpClient )
+    constructor( protected httpClient: HttpClient )
     {
         return;
     }
 
-    public get uri() : string
+    public get uri(): string
     {
       return this._uri;
     }
@@ -99,11 +127,11 @@ export class CrudDataService<T>
     /** CRUD METHODS */
     public getAll( _backend_filter: any ): void
     {
-        let uri = '/list'
+        let uri = '/list';
         if ( _backend_filter !== null )
         {
             this._backend_filter = _backend_filter;
-            uri += '/' + _backend_filter.id + '/' + _backend_filter.value
+            uri += '/' + _backend_filter.id + '/' + _backend_filter.value;
         }
         this.httpClient.get<T[]>( this._uri + uri ).subscribe(
             data => {
@@ -117,44 +145,80 @@ export class CrudDataService<T>
         return;
     }
 
+    	public getPagedList( page: number
+						, pageSize: number
+						, columns: FilterColumn[]
+						, columnSort: BackendColumnSort = null ): void
+	{
+		this.pagedList( page, pageSize, columns, columnSort ).subscribe(
+			data => {
+				console.log( "pagedList", data );
+				this.dataChange.next( data.records );
+				this._pageIndex = data.page;
+				this._pageSize = data.pageSize;
+				this._recordCount = data.recordCount;
+			},
+			(error: HttpErrorResponse) => {
+				throw new BackendError( error.message, error.error );
+			}
+		);
+		return;
+	}
+
+	public pagedList( page: number
+					, pageSize: number
+					, columns: FilterColumn[]
+					, columnSort: BackendColumnSort = null ): Observable<FilteredList<T[]>>
+    {
+		const params: FilteredListReq = {
+			page,
+			pageSize,
+			columns,
+			columnSort
+		};
+		return this.httpClient.post<FilteredList<T[]>>( this._uri + '/pagedlist',
+														params );
+    }
+
+
     public list( _backend_filter: any ): Observable<T[]>
     {
-        let uri = '/list'
+        let uri = '/list';
         if ( _backend_filter !== null )
         {
             this._backend_filter = _backend_filter;
-            uri += '/' + _backend_filter.id + '/' + _backend_filter.value
+            uri += '/' + _backend_filter.id + '/' + _backend_filter.value;
         }
         return this.httpClient.get<T[]>( this._uri + uri );
     }
 
-    public getSelectListSimple( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
+    public getSelectListSimple( value: string, label: string, initial: any = null, final: any = null ): Observable<GcSelectList[]>
     {
-        const params = new HttpParams().set('label', label ).set('value', value )
+        const listParams = new HttpParams().set('label', label ).set('value', value );
         if ( initial != null )
         {
-            params.set( 'initial', initial );
+            listParams.set( 'initial', initial );
         }
         if ( final != null )
         {
-            params.set( 'final', final );
+            listParams.set( 'final', final );
         }
-        return this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } );
+        return this.httpClient.get<GcSelectList[]>( this._uri + '/select', { params: listParams } );
     }
 
-    public getSelectList( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
+    public getSelectList( value: string, label: string, initial: any = null, final: any = null ): Observable<GcSelectList[]>
     {
-        const params = new HttpParams().set('label', label ).set('value', value );
+        const listParams = new HttpParams().set('label', label ).set('value', value );
         if ( initial != null )
         {
-            params.set( 'initial', initial );
+            listParams.set( 'initial', initial );
         }
         if ( final != null )
         {
-            params.set( 'final', final );
+            listParams.set( 'final', final );
         }
         return ( Observable.create( observer => {
-            this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
+            this.httpClient.get<GcSelectList[]>( this._uri + '/select', { params: listParams } )
             .subscribe( ( data ) => {
                     if ( this.debug )
                     {
@@ -172,23 +236,23 @@ export class CrudDataService<T>
 
     public getSelectionList( value: string, label: string, initial: any = null, final: any = null ): Observable<Array<string>>
     {
-        const params = new HttpParams().set('label', label ).set('value', value );
+        const listParams = new HttpParams().set('label', label ).set('value', value );
         if ( initial != null )
         {
-            params.set( 'initial', initial );
+            listParams.set( 'initial', initial );
         }
         if ( final != null )
         {
-            params.set( 'final', final );
+            listParams.set( 'final', final );
         }
         return ( Observable.create( observer => {
-            this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: params } )
+            this.httpClient.get<GcSelectList[]>( this._uri + '/select', { params: listParams } )
             .subscribe( ( data ) => {
                     if ( this.debug )
                     {
                         console.log( 'getSelectList() => ', data );
                     }
-                    let result = new Array<string>();
+                    const result = new Array<string>();
                     result.push( '-' );
                     data = data.sort( ( n1, n2 ) => {
                         if (n1.value > n2.value )
@@ -201,7 +265,7 @@ export class CrudDataService<T>
                         }
                         return 0;
                     });
-                    for ( let entry of data )
+                    for ( const entry of data )
                     {
                         result.push( entry.label );
                     }
@@ -300,7 +364,7 @@ export class CrudDataService<T>
             console.log( 'updateRecord.orignal ', this.dialogData );
             console.log( 'updateRecord.updated ', record );
         }
-        for ( let key of Object.keys( record ) )
+        for ( const key of Object.keys( record ) )
         {
             if ( this.debug )
             {
@@ -366,7 +430,7 @@ export class CrudDataService<T>
 
     public downloadFile( filename: string, reqParams: any ): Observable<any>
     {
-        let options = new HttpHeaders( { 'Content-Type': 'application/octet-stream' } );
+        const options = new HttpHeaders( { 'Content-Type': 'application/octet-stream' } );
         return this.httpClient.get( this._uri + '/' + filename, { headers: options,
                                                                   params: reqParams,
                                                                   responseType: 'blob' } ).pipe (

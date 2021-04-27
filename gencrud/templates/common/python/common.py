@@ -21,6 +21,41 @@ import sqlalchemy.sql.sqltypes
 import webapp2.api as API
 
 
+def convertDateTime( value ):
+    value = value[ 0:22 ] + value[ 23: ]
+    API.app.logger.debug( 'datetime.datetime.value: {}'.format( value ) )
+    if value.startswith( '0000-00-00' ):
+        value = datetime.datetime.utcnow()
+
+    elif not value[ 0 ].isdigit():
+        # 'Tue Aug 19 1975 23:15:30 GMT+0200 (CEST)'
+        value = value.split( '(' )[ 0 ].strip()
+        try:
+            value = datetime.datetime.strptime( value,'%a %b %d %Y %H:%M:%S %Z%z' )
+
+        except Exception:
+            value = datetime.datetime.strptime( value,'%a %b %d %Y %H:%M:%S %z%Z' )
+
+    # ELSE starts with digit
+    elif value.endswith( 'Z' ):
+        # ISO format without timezone
+        value = datetime.datetime.strptime( value,'%Y-%m-%dT%H:%M:%S.%fZ' )
+
+    elif 'T' in value:
+        # ISO format with timezone
+        if '+' in value:
+            value = datetime.datetime.strptime( value, '%Y-%m-%dT%H:%M:%S.%f%z' )
+
+        else:
+            value = datetime.datetime.strptime( value,'%Y-%m-%dT%H:%M:%S%z' )
+
+    else:
+        # Plain format, local time ?
+        value = datetime.datetime.strptime( value,'%Y-%m-%d %H:%M:%S' )
+
+    return value
+
+
 def fieldConversion( record, key, value, default = None ):
     try:
         _type = record.__table__.columns[ key ].type
@@ -28,7 +63,7 @@ def fieldConversion( record, key, value, default = None ):
     except Exception:
         _type = record.__table__.columns[ key.lower() ].type
 
-    API.app.logger.debug( 'field {0} value {1} type {2}'.format( key, value, _type ) )
+    API.app.logger.debug( 'field {0} value {1} type {2}'.format( key, value, str( _type ) ) )
     if isinstance( _type, ( sqlalchemy.sql.sqltypes.Integer,
                             sqlalchemy.sql.sqltypes.INTEGER,
                             sqlalchemy.sql.sqltypes.BigInteger,
@@ -72,21 +107,7 @@ def fieldConversion( record, key, value, default = None ):
                               sqlalchemy.sql.sqltypes.DATETIME,
                               sqlalchemy.sql.sqltypes.TIMESTAMP ) ):
         if value is not None:
-            value = value[ 0:22 ] + value[ 23: ]
-            API.app.logger.debug( 'datetime.datetime.value: {}'.format( value ) )
-            if value.startswith( '0000-00-00' ):
-                value = datetime.datetime.utcnow()
-
-            elif not value[ 0 ].isdigit():
-                # 'Tue Aug 19 1975 23:15:30 GMT+0200 (CEST)'
-                value = value.split( '{' )[ 0 ].strip()
-                value = datetime.datetime.strptime( value,'%a %b %-d %Y %H:%M:%S %Z%z' )
-
-            elif value.endswith( 'Z' ):
-                value = datetime.datetime.strptime( value,'%Y-%m-%dT%H:%M:%S.00Z' )
-
-            else:
-                value = datetime.datetime.strptime( value,'%Y-%m-%dT%H:%M:%S%z' )
+            value = convertDateTime( value )
 
         elif default is not None:
             value = default
@@ -94,8 +115,23 @@ def fieldConversion( record, key, value, default = None ):
     elif isinstance( _type, ( sqlalchemy.sql.sqltypes.Date,
                               sqlalchemy.sql.sqltypes.DATE ) ):
         # TODO: needs to be tested
+        API.app.logger.debug( "Type date: '{}'".format( value ) )
         if value is not None:
-            value = datetime.datetime.strptime( value, '%Y-%m-%d' ).date()
+            # UTC format, need to add local time diff
+            if 'T' in value:
+                utc  = convertDateTime( value )
+                from_zone = tz.tzutc()
+                to_zone = tz.tzlocal()
+                utc = utc.replace( tzinfo = from_zone )
+                value = utc.astimezone( to_zone )
+                API.app.logger.debug( "Type datetime: '{}'".format( value ) )
+
+            else:
+                value = datetime.datetime.strptime( value, '%Y-%m-%d' )
+
+            API.app.logger.debug( "Type date: '{}'".format( value ) )
+            value = value.date()
+            API.app.logger.debug( "Type date: '{}'".format( value ) )
 
         elif default is not None:
             value = default

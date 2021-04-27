@@ -60,17 +60,17 @@ export class CrudDataSource<T> extends DataSource<T>
         this._filterChange.next( filter );
     }
 
-    protected castRecord( record: any ) : T
+    protected castRecord( record: any ): T
     {
         return ( record );
     }
 
-    protected castRecords( record: any[] ) : T[]
+    protected castRecords( record: any[] ): T[]
     {
         return ( record );
     }
 
-    public makeSearchString( record: any ) : string
+    public makeSearchString( record: any ): string
     {
         return ( '' );
     }
@@ -104,7 +104,7 @@ export class CrudDataSource<T> extends DataSource<T>
         } ) );
     }
 
-    public disconnect() : void
+    public disconnect(): void
     {
         return;
     }
@@ -137,23 +137,23 @@ export class CrudDataSource<T> extends DataSource<T>
     {
         if ( value === undefined || value === null || value === '' )
         {
-            return ( value )
+            return ( value );
         }
         if ( pipe === 'datetime' )
         {
             let defFormat = "YYYY-MM-DD HH:mm:ss";
-            var splitted = format.split(";", 2);
+            const splitted = format.split(";", 2);
             if ( splitted.length > 0 )
             {
                 let idx = 0;
-                if ( splitted[ 0 ].length == 2 || splitted[ 0 ].length == 5 )
+                if ( splitted[ 0 ].length === 2 || splitted[ 0 ].length === 5 )
                 {
                     moment.locale( splitted[ 0 ] );
                     idx++;
                 }
                 if ( idx < splitted.length )
                 {
-                    defFormat = splitted[ idx ]
+                    defFormat = splitted[ idx ];
                 }
             }
             value = moment( value ).format( defFormat );

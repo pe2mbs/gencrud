@@ -25,14 +25,14 @@ logger = logging.getLogger()
 
 
 class TemplateTab( TemplateBase ):
-    def __init__( self, parent, **cfg ):
+    def __init__( self, parent, cfg ):
         TemplateBase.__init__( self, parent )
         self.__cfg = cfg
         return
 
     @property
     def index( self ):
-        return self.__cfg.get( C_INDEX, None )
+        return self.__cfg.get( C_INDEX, 0 )
 
     @property
     def label( self ):
@@ -44,7 +44,7 @@ class TemplateTab( TemplateBase ):
                                                                        self.parent )
 
 class TemplateTabs( TemplateBase ):
-    def __init__( self, parent, **cfg ):
+    def __init__( self, parent, cfg ):
         TemplateBase.__init__( self, parent )
         self.__cfg      = cfg
         self.__fields   = { l: [] for l in self.labels }
@@ -71,17 +71,17 @@ class TemplateTabs( TemplateBase ):
 
         return self.__cfg.get( C_LABELS, None )
 
-    @property
-    def tabTag( self ):
-        return self.__cfg.get( C_TAB_TAG, 'mat-tab' )
-
-    @property
-    def contentTag( self ):
-        return self.__cfg.get( C_TAB_CONTENT_TAG, 'mat-card' )
-
-    @property
-    def groupTag( self ):
-        return self.__cfg.get( C_TAB_GROUP_TAG, 'mat-tab-group' )
+    # @property
+    # def tabTag( self ):
+    #     return self.__cfg.get( C_TAB_TAG, 'mat-tab' )
+    #
+    # @property
+    # def contentTag( self ):
+    #     return self.__cfg.get( C_TAB_CONTENT_TAG, 'mat-card' )
+    #
+    # @property
+    # def groupTag( self ):
+    #     return self.__cfg.get( C_TAB_GROUP_TAG, 'mat-tab-group' )
 
     def fieldsFor( self, label ):
         result = self.__fields[ label ]
@@ -105,8 +105,17 @@ class TemplateTabs( TemplateBase ):
         result = ''
         for key, value in self.__params[ label ].items():
             value = self.variable2typescript( value )
-            result += '[{}]="{}" '.format( key, value )
+            if key in ( 'value', ):
+                result += '[{}]="{}" '.format( key, value )
+
+            else:
+                result += '{}="{}" '.format( key, value )
+
             if key == C_VALUE:
+                if '.' in value:
+                    this, _ = value.split( '.', 1 )
+                    value = "{} && {}".format( this, value )
+
                 result += '*ngIf="{}" '.format( value )
 
         return result

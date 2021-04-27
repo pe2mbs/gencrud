@@ -1,6 +1,6 @@
 #
 #   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   Copyright (C) 2018-2021 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -22,9 +22,9 @@ from gencrud.config.base import TemplateBase
 
 
 class TemplateOptions( TemplateBase ):
-    def __init__( self, **cfg ) -> None:
+    def __init__( self, cfg ) -> None:
         TemplateBase.__init__( self, None )
-        self.__config = cfg
+        self.__config = cfg.get( C_OPTIONS, { } )
         return
 
     @property
@@ -61,3 +61,11 @@ class TemplateOptions( TemplateBase ):
     def generateBackend( self ) -> bool:
         # This override/set commandline options from the template defintion.
         return self.__config.get( C_GENERATE_BACKEND, True )
+
+    @property
+    def copySupport( self ):
+        return self.__config.get( 'copy-support-files', True )
+
+    @property
+    def useLocalTemplate( self ):
+        return self.__config.get( 'use-local-template', False )
