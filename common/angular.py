@@ -123,6 +123,8 @@ class Feedback( db.Model ):
     F_VOTED             = db.Column( "f_voted",     db.Integer, nullable = False )
     F_SUBJECT           = db.Column( "f_subject",   db.String( 100 ), nullable = False )
     F_MESSAGE           = db.Column( "f_message",   db.Text, nullable = True )
+    F_STATUS            = db.Column( "f_status",    db.Integer, nullable = True )
+    F_DATETIME          = db.Column( "f_datetime",  db.DateTime, nullable = True )
 
 
 @bluePrint.route( '/api/feedback', methods = [ 'PUT' ] )
