@@ -153,7 +153,7 @@ def check_nltk():
         word_tokenize( 'It\'s.' )
 
     except Exception:
-        from nltk import download
+        import nltk
         if not sslVerify:
             from ssl import _create_unverified_context
             from six.moves.urllib.request import install_opener, HTTPSHandler, build_opener
@@ -162,6 +162,9 @@ def check_nltk():
             opener = build_opener( HTTPSHandler( context = ctx ) )
             install_opener( opener )
 
-        download( 'punkt' )
+        if 'HTTP_PROXY' in os.environ:
+            nltk.set_proxy( os.environ.get( 'HTTP_PROXY' ) )
+
+        nltk.download( 'punkt' )
 
     return

@@ -190,7 +190,8 @@ Options:
     -c / --ignore-case-db-ids           All database names shall be in lower case. 
     -M / --module                       Create module component for template and use GenCrudModule.
                                         instead of adding the components directly into app.module.ts   
-    -s / --sslverify                    Disable the verification of ssl certificate when    
+    -p / --proxy <proxy>                set proxy like http://10.0.0.1:8080
+    -s / --sslverify <true|false>       Disable the verification of ssl certificate when    
                                         retrieving some external profile data.
     -v                                  Verbose option, prints what the tool is doing.
     -V / --version                      Print the version of the tool.
@@ -203,14 +204,15 @@ def main():
     logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hi:s:obvVcM', [ 'help',
+                                    'hi:s:p:obvVcM', [ 'help',
                                                      'input=',
                                                      'sslverify=',
                                                      'overwrite',
                                                      'backup'
                                                      'module'
                                                      'version',
-                                                     'ignore-case-db-ids' ] )
+                                                     'ignore-case-db-ids',
+                                                     'proxy=' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -241,6 +243,10 @@ def main():
 
             elif o in ( '-o', '--overwrite' ):
                 gencrud.util.utils.overWriteFiles = True
+
+            elif o in ( '-p', '--proxy' ):
+                import ntlk
+                ntlk.set_proxy( a )
 
             elif o in ('-V', '--version'):
                 print( '{0}'.format( __version__ ) )
