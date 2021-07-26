@@ -289,7 +289,11 @@ class Config( BaseConfig ):
 
                 return path
 
-            resolveKey( c, taskSection )
+            try:
+                resolveKey( c, taskSection )
+
+            except Exception:
+                logging.getLogger().exception( "Resolving the config failed" )
 
         for key in c.keys():
             if key.isupper():
