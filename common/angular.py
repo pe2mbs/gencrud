@@ -74,7 +74,6 @@ def registerAngular():
     API.app.register_blueprint( bluePrint )
     return
 
-
 @bluePrint.route( '/' )
 def index():
     angular_path = current_app.config[ 'ANGULAR_PATH' ]
@@ -110,6 +109,13 @@ def angularSource( path ):
     env = current_app.config[ 'ENV' ]
     current_app.logger.info( "Angular dist ({}) : {}".format( env, angular_path ) )
     return send_from_directory( angular_path, path )
+
+@bluePrint.route( r"/assets/<regex('\w\.(ico|jpg|eps|)'):path>" )
+def angularAsserts( path ):
+    angular_path = current_app.config[ 'ANGULAR_PATH' ]
+    env = current_app.config[ 'ENV' ]
+    current_app.logger.info( "Angular assets ({}) : {}".format( env, angular_path ) )
+    return send_from_directory( os.path.join( angular_path, 'assets' ), path )
 
 #
 #   This part contains the standard /api/ routes other then loading the Angular application
