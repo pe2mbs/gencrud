@@ -28,6 +28,15 @@ class WebAppJsonEncoder( flask.json.JSONEncoder ):
         if isinstance( obj, ( bytes, bytearray ) ):
             return obj.decode('utf-8')
 
+        elif isinstance( obj, datetime.datetime ):
+            return obj.strftime( "%Y-%m-%dT-%H:%M:%S%z" )
+
+        elif isinstance( obj, datetime.date ):
+            return obj.strftime( "%Y-%m-%d" )
+
+        elif isinstance( obj, datetime.time ):
+            return obj.strftime( "%H:%M:%S%z" )
+
         # default, if not bytes/byte-array object. Let Flask do it thing
         return flask.json.JSONEncoder.default( self, obj )
 
