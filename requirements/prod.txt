@@ -30,3 +30,4 @@ pyyaml==5.3.1
 pyyaml-include==1.2
 ruamel.yaml==0.16.12
 deprecated
+toastedmarshmallow==2.15.2.post1

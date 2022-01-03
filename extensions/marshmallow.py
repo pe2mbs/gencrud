@@ -19,6 +19,7 @@
 #
 
 import webapp2.api as API
+import toastedmarshmallow               # noqa
 from flask_marshmallow import Marshmallow
 
 
