@@ -33,6 +33,7 @@ jwt             = None
 mm              = Marshmallow()
 stomp           = None
 db              = None
+redis           = None
 socketio        = None
 logger          = None
 HERE            = os.path.abspath( os.path.dirname( __file__ ) )
