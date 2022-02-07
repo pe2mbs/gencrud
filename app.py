@@ -166,7 +166,6 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             API.loggingInfo = LOGGING_INFO
 
         logArgs = {
-            'pid': os.getpid(),
             'name': process_name
         }
         if isinstance( API.loggingInfo, str ):
@@ -192,10 +191,13 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
 
         API.logger      = API.app.logger
         API.app.logger.warning( "Logging Flask application: {}".format( logging.getLevelName( API.app.logger.level ) ) )
-        API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
+        if os.environ.get( 'FLASK_DEGUG', 0 ) == 1:
+            API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
+
         API.logger = API.app.logger
         sys.stderr = LoggerWriter( API.app.logger.warning )
         module = None
+        API.logger.info( "Current process ID: {}".format( os.getpid() ) )
         sys.path.append( root_path )
         API.app.json_encoder = WebAppJsonEncoder
         registerExtensions( module )
