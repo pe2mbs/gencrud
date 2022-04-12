@@ -4,28 +4,32 @@ from gencrud.config.base import TemplateBase
 
 
 class LocationTemplateClass( TemplateBase ):
-    def __init__( self, parent, cfg, source, common = None ):
+    def __init__( self, parent, cfg, source, common = None, root_path = None ):
         TemplateBase.__init__( self, parent )
         self.__type     = source
-        self.__config   = cfg.get( self.platform, cfg ).get( source, {} )
-        rootPath = os.environ.get( 'GENCRUD_TEMPLATES', None )
-        if rootPath is None:
-            rootPath = os.environ.get( 'GENCRUD', None )
-            if rootPath is not None:
-                rootpath = os.path.join( rootPath, 'templates' )
+        self.__config   = cfg.get( self.platform, cfg ).get( source, cfg )
+        root_path = os.environ.get( 'GENCRUD_TEMPLATES', root_path )
+        if root_path is None:
+            root_path = os.environ.get( 'GENCRUD', None )
+            if root_path is not None:
+                root_path = os.path.join( rootPath, 'templates' )
 
             else:
-                rootpath = os.path.join( os.path.dirname( __file__ ), '..', source )
+                root_path = os.path.join( os.path.dirname( __file__ ), '..', source )
 
-            self.__base     = self.__config.get( C_BASE, os.path.abspath( rootpath ) )
-
-        if common is not None:
-            self.__common = LocationTemplateClass( self, self.__config, common )
+            self.__base     = self.__config.get( C_BASE, os.path.abspath( root_path ) )
 
         else:
-            self.__common = None
+            self.__base     = root_path
+
+        if common is not None:
+            self.__base = os.path.join( self.__base, common )
 
         return
+
+    @property
+    def base( self ) -> str:
+        return self.__base
 
     @property
     def python( self ) -> str:
@@ -43,10 +47,6 @@ class LocationTemplateClass( TemplateBase ):
 
         return os.path.abspath( os.path.join( self.__base, path ) )
 
-    @property
-    def common( self ) -> object:
-        return self.__common
-
     def __str__(self):
         return "<LocationTemplateClass {} python={}\n{}angular={}>".format( self.__type,
                                                                             self.python,
@@ -56,9 +56,13 @@ class LocationTemplateClass( TemplateBase ):
 
 class TemplateLocation( LocationTemplateClass ):
     def __init__( self, parent, cfg ):
-        LocationTemplateClass.__init__( self, parent, cfg, C_TEMPLATE, 'common' )
+        LocationTemplateClass.__init__( self, parent, cfg, C_TEMPLATE )
+        self.__common = LocationTemplateClass( parent, cfg, C_TEMPLATE, common = 'common', root_path = self.base )
         return
 
+    @property
+    def common( self ) -> object:
+        return self.__common
 
 class SourceLocation( LocationTemplateClass ):
     def __init__( self, parent, cfg ):

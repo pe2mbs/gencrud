@@ -18,36 +18,24 @@
 #   Boston, MA 02110-1301 USA
 #
 */
-import { Component,
-         Input, 
-         forwardRef, 
-         AfterViewInit, 
-         OnChanges, 
-         ViewEncapsulation, 
-         OnInit} from '@angular/core';
-import { NG_VALUE_ACCESSOR, 
-         ControlValueAccessor, 
-         FormGroupDirective} from '@angular/forms';
-import { PytBaseComponent, CUSTOM_ANIMATIONS_CONTROLE } from './base.input.component';
+import { Component, Input,  forwardRef } from '@angular/core';
+import { NG_VALUE_ACCESSOR, FormGroupDirective } from '@angular/forms';
+import { GcBaseComponent, CUSTOM_ANIMATIONS_CONTROLE } from './base.input.component';
 
 
 export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef( () => PytCheckboxInputComponent ),
+    useExisting: forwardRef( () => GcCheckboxInputComponent ),
     multi: true
 };
 
+
 @Component( {
-    selector: 'pyt-checkbox-input-box',
+    // tslint:disable-next-line:component-selector
+    selector: 'gc-checkbox-input',
     template: `<div class="form">
-    <mat-checkbox class="custom-input__input"
-                  id="{{ id }}"
-                  [color]="color"
-                  [attr.readonly]="readonly"
-                  [attr.readonly]="disabled"
-                  [labelPosition]="labelPosition"
-                  [(indeterminate)]="indeterminate"
-                  [formControl]="control">
+    <mat-checkbox class="custom-input__input" id="{{ id }}" [color]="color" [attr.readonly]="readonly" [attr.readonly]="disabled"
+                  [labelPosition]="labelPosition" [(indeterminate)]="indeterminate" [formControl]="control">
         {{ placeholder }}
     </mat-checkbox>
 </div><br/>`,
@@ -56,10 +44,10 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
     providers: [ CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR ],
     animations: CUSTOM_ANIMATIONS_CONTROLE
 } )
-export class PytCheckboxInputComponent extends PytBaseComponent
+export class GcCheckboxInputComponent extends GcBaseComponent
 {
-    @Input( 'labelPosition' ) labelPosition = 'after';
-    @Input( 'indeterminate' ) indeterminate = false;
+    @Input() labelPosition = 'after';
+    @Input() indeterminate = false;
 
     constructor( formGroupDir: FormGroupDirective ) 
     {

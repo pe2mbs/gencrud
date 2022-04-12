@@ -16,7 +16,7 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-__version__     = '2.2.684'
+__version__     = '3.0.685'
 __author__      = 'Marc Bertens-Nguyen'
 __email__       = 'm.bertens@pe2mbs.nl'
 __copyright__   = '2018 - 2020'

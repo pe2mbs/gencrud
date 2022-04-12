@@ -75,7 +75,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
     for src_filename in ( 'main.py', ):
         fnd = os.path.abspath( os.path.join( config.source.python, config.application, src_filename ) )
         if not os.path.isfile( fnd ):
-            fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py', src_filename ) )
+            fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'templates', 'common', 'python', src_filename ) )
             logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
             shutil.copy( fns, fnd )
 
