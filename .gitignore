@@ -1,8 +1,5 @@
 # PyCharm
 .idea/
-venv/
-venv38/
-venv39/
 # some working folders
 output/
 templates.old/
