@@ -33,15 +33,6 @@ class TemplateAction( TemplateBase ):
         self.__cfg = cfg
         return
 
-    def isDialog( self ):
-        return self.position != 'none' and self.type == 'dialog'
-
-    def isScreen( self ):
-        return self.position != 'none' and self.type == 'screen'
-
-    def isMixin( self ):
-        return self.position != 'none' and self.type == 'mixin'
-
     @property
     def module( self ):
         return self.parent.module
@@ -56,7 +47,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def type( self ):
-        result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] ).lower()
+        result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] )
         if result not in C_ACTION_TYPES:
             raise InvalidSetting( C_TYPE, C_ACTION, self.name )
 
@@ -64,7 +55,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def position( self ):
-        result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] ).lower()
+        result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] )
         if result not in C_ACTION_POSITIONS:
             raise InvalidSetting( C_POSITION, C_ACTION, self.name )
 
@@ -97,6 +88,9 @@ class TemplateAction( TemplateBase ):
         self.__cfg[ attr ] = value
         return
 
+    def get( self, attr, default = None ):
+        return self.__cfg.get( attr, default )
+
     @property
     def source( self ) -> str:
         return self.__cfg.get( C_SOURCE, '' )
@@ -104,6 +98,13 @@ class TemplateAction( TemplateBase ):
     @property
     def uri( self ) -> str:
         return self.__cfg.get( C_URI, '' )
+
+    @property
+    def disabled( self ) -> str:
+        return self.__cfg.get( 'disabled', 'false' )
+
+    def hasDisabed( self ) -> bool:
+        return 'disabled' in self.__cfg
 
     def isAngularRoute( self ) -> bool:
         return C_ROUTE in self.__cfg
@@ -122,7 +123,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def route( self ) -> RouteTemplate:
-        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else {}
+        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else None
 
     @property
     def params( self ):
@@ -138,20 +139,6 @@ class TemplateAction( TemplateBase ):
             return '{{ queryParams: {} }}'.format( items )
 
         return '{ }'
-
-    @property
-    def width( self ):
-        return self.__cfg.get( 'width', "80%" )
-
-    def hasWidth( self ):
-        return self.__cfg.get( 'width' ) is not None
-
-    @property
-    def height( self ):
-        return self.__cfg.get( 'height', "80%" )
-
-    def hasHeight( self ):
-        return self.__cfg.get( 'height' ) is not None
 
     #
     #   Internal functions and properies to gencrud
@@ -265,12 +252,21 @@ class TemplateAction( TemplateBase ):
             self.__name, self.name, self.label, self.type, self.icon, self.position, self.function, self.route
         )
 
+    def screenObject( self ):
+        if self.__cfg.get( 'directive', None ) is not None:
+            params = " ".join( [ '[{}]="{}"'.format( par, val ) for par, val in self.__cfg.get( 'params', {} ).items() ] )
+            if self.hasDisabed():
+                params += ' [disabled]="{}"'.format( self.disabled )
+            return '<{directive} name="{name}" tooltip="{label}" {control}></{directive}>'.format( **self.__cfg, control = params )
+
+        return ""
+
 
 DEFAULT_NEW_ACTION      = TemplateAction( None,
                                           'internal_action',
                                           name = C_NEW,
                                           label = 'Add a new record',
-                                          type = C_DIALOG,
+                                          type = C_SCREEN,
                                           icon = 'add',
                                           position = C_HEADER,
                                           function = 'addRecord()' )
@@ -286,6 +282,6 @@ DEFAULT_EDIT_ACTION     = TemplateAction( None,
                                           'internal_action',
                                           name = C_EDIT,
                                           label = 'Edit a record',
-                                          type = C_DIALOG,
+                                          type = C_SCREEN,
                                           position = C_ROW,
                                           function = 'editRecord( i, row )' )

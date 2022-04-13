@@ -19,15 +19,21 @@
 #
 #   gencrud: ${date} version ${version} by user ${username}
 */
-import { NgModule, ModuleWithProviders, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { NgModule, ModuleWithProviders, CUSTOM_ELEMENTS_SCHEMA, Injector } from '@angular/core';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes, Route } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CustomMaterialModule } from '../../material.module';
 import { GenCrudModule } from '../../common/gencrud.module';
-import { DefaultModule } from '../../layouts/default.module';
+import { HelpModule } from 'src/app/components/help-component/help.module';
 import { SpinnerService } from '../../common/spinner-service';
 import { CustomHttpInterceptor } from '../../common/http-interceptor';
+import { ${ obj.cls }TableComponent } from './table.component';
+import { ${ obj.cls }DataService } from './service';
+% if obj.Mixin.Angular.hasModule():
+import { ${ obj.Mixin.Angular.Module.cls } } from '${ obj.Mixin.Angular.Module.filename }';
+% endif
 <%  componentList = []  %>
 % for action in obj.actions.unique:
 %  if action.position != 'none':
@@ -39,76 +45,69 @@ import { Dialog${ obj.cls }Component } from './dialog.component';
 %    endif
 %   elif action.type == 'screen' and "Screen${ obj.cls }Component" not in componentList:
 import { Screen${ obj.cls }Component } from './screen.component';
-<%  componentList.append( "Screen${ obj.cls }Component" )   %>
-%   elif action.type == 'screen' and action.route.cls not in componentList:
+<%
+    componentList.append( "Screen${ obj.cls }Component" )
+%>
+%   elif action.type == 'screen' and action.route is not None and action.route.cls not in componentList:
 %    if "Table" in action.route.cls:
 import { ${ action.route.cls } } from '../${ action.route.module }/table.component';
 %    else:
 import { ${ action.route.cls } } from '../${ action.route.module }/screen.component';
 %    endif
-<%  componentList.append( "${ action.route.cls }" )   %>
+<%
+    componentList.append( "${ action.route.cls }" )
+%>
 %   endif
 %  endif
 % endfor
-import { ${ obj.cls }TableComponent } from './table.component';
-import { ${ obj.cls }DataService } from './service';
-% for mod in obj.modules:
-import { ${ mod.cls } } from '${ mod.importPath }';
+% for module in obj.modules.items:
+import { ${ module.cls } } from '${ module.importPath }';
 % endfor
-import { DefaultComponent } from '../../layouts/default.component';
-
 
 export const ${ obj.name }Route: Route = {
-    path: '',
-    component: DefaultComponent,
-    children: [
-        {
 % if obj.menu:
 %  if root.options.lazyLoading:
-            path:           '',
+    path:           '',
 %  else:
-            path:           '${ obj.menu.activateItem() }',
+    path:           '${ obj.menu.activateItem() }',
 %  endif
 % elif obj.route:
-            path:           '${ obj.route }',
+    path:           '${ obj.route }',
 % endif
+    data:
+    {
+        breadcrumb: '${ obj.title }',
+        title:      '${ obj.title }'
+    },
+    children: [
+        {
+            path: '',
+            component: ${ obj.cls }TableComponent,
             data:
             {
-                breadcrumb: '${ obj.title }',
-                title:      '${ obj.title }'
-            },
-            children: [
-                {
-                    path: '',
-                    component: ${ obj.cls }TableComponent,
-                    data:
-                    {
-                        breadcrumb: 'Overview',
-                        title:      ''
-                    }
-                },
+                breadcrumb: '',
+                title:      ''
+            }
+        },
 %  for action in obj.actions:
 %   if action.type == 'screen' and action.position != 'none':
-                {
-                    path: '${ action.name }',
+        {
+            path: '${ action.name }',
 %    if action.isAngularRoute():
-                    component: ${ action.route.cls },
+            component: ${ action.route.cls },
 %    else:
-                    component: Screen${ obj.cls }Component,
+            component: Screen${ obj.cls }Component,
 %    endif
-                    data:
-                    {
-                        breadcrumb: '${ action.label }',
-                        title:      '${ action.label }'
-                    }
-                },
+            data:
+            {
+                breadcrumb: '${ action.label }',
+                title:      '${ action.label }'
+            }
+        },
 %   endif
 %  endfor
-            ]
-        }
     ]
-};
-
+}
 /*
 *   This NgModule is injected in the app-module.ts. This deals with declaring, importing,
 *   creating entry point and providing the services for the ${ obj.name } screens and dialogs.
@@ -165,8 +164,9 @@ export const ${ obj.name }Route: Route = {
         CommonModule,
         FormsModule,
         ReactiveFormsModule,
-        DefaultModule,
+        CustomMaterialModule,
         GenCrudModule,
+        HelpModule,
 % for mod in obj.modules:
         ${ mod.cls },
 % endfor
@@ -198,8 +198,17 @@ export const ${ obj.name }Route: Route = {
 % endif
     ]
 } )
+% if obj.Mixin.Angular.hasModule():
+export class ${ obj.cls }Module extends ${ obj.Mixin.Angular.Module.cls }
+{
+    constructor( inject: Injector )
+    {
+        super( inject );
+    }
+% else:
 export class ${ obj.cls }Module
 {
+% endif
     static forRoot(): ModuleWithProviders {
         return {
             ngModule: ${ obj.cls }Module,
@@ -209,7 +218,7 @@ export class ${ obj.cls }Module
                 ${ obj.injection.moduleTs.providers },
 % endif
             ]
-        };
+        }
     }
     static forChild(): ModuleWithProviders
     {

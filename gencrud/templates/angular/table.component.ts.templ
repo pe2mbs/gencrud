@@ -20,10 +20,13 @@
 #   gencrud: ${date} version ${version} by user ${username}
 */
 import { Component, ElementRef, OnInit, OnDestroy, ViewChild, EventEmitter, Input, ChangeDetectionStrategy } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from  '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { SpinnerService } from '../../common/spinner-service';
+% if obj.hasAutoUpdate():
+import { Observable, interval, Subscription } from 'rxjs';
+% endif
 % if obj.Mixin.Angular.hasTableComponent():
 import { ${obj.Mixin.Angular.TableComponent.cls} } from '${obj.Mixin.Angular.TableComponent.filename}';
 % else:
@@ -38,37 +41,18 @@ import { Delete${ obj.cls }Dialog } from './delete.dialog';
 % endif
 import { ${ obj.cls }DataService } from './service';
 import { ${ obj.cls }DataSource } from './datasource';
-% for field in obj.table.columns:
- % if field.ui is not None and field.ui.isUiType( 'choice', 'choice-auto-complete', 'combo' ):
-   % if field.ui.service is not None:
-import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
-   % endif
- % endif
+% for service in services.unique( 'path', 'class' ):
+import { ${ service.cls } } from '${ service.path }';
 % endfor
-% if obj.hasAutoUpdate():
-import { Observable, interval, Subscription } from 'rxjs';
-% endif
+import { ConfirmDialogService } from 'src/app/common/confirm-dialog/confirm-service';
 import { environment } from './../../../environments/environment';
-<%
-    def displayColumnList( obj ):
-        result = []
-        for field in obj.table.listViewColumns:
-            result.append( "'{}'".format( field.name ) )
 
-        if obj.actions.hasRowButtons():
-            result.append( "'actions'" )
-
-        return ', '.join( result )
-
-%>
 
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
-    // tslint:disable-next-line:component-selector
     selector: 'app-${ obj.name }-table',
     templateUrl: './table.component.html',
-    styleUrls: [ './table.component.scss',
-                 '../../common/common-mat-card.scss' ]
+    styleUrls: [ './table.component.scss' ]
 })
 % if obj.Mixin.Angular.hasTableComponent():
 export class ${ obj.cls }TableComponent extends ${ obj.Mixin.Angular.TableComponent.cls } implements OnInit, OnDestroy
@@ -76,13 +60,18 @@ export class ${ obj.cls }TableComponent extends ${ obj.Mixin.Angular.TableCompon
 export class ${ obj.cls }TableComponent extends TableBaseComponent<${ obj.cls }Record> implements OnInit, OnDestroy
 % endif
 {
-    public filterRecord: ${ obj.cls }Record = new ${ obj.cls }Record();
-    public searchValue: any = {};
 % if obj.hasAutoUpdate():
     public toggleUpdate = false;
     private updateSubscription: Subscription = null;
 % endif
-    displayedColumns = [ ${ displayColumnList( obj ) } ];
+    displayedColumns = [
+% for field in obj.table.listViewColumns:
+                            '${ field.name }',
+% endfor
+% if obj.actions.hasRowButtons():
+                            'actions'
+% endif
+                        ];
     constructor( public httpClient: HttpClient
                  , public route: ActivatedRoute
                  , public dialog: MatDialog
@@ -92,7 +81,7 @@ export class ${ obj.cls }TableComponent extends TableBaseComponent<${ obj.cls }R
 % if obj.table.hasViewSizeService:
                  , public viewSizeService: ${ obj.table.viewSize }
 % endif
-${ obj.externalService } )
+${ services.externalService } )
     {
         super( '${ obj.cls }Table',
 % if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'dialog':
@@ -107,7 +96,11 @@ ${ obj.externalService } )
 % endif
                 route,
                 dialog,
+% if obj.Mixin.Angular.hasTableComponent():
+                router,
+% endif
                 dataService );
+        this.spinnerService.setUrl( dataService.uri );
         return;
     }
 
@@ -125,10 +118,8 @@ ${ obj.externalService } )
                                                 , this.sort
                                                 , this.paginatorEvent
                                                 , this.backendFilter
-% for field in obj.table.columns:
-  % if field.ui is not None and field.ui.hasService():
-                                                , this.${field.ui.service.name}Service
-  % endif
+% for service in services.unique( 'name', 'label'  ):
+                                                , this.${ service.name }Service
 % endfor
                                                );
         return;
@@ -167,7 +158,7 @@ ${ obj.externalService } )
 
     public newRecord()
     {
-        return ( new ${ obj.cls }Record() );
+        return ( new ${ obj.cls }Record );
     }
 
     public setFilter( filter: string )

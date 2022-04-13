@@ -32,27 +32,8 @@ from gencrud.util.exceptions import InvalidViewSize
 logger = logging.getLogger()
 
 
-class RelationShip( TemplateBase ):
-    def __init__( self, parent, relation ):
-        TemplateBase.__init__( self, parent )
-        self.__relation = relation
-        return
-
-    @property
-    def cls( self ):
-        return self.__relation.get( C_CLASS )
-
-    @property
-    def table( self ):
-        return self.__relation.get( C_TABLE )
-
-    @property
-    def cascade( self ):
-        return self.__relation.get( C_CASCADE )
-
-
 class TemplateTable( TemplateBase ):
-    def __init__( self, parent, table ):
+    def __init__( self, parent, **table ):
         TemplateBase.__init__( self, parent )
         self.__table            = table
         self.__columns          = []
@@ -96,11 +77,17 @@ class TemplateTable( TemplateBase ):
     def config( self ):
         return self.object.config
 
-    def hasTabs( self ) -> bool:
-        return len( self.__table.get( C_TABS, [] ) ) > 0
+    def hasTabs( self, tp = C_DIALOG ) -> bool:
+        if C_TABS in self.__table:
+            return len( self.__table.get( C_TABS,[ ] ) ) > 0
 
-    def tabs( self ) -> TemplateTabs:
-        return TemplateTabs( self, self.__table.get( C_TABS, {} ) )
+        return len( self.__table.get( tp + C_TABS, [] ) ) > 0
+
+    def tabs( self, tp = C_DIALOG ) -> TemplateTabs:
+        if C_TABS in self.__table:
+            return TemplateTabs( self,**self.__table.get( C_TABS,{ } ) )
+
+        return TemplateTabs( self, **self.__table.get( tp + C_TABS, {} ) )
 
     def sortedInfo( self ) -> str:
         if self.__viewSort is not None:
@@ -163,14 +150,6 @@ class TemplateTable( TemplateBase ):
                 return True
 
         return False
-
-    @property
-    def relationShips( self ):
-        return [ RelationShip( self, rs ) for rs in self.__table.get( C_RELATION_SHIP, [] ) ]
-
-    @property
-    def relationShipList( self ):
-        return self.__table.get( C_RELATION_SHIP, [] )
 
     @property
     def columns( self ):

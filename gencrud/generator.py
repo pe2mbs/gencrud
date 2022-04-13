@@ -26,7 +26,6 @@ import glob
 import traceback
 import logging
 import gencrud.util.utils
-from mako.exceptions import CompileException
 from gencrud.configuraton import TemplateConfiguration, my_safe_load
 from gencrud.generators.python import generatePython
 from gencrud.generators.angular import generateAngular
@@ -36,43 +35,36 @@ from gencrud.util.exceptions import ( InvalidEnvironment,
                                       MissingAngularEnvironment,
                                       FlaskEnvironmentNotFound,
                                       ModuleExistsAlready,
-                                      InvalidSetting,
-                                      ErrorInTemplate )
+                                      InvalidSetting )
 from gencrud.constants import *
 logger = logging.getLogger()
 
-def loadPythonConfig( config: TemplateConfiguration ):
-    configFile = None
-    for folder in ( "config", "." ):
-        for ext in ( "conf", "yaml", "json" ):
-            testFile = os.path.join( config.source.python, folder, 'config.{}'.format( ext ) )
-            if os.path.isfile( testFile ):
-                configFile = os.path.abspath( testFile )
-                break
 
-    if configFile is None:
-        raise Exception( "Could not find the Python Flask configuation file."  )
+def verifyLoadProject( config: TemplateConfiguration, env ):
+    if env == C_ANGULAR:
+        configFile  = os.path.join( '..', '..', 'angular.json' )
+        root        = config.angular
 
-    with open( os.path.join( configFile ), gencrud.util.utils.C_FILEMODE_READ ) as stream:
-        if configFile.endswith( ( '.yaml', '.conf' ) ):
-            data = my_safe_load( stream )
+    elif env == C_PYTHON:
+        root = config.python
+        if os.path.isfile( os.path.join( root.sourceFolder, 'config', 'config.conf' ) ):
+            configFile = os.path.join( 'config', 'config.conf' )
+
+        elif os.path.isfile( os.path.join( root.sourceFolder, 'config.yaml' ) ):
+            configFile = 'config.yaml'
+
+        elif os.path.isfile( os.path.join( root.sourceFolder, 'config.json' ) ):
+            configFile = 'config.json'
 
         else:
-            data = json.load( stream )
+            raise Exception( "Could not find the Python Flask configuration file."  )
 
-    if data is None:
-        raise EnvironmentInvalidMissing( C_PYTHON, config.source.python, configFile )
+    else:
+        raise InvalidEnvironment( env )
 
-    logger.debug( 'Configuration for {}: {}'.format( C_PYTHON, json.dumps( data, indent = 4 ) ) )
-    return data
-
-
-def loadAngularConfig( config: TemplateConfiguration ):
-    configFile  = os.path.abspath( os.path.join( config.source.angular,
-                                                 '..',
-                                                 '..', 'angular.json' ) )
-    if os.path.isdir( config.source.angular ) and os.path.isfile( configFile ):
-        with open( os.path.join( configFile ), gencrud.util.utils.C_FILEMODE_READ ) as stream:
+    if os.path.isdir( root.sourceFolder ) and os.path.isfile( os.path.join( root.sourceFolder, configFile ) ):
+        with open( os.path.join( root.sourceFolder, configFile ),
+                   gencrud.util.utils.C_FILEMODE_READ ) as stream:
             if configFile.endswith( ( '.yaml', '.conf' ) ):
                 data = my_safe_load( stream )
 
@@ -80,18 +72,13 @@ def loadAngularConfig( config: TemplateConfiguration ):
                 data = json.load( stream )
 
         if data is None:
-            raise EnvironmentInvalidMissing( C_ANGULAR, config.source.angular, configFile )
+            raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
     else:
-        raise EnvironmentInvalidMissing( C_ANGULAR, config.source.angular, configFile )
+        raise EnvironmentInvalidMissing( env, root.sourceFolder, configFile )
 
-    logger.debug( 'Configuration for {}: {}'.format( C_ANGULAR, json.dumps( data, indent = 4 ) ) )
-    return data
-
-
-def verifyLoadProject( config: TemplateConfiguration, env ):
+    # logger.debug( 'Configuration for {}: {}'.format( env, json.dumps( data, indent = 4 ) ) )
     if env == C_ANGULAR:
-        data = loadAngularConfig( config )
         # Check if we have a valid Angular environment
         if 'defaultProject' in data and 'projects' in data:
             if data[ 'defaultProject' ] not in data[ 'projects' ]:
@@ -104,7 +91,6 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
             raise MissingAngularEnvironment( 'tag defaultProject' )
 
     elif env == C_PYTHON:
-        data = loadPythonConfig( config )
         # Check if we have a valid Python-Flask environment
         if 'API_MODULE' in data:
             pass
@@ -119,14 +105,11 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
 
             data = data[ 'COMMON' ]
 
-    else:
-        raise InvalidEnvironment( env )
-
     return data
 
 
-def doWork( inputFile ):
-    with open( inputFile, 'r' ) as stream:
+def doWork( input_file ):
+    with open( input_file, 'r' ) as stream:
         config = TemplateConfiguration( stream )
 
     if config.nogen:
@@ -134,7 +117,7 @@ def doWork( inputFile ):
         return
 
     if C_VERSION in config:
-        gencrud.util.utils.version = config[ C_VERSION ]
+        gencrud.util.utils.version = config.version
         if gencrud.util.utils.version != 1:
             raise Exception( "Invalid configuration version: {}, must be 1".format( gencrud.util.utils.version ) )
 
@@ -153,21 +136,21 @@ def doWork( inputFile ):
     if config.options.generateBackend:
         logger.info( "*** Generating Python backend source code.***" )
         generatePython( config,
-                        [ os.path.abspath( os.path.join( config.template.python, t ) )
-                                   for t in os.listdir( config.template.python ) ] )
+                        [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
+                                   for t in os.listdir( config.python.templateFolder ) ] )
 
     if config.options.generateFrontend:
         logger.info( "*** Generating Typescript Angular frontend source code. ***" )
         generateAngular( config,
-                         [ os.path.abspath( os.path.join( config.template.angular, t ) )
-                                        for t in os.listdir( config.template.angular ) ] )
+                         [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
+                                        for t in os.listdir( config.angular.templateFolder ) ] )
     return
 
 
 def banner():
     print( '''gencrud - Python backend and Angular frontend code generation, version {version}
-Copyright (C) {copyright} {autor} <{email}>
-'''.format( version = __version__, autor = __author__, email = __email__, copyright = __copyright__ ) )
+Copyright (C) {copyright} {author} <{email}>
+'''.format( version = __version__, author = __author__, email = __email__, copyright = __copyright__ ) )
 
 
 def usage( msg = '' ):
@@ -185,13 +168,12 @@ Parameters:
 
 Options:
     -h / --help                         This help information.
-    -b / --backup                       Make backup of the orginal project files files.
+    -b / --backup                       Make backup of the original project files files.
     -o / --overwrite                    Force overwriting the files.
     -c / --ignore-case-db-ids           All database names shall be in lower case. 
     -M / --module                       Create module component for template and use GenCrudModule.
                                         instead of adding the components directly into app.module.ts   
-    -p / --proxy <proxy>                set proxy like http://10.0.0.1:8080
-    -s / --sslverify <true|false>       Disable the verification of ssl certificate when    
+    -s / --ssl-verify                    Disable the verification of ssl certificate when    
                                         retrieving some external profile data.
     -v                                  Verbose option, prints what the tool is doing.
     -V / --version                      Print the version of the tool.
@@ -204,15 +186,14 @@ def main():
     logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hi:s:p:obvVcM', [ 'help',
+                                    'hi:s:obvVcM', [ 'help',
                                                      'input=',
-                                                     'sslverify=',
+                                                     'ssl-verify=',
                                                      'overwrite',
                                                      'backup'
                                                      'module'
                                                      'version',
-                                                     'ignore-case-db-ids',
-                                                     'proxy=' ] )
+                                                     'ignore-case-db-ids' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -244,15 +225,11 @@ def main():
             elif o in ( '-o', '--overwrite' ):
                 gencrud.util.utils.overWriteFiles = True
 
-            elif o in ( '-p', '--proxy' ):
-                import ntlk
-                ntlk.set_proxy( a )
-
             elif o in ('-V', '--version'):
                 print( '{0}'.format( __version__ ) )
                 sys.exit()
 
-            elif o.lower() in ( '-s', '--sslverify' ):
+            elif o.lower() in ( '-s', '--ssl-verify' ):
                 gencrud.util.utils.sslVerify = a.lower() == 'true'
 
             else:
@@ -268,9 +245,6 @@ def main():
             if '*' in arg:
                 # Wild card handling
                 for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
-                    if not os.path.isfile( filename ):
-                        continue
-
                     print( "Filename: {} from wildcard".format( filename ) )
                     if filename.lower().endswith( '.yaml' ):
                         doWork( filename )
@@ -297,14 +271,6 @@ def main():
         else:
             logger.debug( traceback.format_exc() )
             logger.error( exc )
-
-    except CompileException as exc:
-        logger.error( "Mako Exception" )
-        logger.error( exc )
-
-    except ErrorInTemplate as exc:
-        logger.error( "Mako Exception" )
-        logger.error( exc )
 
     except Exception as exc:
         logger.error( "Exception" )

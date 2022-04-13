@@ -40,26 +40,30 @@ class AngularModule( TemplateBase ):
 
     @property
     def path( self ):
-        return self.__config.get( C_PATH, self.get_default( C_PATH ) )
+        return self.__config.get( C_PATH, self.get_default( 'path' ) )
 
     @property
     def cls( self ):
-        return self.__config.get( C_CLASS, self.get_default( C_MODULE ) )
+        # print( self.__config )
+        return self.__config.get( C_CLASS, self.get_default( 'module' ) )
+
+    @property
+    def module( self ):
+        return self.__config.get( C_MODULE, "module" )
 
     @property
     def importPath( self ):
         if '.' in self.path or '/' in self.path:
             # seems to be a full path
-            path = posixpath.join( self.path, C_MODULE )
+            path = posixpath.join( self.path, self.module )
 
         else:
             # Another module should be one level up in the filesystem
-            path = posixpath.join( "..", self.path, C_MODULE )
+            path = posixpath.join( "..", self.path, self.module )
 
         return path
 
     # "import {{ {modCls} }} from '{path}';".format( modCls = mod.module, path = path ) )
-
 
 
 class AngularModules( TemplateBase ):
@@ -71,8 +75,12 @@ class AngularModules( TemplateBase ):
 
         return
 
-    def __iter__( self ):
+    def __iter__(self):
         return iter( self.__config )
+
+    @property
+    def items(self):
+        return self.__config
 
 
 class InjectionBlockTemplate( TemplateBase ):
@@ -133,25 +141,25 @@ class InjectionBlockTemplate( TemplateBase ):
         return ""
 
     def hasScreen( self ):
-        return C_SCREEN in self.__config
+        return 'screen' in self.__config
 
     def screenComponent( self ):
-        return self.__config.get( C_SCREEN, None )
+        return self.__config.get( 'screen', None )
 
     def hasDialog( self ):
-        return C_DIALOG in self.__config
+        return 'dialog' in self.__config
 
     def dialogComponent( self ):
-        return self.__config.get( C_DIALOG, None )
+        return self.__config.get( 'dialog', None )
 
     def hasProviders( self ):
-        return C_PROVIDERS in self.__config
+        return 'providers' in self.__config
 
     @property
     def providers( self ):
         declare = [ ]
         if self.hasProviders():
-            for provider in self.__config.get( C_PROVIDERS, [] ):
+            for provider in self.__config.get( 'providers',[ ] ):
                 declare.append( provider )
 
         if len( declare ) > 0:
@@ -160,13 +168,13 @@ class InjectionBlockTemplate( TemplateBase ):
         return ""
 
     def hasImports( self ):
-        return C_IMPORTS in self.__config
+        return 'imports' in self.__config
 
     @property
     def imports( self ):
         declare = []
         if self.hasImports():
-            for filename, objectName in self.__config.get( C_IMPORTS, {} ).items():
+            for filename, objectName in self.__config.get( 'imports', {} ).items():
                 declare.append( objectName )
 
         if len( declare ) > 0:
@@ -179,7 +187,7 @@ class InjectionTemplate( TemplateBase ):
     def __init__( self,parent, cfg ):
         TemplateBase.__init__( self,parent )
         self.__config = cfg
-        self.__moduleTs = InjectionBlockTemplate( self,self.__config.get( 'module.ts', None ) )
+        self.__moduleTs = InjectionBlockTemplate( self,self.__config.get( 'module.ts',None ) )
         return
 
     def hasModuleTs( self ):
@@ -191,23 +199,23 @@ class InjectionTemplate( TemplateBase ):
 
 
 class TemplateObject( TemplateBase ):
-    def __init__( self, parent, cfg ):
+    def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__config       = cfg
-        if C_NAME not in self.__config:
-            raise MissingAttribute( C_OBJECT, C_NAME )
+        if 'name' not in self.__config:
+            raise MissingAttribute( 'object', 'name' )
 
-        if C_URI not in self.__config:
-            raise MissingAttribute( C_OBJECT, C_URI )
+        if 'uri' not in self.__config:
+            raise MissingAttribute( 'object', 'url' )
 
-        if C_TABLE not in self.__config:
-            raise MissingAttribute( C_OBJECT, C_TABLE )
+        if 'table' not in self.__config:
+            raise MissingAttribute( 'object', 'table' )
 
-        self.__menu         = TemplateMenuItem( C_MENU, cfg ) if C_MENU in cfg else None
+        self.__menu         = TemplateMenuItem( C_MENU, **cfg ) if C_MENU in cfg else None
         self.__actions      = TemplateActions( self, self.name, self.__config.get( C_ACTIONS, [] ) )
-        self.__table        = TemplateTable( self, self.__config.get( C_TABLE, {} ) )
-        self.__extra        = TemplateExtra( self, self.__config.get( C_EXTRA, {} ) )
-        self.__mixin        = TemplateMixin( self, self.__config.get( C_MIXIN, {} ) )
+        self.__table        = TemplateTable( self, **self.__config.get( C_TABLE, {} ) )
+        self.__extra        = TemplateExtra( self, **self.__config.get( C_EXTRA, {} ) )
+        self.__mixin        = TemplateMixin( self, **self.__config.get( C_MIXIN, {} ) )
         return
 
     #
@@ -227,7 +235,7 @@ class TemplateObject( TemplateBase ):
 
     @property
     def modules( self ):
-        return AngularModules( self, self.__config.get( C_MODULES, [] ) )
+        return AngularModules( self, self.__config.get( 'modules', [] ) )
 
     @property
     def cls( self ) -> str:
@@ -235,10 +243,6 @@ class TemplateObject( TemplateBase ):
 
     @property
     def Mixin( self ):
-        return self.__mixin
-
-    @property
-    def mixin( self ):
         return self.__mixin
 
     @property
@@ -283,11 +287,11 @@ class TemplateObject( TemplateBase ):
         return self.__config.get( C_ACTION_WIDTH, '5%' )
 
     def hasAutoUpdate( self ):
-        return C_AUTO_UPDATE in self.__config
+        return 'autoupdate' in self.__config
 
     @property
     def injection( self ):
-        return InjectionTemplate( self, self.__config.get( C_INJECTION, {} ) )
+        return InjectionTemplate( self, self.__config.get( 'injection', {} ) )
 
     def ignoreTemplates( self, templateFilename: str ):
         if templateFilename.endswith( 'module.ts.templ' ):
@@ -306,7 +310,7 @@ class TemplateObject( TemplateBase ):
 
     @property
     def AutoUpdate( self ):
-        autoUpdate = self.__config.get( C_AUTO_UPDATE, '' )
+        autoUpdate = self.__config.get( 'autoupdate', '' )
         if isinstance( autoUpdate, str ):
             if autoUpdate.isdigit():
                 return int( autoUpdate )
@@ -325,25 +329,25 @@ class TemplateObject( TemplateBase ):
 
         return '.'.join( orderList )
 
-    @property
-    def externalService( self ) -> str:
-        FILLER = '                 , '
-        FILLER_LF = '\r\n                 , '
-        result = []
-        for field in self.__table.columns:
-            if field.ui is not None:
-                if field.ui.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO ):
-                    if field.ui.service is not None:
-                        result.append( 'public {name}Service: {cls}'.format(
-                                        name = field.ui.service.name,
-                                        cls = field.ui.service.cls ) )
-                    elif field.ui.hasResolveList():
-                        pass
-
-                    else:
-                        raise Exception( "service missing in {} in field {}".format( self.__table.name, field.name )  )
-
-        return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
+    # @property
+    # def externalService( self ) -> str:
+    #     FILLER = '                 , '
+    #     FILLER_LF = '\r\n                 , '
+    #     result = []
+    #     for field in self.__table.columns:
+    #         if field.ui is not None:
+    #             if field.ui.isCombobox() or field.ui.isChoice():
+    #                 if field.ui.service is not None:
+    #                     result.append( 'public {name}Service: {cls}'.format(
+    #                                     name = field.ui.service.name,
+    #                                     cls = field.ui.service.cls ) )
+    #                 elif field.ui.hasResolveList():
+    #                     pass
+    #
+    #                 else:
+    #                     raise Exception( "service missing in {} in field {}".format( self.__table.name, field.name )  )
+    #
+    #     return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
 
 
 TemplateObjects = List[ TemplateObject ]

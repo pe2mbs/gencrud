@@ -16,25 +16,11 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-from platform import system
-from gencrud.constants import C_PLATFORMS
 
 class TemplateBase( object ):
     def __init__( self, parent ):
         self.__parent = parent
-        platf = system().lower()
-        if platf == "darwin":  # as platform.system() for OS-X returns Darwin we translate for consistency.
-            platf = "osx"
-
-        if platf not in C_PLATFORMS:
-            raise Exception( "Unsupported platform: {}".format( platf ) )
-
-        self.__platform = platf
         return
-
-    @property
-    def platform( self ):
-        return self.__platform
 
     @property
     def parent( self ):

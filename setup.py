@@ -29,17 +29,13 @@ from gencrud.version import __version__, __author__, __email__, __copyright__
 
 template_list   = [ 'templates/angular/*.templ',
                     'templates/python/*.templ',
-                    'templates/common/angular/*.*',
-                    'templates/common/angular/input-component/*.*',
-                    'templates/common/angular/confirm-dialog/*.*',
-                    'templates/common/python/*.*',
-                    # 'common-ts/input-component/*.ts',
-                    # 'common-ts/input-component/*.scss',
-                    # 'common-ts/*.ts',
-                    # 'common-ts/*.scss',
-                    # 'common-ts/*.html',
-                    # 'common-py/*.py',
-                    # 'common-py/*.templ',
+                    'common-ts/input-component/*.ts',
+                    'common-ts/input-component/*.scss',
+                    'common-ts/*.ts',
+                    'common-ts/*.scss',
+                    'common-ts/*.html',
+                    'common-py/*.py',
+                    'common-py/*.templ',
                     'screen.yaml' ]
 
 here = path.abspath(path.dirname(__file__))

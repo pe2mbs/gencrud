@@ -1,6 +1,6 @@
 #
 #   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2021 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -31,7 +31,6 @@ from gencrud.configuraton import TemplateConfiguration
 from gencrud.util.typescript import TypeScript
 from gencrud.util.positon import PositionInterface
 from gencrud.util.sha import sha256sum
-from gencrud.util.exceptions import ErrorInTemplate
 import posixpath
 
 logger = logging.getLogger()
@@ -94,12 +93,12 @@ def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exports
     #   imports:            search for 'imports: ['
     #   providers:          search for 'providers: ['
     #   entryComponents:    search for 'entryComponents: ['
-    with open( os.path.join( config.source.angular,
+    with open( os.path.join( config.angular.sourceFolder,
                              config.references.app_module.filename ), 'r' ) as stream:
         lines = stream.readlines()
 
     if config.options.backupFiles:
-        gencrud.util.utils.backupFile( os.path.join( config.source.angular,
+        gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder,
                                                      config.references.app_module.filename ) )
 
     rangePos        = PositionInterface()
@@ -135,7 +134,7 @@ def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exports
     gencrud.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, app_module[ 'files' ] )
-    with open( os.path.join( config.source.angular,
+    with open( os.path.join( config.angular.sourceFolder,
                              config.references.app_module.filename ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
@@ -149,16 +148,16 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
         return []
 
     del app_module  # unused
-    if not os.path.isfile( os.path.join( config.source.angular,
+    if not os.path.isfile( os.path.join( config.angular.sourceFolder,
                                          config.references.app_routing.module ) ):
         return []
 
-    with open( os.path.join( config.source.angular,
+    with open( os.path.join( config.angular.sourceFolder,
                              config.references.app_routing.module ), 'r' ) as stream:
         lines = stream.readlines()
 
     if config.options.backupFiles:
-        gencrud.util.utils.backupFile( os.path.join( config.source.angular,
+        gencrud.util.utils.backupFile( os.path.join( config.angular.sourceFolder,
                                                      config.references.app_routing.module ) )
 
     imports = []
@@ -299,7 +298,7 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
     gencrud.util.utils.replaceInList( lines, rangePos, bufferLines )
 
     updateImportSection( lines, imports )
-    with open( os.path.join( config.source.angular, config.references.app_routing.module ), 'w' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder, config.references.app_routing.module ), 'w' ) as stream:
         for line in lines:
             stream.write( line )
             logger.debug( line.replace( '\n', '' ) )
@@ -310,23 +309,82 @@ def updateAngularAppRoutingModuleTs( config: TemplateConfiguration, app_module )
 def exportAndType( line ):
     return line.split( ' ' )[ 1: 3 ]
 
+class ComponentsModules( list ):
+    def append( self, new_item ):
+        for app, name, source, exportType in list( self ):
+            logger.info( "Component {} - {} - {} - {}".format( app, name, source, exportType ) )
+            if not ( new_item[0] == app and new_item[1] == name and new_item[2] == source and new_item[3] == exportType ):
+                logger.info("Adding component: {} - {} - {} - {}".format(*new_item))
+                list.append( self, new_item )
+                return
+
+        if len( list( self ) ) == 0:
+            logger.info("Adding component: {} - {} - {} - {}".format(*new_item))
+            list.append( self, new_item )
+
+        else:
+            logger.error( "NOT ADDED COMPONENT {} - {} - {} - {}".format( *new_item ) )
+
+        return
+
+class ServicesList( list ):
+    def __init__( self ):
+        self.__mapper = {}
+        super( ServicesList, self ).__init__()
+        return
+
+    def append( self, new_item ):
+        if new_item.mapperName in self.__mapper:
+            logger.error("NOT ADDED SERVICE {}".format( new_item ) )
+            return
+
+        logger.info("Adding service: {}".format( new_item ) )
+        idx = len( self )
+        list.append( self, new_item )
+        self.__mapper[ new_item.mapperName ] = idx
+        return
+
+    def unique( self, *args ):
+        logger.debug("ServicesList.unique: {}".format( args ) )
+        intermediate  = {}
+        for service in list( self ):
+            key = ''.join( [ v for k, v in service.dictionary.items() if k in args ] )
+            logger.debug( "ServicesList.service: {} => {} | {}".format( service, args, key ) )
+            if key == '':
+                continue
+
+            intermediate[ key ] = service
+
+        logger.debug("ServicesList.unique => {}".format( intermediate.values() ) )
+        return intermediate.values()
+
+    @property
+    def externalService(self) -> str:
+        FILLER = ( ' ' * 17 ) + ', '
+        FILLER_LF = '\r\n{}'.format( FILLER )
+        result = []
+        for service in list( self.unique( 'class', 'name' ) ):
+            result.append( 'public {name}Service: {cls}'.format( name = service.name, cls = service.cls ) )
+
+        return (FILLER if len(result) > 0 else '') + (FILLER_LF.join(result))
+
 
 def generateAngular( config: TemplateConfiguration, templates: list ):
-    modules = []
-    if not os.path.isdir( config.source.angular ):
-        os.makedirs( config.source.angular )
+    modules = ComponentsModules()
+    if not os.path.isdir( config.angular.sourceFolder ):
+        os.makedirs( config.angular.sourceFolder )
 
     dt = datetime.datetime.now()
     generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
     userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
     for cfg in config:
-        modulePath = os.path.join( config.source.angular,
+        modulePath = os.path.join( config.angular.sourceFolder,
                                    config.application,
                                    cfg.name )
         if os.path.isdir( modulePath ) and not config.options.overWriteFiles:
             raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
-        makeAngularModule( config.source.angular,
+        makeAngularModule( config.angular.sourceFolder,
                            config.application,
                            cfg.name )
         logger.info( 'application : {0}'.format( config.application ) )
@@ -338,8 +396,15 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
 
         logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
+
+        servicesList = ServicesList()
+        for field in cfg.table.columns:
+            if ( field.ui is not None and (field.ui.isChoice() or field.ui.isCombobox()) ) and field.hasService():
+                field.ui.service.fieldLabel = field.label
+                servicesList.append( field.ui.service )
+
         for templ in templates:
-            templateFilename = os.path.join( config.source.angular,
+            templateFilename = os.path.join( config.angular.sourceFolder,
                                              config.application,
                                              cfg.name,
                                              gencrud.util.utils.sourceName( templ ) )
@@ -384,32 +449,38 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
             else:
                 pass
 
-            with open( templateFilename,
-                       gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
+            with open( templateFilename, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 try:
                     for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                         root = config,
                                                                                         version = gencrud.version.__version__,
                                                                                         username = userName,
+                                                                                        services = servicesList,
                                                                                         date = generationDateTime ).split( '\n' ):
+
                         if line.startswith( 'export ' ):
-                            modules.append( (config.application,
-                                             cfg.name,
-                                             gencrud.util.utils.sourceName( templ ),
-                                             exportAndType( line ) ) )
+                            modules.append( ( config.application,
+                                              cfg.name,
+                                              gencrud.util.utils.sourceName( templ ),
+                                              exportAndType( line ) ) )
 
                         stream.write( line )
                         if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
                             stream.write( '\n' )
 
                 except Exception:
-                    raise ErrorInTemplate( templateFilename, exceptions.text_error_template() )
+                    logger.error( "Mako exception:" )
+                    for line in exceptions.text_error_template().render_unicode().encode('ascii').split(b'\n'):
+                        logger.error( line )
+
+                    logger.error( "Mako done" )
+                    raise
 
     appModule = {}
     exportsModules = []
     for app, mod, source, export in modules:
         # Update 'app.module.json'
-        app_module_json_file = os.path.join( config.source.angular,
+        app_module_json_file = os.path.join( config.angular.sourceFolder,
                                              app,
                                              mod,
                                              'app.module.json' )
@@ -443,16 +514,16 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
 
     appModule[ 'files' ] = newFiles
     # Write update 'app.module.json'
-    with open( os.path.join( config.source.angular, 'app.module.json' ), 'w' ) as stream:
+    with open( os.path.join( config.angular.sourceFolder, 'app.module.json' ), 'w' ) as stream:
         json.dump( appModule, stream, indent = 4 )
 
     logger.info( 'exportsModules' )
     for mod in exportsModules:
-        logger.info( mod )
+        logger.info( "exportsModule: {}".format( mod ) )
 
-    logger.info( 'appModule: {}'.format( json.dumps( appModule, indent = 4 ) ) )
+    logger.info( 'appModules: {}'.format( json.dumps( appModule, indent = 4 ) ) )
     for mod in appModule:
-        logger.info( mod.strip( '\n' ) )
+        logger.info( "appModule: {}".format( mod.strip( '\n' ) ) )
 
     imports = updateAngularAppRoutingModuleTs( config, appModule )
     for imp in imports:
@@ -463,11 +534,11 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
     logger.info( "appModule: {}".format( json.dumps( appModule, indent = 4 ) ) )
     updateAngularAppModuleTs( config, appModule, exportsModules )
 
-    os.remove( os.path.join( config.source.angular, 'app.module.json' ) )
+    os.remove( os.path.join( config.angular.sourceFolder, 'app.module.json' ) )
     copyAngularCommon( config, os.path.abspath( os.path.join( os.path.dirname( __file__ ),
                                                       '..',
                                                       'common-ts' ) ),
-                       os.path.join( config.source.angular, 'common' ) )
+                       os.path.join( config.angular.sourceFolder, 'common' ) )
     return
 
 
@@ -478,11 +549,11 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
     dt = datetime.datetime.now()
     generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
     userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
-    templ = os.path.abspath( os.path.join( config.template.angular, 'module.ts.templ' ) )
+    templ = os.path.abspath( os.path.join( config.angular.templateFolder, 'module.ts.templ' ) )
     imports = []
     files = []
     for cfg in config:
-        filename = os.path.join( config.source.angular,
+        filename = os.path.join( config.angular.sourceFolder,
                                  config.application,
                                  cfg.name,
                                  'module.ts'.format( cfg.name ) )
@@ -491,14 +562,26 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
 
         # Create the 'module.ts'
         with open( filename, 'w' ) as stream:
-            for line in Template( filename = templ ).render( obj = cfg,
-                                                             root = config,
-                                                             username = userName,
-                                                             date = generationDateTime,
-                                                             version = gencrud.version.__version__ ).split( '\n' ):
-                stream.write( line )
-                if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
-                    stream.write( '\n' )
+            # for item in cfg.modules.items:
+            #     print( item )
+
+            try:
+                for line in Template( filename = templ ).render( obj = cfg,
+                                                                 root = config,
+                                                                 username = userName,
+                                                                 date = generationDateTime,
+                                                                 version = gencrud.version.__version__ ).split( '\n' ):
+                    stream.write( line )
+                    if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
+                        stream.write( '\n' )
+
+            except Exception:
+                logger.error("Mako exception:")
+                for line in exceptions.text_error_template().render_unicode().encode('ascii').split(b'\n'):
+                    logger.error(line)
+
+                logger.error("Mako done")
+                raise
 
         component = "import {{ {cls}Module }} from './{app}/{mod}/module';".format( cls = cfg.cls,
                                                                                     app = config.application,
@@ -521,7 +604,8 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
                     "import { BrowserAnimationsModule } from '@angular/platform-browser/animations';",
                     "import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';",
                     "import { FormsModule, ReactiveFormsModule } from '@angular/forms';",
-                    "import { GenCrudModule } from './gencrud/gencrud.module';",
+                    "import { CustomMaterialModule } from './material.module';",
+                    "import { GenCrudModule } from './common/gencrud.module';",
                    ],
         "declarations": [],
         "imports": [ "BrowserModule",
@@ -529,10 +613,15 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
                      "HttpClientModule",
                      "FormsModule",
                      "ReactiveFormsModule",
+                     "CustomMaterialModule",
                      "GenCrudModule" ],
 
         "entryComponents": [ ],
-        "providers": []
+            "providers": [
+                { "multi": "true",
+                  "provide": "HTTP_INTERCEPTORS",
+                  "useClass": "AuthInterceptorService"
+                } ]
     }
 
     for imp in files:
@@ -547,9 +636,6 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
 
 
 def copyAngularCommon( config, source, destination ):
-    if config.options.useLocalTemplate:
-        return
-
     files = os.listdir( source )
     for filename in files:
         if filename == 'gencrud.module.ts' and not config.options.useModule:

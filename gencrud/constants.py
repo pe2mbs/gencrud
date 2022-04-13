@@ -20,15 +20,10 @@ C_APPLICATION           = 'application'
 C_FILENAME              = 'filename'
 C_CLASS                 = 'class'
 C_MODULE                = 'module'
-C_MODULES               = 'modules'
 C_OPTIONS               = 'options'
 C_REFERENCES            = 'references'
 C_OBJECTS               = 'objects'
-C_OBJECT                = 'object'
-C_CONTROLS              = 'controls'
-C_ROOT                  = 'root'
-C_AUTO_UPDATE           = 'autoupdate'
-C_NO_GENERATE           = 'nogen'
+
 C_USE_MODULE            = 'use-module'
 C_BACKUP                = 'backup'
 C_IGNORE_CASE_DB_IDS    = 'ignore-case-db-ids'
@@ -41,8 +36,6 @@ C_APP_ROUTING           = 'app-routing'
 C_SOURCE                = 'source'
 C_BASE                  = 'base'
 C_PYTHON                = 'python'
-C_COMMON                = 'common'
-C_TEMPLATES_DIR         = 'templates'
 C_ANGULAR               = 'angular'
 C_TYPESCRIPT            = 'typescript'
 C_TEMPLATE              = 'template'
@@ -53,17 +46,14 @@ C_PLATFORM_OSX          = 'osx'
 C_PLATFORMS             = ( C_PLATFORM_LINUX, C_PLATFORM_WINDOS, C_PLATFORM_OSX )
 
 C_VERSION               = 'version'
-C_VERSION_DEFAULT       = 2
 C_MENU                  = 'menu'
 C_ACTIONS               = 'actions'
 C_ACTION                = 'action'
 C_TABLE                 = 'table'
-C_CASCADE               = 'cascade'
 C_EXTRA                 = 'extra'
 C_TITLE                 = 'title'
 C_NAME                  = 'name'
 C_URI                   = 'uri'
-C_URL                   = 'url'
 C_ACTION_WIDTH          = 'action-width'
 C_INDEX                 = 'index'
 C_CAPTION               = 'caption'
@@ -74,8 +64,7 @@ C_TYPE                  = 'type'
 C_WHERE                 = 'where'
 C_PATH                  = 'path'
 C_IMPORTS               = 'imports'
-C_INJECTION             = 'injection'
-C_PROVIDERS             = 'providers'
+
 C_POSITION              = 'position'
 C_NONE                  = 'none'
 C_LABEL                 = 'label'
@@ -97,10 +86,9 @@ C_HEADER                = 'header'
 C_CLICK                 = 'click'
 C_DBLCLICK              = 'dblclick'
 C_DOUBLE_CLICK          = 'dblclick'
-C_MIXIN                 = 'mixin'
 
-C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_NONE, C_MIXIN )
-C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE )
+C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_NONE )
+C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE, C_SCREEN )
 C_ACTION_ATTRIBUTES     = ( C_FUNCTION,
                             C_NAME,
                             C_LABEL,
