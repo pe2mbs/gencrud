@@ -34,7 +34,7 @@ import gencrud.util.utils as API
 
 logger = logging.getLogger()
 
-MENU_CHILDEREN_LABEL    = 'childeren'
+MENU_CHILDREN_LABEL    = 'children'
 MENU_DISPLAY_NAME       = 'displayName'
 MENU_ICON_NAME          = 'iconName'
 
