@@ -24,6 +24,25 @@ GENCRUD_SCHEME = {
                 }
             }
         },
+        'templates': {
+            'type': 'object',
+            "required": False,
+            "additionalProperties": False,
+            'properties': {
+                'base': {
+                    'type': 'string',
+                    "required": False,
+                },
+                'python': {
+                    'type': 'string',
+                    "required": True,
+                },
+                'angular': {
+                    'type': 'string',
+                    "required": True,
+                }
+            }
+        },
         'application': {
             'type': 'string'
         },
