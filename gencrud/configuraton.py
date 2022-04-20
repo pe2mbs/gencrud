@@ -116,18 +116,14 @@ class TemplateConfiguration( object ):
             raise SystemExit
 
         self.__controls     = None
-        if 'objects' not in self.__config:
-            raise MissingAttribute( 'root', 'objects' )
-
-        if 'application' not in self.__config:
-            raise MissingAttribute( 'root', 'application' )
-
-        controls            = cfg.get( 'controls', None )
+        controls            = cfg.get( C_CONTROLS, None )
         if controls is not None:
             self.__controls = DymanicControls( controls )
 
         opts                = self.__config[ C_OPTIONS ] if C_OPTIONS in self.__config else { }
         self.__options      = TemplateOptions( **opts )
+        # encapsulate the information where python/angular templates are located and where
+        # the output location is
         self.__python       = TemplateSourcePython( **self.__config )
         self.__angular      = TemplateSourceAngular( **self.__config )
         opts                = self.__config[ C_REFERENCES ] if C_REFERENCES in self.__config else { }
@@ -140,7 +136,7 @@ class TemplateConfiguration( object ):
 
     @property
     def nogen( self ):
-        return self.__config.get( 'nogen', False )
+        return self.__config.get( C_NO_GENERATE, False )
 
     @property
     def parent( self ):
@@ -179,4 +175,4 @@ class TemplateConfiguration( object ):
 
     @property
     def version( self ):
-        return self.__config.get( 'version', 1 )
+        return self.__config.get( C_VERSION, C_VERSION_DEFAULT )

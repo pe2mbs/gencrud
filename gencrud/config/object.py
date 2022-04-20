@@ -40,12 +40,12 @@ class AngularModule( TemplateBase ):
 
     @property
     def path( self ):
-        return self.__config.get( C_PATH, self.get_default( 'path' ) )
+        return self.__config.get( C_PATH, self.get_default( C_PATH  ) )
 
     @property
     def cls( self ):
         # print( self.__config )
-        return self.__config.get( C_CLASS, self.get_default( 'module' ) )
+        return self.__config.get( C_CLASS, self.get_default( C_MODULE ) )
 
     @property
     def module( self ):

@@ -37,8 +37,9 @@ class TemplateSource( TemplateBase ):
         self.__config = cfg
         self.__key = tp
         self.__source = self.__config.get( platf, self.__config ).get( C_SOURCE, {} )
+        # if there is no templates directory specified, the gencrud default templates will be used
         self.__template = self.__config.get( platf, self.__config ).get( C_TEMPLATE,
-                        os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'templates' ) ) )
+                        os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', C_TEMPLATES_DIR ) ) )
         return
 
     @property
