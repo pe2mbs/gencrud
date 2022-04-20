@@ -2,3 +2,4 @@ nltk
 mako
 pyyaml
 six
+jsonschema

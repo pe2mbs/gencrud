@@ -69,23 +69,23 @@ class TemplateColumn( TemplateBase ):
                           'TIME': 'API.db.Time' }
 
     SCHEMA_TYPES_FROM_SQL = { 'CHAR': 'String',
-                          'VARCHAR': 'String',
-                          'INT': 'Integer',
-                          'BIGINT': 'Integer',
-                          'BOOLEAN': 'Boolean',
-                          'BOOL': 'Boolean',
-                          'TIMESTAMP': 'DateTime',
-                          'DATETIME': 'DateTime',
-                          'DATE': 'Date',
-                          'FLOAT': 'Float',
-                          'REAL': 'Float',
-                          'INTERVAL': 'Integer',
-                          'BLOB': 'String',
-                          'NUMERIC': 'Decimal',
-                          'DECIMAL': 'Decimal',
-                          'CLOB': 'String',
-                          'TEXT': 'String',
-                          'TIME': 'Time' }
+                        'VARCHAR': 'String',
+                        'INT': 'Integer',
+                        'BIGINT': 'Integer',
+                        'BOOLEAN': 'Boolean',
+                        'BOOL': 'Boolean',
+                        'TIMESTAMP': 'DateTime',
+                        'DATETIME': 'DateTime',
+                        'DATE': 'Date',
+                        'FLOAT': 'Float',
+                        'REAL': 'Float',
+                        'INTERVAL': 'Integer',
+                        'BLOB': 'String',
+                        'NUMERIC': 'Decimal',
+                        'DECIMAL': 'Decimal',
+                        'CLOB': 'String',
+                        'TEXT': 'String',
+                        'TIME': 'Time' }
 
     def __init__( self, parent, table_name, **cfg ):
         """
@@ -106,7 +106,6 @@ class TemplateColumn( TemplateBase ):
         self.__ui           = None
         self.__leadIn       = []
         self.__dbField      = ''
-        self.unique         = False
         if C_FIELD not in self.__config:
             raise MissingAttribute( C_TABLE, C_FIELD )
 
@@ -239,6 +238,12 @@ class TemplateColumn( TemplateBase ):
     def __repr__(self):
         return "<TemplateColumn name='{}' label='{}'".format( self.name, self.label )
 
+    def definedNotNull( self ) -> bool:
+        return not self.sqlAttrs2Dict()[ 'nullable' ]
+
+    def definedNull( self ) -> bool:
+        return self.sqlAttrs2Dict()[ 'nullable' ]
+
     @property
     def tableName( self ) -> str:
         return self.__tableName
@@ -249,7 +254,7 @@ class TemplateColumn( TemplateBase ):
 
     @property
     def tab( self ) -> TemplateTab:
-        return TemplateTab( self, self.__config.get( C_TAB, {} ) )
+        return TemplateTab( self, **self.__config.get( C_TAB, {} ) )
 
     @property
     def uniqueKey( self ) -> str:
@@ -345,13 +350,6 @@ class TemplateColumn( TemplateBase ):
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
-    @property
-    def schemaType( self ):
-        if self.__sqlType in self.TS_TYPES_FROM_SQL:
-            return self.SCHEMA_TYPES_FROM_SQL[ self.__sqlType ]
-
-        raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
-
     def isNumericField( self ) -> bool:
         return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'number'
 
@@ -369,6 +367,53 @@ class TemplateColumn( TemplateBase ):
 
     def isString( self ):
         return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'string'
+
+    def sqlAttrs2Dict( self ):
+        options = { 'autoincrement': False,
+                    'primary_key': False,
+                    'nullable': False,
+                    'foreign_key': None,
+                    'default': None,
+                  }
+        for attr in self.__attrs:
+            if 'AUTO NUMBER' in attr:
+                options[ 'autoincrement' ] = True
+
+            elif 'PRIMARY KEY' in attr:
+                options[ 'primary_key'] = True
+
+            elif 'NOT NULL' in attr:
+                options[ 'nullable' ] = False
+
+            elif attr.startswith( 'FOREIGN KEY' ):
+                if root.config.options.ignoreCaseDbIds:
+                    options[ 'foreign_key' ] = attr.split( ' ' )[ 2 ].lower()
+
+                else:
+                    options['foreign_key'] = attr.split(' ')[ 2 ]
+
+            elif attr.startswith( 'DEFAULT' ):
+                value = attr.split( ' ' )[ 1 ]
+                if self.isNumericField():
+                    options[ 'default' ] = value
+
+                elif self.isBooleanField():
+                    if value.lower() == ( "true", "1", "yes" ):
+                        options[ 'default' ] = True
+
+                    else:
+                        options[ 'default' ] = False
+
+                else:
+                    options['default'] = '"{0}"'.format( value )
+
+            elif attr.startswith( 'NULL' ):
+                options[ 'nullable' ] = True
+
+            else:
+                logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
+
+        return options
 
     def sqlAlchemyDef( self ) -> str:
         """
@@ -440,9 +485,6 @@ class TemplateColumn( TemplateBase ):
                         self.__leadIn.append( import_statement )
 
                     result += ', default = {mod}.{call}'.format( mod = module_name, call = function )
-
-        if self.unique:
-            result += ", unique = {}".format( self.unique )
 
         result += ' )'
         return result

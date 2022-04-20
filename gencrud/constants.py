@@ -46,6 +46,7 @@ C_TEMPLATES_DIR         = 'templates'
 C_ANGULAR               = 'angular'
 C_TYPESCRIPT            = 'typescript'
 C_TEMPLATE              = 'template'
+C_TEMPLATE              = 'templates'
 
 C_PLATFORM_LINUX        = 'linux'
 C_PLATFORM_WINDOS       = 'windows'
@@ -99,8 +100,8 @@ C_DBLCLICK              = 'dblclick'
 C_DOUBLE_CLICK          = 'dblclick'
 C_MIXIN                 = 'mixin'
 
-C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_NONE, C_MIXIN )
-C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE )
+C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_NONE )
+C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE, C_SCREEN )
 C_ACTION_ATTRIBUTES     = ( C_FUNCTION,
                             C_NAME,
                             C_LABEL,
@@ -218,3 +219,6 @@ C_READ_ONLY             = 'readonly'
 
 C_GENERATE_FRONTEND     = 'generate-frontend'
 C_GENERATE_BACKEND      = 'generate-backend'
+
+C_GENCRUD_TEMPLATES = 'GENCRUD_TEMPLATES'
+C_GENCRUD = 'GENCRUD'

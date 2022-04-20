@@ -25,14 +25,12 @@ class TemplateMixinComponent( TemplateBase ):
     def __init__( self, parent, component, mixin ):
         TemplateBase.__init__( self, parent )
         self.__component = component
+
         self.__config = mixin
         return
 
     def hasClass( self ):
         return self.__config.get( 'class', None ) is not None
-
-    def hasFilename( self ):
-        return self.__config.get( 'filename',  self.__config.get( 'file', None ) ) is not None
 
     @property
     def cls( self ):
@@ -40,10 +38,11 @@ class TemplateMixinComponent( TemplateBase ):
 
     @property
     def filename( self ):
+        # print( self.__component, self.__config )
         file = self.__config.get( 'filename', self.__config.get( 'file', None ) )
         file, ext = posixpath.splitext( file )
         if ext == '.py':
-            return file.replace( '\\', '.' ).replace( '/', '.' ).replace( '.py', '' )
+            return file.replace( '\\', '.' ).replace( '/', '.' )
 
         if ext == '.ts':
             if file.startswith( '/' ) or file.startswith( '.' ):
@@ -58,10 +57,9 @@ class TemplateMixinComponent( TemplateBase ):
 class TemplateMixinPython( TemplateBase ):
     def __init__( self, parent, mixin ):
         TemplateBase.__init__( self, parent )
-        self.__model    = TemplateMixinComponent( self, 'model', mixin.get( 'model',{} ) )
-        self.__schema   = TemplateMixinComponent( self, 'schema', mixin.get( 'schema',{} ) )
-        self.__view     = TemplateMixinComponent( self, 'view', mixin.get( 'view',{} ) )
-        self.__init     = TemplateMixinComponent( self, 'init', mixin.get( 'init', { } ) )
+        self.__model    = TemplateMixinComponent( self, 'model',    mixin.get( 'model', {} ) )
+        self.__schema   = TemplateMixinComponent( self, 'schema',   mixin.get( 'schema', {} ) )
+        self.__view     = TemplateMixinComponent( self, 'view',     mixin.get( 'view', {} ) )
         return
 
     def hasModel( self ):
@@ -72,7 +70,7 @@ class TemplateMixinPython( TemplateBase ):
         return self.__model
 
     def hasSchema( self ):
-        return self.__model.hasClass()
+        return self.__schema.hasClass()
 
     @property
     def Schema( self ):
@@ -85,24 +83,18 @@ class TemplateMixinPython( TemplateBase ):
     def View( self ):
         return self.__view
 
-    def hasInit( self ):
-        return self.__init.hasFilename()
-
-    @property
-    def Init( self ):
-        return self.__init
-
 
 class TemplateMixinAngular( TemplateBase ):
     def __init__( self, parent, mixin ):
         TemplateBase.__init__( self, parent )
-        self.__table_component  = TemplateMixinComponent( self, 'table.component', mixin.get( 'table.component',{} ) )
-        self.__screen_component = TemplateMixinComponent( self, 'screen.component',mixin.get( 'screen.component',{ } ) )
-        self.__delete_dialog    = TemplateMixinComponent( self, 'delete.dialog',mixin.get( 'delete.dialog',{ } ) )
+        self.__table_component  = TemplateMixinComponent( self, 'table.component',  mixin.get( 'table.component',{} ) )
+        self.__screen_component = TemplateMixinComponent( self, 'screen.component', mixin.get( 'screen.component',{ } ) )
+        self.__delete_dialog    = TemplateMixinComponent( self, 'delete.dialog',    mixin.get( 'delete.dialog',{ } ) )
         self.__component_dialog = TemplateMixinComponent( self, 'component.dialog:',mixin.get( 'component.dialog',{ } ) )
-        self.__datasource       = TemplateMixinComponent( self, 'datasource',mixin.get( 'datasource',{ } ) )
-        self.__service          = TemplateMixinComponent( self, 'service',mixin.get( 'service',{ } ) )
-        self.__model            = TemplateMixinComponent( self, 'model',mixin.get( 'model',{ } ) )
+        self.__datasource       = TemplateMixinComponent( self, 'datasource',       mixin.get( 'datasource',{ } ) )
+        self.__service          = TemplateMixinComponent( self, 'service',          mixin.get( 'service',{ } ) )
+        self.__model            = TemplateMixinComponent( self, 'model',            mixin.get( 'model',{ } ) )
+        self.__module           = TemplateMixinComponent( self, 'module',           mixin.get( 'module', {} ) )
         return
 
     def hasTableComponent( self ):
@@ -154,9 +146,16 @@ class TemplateMixinAngular( TemplateBase ):
     def Model( self ):
         return self.__model
 
+    def hasModule( self ):
+        return self.__module.hasClass()
+
+    @property
+    def Module( self ):
+        return self.__module
+
 
 class TemplateMixin( TemplateBase ):
-    def __init__( self, parent, mixin ):
+    def __init__( self, parent, **mixin ):
         TemplateBase.__init__( self, parent )
         self.__python   = TemplateMixinPython( self, mixin.get( 'python', {} ) )
         self.__angular  = TemplateMixinAngular( self, mixin.get( 'angular', {} ) )
@@ -167,19 +166,11 @@ class TemplateMixin( TemplateBase ):
         return self.__python
 
     @property
-    def python( self ):
-        return self.__python
-
-    @property
     def P( self ):
         return self.__python
 
     @property
     def Angular( self ):
-        return self.__angular
-
-    @property
-    def angular( self ):
         return self.__angular
 
     @property

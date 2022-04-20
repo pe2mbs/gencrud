@@ -140,14 +140,3 @@ class InvalidViewSize( Exception ):
 class MissingAttribute( Exception ):
     def __init__( self, group, name ):
         Exception.__init__( self, "Missing '{1}' in section '{0}'".format( group, name ) )
-
-
-class ErrorInTemplate( Exception ):
-    def __init__( self, filename, mako_message ):
-        self.__filename = filename
-        result = mako_message.render_unicode()
-        self.__mako_message = result.splitlines( keepends = False )
-        msg = "Mako exception in template: {}\n{}".format( self.__filename,
-                                                           "\n".join( self.__mako_message ) )
-        Exception.__init__( self, msg )
-        return

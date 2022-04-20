@@ -26,7 +26,7 @@ C_ICON_NAME     = 'iconName'
 
 
 class TemplateMenuItem( TemplateBase ):
-    def __init__( self, key, cfg ):
+    def __init__( self, key, **cfg ):
         TemplateBase.__init__( self, None )
         self.__config = cfg[ key ]
         self.__item = cfg[ key ]
@@ -38,7 +38,7 @@ class TemplateMenuItem( TemplateBase ):
             raise MissingAttribute( C_MENU, 'route OR menu' )
 
         if C_MENU in self.__item:
-            self.__submenu = TemplateMenuItem( C_MENU, self.__item )
+            self.__submenu = TemplateMenuItem( C_MENU, **self.__item )
 
         return
 

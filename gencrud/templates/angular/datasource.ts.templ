@@ -21,16 +21,12 @@
 */
 import { EventEmitter } from '@angular/core';
 import { CrudDataSource } from '../../common/crud-datasource';
-import { CrudDataService, GcSelectList } from '../../common/crud-dataservice';
+import { CrudDataService, PytSelectList } from '../../common/crud-dataservice';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { ${ obj.cls }Record } from './model';
-% for field in obj.table.columns:
- % if field.ui is not None and field.ui.isUiType( 'choice', 'choice-auto-complete', 'combo' ):
-   % if field.hasService():
-import { ${field.ui.service.cls} } from '${ field.ui.service.path }';
-   % endif
- % endif
+% for service in services.unique( 'name' ):
+import { ${service.cls} } from '${ service.path }';
 % endfor
 
 
@@ -41,13 +37,13 @@ export class ${ obj.cls }DataSource extends CrudDataSource<${ obj.cls }Record>
                  , _sort: MatSort
                  , _event: EventEmitter<PageEvent>
                  , _backend_filter: any
-${ obj.externalService } )
+${ services.externalService } )
     {
         super( dataService, _paginator, _sort, _event, _backend_filter );
         return;
     }
 
-    sortActive( active: string, a: any, b: any ): string[]
+    sortActive( active: string, a: any, b: any ) : string[] 
     {
         switch ( active ) 
         {
@@ -58,10 +54,20 @@ ${ obj.externalService } )
 %   if field.hasAttribute( "NULL" ):
             if ( a.${ field.name }_FK && b.${ field.name }_FK )
             {
+%    if ',' in field.ui.service.label:
+                return ( [ ${ " + ".join( [ "a.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) },
+                           ${ " + ".join( [ "b.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) } ] );
+%    else:
                 return ( [ a.${ field.name }_FK.${ field.ui.service.label }, b.${ field.name }_FK.${ field.ui.service.label } ] );
+%    endif
             }
 %   else:
+%    if ',' in field.ui.service.label:
+            return ( [ ${ " + ".join( [ "a.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) },
+                       ${ " + ".join( [ "b.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) } ] );
+%    else:
             return ( [ a.${ field.name }_FK.${ field.ui.service.label }, b.${ field.name }_FK.${ field.ui.service.label } ] );
+%    endif
 %   endif
 %  elif field.hasResolveList():
         case '${ field.name }':
@@ -75,7 +81,7 @@ ${ obj.externalService } )
         return ( [ null, null ] );        
     }
 
-    public makeSearchString( record: any ): string
+    public makeSearchString( record: any ) : string
     {
         let searchString: string = '';
 % for field in obj.table.listViewColumns:
@@ -83,19 +89,27 @@ ${ obj.externalService } )
 %   if field.hasAttribute( "NULL" ):
         if ( record.${ field.name }_FK )
         {
-            searchString += record.${ field.name }_FK.${ field.ui.service.label };
+%    if ',' in field.ui.service.label:
+            searchString += ${ " + ".join( [ "record.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) }
+%    else:
+            searchString += record.${ field.name }_FK.${ field.ui.service.label }
+%    endif
         }
         else
         {
             searchString += "N/A";
         }
 %   else:
-        searchString += record.${ field.name }_FK.${ field.ui.service.label };
+%    if ',' in field.ui.service.label:
+        searchString += ${ " + ".join( [ "record.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) }
+%    else:
+        searchString += record.${ field.name }_FK.${ field.ui.service.label }
+%    endif
 %   endif
 %  elif field.hasResolveList():
-        searchString += record.${ field.name }_LABEL;
+        searchString += record.${ field.name }_LABEL
 %  else:
-        searchString += record.${ field.name };
+        searchString += record.${ field.name }
 %  endif
 % endfor
         return ( searchString.toLowerCase() );

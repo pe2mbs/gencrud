@@ -78,12 +78,6 @@ class TemplateActions( TemplateBase ):
 
         return False
 
-    def isDialog( self, name ):
-        return self.get( name ).isDialog()
-
-    def isScreen( self, name ):
-        return self.get( name ).isScreen()
-
     def get( self, key ):
         for action in self.__actions:
             if action.name == key:
@@ -106,17 +100,6 @@ class TemplateActions( TemplateBase ):
                 result.append( action )
 
         return result
-
-    def hasRowButtons( self ):
-        # Downward compatibility
-        return self.hasCellButtons()
-
-    def hasCellButtons( self ):
-        for action in self.__actions:
-            if action.position == C_CELL and action.type != C_NONE:
-                return True
-
-        return False
 
     def getCellButtons( self ):
         result = []
@@ -165,6 +148,13 @@ class TemplateActions( TemplateBase ):
 
         return ''
 
+    def hasRowButtons( self ):
+        for action in self.__actions:
+            if action.position == C_CELL and action.type != C_NONE:
+                return True
+
+        return False
+
     def getFooterButtons( self ):
         result = []
         for action in self.__actions:
@@ -189,6 +179,10 @@ class TemplateActions( TemplateBase ):
                 return action.position != C_NONE
 
         return False
+
+    def getScreenActions( self ):
+        return sorted( [ action for action in self.__actions if action.position == 'screen' ],
+                       key = lambda k: k.get( 'index', 0 ) )
 
     @property
     def module( self ):

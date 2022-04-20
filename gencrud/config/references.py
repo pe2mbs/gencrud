@@ -22,9 +22,9 @@ from gencrud.config.base import TemplateBase
 
 
 class TemplateReferences( TemplateBase ):
-    def __init__( self, cfg ):
+    def __init__( self, **cfg ):
         TemplateBase.__init__( self, None )
-        self.__config = cfg.get( C_REFERENCES, {} )
+        self.__config = cfg
         tmp             = self.__config[ C_APP_MODULE ] if C_APP_MODULE in self.__config else { }
         self.__main     = TemplateAngularModule( 'app.module.ts',
                                              'AppModule',
