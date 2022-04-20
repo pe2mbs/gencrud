@@ -22,7 +22,7 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { Component, Inject } from '@angular/core';
 import { BaseDialog } from '../../common/dialog';
-import { ${ obj.cls }DataService } from './service'
+import { ${ obj.cls }DataService } from './service';
 
 @Component({
     selector: 'app-${ obj.name }-delete-dialog',
@@ -36,7 +36,7 @@ export class Delete${ obj.cls }Dialog extends BaseDialog
                  @Inject( MAT_DIALOG_DATA ) public data: any, 
                  dataService: ${ obj.cls }DataService )
     { 
-        super( dialogRef, dataService )
+        super( dialogRef, dataService );
         return;
     }
 
