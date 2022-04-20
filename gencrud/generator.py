@@ -108,7 +108,7 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
     return data
 
 
-def doWork( input_file ):
+def initializeCodeGenerationProcess( input_file ):
     with open( input_file, 'r' ) as stream:
         config = TemplateConfiguration( stream )
 
@@ -247,11 +247,12 @@ def main():
                 for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
                     print( "Filename: {} from wildcard".format( filename ) )
                     if filename.lower().endswith( '.yaml' ):
-                        doWork( filename )
+                        # process the configuration file and create code files
+                        initializeCodeGenerationProcess( filename )
 
             else:
                 print( "Filename: {}".format( arg ) )
-                doWork( arg )
+                initializeCodeGenerationProcess( arg )
 
         print( "Done" )
 
