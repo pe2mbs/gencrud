@@ -101,10 +101,10 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                 foundMenu = True
                 if menu.menu is not None:
                     # sub menu
-                    if MENU_CHILDEREN_LABEL not in menuItem:
-                        menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                    if MENU_CHILDREN_LABEL not in menuItem:
+                        menuItem[ MENU_CHILDREN_LABEL ] = [ ]
 
-                    processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                    processMenuStructure_V2( menuItem[ MENU_CHILDREN_LABEL ],
                                              menu.menu,
                                              menuItem[ MENU_ID ] + '_' )
 
@@ -116,10 +116,10 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                         menuItem[ MENU_ROUTE ] = menu.route
 
                     # elif menu.menu is not None:
-                    #     if MENU_CHILDEREN_LABEL not in menuItem:
-                    #         menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                    #     if MENU_CHILDREN_LABEL not in menuItem:
+                    #         menuItem[ MENU_CHILDREN_LABEL ] = [ ]
                     #
-                    #     processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                    #     processMenuStructure_V2( menuItem[ MENU_CHILDREN_LABEL ],
                     #                              menu.menu,
                     #                              menuItem[ MENU_ID ] + '_' )
 
@@ -131,8 +131,8 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                 newMenuItem[ MENU_ROUTE ] = menu.route
 
             elif menu.menu is not None:
-                newMenuItem[ MENU_CHILDEREN_LABEL ] = [ ]
-                processMenuStructure_V2( newMenuItem[ MENU_CHILDEREN_LABEL ],
+                newMenuItem[ MENU_CHILDREN_LABEL ] = [ ]
+                processMenuStructure_V2( newMenuItem[ MENU_CHILDREN_LABEL ],
                                          menu.menu,
                                          newMenuItem[ MENU_ID ] + '_' )
 
