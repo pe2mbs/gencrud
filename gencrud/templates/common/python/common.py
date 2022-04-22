@@ -18,9 +18,13 @@
 #
 import datetime
 import sqlalchemy.sql.sqltypes
-import webapp2.api as API
-import pytz
 from dateutil import tz
+
+try:
+    import webapp2.api as API
+except ModuleNotFoundError:
+    # Error handling
+    pass
 
 
 def convertDateTime( value ):
