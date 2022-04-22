@@ -1,5 +1,7 @@
-nltk
+flake8
+jsonschema
 mako
+nltk
+pytest
 pyyaml
 six
-jsonschema

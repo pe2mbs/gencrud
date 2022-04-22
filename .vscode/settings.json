@@ -1,0 +1,10 @@
+{
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
+    "python.linting.flake8Enabled": true,
+
+}
