@@ -1,26 +1,25 @@
-import yaml
-import json
-import jsonschema
-from gencrud.schema import GENCRUD_SCHEME
+from gencrud.configuraton import TemplateConfiguration
 import os
+from pytest import fixture
+import pytest
 
 
-def test():
+@fixture
+def normal_template_config() -> TemplateConfiguration:
     filename = os.path.join(os.getcwd(), 'tests', 'input', 'te_format.yaml')
+    return TemplateConfiguration(filename)
 
-    with open( filename, 'r' ) as stream:
-        data = yaml.load( stream, Loader=yaml.Loader )
 
-    try:
-        jsonschema.Draft7Validator( GENCRUD_SCHEME )
-        jsonschema.validate( instance = data, schema = GENCRUD_SCHEME )
+@fixture
+def invalid_template_config() -> TemplateConfiguration:
+    filename = os.path.join(os.getcwd(), 'tests', 'input', 'invalid_te_format.yaml')
+    with pytest.raises(SystemExit):
+        return TemplateConfiguration(filename)
 
-    except jsonschema.SchemaError as exc:
-        print( exc )
-        raise SystemExit
 
-    except jsonschema.ValidationError as exc:
-        print( exc )
-        raise SystemExit
+def test_normal_schema(normal_template_config: TemplateConfiguration):
+    assert True
 
+
+def test_invalid_schema(invalid_template_config: TemplateConfiguration):
     assert True
