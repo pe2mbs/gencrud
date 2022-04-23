@@ -2,7 +2,6 @@ from pytest import fixture
 from gencrud.configuraton import TemplateConfiguration
 from .schema_test import normal_template_config
 from gencrud.config.source import TemplateSourceAngular, TemplateSourcePython
-import pytest
 import os
 
 
