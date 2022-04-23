@@ -45,6 +45,10 @@ class TemplateSource( TemplateBase ):
     @property
     def baseFolder( self ) -> str:
         folder = self.__source.get( C_BASE, os.getcwd() )
+
+        if not folder.startswith( os.path.pathsep ):
+            folder = os.path.abspath( os.path.join(os.getcwd(), folder ) )
+
         print(os.getcwd())
         print("-----")
         print(folder)
