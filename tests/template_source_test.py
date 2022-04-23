@@ -16,7 +16,6 @@ def template_source_angular(normal_template_config: TemplateConfiguration) -> Te
 
 
 def test_source_base(template_source_python: TemplateSourcePython):
-    print(template_source_python.baseFolder)
     assert os.path.abspath(template_source_python.baseFolder) == os.path.join(os.getcwd(), "tests", "input", "source")
 
 
