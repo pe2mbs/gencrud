@@ -46,12 +46,9 @@ class TemplateSource( TemplateBase ):
     def baseFolder( self ) -> str:
         folder = self.__source.get( C_BASE, os.getcwd() )
 
-        if not folder.startswith( os.path.pathsep ):
-            folder = os.path.abspath( os.path.join(os.getcwd(), folder ) )
+        # if not folder.startswith( os.path.pathsep ):
+        #    folder = os.path.abspath( os.path.join(os.getcwd(), folder ) )
 
-        print(os.getcwd())
-        print("-----")
-        print(folder)
         if not os.path.isdir( folder ):
             raise PathNotFoundException( folder )
 
