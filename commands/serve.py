@@ -231,6 +231,8 @@ def ssl( info, host, port, reload, debugger, eager_loading,
         except Exception as exc:
             raise
 
+    # TODO: verify if this is the correct way to set up applic here!
+    applic      = info.load_app()
     appPath     = applic.config.get( 'APP_PATH', os.curdir )
     appApiMod   = applic.config.get( 'API_MODULE', '' )
     # As those files may change, but are only loaded when the application starts
