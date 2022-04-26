@@ -27,7 +27,8 @@ try:
     import webapp2.api as API
 except ModuleNotFoundError:
     # Error handling
-    pass
+    raise SystemExit("You need to include the module webapp2. Follow instructions " +
+        "on https://github.com/pe2mbs/gencrud/blob/master/doc/MANUAL.md")
 
 __version__     = '1.1.0'
 __copyright__   = '(c) Copyright 2018-2020, all rights reserved, GPL2 only'

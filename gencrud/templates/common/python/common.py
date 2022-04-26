@@ -24,7 +24,8 @@ try:
     import webapp2.api as API
 except ModuleNotFoundError:
     # Error handling
-    pass
+    raise SystemExit("You need to include the module webapp2. Follow instructions " +
+        "on https://github.com/pe2mbs/gencrud/blob/master/doc/MANUAL.md")
 
 
 def convertDateTime( value ):
