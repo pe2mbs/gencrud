@@ -26,7 +26,7 @@ from ${obj.Mixin.Python.Schema.filename} import ${obj.Mixin.Python.Schema.cls}
 % endif
 
 
-class ${ obj.cls }Schema( API.mm.ModelSchema
+class ${ obj.cls }Schema( API.mm.SQLAlchemyAutoSchema
 % if obj.Mixin.Python.hasSchema():
                 , ${obj.Mixin.Python.Schema.cls}
 % endif
