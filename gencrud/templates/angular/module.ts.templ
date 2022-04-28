@@ -41,6 +41,8 @@ import { ${ obj.Mixin.Angular.Module.cls } } from '${ obj.Mixin.Angular.Module.f
 %    if action.name == 'delete':
 import { Delete${ obj.cls }Dialog } from './delete.dialog';
 %    else:
+# TODO: in pe_report_main, this is not an if else, but an AND!
+# requires manual
 import { Dialog${ obj.cls }Component } from './dialog.component';
 %    endif
 %   elif action.type == 'screen' and "Screen${ obj.cls }Component" not in componentList:

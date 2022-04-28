@@ -79,7 +79,7 @@ export class BackendError extends Error
 }
 
 
-export interface GcSelectList
+export interface PytSelectList
 {
     value: any;
     label: string;
@@ -192,7 +192,7 @@ export class CrudDataService<T>
         return this.httpClient.get<T[]>( this._uri + uri );
     }
 
-    public getSelectListSimple( value: string, label: string, initial: any = null, final: any = null ): Observable<GcSelectList[]>
+    public getSelectListSimple( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
     {
         const listParams = new HttpParams().set('label', label ).set('value', value );
         if ( initial != null )
@@ -203,10 +203,10 @@ export class CrudDataService<T>
         {
             listParams.set( 'final', final );
         }
-        return this.httpClient.get<GcSelectList[]>( this._uri + '/select', { params: listParams } );
+        return this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: listParams } );
     }
 
-    public getSelectList( value: string, label: string, initial: any = null, final: any = null ): Observable<GcSelectList[]>
+    public getSelectList( value: string, label: string, initial: any = null, final: any = null ): Observable<PytSelectList[]>
     {
         const listParams = new HttpParams().set('label', label ).set('value', value );
         if ( initial != null )
@@ -218,7 +218,7 @@ export class CrudDataService<T>
             listParams.set( 'final', final );
         }
         return ( Observable.create( observer => {
-            this.httpClient.get<GcSelectList[]>( this._uri + '/select', { params: listParams } )
+            this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: listParams } )
             .subscribe( ( data ) => {
                     if ( this.debug )
                     {
@@ -246,7 +246,7 @@ export class CrudDataService<T>
             listParams.set( 'final', final );
         }
         return ( Observable.create( observer => {
-            this.httpClient.get<GcSelectList[]>( this._uri + '/select', { params: listParams } )
+            this.httpClient.get<PytSelectList[]>( this._uri + '/select', { params: listParams } )
             .subscribe( ( data ) => {
                     if ( this.debug )
                     {

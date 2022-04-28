@@ -237,7 +237,7 @@ def api${ obj.cls }Select():
     # API.app.logger.info( 'GET ${ obj.uri }/select: {0}'.format( repr( data ) ) )
     value = data.get( 'value', '${ obj.table.primaryKey }' )    # primary key
     label = data.get( 'label', '${ obj.table.firstTextField }' )  # first field name
-    sorton = data.get( 'sorton', label )  # first field name
+    sorton = data.get( 'sorton', label )  # column to sort on
     if ',' in label:
         labels = label.strip().split( ',' )
         separator = ' '

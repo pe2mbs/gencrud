@@ -23,8 +23,8 @@ import { NG_VALUE_ACCESSOR, FormGroupDirective } from '@angular/forms';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { GcBaseComponent } from './base.input.component';
 import { Router } from '@angular/router';
-import { GcCrudServiceBase } from '../crud/crud.service.base';
-import { GcSelectList } from '../crud/model';
+import { CrudDataService } from '../crud-dataservice';
+import { PytSelectList } from '../crud-dataservice';
 import { isNullOrUndefined } from 'util';
 import { HttpClient } from '@angular/common/http';
 
@@ -63,11 +63,11 @@ export const CUSTOM_INPUT_CONTROL_VALUE_ACCESSOR: any = {
 } )
 export class GcChoiceAutoInputComponent extends GcBaseComponent implements OnInit
 {
-    @Input()    items:          GcSelectList[];
+    @Input()    items:          PytSelectList[];
     @Input()    detail_button:  string = null;
     @Input()    detail_id:      string = null;
 
-    @Input()    service:        GcCrudServiceBase<any> | null = null;
+    @Input()    service:        CrudDataService<any> | null = null;
     @Input()    labelField:     string | null = null;
     @Input()    valueField:     string | null = null;
     @Input()    serviceUri:     string | null = null;
@@ -99,7 +99,7 @@ export class GcChoiceAutoInputComponent extends GcBaseComponent implements OnIni
         {
             this.loading = true;
             console.log( `Loading from url ${this.serviceUri} : ${this.valueField}: ${this.labelField}` )
-            this.http.post<GcSelectList[]>( this.serviceUri, { value: this.valueField, label: this.labelField }
+            this.http.post<PytSelectList[]>( this.serviceUri, { value: this.valueField, label: this.labelField }
                                         ).subscribe( data => {
                 this.items = data;
                 this.loading = false;
