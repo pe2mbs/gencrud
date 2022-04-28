@@ -535,9 +535,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
     updateAngularAppModuleTs( config, appModule, exportsModules )
 
     os.remove( os.path.join( config.angular.sourceFolder, 'app.module.json' ) )
-    copyAngularCommon( config, os.path.abspath( os.path.join( os.path.dirname( __file__ ),
-                                                      '..',
-                                                      'common-ts' ) ),
+    copyAngularCommon( config, config.angular.commonFolder,
                        os.path.join( config.angular.sourceFolder, 'common' ) )
     return
 

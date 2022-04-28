@@ -46,7 +46,6 @@ C_TEMPLATES_DIR         = 'templates'
 C_ANGULAR               = 'angular'
 C_TYPESCRIPT            = 'typescript'
 C_TEMPLATE              = 'template'
-C_TEMPLATE              = 'templates'
 
 C_PLATFORM_LINUX        = 'linux'
 C_PLATFORM_WINDOS       = 'windows'

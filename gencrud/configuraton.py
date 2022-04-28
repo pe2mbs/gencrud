@@ -131,7 +131,6 @@ class TemplateConfiguration( object ):
         self.__objects      = []
         for obj in self.__config[ C_OBJECTS ]:
             self.__objects.append( TemplateObject( self, **obj ) )
-
         return
 
     @property

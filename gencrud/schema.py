@@ -29,14 +29,16 @@ GENCRUD_SCHEME = {
             "optional": True,
             "additionalProperties": False,
             'properties': {
-                'base': {
-                    'type': 'string',
-                    "optional": True,
-                },
                 'python': {
                     'type': 'string',
                 },
                 'angular': {
+                    'type': 'string',
+                },
+                'common-python': {
+                    'type': 'string',
+                },
+                'common-angular': {
                     'type': 'string',
                 }
             }

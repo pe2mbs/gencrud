@@ -77,7 +77,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
     for src_filename in ( 'common.py', 'main.py' ):
         fnd = os.path.abspath( os.path.join( config.python.sourceFolder, config.application, src_filename ) )
         if not os.path.isfile( fnd ):
-            fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py', src_filename ) )
+            fns = os.path.abspath( os.path.join( config.python.commonFolder, src_filename ) )
             logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
             shutil.copy( fns, fnd )
 
@@ -200,7 +200,7 @@ def updatePythonModels( config:  TemplateConfiguration ):
         yaml.dump( modules, stream, Dumper = yaml.Dumper )
 
     # Now generate the models.py module
-    template = os.path.abspath( os.path.join( os.path.dirname( __file__ ),'..','common-py', 'models.py.templ' ) )
+    template = os.path.abspath( os.path.join( config.python.commonFolder, 'models.py.templ' ) )
     modeles_py_file = os.path.join( config.python.sourceFolder, config.application, 'models.py' )
     with open( modeles_py_file, 'w' ) as stream:
         stream.write( Template( filename = template ).render( config = config, modules = modules ) )
@@ -283,7 +283,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
         entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
         if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
             # use the template from 'common-py'
-            templateFolder  = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'common-py' ) )
+            templateFolder  = config.python.commonFolder
             templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
 
             with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
