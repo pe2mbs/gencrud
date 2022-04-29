@@ -247,6 +247,8 @@ Below an example of a simple template for demonstration purposes.
 templates:
     python:                     ./templates/python
     angular:                    ./templates/angular
+    common-python:              ./templates/common/python
+    common-angular:             ./templates/common/angular
 source:
     base:                       ./output
     python:                     backend
@@ -291,6 +293,8 @@ source:
 templates:
     python:                     .\gencrud\python
     angular:                    .\gencrud\angular
+    common-python:              .\gencrud\common\python
+    common-angular:             .\gencrud\common\angular
 
 ```
 
@@ -307,6 +311,8 @@ windows:
     templates:
         python:                 .\gencrud\python
         angular:                .\gencrud\angular
+        common-python:          .\gencrud\common\python
+        common-angular:         .\gencrud\common\angular
 linux:
     source:
         base:                   ./output
@@ -315,6 +321,8 @@ linux:
     templates:
         python:                 ./gencrud/python
         angular:                ./gencrud/angular
+        common-python:          ./gencrud/common/python
+        common-angular:         ./gencrud/common/angular
 osx:
     source:
         base:                   ./output
@@ -323,6 +331,8 @@ osx:
     templates:
         python:                 ./gencrud/python
         angular:                ./gencrud/angular
+        common-python:          ./gencrud/common/python
+        common-angular:         ./gencrud/common/angular
 ```
 
 In the `source` and `templates` groups the `base` is optional but than the `python` and `angular` 
@@ -331,7 +341,7 @@ group the `python` points to the root folder of the Python backend project. And 
 to the root folder of the Angular project.
 
 The `templates` group is optional, when omitted the templates that come with the package shall be used.
-Both `python` and `angular` are mandatory. Whenever you need to customize the templates, take a look 
+`python` and `angular` as well as `common-python` and `common-angular` are mandatory. Whenever you need to customize the templates, take a look 
 at the templates folder in the `gencrud` package (site-packages\gencrud\templates on your platform).
 The templates are generated using the Mako template engine, for the syntax of this see https://www.makotemplates.org/
 
