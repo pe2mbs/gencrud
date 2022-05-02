@@ -246,4 +246,7 @@ def SetApiReferences( api ):
     api.app     = API.app
     api.db      = API.app.db
     api.logger  = API.app.logger
+    
+    # TODO: This is at the wrong place, but now now it works
+    API.C_TESTRUN_OBJECT = "testrunObject"
     return
