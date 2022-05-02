@@ -2,6 +2,14 @@ source:
     base:                           .\tests\input\source
     python:                         python
     angular:                        angular
+templates:
+    base:                           .\gencrud\templates
+    python:                         python
+    angular:                        angular
+    common:
+        base:                       .\gencrud\templates\common
+        python:                     python
+        angular:                    angular
 application:                        testrun
 nogen:                              false
 options:

@@ -16,7 +16,15 @@ def template_source_angular(normal_template_config: TemplateConfiguration) -> Te
 
 
 def test_source_base(template_source_python: TemplateSourcePython):
-    assert os.path.abspath(template_source_python.baseFolder) == os.path.join(os.getcwd(), "tests", "input", "source")
+    assert os.path.abspath(template_source_python.sourceBaseFolder) == os.path.join(os.getcwd(), "tests", "input", "source")
+
+
+def test_template_base(template_source_python: TemplateSourcePython):
+    assert os.path.abspath(template_source_python.templateBaseFolder) == os.path.join(os.getcwd(), "gencrud", "templates")
+
+
+def test_common_base(template_source_python: TemplateSourcePython):
+    assert os.path.abspath(template_source_python.commonBaseFolder) == os.path.join(os.getcwd(), "gencrud", "templates", "common")
 
 
 def test_source_python(template_source_python: TemplateSourcePython):
@@ -25,3 +33,7 @@ def test_source_python(template_source_python: TemplateSourcePython):
 
 def test_source_angular(template_source_angular: TemplateSourceAngular):
     assert template_source_angular.sourceFolder == os.path.join(os.getcwd(), "tests", "input", "source", "angular")
+
+
+def test_common_template_python(template_source_python: TemplateSourcePython):
+    assert template_source_python.commonFolder == os.path.join(os.getcwd(), "gencrud", "templates", "common", "python")

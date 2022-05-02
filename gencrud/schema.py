@@ -10,11 +10,11 @@ GENCRUD_SCHEME = {
     "properties": {
         'source': {
             'type': 'object',
-            "required": [ 'base', 'python', 'angular' ],
             "additionalProperties": False,
             'properties': {
                 'base': {
-                    'type': 'string'
+                    'type': 'string',
+                    'optional': True
                 },
                 'python': {
                     'type': 'string'
@@ -29,17 +29,31 @@ GENCRUD_SCHEME = {
             "optional": True,
             "additionalProperties": False,
             'properties': {
+                'base': {
+                    'type': 'string',
+                    'optional': True
+                },
                 'python': {
                     'type': 'string',
                 },
                 'angular': {
                     'type': 'string',
                 },
-                'common-python': {
-                    'type': 'string',
-                },
-                'common-angular': {
-                    'type': 'string',
+                'common': {
+                    'type': 'object',
+                    "additionalProperties": False,
+                    'properties': {
+                        'base': {
+                            'type': 'string',
+                            'optional': True
+                        },
+                        'python': {
+                            'type': 'string',
+                        },
+                        'angular': {
+                            'type': 'string',
+                        }
+                    }
                 }
             }
         },
