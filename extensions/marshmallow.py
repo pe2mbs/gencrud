@@ -19,8 +19,9 @@
 #
 
 import webapp2.api as API
-import toastedmarshmallow               # noqa
 from flask_marshmallow import Marshmallow
 
 
 API.mm      = Marshmallow()
+if not hasattr( API.mm, 'SQLAlchemySchema' ):
+    API.mm.SQLAlchemySchema = API.mm.ModelSchema

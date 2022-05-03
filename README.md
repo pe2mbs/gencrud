@@ -24,7 +24,7 @@ showed how to solve parts of the problem.
 
 # Licence
 Python and Flask serving Angular application.
-Copyright (C) 2018-2020 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
+Copyright (C) 2018-2021 Marc Bertens-Nguyen <m.bertens@pe2mbs.nl>
 
 This library is free software; you can redistribute it and/or modify
 it under the terms of the GNU Library General Public License GPL-2.0-only

@@ -1,19 +1,13 @@
 import webapp2.api as API
 from sqlalchemy.exc import IntegrityError, InternalError, ProgrammingError
 from datetime import datetime, time, date
-from sqlalchemy.exc import ProgrammingError
 
 def getCurrentSchema():
     return API.app.config[ 'DATABASE' ][ 'SCHEMA' ]
 
 
-def listSchemas( schema = None, all = False, exclude = None, remote = None ):
-    if remote is None:
-        data = API.db.session.connection().execute( "SHOW DATABASES" )
-
-    else:
-        data = remote.session.connection().execute( "SHOW DATABASES" )
-
+def listSchemas( schema = None, all = False, exclude = None ):
+    data = API.db.session.connection().execute( "SHOW DATABASES" )
     if schema is None:
         current_schema = getCurrentSchema()
 
@@ -34,19 +28,14 @@ def listSchemas( schema = None, all = False, exclude = None, remote = None ):
     return result
 
 
-def listTables( schema = None, exclude = None, remote = None ):
+def listTables( schema = None, exclude = None ):
     if schema is None:
         schema = getCurrentSchema()
 
     if exclude is None:
         exclude = []
 
-    if remote is None:
-        data = API.db.session.connection().execute( "SHOW TABLES FROM {}".format( schema ) )
-
-    else:
-        data = remote.session.connection().execute( "SHOW TABLES FROM {}".format( schema ) )
-
+    data = API.db.session.connection().execute( "SHOW TABLES FROM {}".format( schema ) )
     result = []
     for rec,*args in data:
         if rec not in exclude:
@@ -55,30 +44,17 @@ def listTables( schema = None, exclude = None, remote = None ):
     return result
 
 
-def getCurrentVersion( schema = None, remote = None ):
+def getCurrentVersion( schema = None ):
     version_num = ''
     if schema is None:
         schema = getCurrentSchema()
 
     try:
-        if remote is None:
-            data = API.db.session.connection().execute( f"SELECT version_num FROM {schema}.alembic_version" )
-
-        else:
-            data = remote.session.connection().execute( f"SELECT version_num FROM {schema}.alembic_version" )
-
+        data = API.db.session.connection().execute( "SELECT version_num FROM {}.alembic_version".format( schema ) )
         if data.rowcount > 0:
             version_num = data.fetchone()[0]
 
-    except ProgrammingError as exc:
-        if exc.orig.args == ( 1146, f"Table '{schema}.alembic_version' doesn't exist" ):
-            return None
-
-        API.logger.exception(f"Retrieving version_num from {schema}.alembic_version")
-        return None
-
-    except Exception:
-        API.logger.exception( f"Retrieving version_num from {schema}.alembic_version" )
+    except:
         return None
 
     return version_num
@@ -182,7 +158,6 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
     total = 0
     errors = 0
     table = ''
-    skipped = []
     try:
         for table in listTables( destSchema, exclude = [ 'alembic_version' ] ):
             # Now map the two field lists
@@ -190,16 +165,14 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
                 destFieldList, srcFieldList = mapFieldLists( connection,
                                                              "{}.{};".format( destSchema, table ),
                                                              "{}.{};".format( srcSchema, table ) )
-            except ProgrammingError as exc:
+            except ProgrammingError:
                 if ignore_errors:
                     API.app.logger.error( "Skipping '{}' table".format( table ) )
-                    skipped.append( (table, exc) )
                     continue
 
                 raise
 
-            except Exception as exc:
-                print( exc )
+            except Exception:
                 raise
 
             if clear:
@@ -228,7 +201,6 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
                     errors += count
                     errorTable[ table ] = count
                     API.app.logger.error( "Skipping '{}' table".format( table ) )
-                    skipped.append( (table, exc) )
 
                 else:
                     raise
@@ -242,7 +214,6 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
                     errors += count
                     API.app.logger.error( "InternalError {} not inserted into '{}' table".format( count,table ) )
                     errorTable[ table ] = count
-                    skipped.append( (table, exc) )
 
                 else:
                     raise
@@ -256,15 +227,12 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
                     errors += count
                     API.app.logger.error( "InternalError {} not inserted into '{}' table".format( count,table ) )
                     errorTable[ table ] = count
-                    skipped.append( (table, exc) )
-
                 else:
                     raise
 
             except Exception as exc:
                 API.app.logger.error( exc )
                 API.app.logger.error( "{} {} not inserted into '{}' table".format( type(exc), count, table ) )
-                skipped.append( (table, exc) )
 
         API.app.logger.info( "Commit work" )
         connection.execute( "COMMIT WORK;" )
@@ -286,4 +254,4 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
         connection.execute( "ROLLBACK WORK;" )
 
     connection.execute( "SET FOREIGN_KEY_CHECKS=1;" )
-    return resultTable, errorTable, total, errors, skipped
+    return resultTable, errorTable, total, errors

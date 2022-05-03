@@ -28,6 +28,7 @@ from webapp2.common.compat import basestring
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask import g, current_app, has_request_context
+from sqlalchemy.ext.compiler import compiles
 
 
 # Fix described @ https://stackoverflow.com/questions/45527323/flask-sqlalchemy-upgrade-failing-after-updating-models-need-an-explanation-on-h
@@ -53,6 +54,7 @@ def get_model_by_tablename( tablename ):
 
 
 class LONGTEXT( types.UserDefinedType ):
+    item_type = types.Text
     def __init__( self ):
         return
 
@@ -73,6 +75,7 @@ class LONGTEXT( types.UserDefinedType ):
 
 
 class MEDIUMTEXT( types.UserDefinedType ):
+    item_type = types.Text
     def __init__( self ):
         return
 
@@ -90,6 +93,16 @@ class MEDIUMTEXT( types.UserDefinedType ):
             return value
 
         return process
+
+
+@compiles(LONGTEXT, "sqlite")
+def compile_binary_sqlite(type_, compiler, **kw):
+    return "VARCHAR"
+
+
+@compiles(MEDIUMTEXT, "sqlite")
+def compile_binary_sqlite(type_, compiler, **kw):
+    return "VARCHAR"
 
 
 # MainThread db
