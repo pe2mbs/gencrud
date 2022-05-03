@@ -103,14 +103,14 @@ def index():
         raise
 
 
-@bluePrint.route( r"/<regex('\w\.(js|css|map)'):path>" )
+@bluePrint.route( r"/<regex('\w\.(js|css|map|ico|jpg|eps|png|woff|woff2|svg|eot|ttf)'):path>" )
 def angularSource( path ):
     angular_path = current_app.config[ 'ANGULAR_PATH' ]
     env = current_app.config[ 'ENV' ]
     current_app.logger.info( "Angular dist ({}) : {}".format( env, angular_path ) )
     return send_from_directory( angular_path, path )
 
-@bluePrint.route( r"/assets/<regex('\w\.(ico|jpg|eps|)'):path>" )
+@bluePrint.route( r"/assets/<regex('\w\.(ico|jpg|eps|png|woff|woff2|svg|eot|ttf)'):path>" )
 def angularAsserts( path ):
     angular_path = current_app.config[ 'ANGULAR_PATH' ]
     env = current_app.config[ 'ENV' ]
