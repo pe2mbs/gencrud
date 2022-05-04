@@ -1,0 +1,24 @@
+diff --git a/app.py b/app.py
+index b7a1f72..6657766 100644
+--- a/app.py
++++ b/app.py
+@@ -25,6 +25,11 @@ import logging.config
+ import logging.handlers
+ import traceback
+ import importlib
++import time
++if not hasattr( time, 'clock' ):
++    # Upwards compatibility 3.6 -> 3.9
++    time.clock = time.perf_counter
++
+ from inspect import signature
+ from webapp2.version import version_no, date, author
+ import webapp2.api as API
+@@ -84,7 +89,6 @@ except ModuleNotFoundError:
+     pass
+ 
+ 
+-
+ __version__     = version_no
+ __date__        = date
+ __author__      = author

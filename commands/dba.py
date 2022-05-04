@@ -480,13 +480,14 @@ COPY_HELP = """Copy schema to another.
                help = "Copies even when version differ." )
 @click.argument( 'schema', nargs = -1)
 def copy( schema, clear, force, ignore_errors ):
+    remote = None
     destSchema = getCurrentSchema()
     oVersion = getCurrentVersion()
     if oVersion is None:
-        print( "Invalid schema, missing tables. execute '# flask db upgrade'" )
+        print( f"Invalid schema, missing tables. execute '# flask db upgrade'\nCurrent schema {destSchema} with version {oVersion}" )
         return
 
-    schemas = listSchemas( all = True, exclude = [ 'information_schema', 'mysql', 'performance_schema' ] )
+    schemas = listSchemas( all = True, exclude = [ 'information_schema', 'mysql', 'performance_schema' ], remote = remote )
     if len( schema ) > 0:
         schema = schema[ 0 ]
 
@@ -498,8 +499,10 @@ def copy( schema, clear, force, ignore_errors ):
         print( "Invalid schema, available" )
         for s in schemas:
             try:
-                print( "* {}".format( s ) )
-                print( "  Version: {}\n".format( getCurrentVersion( s ) ) )
+                version = getCurrentVersion( s, remote )
+                if version is not None:
+                    print( "* {}".format( s ) )
+                    print( "  Version: {}\n".format( version ) )
 
             except:
                 pass
@@ -519,7 +522,7 @@ def copy( schema, clear, force, ignore_errors ):
             return
 
         API.app.logger.info( "Clear: {}".format( clear ) )
-        resultTable, errorTable, total, errors = copySchema2( destSchema, schema, clear, ignore_errors )
+        resultTable, errorTable, total, errors, skipped = copySchema2( destSchema, schema, clear, ignore_errors )
         for key, value in resultTable.items():
             print( "{:40}: {} inserted.".format( key, value ) )
 
@@ -528,4 +531,6 @@ def copy( schema, clear, force, ignore_errors ):
             print( "{:40}: {} skipped.".format( key, value ) )
 
         print( "Total Errors: {:40}: {}".format( "total",total ) )
+        for skip, exc in skipped:
+            print( f"{skip:40} was skipped, due { ' '.join(exc.args ) }." )
     return

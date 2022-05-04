@@ -19,6 +19,7 @@
 #
 import traceback
 import sys
+import socket
 from flask import json, request, jsonify, render_template, make_response, Response
 import werkzeug.exceptions
 
@@ -61,11 +62,32 @@ finally:
     sys.stdout = saved_out
 
 
+def getHostByAddress( host_address ):
+    result = []
+    for item in socket.gethostbyaddr( host_address ):
+        if isinstance( item, str ):
+            result.append( item )
+        elif isinstance( item, ( list, tuple ) ):
+            result.append( "|".join( item ) )
+        elif isinstance( item, int ):
+            result.append( str( item ) )
+
+    return ", ".join( result )
+
+
 @app.errorhandler( Exception )
 def handle_exception( e: Exception ):
     """Return JSON instead of HTML for HTTP errors."""
     # start with the correct headers and status code from the error
     app.logger.error( "Error handler: {} :: {}".format( type( e ), e ) )
+    if isinstance( e, werkzeug.exceptions.NotFound ):
+        addresses = []
+        for hostAddress in request.access_route:
+            addresses.append( "{} = {}".format( hostAddress, getHostByAddress( hostAddress ) ) )
+
+        e.description += "\nRequest URL {}\nSource address {}".format( request.url, ", ".join( addresses ) )
+        response: Response = make_response( e.description, e.code )
+        description = e.description
     print( "Error handler: {} :: {}".format( type( e ), e ) )
     if isinstance( e, werkzeug.exceptions.HTTPException ):
         response: Response = make_response( e.description, e.code )
@@ -81,6 +103,11 @@ def handle_exception( e: Exception ):
 
     app.logger.error( traceback.format_exc() )
     response_data = {}
+    if e is MemoryError:
+        # This is to shutdown the application to clean up the memory
+        # and let Process monitor restart the application.
+        raise SystemExit
+
     try:
         # replace the body with JSON
         response_data = {

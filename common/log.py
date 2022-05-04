@@ -23,6 +23,7 @@ import yaml
 import json
 from webapp2.common.exceptions import InvalidFileType
 from functools import wraps
+from socket import gethostname
 
 logObject = None
 
@@ -88,12 +89,27 @@ def appLogger( func ):
 
     return wrapper
 
+def updateKeywordArguments( kwargs ):
+    MAPPED = {
+        'hostname': gethostname,
+        'pid':      os.getpid,
+    }
+    for key, value in MAPPED.items():
+        if key not in kwargs:
+            if callable( value ):
+                kwargs[ key ] = value()
+
+            else:
+                kwargs[key] = value
+
+    return kwargs
 
 def updateLogging( tree, folder, verbose = False, level = None, **kwargs ):
     if folder is None:
         return tree
 
     os.makedirs( folder, exist_ok = True )
+    kwargs = updateKeywordArguments( kwargs )
     for key in tree.keys():
         if key == 'filename':
             filepath, filename = os.path.split( tree[ key ] )

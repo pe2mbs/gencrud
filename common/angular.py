@@ -104,25 +104,35 @@ def index():
         raise
 
 
-@bluePrint.route( r"/<regex('\w\.(js|css|map)'):path>" )
+@bluePrint.route( r"/<regex('\w\.(js|css|map|ico|jpg|eps|png|woff|woff2|svg|eot|ttf)'):path>" )
 def angularSource( path ):
     angular_path = current_app.config[ 'ANGULAR_PATH' ]
     env = current_app.config[ 'ENV' ]
     current_app.logger.info( "Angular dist ({}) : {}".format( env, angular_path ) )
     return send_from_directory( angular_path, path )
 
+@bluePrint.route( r"/assets/<regex('\w\.(ico|jpg|eps|png|woff|woff2|svg|eot|ttf)'):path>" )
+def angularAsserts( path ):
+    angular_path = current_app.config[ 'ANGULAR_PATH' ]
+    env = current_app.config[ 'ENV' ]
+    current_app.logger.info( "Angular assets ({}) : {}".format( env, angular_path ) )
+    return send_from_directory( os.path.join( angular_path, 'assets' ), path )
+
+
 #
 #   This part contains the standard /api/ routes other then loading the Angular application
 #
 #
 class Feedback( db.Model ):
-    __tablename__       = 'feedback'
+    __tablename__       = 'ap_feedback'
     F_ID                = db.Column( "f_id",        db.Integer, autoincrement = True, primary_key = True )
     F_NAME              = db.Column( "f_name",      db.String( 50 ), nullable = False )
     F_TYPE              = db.Column( "f_type",      db.Integer, nullable = False )
     F_VOTED             = db.Column( "f_voted",     db.Integer, nullable = False )
     F_SUBJECT           = db.Column( "f_subject",   db.String( 100 ), nullable = False )
     F_MESSAGE           = db.Column( "f_message",   db.Text, nullable = True )
+    F_STATUS            = db.Column( "f_status",    db.Integer, nullable = True )
+    F_DATETIME          = db.Column( "f_datetime",  db.DateTime, nullable = True )
 
 
 @bluePrint.route( '/api/feedback', methods = [ 'PUT' ] )

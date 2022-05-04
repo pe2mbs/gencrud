@@ -25,6 +25,7 @@ from webapp2.common.tablemngt import TableManager
 app             = None
 menuItems       = []
 applicInfo      = {}
+plugins         = None
 coreApi         = None
 listModules     = []
 plugins         = []
@@ -37,6 +38,7 @@ jwt             = None
 mm              = Marshmallow()
 stomp           = None
 db              = None
+redis           = None
 socketio        = None
 logger          = None
 HERE            = os.path.abspath( os.path.dirname( __file__ ) )
