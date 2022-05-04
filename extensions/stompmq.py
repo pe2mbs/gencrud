@@ -232,7 +232,6 @@ class FlaskStomp( object ):
     """Main Mqtt class."""
 
     def __init__( self, app = None ):
-        # type: (Flask) -> None
         self.__app                  = None
         self.__connected            = False
         self.__username             = ''
@@ -359,7 +358,6 @@ class FlaskStomp( object ):
         return
 
     def unsubscribe( self, destination ):
-        # type: (str) -> void
         """
         Unsubscribe from a single queue
 
