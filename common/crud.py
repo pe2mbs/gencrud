@@ -229,7 +229,7 @@ class CrudInterface( object ):
     _relations = []
     _delayed = False
 
-    def __init__( self, blue_print, use_jwt = True ):
+    def __init__( self, blue_print, use_jwt = False ):
         self._blue_print = blue_print
         self.registerRoute( 'list/<id>/<value>', self.filteredList, methods = [ 'GET' ] )
         self.registerRoute( 'pagedlist', self.pagedList, methods = [ 'POST' ] )
@@ -272,8 +272,9 @@ class CrudInterface( object ):
         self.checkAuthentication()
         t1 = time.time()
         data = getDictFromRequest( request )
-        user_info = get_jwt_identity()
-        API.app.logger.debug( 'POST: {}/pagedlist by {}'.format( self._uri, user_info ) )
+        if self.__useJWT:
+            user_info = get_jwt_identity()
+            API.app.logger.debug( 'POST: {}/pagedlist by {}'.format( self._uri, user_info ) )
         filter = data.get( 'filters', [] )
         API.app.logger.debug( "Filter {}".format( filter ) )
         query = API.db.session.query( self._model_cls )
