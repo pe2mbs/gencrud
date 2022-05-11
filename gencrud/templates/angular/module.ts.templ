@@ -31,8 +31,8 @@ import { SpinnerService } from '../../common/spinner-service';
 import { CustomHttpInterceptor } from '../../common/http-interceptor';
 import { ${ obj.cls }TableComponent } from './table.component';
 import { ${ obj.cls }DataService } from './service';
-% if obj.Mixin.Angular.hasModule():
-import { ${ obj.Mixin.Angular.Module.cls } } from '${ obj.Mixin.Angular.Module.filename }';
+% if obj.mixin.Angular.hasModule():
+import { ${ obj.mixin.Angular.Module.cls } } from '${ obj.mixin.Angular.Module.filename }';
 % endif
 <%  componentList = []  %>
 % for action in obj.actions.unique:
@@ -200,8 +200,8 @@ export const ${ obj.name }Route: Route = {
 % endif
     ]
 } )
-% if obj.Mixin.Angular.hasModule():
-export class ${ obj.cls }Module extends ${ obj.Mixin.Angular.Module.cls }
+% if obj.mixin.Angular.hasModule():
+export class ${ obj.cls }Module extends ${ obj.mixin.Angular.Module.cls }
 {
     constructor( inject: Injector )
     {

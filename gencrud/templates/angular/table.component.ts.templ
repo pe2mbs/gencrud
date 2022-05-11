@@ -27,8 +27,8 @@ import { SpinnerService } from '../../common/spinner-service';
 % if obj.hasAutoUpdate():
 import { Observable, interval, Subscription } from 'rxjs';
 % endif
-% if obj.Mixin.Angular.hasTableComponent():
-import { ${obj.Mixin.Angular.TableComponent.cls} } from '${obj.Mixin.Angular.TableComponent.filename}';
+% if obj.mixin.Angular.hasTableComponent():
+import { ${obj.mixin.Angular.TableComponent.cls} } from '${obj.mixin.Angular.TableComponent.filename}';
 % else:
 import { TableBaseComponent } from '../../common/crud-table-component';
 % endif
@@ -54,8 +54,8 @@ import { environment } from './../../../environments/environment';
     templateUrl: './table.component.html',
     styleUrls: [ './table.component.scss' ]
 })
-% if obj.Mixin.Angular.hasTableComponent():
-export class ${ obj.cls }TableComponent extends ${ obj.Mixin.Angular.TableComponent.cls } implements OnInit, OnDestroy
+% if obj.mixin.Angular.hasTableComponent():
+export class ${ obj.cls }TableComponent extends ${ obj.mixin.Angular.TableComponent.cls } implements OnInit, OnDestroy
 % else:
 export class ${ obj.cls }TableComponent extends TableBaseComponent<${ obj.cls }Record> implements OnInit, OnDestroy
 % endif
@@ -96,7 +96,7 @@ ${ services.externalService } )
 % endif
                 route,
                 dialog,
-% if obj.Mixin.Angular.hasTableComponent():
+% if obj.mixin.Angular.hasTableComponent():
                 router,
 % endif
                 dataService );

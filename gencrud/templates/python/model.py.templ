@@ -22,8 +22,8 @@ import webapp2.api as API
 import toastedmarshmallow
 from sqlalchemy import event
 import webapp2.common   as common
-% if obj.Mixin.Python.hasModel():
-from ${obj.Mixin.Python.Model.filename} import ${obj.Mixin.Python.Model.cls}
+% if obj.mixin.Python.hasModel():
+from ${obj.mixin.Python.Model.filename} import ${obj.mixin.Python.Model.cls}
 % endif
 ${ obj.table.leadIn }
 
@@ -31,8 +31,8 @@ ${ obj.table.leadIn }
 db = API.db
 
 
-% if obj.Mixin.Python.hasModel():
-class ${obj.cls}( API.db.Model, ${obj.Mixin.Python.Model.cls} ):
+% if obj.mixin.Python.hasModel():
+class ${obj.cls}( API.db.Model, ${obj.mixin.Python.Model.cls} ):
 % else:
 class ${obj.cls}( API.db.Model ):
 % endif

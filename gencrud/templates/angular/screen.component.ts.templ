@@ -35,8 +35,8 @@ import { PytSelectList } from '../../common/crud-dataservice';
 % for service in services.unique( 'class', 'path' ):
 import { ${ service.cls } } from '${ service.path }';
 % endfor
-% if obj.Mixin.Angular.hasScreenComponent():
-import { ${ obj.Mixin.Angular.ScreenComponent.cls } } from '${obj.Mixin.Angular.ScreenComponent.filename}';
+% if obj.mixin.Angular.hasScreenComponent():
+import { ${ obj.mixin.Angular.ScreenComponent.cls } } from '${obj.mixin.Angular.ScreenComponent.filename}';
 % else:
 import { ScreenBaseComponent } from 'src/app/common/crud-screen-component';
 % endif
@@ -46,8 +46,8 @@ import { ScreenBaseComponent } from 'src/app/common/crud-screen-component';
     templateUrl: './screen.component.html',
     styleUrls: [ './screen.component.scss' ]
 })
-% if obj.Mixin.Angular.hasScreenComponent():
-export class Screen${obj.cls}Component extends ${ obj.Mixin.Angular.ScreenComponent.cls } implements OnInit, OnDestroy
+% if obj.mixin.Angular.hasScreenComponent():
+export class Screen${obj.cls}Component extends ${ obj.mixin.Angular.ScreenComponent.cls } implements OnInit, OnDestroy
 % else:
 export class Screen${obj.cls}Component extends ScreenBaseComponent<${obj.cls}Record> implements OnInit, OnDestroy
 % endif

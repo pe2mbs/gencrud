@@ -22,10 +22,10 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
 import { Component, Inject } from '@angular/core';
 import { FormControl, Validators, FormGroup } from '@angular/forms';
-% if obj.Mixin.Angular.hasComponentDialog():
-import { ${obj.Mixin.Angular.ComponentDialog.cls} } from '${obj.Mixin.Angular.ComponentDialog.filename}';
+% if obj.mixin.Angular.hasComponentDialog():
+import { ${obj.mixin.Angular.ComponentDialog.cls} } from '${obj.mixin.Angular.ComponentDialog.filename}';
 % else:
-import { BaseDialog } from '../../common/dialog';
+import { BaseDialog } from '../../common/dialog/dialog';
 % endif
 import { ${ obj.cls }DataService } from './service';
 % for field in obj.table.columns:
@@ -44,11 +44,11 @@ import { ${ service.cls } } from '${ service.path }';
 @Component({
     selector: 'app-${ obj.name }-dialog',
     templateUrl: './dialog.component.html',
-    styleUrls: ['../../common/dialog.scss' ]
+    styleUrls: ['../../common/dialog/dialog.scss' ]
 })
 
-% if obj.Mixin.Angular.hasComponentDialog():
-export class Dialog${ obj.cls }Component extends ${obj.Mixin.Angular.ComponentDialog.cls}
+% if obj.mixin.Angular.hasComponentDialog():
+export class Dialog${ obj.cls }Component extends ${obj.mixin.Angular.ComponentDialog.cls}
 %else:
 export class Dialog${ obj.cls }Component extends BaseDialog
 % endif
