@@ -32,7 +32,7 @@ class TemplateTab( TemplateBase ):
 
     @property
     def index( self ):
-        return self.__cfg.get( C_INDEX, None )
+        return self.__cfg.get( C_INDEX, 0 ) # or None
 
     @property
     def label( self ):
@@ -52,7 +52,7 @@ class TemplateTabs( TemplateBase ):
         self.__params   = { l: None for l in self.labels }
         for col in self.parent.columns:
             if col.hasTab:
-                logging.debug( "Column tab: {}".format( col.tab ) )
+                logging.info( col.tab )
                 self.__fields[ col.tab.label ].append( col )
 
         for key in self.__fields.keys():
@@ -105,7 +105,12 @@ class TemplateTabs( TemplateBase ):
         result = ''
         for key, value in self.__params[ label ].items():
             value = self.variable2typescript( value )
-            result += '[{}]="{}" '.format( key, value )
+            if key in ( 'value', ):
+                result += '[{}]="{}" '.format( key, value )
+
+            else:
+                result += '{}="{}" '.format( key, value )
+
             if key == C_VALUE:
                 if '.' in value:
                     this, _ = value.split( '.', 1 )

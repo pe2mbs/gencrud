@@ -69,23 +69,23 @@ class TemplateColumn( TemplateBase ):
                           'TIME': 'API.db.Time' }
 
     SCHEMA_TYPES_FROM_SQL = { 'CHAR': 'String',
-                        'VARCHAR': 'String',
-                        'INT': 'Integer',
-                        'BIGINT': 'Integer',
-                        'BOOLEAN': 'Boolean',
-                        'BOOL': 'Boolean',
-                        'TIMESTAMP': 'DateTime',
-                        'DATETIME': 'DateTime',
-                        'DATE': 'Date',
-                        'FLOAT': 'Float',
-                        'REAL': 'Float',
-                        'INTERVAL': 'Integer',
-                        'BLOB': 'String',
-                        'NUMERIC': 'Decimal',
-                        'DECIMAL': 'Decimal',
-                        'CLOB': 'String',
-                        'TEXT': 'String',
-                        'TIME': 'Time' }
+                          'VARCHAR': 'String',
+                          'INT': 'Integer',
+                          'BIGINT': 'Integer',
+                          'BOOLEAN': 'Boolean',
+                          'BOOL': 'Boolean',
+                          'TIMESTAMP': 'DateTime',
+                          'DATETIME': 'DateTime',
+                          'DATE': 'Date',
+                          'FLOAT': 'Float',
+                          'REAL': 'Float',
+                          'INTERVAL': 'Integer',
+                          'BLOB': 'String',
+                          'NUMERIC': 'Decimal',
+                          'DECIMAL': 'Decimal',
+                          'CLOB': 'String',
+                          'TEXT': 'String',
+                          'TIME': 'Time' }
 
     def __init__( self, parent, table_name, **cfg ):
         """
@@ -106,6 +106,7 @@ class TemplateColumn( TemplateBase ):
         self.__ui           = None
         self.__leadIn       = []
         self.__dbField      = ''
+        self.unique         = False
         if C_FIELD not in self.__config:
             raise MissingAttribute( C_TABLE, C_FIELD )
 
@@ -350,6 +351,13 @@ class TemplateColumn( TemplateBase ):
 
         raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
 
+    @property
+    def schemaType( self ):
+        if self.__sqlType in self.TS_TYPES_FROM_SQL:
+            return self.SCHEMA_TYPES_FROM_SQL[ self.__sqlType ]
+
+        raise Exception( 'Invalid SQL type: {0}'.format( self.__sqlType ) )
+
     def isNumericField( self ) -> bool:
         return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'number'
 
@@ -417,9 +425,7 @@ class TemplateColumn( TemplateBase ):
 
     def sqlAlchemyDef( self ) -> str:
         """
-
             https://docs.sqlalchemy.org/en/latest/core/metadata.html#sqlalchemy.schema.Column
-
         :return:
         """
         if root.config.options.ignoreCaseDbIds:
@@ -485,6 +491,9 @@ class TemplateColumn( TemplateBase ):
                         self.__leadIn.append( import_statement )
 
                     result += ', default = {mod}.{call}'.format( mod = module_name, call = function )
+
+        if self.unique:
+            result += ", unique = {}".format( self.unique )
 
         result += ' )'
         return result

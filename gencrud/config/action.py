@@ -33,6 +33,15 @@ class TemplateAction( TemplateBase ):
         self.__cfg = cfg
         return
 
+    def isDialog( self ):
+        return self.position != 'none' and self.type == 'dialog'
+
+    def isScreen( self ):
+        return self.position != 'none' and self.type == 'screen'
+
+    def isMixin( self ):
+        return self.position != 'none' and self.type == 'mixin'
+
     @property
     def module( self ):
         return self.parent.module
@@ -47,7 +56,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def type( self ):
-        result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] )
+        result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] ).lower()
         if result not in C_ACTION_TYPES:
             raise InvalidSetting( C_TYPE, C_ACTION, self.name )
 
@@ -55,7 +64,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def position( self ):
-        result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] )
+        result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] ).lower()
         if result not in C_ACTION_POSITIONS:
             raise InvalidSetting( C_POSITION, C_ACTION, self.name )
 
@@ -123,7 +132,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def route( self ) -> RouteTemplate:
-        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else None
+        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else None # {}
 
     @property
     def params( self ):
@@ -139,6 +148,20 @@ class TemplateAction( TemplateBase ):
             return '{{ queryParams: {} }}'.format( items )
 
         return '{ }'
+
+    @property
+    def width( self ):
+        return self.__cfg.get( 'width', "80%" )
+
+    def hasWidth( self ):
+        return self.__cfg.get( 'width' ) is not None
+
+    @property
+    def height( self ):
+        return self.__cfg.get( 'height', "80%" )
+
+    def hasHeight( self ):
+        return self.__cfg.get( 'height' ) is not None
 
     #
     #   Internal functions and properies to gencrud

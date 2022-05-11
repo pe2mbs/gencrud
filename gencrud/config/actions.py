@@ -36,14 +36,13 @@ class TemplateActions( TemplateBase ):
         for action in cfg:
             self.__actions.append( TemplateAction( self.parent, objname, **action ) )
 
-        if not self.has( C_NEW ):
-            self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
-
-        if not self.has( C_EDIT ):
-            self.__actions.append( DEFAULT_EDIT_ACTION.clone( objname ) )
-
-        if not self.has( C_DELETE ):
-            self.__actions.append( DEFAULT_DELETE_ACTION.clone( objname ) )
+        # Disabled for now, user should specify all actions manually
+        #if not self.has( C_NEW ):
+        #    self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
+        #if not self.has( C_EDIT ):
+        #    self.__actions.append( DEFAULT_EDIT_ACTION.clone( objname ) )
+        #if not self.has( C_DELETE ):
+        #    self.__actions.append( DEFAULT_DELETE_ACTION.clone( objname ) )
 
         return
 
@@ -78,6 +77,12 @@ class TemplateActions( TemplateBase ):
 
         return False
 
+    def isDialog( self, name ):
+        return self.get( name ).isDialog()
+
+    def isScreen( self, name ):
+        return self.get( name ).isScreen()
+
     def get( self, key ):
         for action in self.__actions:
             if action.name == key:
@@ -100,6 +105,17 @@ class TemplateActions( TemplateBase ):
                 result.append( action )
 
         return result
+
+    def hasRowButtons( self ):
+        # Downward compatibility
+        return self.hasCellButtons()
+
+    def hasCellButtons( self ):
+        for action in self.__actions:
+            if action.position == C_CELL and action.type != C_NONE:
+                return True
+
+        return False
 
     def getCellButtons( self ):
         result = []
@@ -147,13 +163,6 @@ class TemplateActions( TemplateBase ):
                                           params = params )
 
         return ''
-
-    def hasRowButtons( self ):
-        for action in self.__actions:
-            if action.position == C_CELL and action.type != C_NONE:
-                return True
-
-        return False
 
     def getFooterButtons( self ):
         result = []

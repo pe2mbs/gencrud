@@ -226,26 +226,21 @@ def generatePython( config: TemplateConfiguration, templates: list ):
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
         for col in cfg.table.columns:
             logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
-
         for templ in templates:
             if cfg.ignoreTemplates( templ ):
                 continue
-
             logger.info( 'template    : {0}'.format( templ ) )
             if not os.path.isdir( config.python.sourceFolder ):
                 os.makedirs( config.python.sourceFolder )
 
             if os.path.isdir( modulePath ) and not config.options.overWriteFiles:
                 raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
-
             outputSourceFile = os.path.join( modulePath, gencrud.util.utils.sourceName( templ ) )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( outputSourceFile )
-
             if os.path.isfile( outputSourceFile ):
                 # remove the file first
                 os.remove( outputSourceFile )
-
             makePythonModules( config.python.sourceFolder, config.application, cfg.name )
             with open( outputSourceFile,
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:

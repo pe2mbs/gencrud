@@ -61,3 +61,11 @@ class TemplateOptions( TemplateBase ):
     def generateBackend( self ) -> bool:
         # This override/set commandline options from the template defintion.
         return self.__config.get( C_GENERATE_BACKEND, True )
+
+    @property
+    def copySupport( self ):
+        return self.__config.get( 'copy-support-files', True )
+
+    @property
+    def useLocalTemplate( self ):
+        return self.__config.get( 'use-local-template', False )

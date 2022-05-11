@@ -32,6 +32,25 @@ from gencrud.util.exceptions import InvalidViewSize
 logger = logging.getLogger()
 
 
+class RelationShip( TemplateBase ):
+    def __init__( self, parent, relation ):
+        TemplateBase.__init__( self, parent )
+        self.__relation = relation
+        return
+
+    @property
+    def cls( self ):
+        return self.__relation.get( C_CLASS )
+
+    @property
+    def table( self ):
+        return self.__relation.get( C_TABLE )
+
+    @property
+    def cascade( self ):
+        return self.__relation.get( C_CASCADE )
+
+
 class TemplateTable( TemplateBase ):
     def __init__( self, parent, **table ):
         TemplateBase.__init__( self, parent )
@@ -152,6 +171,14 @@ class TemplateTable( TemplateBase ):
         return False
 
     @property
+    def relationShips( self ):
+        return [ RelationShip( self, rs ) for rs in self.__table.get( C_RELATION_SHIP, [] ) ]
+
+    @property
+    def relationShipList( self ):
+        return self.__table.get( C_RELATION_SHIP, [] )
+
+    @property
     def columns( self ):
         return self.__columns
 
@@ -175,7 +202,7 @@ class TemplateTable( TemplateBase ):
     def buildFilter( self ) -> str:
         result = [ ]
         for item in self.listViewColumns:
-            if item.ui.isChoice() or item.ui.isCombobox():
+            if item.ui.isUiType(C_CHOICE, C_CHOICE_AUTO) or item.ui.isUiType(C_COMBOBOX, C_COMBO):
                 result.append( "( this.{0}_Label( record.{0} ) )".format( item.name ) )
 
             elif item.ui.isCheckbox() or item.ui.isSliderToggle():
