@@ -591,6 +591,12 @@ GENCRUD_SCHEME = {
                                                 'index': {
                                                     'type': 'integer'
                                                 },
+                                                'sort': {
+                                                    'type': 'boolean'
+                                                },
+                                                'filter': {
+                                                    'type': 'boolean'
+                                                }
                                             }
                                         },
                                         'tab': {
