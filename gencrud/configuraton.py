@@ -101,8 +101,15 @@ class TemplateConfiguration( object ):
 
         else:
             self.__config       = cfg
+        
+        # in case there is a 'defaults' field specified, we need to concat
+        # its content with the root dict. This is a workaround since
+        # include cannot be used at root level alongside other fields
+        if C_DEFAULTS in self.__config:
+            self.__config = dict(self.__config[C_DEFAULTS], **self.__config)
+            del self.__config[C_DEFAULTS]
 
-        # TODO: Veryfy the loaded template against the schema
+        # Veryfy the loaded template against the schema
         try:
             jsonschema.Draft7Validator(GENCRUD_SCHEME)
             jsonschema.validate(instance=self.__config, schema=GENCRUD_SCHEME)
