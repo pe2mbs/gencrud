@@ -1,3 +1,6 @@
+import json
+from webapp2.common.jsonenc import JsonEncoder
+
 class CrudModelMixin( object ):
     def toDict( self ):
         return self.dictionary

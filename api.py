@@ -21,7 +21,6 @@ import os
 from flask_marshmallow import Marshmallow
 from webapp2.common.tablemngt import TableManager
 
-
 app             = None
 menuItems       = []
 applicInfo      = {}

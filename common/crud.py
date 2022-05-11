@@ -116,7 +116,7 @@ class RecordLock( object ):
 
     @classmethod
     def locked( cls, request, user = None ):
-        from backend.locking.model import RecordLocks
+        from webapp2.common.locking.model import RecordLocks
         obj = cls()
         if user is None:
             user = obj.user
@@ -153,7 +153,7 @@ class RecordLock( object ):
 
     @classmethod
     def unlock( cls, request, user = None ):
-        from backend.locking.model import RecordLocks
+        from webapp2.common.locking.model import RecordLocks
         data = getDictFromRequest( request )
         obj = cls()
         if user is None:
@@ -198,7 +198,7 @@ class RecordLock( object ):
 
     @classmethod
     def lock( cls, request, user = None ):
-        from backend.locking.model import RecordLocks
+        from webapp2.common.locking.model import RecordLocks
         data = getDictFromRequest( request )
         obj = cls()
         if user is None:
@@ -464,7 +464,9 @@ class CrudInterface( object ):
         else:
             Exception( "Missing record ref" )
 
-        result = self._schema_cls.load( self.beforeUpdate( data ) )
+        # the .data was added after the merge from github into gitlab since
+        # unmarshalresult objects have a data attribute containing the result
+        result = self._schema_cls.load( self.beforeUpdate( data ) ).data
         API.app.logger.debug( "{}".format( result ) )
         if len( result ) > 1:
             for field, value in result.items():

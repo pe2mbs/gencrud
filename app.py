@@ -40,6 +40,8 @@ from webapp2.extensions.flask import Flask
 import webapp2.extensions.database              # noqa
 import webapp2.extensions.marshmallow           # noqa
 import webapp2.extensions.migrate               # noqa
+import webapp2.extensions.tracking              # noqa
+from webapp2.common.locking import *            # noqa
 
 
 # Try to load optional packages
