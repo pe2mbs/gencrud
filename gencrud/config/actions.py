@@ -37,12 +37,12 @@ class TemplateActions( TemplateBase ):
             self.__actions.append( TemplateAction( self.parent, objname, **action ) )
 
         # Disabled for now, user should specify all actions manually
-        #if not self.has( C_NEW ):
-        #    self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
-        #if not self.has( C_EDIT ):
-        #    self.__actions.append( DEFAULT_EDIT_ACTION.clone( objname ) )
-        #if not self.has( C_DELETE ):
-        #    self.__actions.append( DEFAULT_DELETE_ACTION.clone( objname ) )
+        if not self.has( C_NEW ):
+            self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
+        if not self.has( C_EDIT ):
+            self.__actions.append( DEFAULT_EDIT_ACTION.clone( objname ) )
+        if not self.has( C_DELETE ):
+            self.__actions.append( DEFAULT_DELETE_ACTION.clone( objname ) )
 
         return
 
