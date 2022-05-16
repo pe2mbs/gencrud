@@ -526,11 +526,15 @@ class CrudInterface( object ):
         API.app.logger.debug( 'GET {}/select: {} by {}'.format( self._uri, repr( data ), self._lock_cls().user ) )
         value = data.get( 'value', 'N_ID' )    # primary key
         label = data.get( 'label', 'N_MESSAGE' )  # first field name
+        labels = label.split(',')
+        # TODO if label contains comma, split --> list
+        # ' '.join( [ getattr( record, l ) for l in labels ] )
         result = [ { 'value': getattr( record, value ),
-                     'label': getattr( record, label ) }
-                                for record in API.db.session.query( self._model_cls ).order_by( getattr( self._model_cls, label ) ).all()
+                     'label': ' '.join( [ getattr( record, l ) for l in labels ] ) }
+                                for record in API.db.session.query( self._model_cls ).order_by( getattr( self._model_cls, labels[0] ) ).all()
         ]
         API.app.logger.debug( 'selectList => count: {}'.format( len( result ) ) )
+        # API.app.logger.debug( 'selectList => result: {}'.format( result ) )
         return jsonify( result )
 
     def lock( self ):
