@@ -61,14 +61,15 @@ class RouteTemplate( TemplateBase ):
     def params( self ):
         return self.__config.get( C_PARAMS, {} )
 
-    def routeParams( self ):
+    def routeParams( self, outerObject = True ):
         params = self.params()
         if len( params ) > 0:
             items = {}
             for key, value in params.items():
                 items[ key ] = value
 
-            return '{{ queryParams: {} }}'.format( TypeScript().build( items ) )
+            return '{{ queryParams: {} }}'.format( TypeScript().build( items ) ) if outerObject else \
+                '{}'.format( TypeScript().build( items ) )
 
         return '{ }'
 

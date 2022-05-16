@@ -125,6 +125,14 @@ class TemplateActions( TemplateBase ):
 
         return result
 
+    def getRowButtons( self ):
+        result = []
+        for action in self.__actions:
+            if action.position == C_ROW and action.type != C_NONE:
+                result.append( action )
+
+        return result
+
     def isRowActionFunction( self ):
         for action in self.__actions:
             if action.position == C_ROW and action.type != C_NONE:
