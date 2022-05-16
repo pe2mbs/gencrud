@@ -189,6 +189,29 @@ class TemplateAction( TemplateBase ):
 
         return ''
 
+    def routingPath( self ) -> str:
+        route = ""
+        if self.isAngularRoute():
+            if isinstance( self.route.route, str ):
+                if self.route.route.startswith( '/' ):
+                    route = self.route.route[1:]
+                else:
+                    route = self.route.name[1:]
+            elif isinstance( self.route.name, str ):
+                route = "/".join( [ self.parent.name, self.route.name ] )
+            else:
+                route = "/".join( [ self.parent.name, self.name ] )
+
+        return route
+
+    def routingParams( self ) -> dict:
+        params = {}
+        if self.isAngularRoute():
+            params = self.route.params()
+            
+        return params
+
+
     def buttonObject( self ) -> str:
         tooltip = ''
         if self.type == C_NONE:
