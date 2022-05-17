@@ -34,6 +34,7 @@ migrate         = None
 cache           = None
 cors            = None
 jwt             = None
+use_jwt         = False
 mm              = Marshmallow()
 stomp           = None
 db              = None

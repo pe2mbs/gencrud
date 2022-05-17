@@ -22,9 +22,10 @@ class TrackingViewMixin( object ):
 
     def rollbackRecord( self ):
         self.checkAuthentication()
-        user_info = get_jwt_identity()
+        if API.use_jwt:
+            user_info = get_jwt_identity()
+            API.app.logger.debug( 'GET: {}/rollback by {}'.format( self._uri, user_info ) )
         data = getDictFromRequest( request )
-        API.app.logger.debug( 'GET: {}/rollback by {}'.format( self._uri, user_info ) )
         API.app.logger.debug( data )
         query = API.db.session.query( Tracking )
         query = query.filter( Tracking.T_ID == data[ 'T_ID' ] )
@@ -80,9 +81,10 @@ class TrackingViewMixin( object ):
 
     def retrieveRecords( self, **kwargs ):
         self.checkAuthentication()
-        user_info = get_jwt_identity()
+        if API.use_jwt:
+            user_info = get_jwt_identity()
+            API.app.logger.debug( 'GET: {}/retrieve by {}'.format( self._uri, user_info ) )
         data = getDictFromRequest( request )
-        API.app.logger.debug( 'GET: {}/retrieve by {}'.format( self._uri, user_info ) )
         API.app.logger.debug( data )
         query = API.db.session.query( Tracking )
         query = query.filter( Tracking.T_RECORD_ID == data[ 'T_RECORD_ID' ] )

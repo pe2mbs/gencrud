@@ -209,6 +209,17 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
             API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
         API.logger = API.app.logger
         sys.stderr = LoggerWriter( API.app.logger.warning )
+
+        # import tracking and locking modules
+        import webapp2.common.tracking as tracking
+        API.app.logger.debug( 'registering module {0}'.format( tracking ) )
+        tracking.registerApi()
+
+        import webapp2.common.locking as locking
+        API.app.logger.debug( 'registering module {0}'.format( locking ) )
+        locking.registerApi()
+
+        # register other modules of generated and non generated classes
         module = None
         API.logger.info( "Current process ID: {}".format( os.getpid() ) )
         sys.path.append( root_path )
