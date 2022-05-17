@@ -208,8 +208,7 @@ class TemplateAction( TemplateBase ):
         params = {}
         if self.isAngularRoute():
             params = self.route.params()
-            
-        return params
+        return "{" + ", ".join(['%s: %s' % (key, value) for (key, value) in params.items()]) + "}"
 
 
     def buttonObject( self ) -> str:
