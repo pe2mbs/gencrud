@@ -101,10 +101,10 @@ class TemplateTabs( TemplateBase ):
 
         return value
 
-    def params( self, label ):
+    def params( self, label, mode = None ):
         result = ''
         for key, value in self.__params[ label ].items():
-            value = self.variable2typescript( value )
+            value = str(self.variable2typescript( value )).replace("'", "").replace("\"", "")
             if key in ( 'value', ):
                 result += '[{}]="{}" '.format( key, value )
 
@@ -117,5 +117,8 @@ class TemplateTabs( TemplateBase ):
                     value = "{} && {}".format( this, value )
 
                 result += '*ngIf="{}" '.format( value )
+
+        if isinstance(mode, str):
+            result += ' mode="{}" '.format( mode )
 
         return result
