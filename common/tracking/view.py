@@ -36,7 +36,7 @@ def registerApi( *args ):
     API.app.logger.info( 'Register Tracking routes' )
     API.app.register_blueprint( trackingApi )
     try:
-        import backend.tracking.entry_points  as EP
+        import webapp2.common.tracking.entry_points  as EP
         if hasattr( EP, 'entryPointApi' ):
             API.app.logger.info( 'Register Tracking entrypoint routes' )
             API.app.register_blueprint( EP.entryPointApi )
@@ -45,7 +45,7 @@ def registerApi( *args ):
             EP.registerWebSocket()
 
     except ModuleNotFoundError as exc:
-        if exc.name != 'backend.tracking.entry_points':
+        if exc.name != 'webapp2.common.tracking.entry_points':
             API.app.logger.error( traceback.format_exc() )
 
     except Exception:

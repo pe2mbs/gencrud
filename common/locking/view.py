@@ -36,7 +36,7 @@ def registerApi( *args ):
     API.app.logger.info( 'Register RecordLocks routes' )
     API.app.register_blueprint( lockingApi )
     try:
-        import backend.locking.entry_points  as EP
+        import webapp2.common.locking.entry_points  as EP
         if hasattr( EP, 'entryPointApi' ):
             API.app.logger.info( 'Register RecordLocks entrypoint routes' )
             API.app.register_blueprint( EP.entryPointApi )
@@ -45,7 +45,7 @@ def registerApi( *args ):
             EP.registerWebSocket()
 
     except ModuleNotFoundError as exc:
-        if exc.name != 'backend.locking.entry_points':
+        if exc.name != 'webapp2.common.locking.entry_points':
             API.app.logger.error( traceback.format_exc() )
 
     except Exception:
