@@ -24,8 +24,8 @@ import traceback
 from ${ root.application }.${ obj.name }.model import ${ obj.cls }
 from ${ root.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
 from ${ root.application }.common import fieldConversion
-% if obj.Mixin.Python.hasView():
-from ${obj.Mixin.Python.View.filename} import ${obj.Mixin.Python.View.cls}
+% if obj.mixin.Python.hasView():
+from ${obj.mixin.Python.View.filename} import ${obj.mixin.Python.View.cls}
 % endif
 
 db = API.db
@@ -51,9 +51,9 @@ def registerApi( *args ):
     except Exception:
         API.app.logger.error( traceback.format_exc() )
 
-% if obj.Mixin.Python.hasView():
+% if obj.mixin.Python.hasView():
     API.app.logger.info( 'Registering ${ obj.cls } view mixin' )
-    API.app.register_blueprint( ${obj.Mixin.Python.View.cls}.blueprint )
+    API.app.register_blueprint( ${obj.mixin.Python.View.cls}.blueprint )
 % endif
     # TODO: Here we need to add dynamically the menus for this module
     return

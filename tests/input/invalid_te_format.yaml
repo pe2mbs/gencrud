@@ -1,0 +1,63 @@
+source:
+    angular:                        frontend-v8\src\app
+application:                        testrun
+nogen:                              false
+options:
+    ignore-case-db-ids:             true
+    overwrite:                      true
+    use-module:                     true
+objects:
+-   name:                           te_test_format
+    title:                          Test format
+    remark:                         This defines the test format
+    class:                          TestFormat
+    uri:                            /api/te_test_format
+    modules:
+    -   class:                      TestProcessModule
+        module:                     testprocess.module
+        path:                       ../../testprocess
+    actions:
+    -   name:                       new
+        type:                       screen
+        icon:                       add
+        position:                   header
+        route:
+            class:                  ScreenTestFormatComponent
+            params:
+                mode:               "'new'"
+    -   name:                       edit
+        type:                       screen
+        icon:                       edit
+        position:                   row
+        route:
+            class:                  ScreenTestFormatComponent
+            params:
+                mode:               "'edit'"
+                id:                 "'TF_ID'"
+                value:              row.TF_ID
+    -   name:                       delete
+        label:                      Delete
+        type:                       dialog
+        icon:                       delete
+        position:                   cell
+        function:                   deleteRecord( i, row, 'TF_NAME' )
+    -   name:                       edit format
+        label:                      Edit/New Format
+        type:                       screen
+        index:                      1
+        directive:                  app-defintion-button
+        params:
+            value:                  row.TF_ID
+            id:                     "'TF_ID'"
+    menu:
+        caption:                    Administration
+        icon:                       donut_small
+        index:                      -2
+        menu:
+            caption:                Test
+            index:                  0
+            menu:
+                caption:            Test format
+                icon:               dvr
+                route:              /te_test_format
+                index:              0

@@ -25,14 +25,14 @@ logger = logging.getLogger()
 
 
 class TemplateTab( TemplateBase ):
-    def __init__( self, parent, cfg ):
+    def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__cfg = cfg
         return
 
     @property
     def index( self ):
-        return self.__cfg.get( C_INDEX, 0 )
+        return self.__cfg.get( C_INDEX, 0 ) # or None
 
     @property
     def label( self ):
@@ -44,7 +44,7 @@ class TemplateTab( TemplateBase ):
                                                                        self.parent )
 
 class TemplateTabs( TemplateBase ):
-    def __init__( self, parent, cfg ):
+    def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__cfg      = cfg
         self.__fields   = { l: [] for l in self.labels }
@@ -71,17 +71,17 @@ class TemplateTabs( TemplateBase ):
 
         return self.__cfg.get( C_LABELS, None )
 
-    # @property
-    # def tabTag( self ):
-    #     return self.__cfg.get( C_TAB_TAG, 'mat-tab' )
-    #
-    # @property
-    # def contentTag( self ):
-    #     return self.__cfg.get( C_TAB_CONTENT_TAG, 'mat-card' )
-    #
-    # @property
-    # def groupTag( self ):
-    #     return self.__cfg.get( C_TAB_GROUP_TAG, 'mat-tab-group' )
+    @property
+    def tabTag( self ):
+        return self.__cfg.get( C_TAB_TAG, 'mat-tab' )
+
+    @property
+    def contentTag( self ):
+        return self.__cfg.get( C_TAB_CONTENT_TAG, 'mat-card' )
+
+    @property
+    def groupTag( self ):
+        return self.__cfg.get( C_TAB_GROUP_TAG, 'mat-tab-group' )
 
     def fieldsFor( self, label ):
         result = self.__fields[ label ]
@@ -101,10 +101,10 @@ class TemplateTabs( TemplateBase ):
 
         return value
 
-    def params( self, label ):
+    def params( self, label, mode = None ):
         result = ''
         for key, value in self.__params[ label ].items():
-            value = self.variable2typescript( value )
+            value = str(self.variable2typescript( value )).replace("'", "").replace("\"", "")
             if key in ( 'value', ):
                 result += '[{}]="{}" '.format( key, value )
 
@@ -117,5 +117,8 @@ class TemplateTabs( TemplateBase ):
                     value = "{} && {}".format( this, value )
 
                 result += '*ngIf="{}" '.format( value )
+
+        if isinstance(mode, str):
+            result += ' mode="{}" '.format( mode )
 
         return result

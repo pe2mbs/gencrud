@@ -239,6 +239,12 @@ class TemplateColumn( TemplateBase ):
     def __repr__(self):
         return "<TemplateColumn name='{}' label='{}'".format( self.name, self.label )
 
+    def definedNotNull( self ) -> bool:
+        return not self.sqlAttrs2Dict()[ 'nullable' ]
+
+    def definedNull( self ) -> bool:
+        return self.sqlAttrs2Dict()[ 'nullable' ]
+
     @property
     def tableName( self ) -> str:
         return self.__tableName
@@ -249,7 +255,7 @@ class TemplateColumn( TemplateBase ):
 
     @property
     def tab( self ) -> TemplateTab:
-        return TemplateTab( self, self.__config.get( C_TAB, {} ) )
+        return TemplateTab( self, **self.__config.get( C_TAB, {} ) )
 
     @property
     def uniqueKey( self ) -> str:
@@ -370,11 +376,56 @@ class TemplateColumn( TemplateBase ):
     def isString( self ):
         return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'string'
 
+    def sqlAttrs2Dict( self ):
+        options = { 'autoincrement': False,
+                    'primary_key': False,
+                    'nullable': False,
+                    'foreign_key': None,
+                    'default': None,
+                  }
+        for attr in self.__attrs:
+            if 'AUTO NUMBER' in attr:
+                options[ 'autoincrement' ] = True
+
+            elif 'PRIMARY KEY' in attr:
+                options[ 'primary_key'] = True
+
+            elif 'NOT NULL' in attr:
+                options[ 'nullable' ] = False
+
+            elif attr.startswith( 'FOREIGN KEY' ):
+                if root.config.options.ignoreCaseDbIds:
+                    options[ 'foreign_key' ] = attr.split( ' ' )[ 2 ].lower()
+
+                else:
+                    options['foreign_key'] = attr.split(' ')[ 2 ]
+
+            elif attr.startswith( 'DEFAULT' ):
+                value = attr.split( ' ' )[ 1 ]
+                if self.isNumericField():
+                    options[ 'default' ] = value
+
+                elif self.isBooleanField():
+                    if value.lower() == ( "true", "1", "yes" ):
+                        options[ 'default' ] = True
+
+                    else:
+                        options[ 'default' ] = False
+
+                else:
+                    options['default'] = '"{0}"'.format( value )
+
+            elif attr.startswith( 'NULL' ):
+                options[ 'nullable' ] = True
+
+            else:
+                logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
+
+        return options
+
     def sqlAlchemyDef( self ) -> str:
         """
-
             https://docs.sqlalchemy.org/en/latest/core/metadata.html#sqlalchemy.schema.Column
-
         :return:
         """
         if root.config.options.ignoreCaseDbIds:

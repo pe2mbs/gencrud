@@ -97,6 +97,9 @@ class TemplateAction( TemplateBase ):
         self.__cfg[ attr ] = value
         return
 
+    def get( self, attr, default = None ):
+        return self.__cfg.get( attr, default )
+
     @property
     def source( self ) -> str:
         return self.__cfg.get( C_SOURCE, '' )
@@ -104,6 +107,13 @@ class TemplateAction( TemplateBase ):
     @property
     def uri( self ) -> str:
         return self.__cfg.get( C_URI, '' )
+
+    @property
+    def disabled( self ) -> str:
+        return self.__cfg.get( 'disabled', 'false' )
+
+    def hasDisabed( self ) -> bool:
+        return 'disabled' in self.__cfg
 
     def isAngularRoute( self ) -> bool:
         return C_ROUTE in self.__cfg
@@ -122,7 +132,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def route( self ) -> RouteTemplate:
-        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else {}
+        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else None # {}
 
     @property
     def params( self ):
@@ -178,6 +188,28 @@ class TemplateAction( TemplateBase ):
             return '*ngIf="{}"'.format( self.__cfg.get( 'ngIf', '' ) )
 
         return ''
+
+    def routingPath( self ) -> str:
+        route = ""
+        if self.isAngularRoute():
+            if isinstance( self.route.route, str ):
+                if self.route.route.startswith( '/' ):
+                    route = self.route.route[1:]
+                else:
+                    route = self.route.name[1:]
+            elif isinstance( self.route.name, str ):
+                route = "/".join( [ self.parent.name, self.route.name ] )
+            else:
+                route = "/".join( [ self.parent.name, self.name ] )
+
+        return route
+
+    def routingParams( self ) -> dict:
+        params = {}
+        if self.isAngularRoute():
+            params = self.route.params()
+        return "{" + ", ".join(['%s: %s' % (key, value) for (key, value) in params.items()]) + "}"
+
 
     def buttonObject( self ) -> str:
         tooltip = ''
@@ -265,27 +297,36 @@ class TemplateAction( TemplateBase ):
             self.__name, self.name, self.label, self.type, self.icon, self.position, self.function, self.route
         )
 
+    def screenObject( self ):
+        if self.__cfg.get( 'directive', None ) is not None:
+            params = " ".join( [ '[{}]="{}"'.format( par, val ) for par, val in self.__cfg.get( 'params', {} ).items() ] )
+            if self.hasDisabed():
+                params += ' [disabled]="{}"'.format( self.disabled )
+            return '<{directive} name="{name}" tooltip="{label}" {control}></{directive}>'.format( **self.__cfg, control = params )
+
+        return ""
+
 
 DEFAULT_NEW_ACTION      = TemplateAction( None,
                                           'internal_action',
                                           name = C_NEW,
                                           label = 'Add a new record',
-                                          type = C_DIALOG,
+                                          type = 'none',
                                           icon = 'add',
-                                          position = C_HEADER,
+                                          position = 'none',
                                           function = 'addRecord()' )
 DEFAULT_DELETE_ACTION   = TemplateAction( None,
                                           'internal_action',
                                           name = C_DELETE,
                                           label = 'Delete a record',
-                                          type = C_DIALOG,
+                                          type = 'none',
                                           icon = 'delete',
-                                          position = C_CELL,
+                                          position = 'none',
                                           function = 'deleteRecord( i, row )' )
 DEFAULT_EDIT_ACTION     = TemplateAction( None,
                                           'internal_action',
                                           name = C_EDIT,
                                           label = 'Edit a record',
-                                          type = C_DIALOG,
-                                          position = C_ROW,
+                                          type = 'none',
+                                          position = 'none',
                                           function = 'editRecord( i, row )' )

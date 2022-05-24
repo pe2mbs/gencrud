@@ -23,7 +23,12 @@ import logging
 import traceback
 import importlib
 from flask import Blueprint, jsonify
-import webapp2.app as API
+try:
+    import webapp2.api as API
+except ModuleNotFoundError:
+    # Error handling
+    raise SystemExit("You need to include the module webapp2. Follow instructions " +
+        "on https://github.com/pe2mbs/gencrud/blob/master/doc/MANUAL.md")
 
 __version__     = '1.1.0'
 __copyright__   = '(c) Copyright 2018-2020, all rights reserved, GPL2 only'
@@ -71,11 +76,11 @@ def verifyMenuStruct( menu ):
     if 'iconName' not in menu:
         raise Exception( "Menu has no iconName!: {} ".format( json.dumps( menu ) ) )
 
-    if 'route' not in menu and 'childeren' not in menu:
+    if 'route' not in menu and 'children' not in menu:
         raise Exception( "Menu has no route or children!: {} ".format( json.dumps( menu ) ) )
 
-    if 'childeren' in menu:
-        for child in menu[ 'childeren' ]:
+    if 'children' in menu:
+        for child in menu[ 'children' ]:
             verifyMenuStruct( child )
 
     return

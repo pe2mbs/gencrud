@@ -48,7 +48,7 @@ class TypeComponents( object ):
         C_TIME_PICKER: { 'tag': 'gc-timepicker-input', 'fxflex': '60px' },
         C_DATE_TIME_PICKER: { 'tag': 'gc-datetimepicker-input', 'fxflex': '60px' } }
 
-    def getCompnentTag( self, component ):
+    def getComponentTag( self, component ):
         if component in TypeComponents._Component:
             return TypeComponents._Component[ component ].get( 'tag' )
 
@@ -203,50 +203,13 @@ class TemplateUi( TemplateBase ):
     def isUiType( self, *args ):
         return self.uiObject in args
 
-    # def isTextbox( self ):
-    #     return self.uiObject == C_TEXTBOX
-    #
-    # def isEditor( self ):
-    #     return self.uiObject == C_EDITOR
-    #
-    # def isCheckbox( self ):
-    #     return self.uiObject == C_CHECKBOX
-    #
-    # def isTextArea( self ):
-    #     return self.uiObject == C_TEXTAREA
-    #
-    # def isPassword( self ):
-    #     return self.uiObject == C_PASSWORD
-    #
-    # def isNumber( self ):
-    #     return self.uiObject == C_NUMBER
-    #
-    # def isChoice( self ):
-    #     return self.uiObject in ( C_CHOICE, C_CHOICE_AUTO )
-    #
-    # def isEmail( self ):
-    #     return self.uiObject == C_EMAIL
-    #
-    # def isCombobox( self ):
-    #     return self.uiObject in ( C_COMBOBOX, C_COMBO )
-    #
-    # def isDate( self ):
-    #     return self.uiObject == C_DATE_PICKER or self.uiObject == C_DATE
-    #
-    # def isDateTime( self ):
-    #     return self.uiObject == C_DATE_TIME_PICKER or self.uiObject == C_DATE_TIME
-    #
-    # def isTime( self ):
-    #     return self.uiObject == C_TIME_PICKER or self.uiObject == C_TIME
-    #
-    # def isLabel( self ):
-    #     return self.uiObject == C_LABEL
-    #
-    # def isSlider( self ):
-    #     return self.uiObject == C_SLIDER
-    #
-    # def isSliderToggle( self ):
-    #     return self.uiObject == C_SLIDER_TOGGLE
+    # deprecated
+    def isChoice( self ):
+        return self.uiObject in ( C_CHOICE, C_CHOICE_AUTO )
+
+    # deprecated
+    def isCombobox( self ):
+        return self.uiObject in ( C_COMBOBOX, C_COMBO )
 
     def isSet( self, property ):
         return property in self.__cfg or self.parent.isSet( property )
@@ -331,7 +294,7 @@ class TemplateUi( TemplateBase ):
             options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
         return '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
-                format( tag         = self.__components.getCompnentTag( self.uiObject ),
+                format( tag         = self.__components.getComponentTag( self.uiObject ),
                         table       = self.table.name,
                         name        = self.parent.name,
                         placeholder = label,

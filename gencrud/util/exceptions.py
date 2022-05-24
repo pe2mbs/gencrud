@@ -63,17 +63,31 @@ class MissingTemplate( Exception ):
                                                  format( template ) )
 
 
+class MissingCommon( Exception ):
+    def __init__( self, common ):
+        self.__common = common
+        super( MissingCommon, self ).__init__( 'No common templates found in {0}'.
+                                                 format( common ) )
+
+
 class MissingSourceFolder( Exception ):
     def __init__( self, path ):
         self.__path = path
-        super( MissingSourceFolder, self ).__init__( 'Could find the source folders, please be at the project root or {}'.
+        super( MissingSourceFolder, self ).__init__( 'Could not find the source folders, please be at the project root or {}'.
                                                      format( path ) )
 
 
 class MissingTemplateFolder( Exception ):
     def __init__( self, path ):
         self.__path = path
-        super( MissingTemplateFolder, self ).__init__( 'Could find the template folders, please be at the project root or {}'.
+        super( MissingTemplateFolder, self ).__init__( 'Could not find the template folders, please be at the project root or {}'.
+                                                     format( path ) )
+
+
+class MissingCommonFolder( Exception ):
+    def __init__( self, path ):
+        self.__path = path
+        super( MissingCommonFolder, self ).__init__( 'Could not find the common template folders, please be at the project root or {}'.
                                                      format( path ) )
 
 
@@ -140,14 +154,3 @@ class InvalidViewSize( Exception ):
 class MissingAttribute( Exception ):
     def __init__( self, group, name ):
         Exception.__init__( self, "Missing '{1}' in section '{0}'".format( group, name ) )
-
-
-class ErrorInTemplate( Exception ):
-    def __init__( self, filename, mako_message ):
-        self.__filename = filename
-        result = mako_message.render_unicode()
-        self.__mako_message = result.splitlines( keepends = False )
-        msg = "Mako exception in template: {}\n{}".format( self.__filename,
-                                                           "\n".join( self.__mako_message ) )
-        Exception.__init__( self, msg )
-        return

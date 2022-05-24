@@ -17,7 +17,9 @@
 #   Boston, MA 02110-1301 USA
 #
 C_APPLICATION           = 'application'
+C_FILE                  = 'file'
 C_FILENAME              = 'filename'
+C_FILTER                = 'filter'
 C_CLASS                 = 'class'
 C_MODULE                = 'module'
 C_MODULES               = 'modules'
@@ -34,6 +36,7 @@ C_BACKUP                = 'backup'
 C_IGNORE_CASE_DB_IDS    = 'ignore-case-db-ids'
 C_OVERWRITE             = 'overwrite'
 C_LAZY_LOADING          = 'lazy-loading'
+C_SORT                  = 'sort'
 
 C_APP_MODULE            = 'app-module'
 C_APP_ROUTING           = 'app-routing'
@@ -99,8 +102,8 @@ C_DBLCLICK              = 'dblclick'
 C_DOUBLE_CLICK          = 'dblclick'
 C_MIXIN                 = 'mixin'
 
-C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_NONE, C_MIXIN )
-C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE )
+C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_NONE )
+C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE, C_SCREEN )
 C_ACTION_ATTRIBUTES     = ( C_FUNCTION,
                             C_NAME,
                             C_LABEL,
@@ -213,8 +216,13 @@ C_LIST_VIEW             = 'listview'
 C_RELATION_SHIP         = 'relationship'
 C_AUTO_UPDATE           = 'autoupdate'
 C_DEFAULT               = 'default'
+C_DEFAULTS              = 'defaults'
+C_INIT                  = 'init'
 C_INITIAL_VALUE         = 'initialValue'
 C_READ_ONLY             = 'readonly'
 
 C_GENERATE_FRONTEND     = 'generate-frontend'
 C_GENERATE_BACKEND      = 'generate-backend'
+
+C_GENCRUD_TEMPLATES     = 'GENCRUD_TEMPLATES'
+C_GENCRUD               = 'GENCRUD'

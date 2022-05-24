@@ -1,4 +1,8 @@
-nltk
+flake8
+jsonschema
 mako
+nltk
+ruamel.yaml
+pytest
 pyyaml
 six

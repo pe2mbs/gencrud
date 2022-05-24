@@ -37,7 +37,21 @@ class TemplateService( TemplateBase ):
         if C_CLASS not in self.__config:
             raise MissingAttribute( C_SERVICE, C_CLASS )
 
+        self.__fieldLabel = ''
         return
+
+    @property
+    def fieldLabel( self ):
+        return self.__fieldLabel
+
+    @fieldLabel.setter
+    def fieldLabel( self, value ):
+        self.__fieldLabel = value
+        return
+
+    @property
+    def dictionary( self ) -> dict:
+        return self.__config
 
     @property
     def name( self ):
@@ -53,7 +67,7 @@ class TemplateService( TemplateBase ):
 
     @property
     def baseClass( self ):
-        return self.__config.get( C_CLASS,None )
+        return self.__config.get( C_CLASS, None )
 
     @property
     def cls( self ):
@@ -83,6 +97,15 @@ class TemplateService( TemplateBase ):
     @property
     def final( self ):
         return dict2typeScript( self.__config[ 'final' ] )
+
+    def __repr__(self):
+        return "<Service name={} path={} label={} value={}".format( self.name, self.path, self.label, self.value )
+
+    def uniqueName( self, *args ):
+        return ( "_".join( [ self.name, self.label ] + list( args ) ) ).replace( ',', '_' ).replace( ';', '_' ).replace( '-', '_' )
+
+    def mapperName( self ):
+        return "_".join( [ self.name, self.cls, self.label, self.value ] ).replace( ',', '_' ).replace( ';', '_' ).replace( '-', '_' )
 
 
 def list2typeScript( array ):

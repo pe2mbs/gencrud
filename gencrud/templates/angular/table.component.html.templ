@@ -1,74 +1,88 @@
-<mat-card id="${ obj.name }.table" class="standard-container">
-    <div>
-		<div fxFlex fxLayout="row">
-			<app-breadcrumb class="align-paginator" fxFlex="grow"></app-breadcrumb>
-			<mat-paginator #top_paginator fxFlex="40"
-							id="${ obj.name }.header.paginator"
-							[length]="dataSource.filteredData.length"
-							(page)="pagingEvent( $event )"
-							[pageIndex]="pageIndex"
-							[pageSize]="pageSize"
-							[pageSizeOptions]="[5, 10, 25, 100]">
-			</mat-paginator>
-			<div class="align-paginator" fxFlex="none" fxLayoutAlign="end">
+<mat-card id="${ obj.name }">
+    <mat-card-content>
+        <div class="navigator-row form">
+            <mat-form-field floatPlaceholder="never" color="accent">
+                <input matInput #filter placeholder="Filter ${ obj.title }" [value]="dataSource.filter" id="${ obj.name }.filter">
+            </mat-form-field>
+            <span class="spacer-search"></span>
+            <span>
 % for action in obj.actions.getHeaderButtons():
                 ${ action.buttonObject() }
 % endfor
+            </span>
+            <span id="${ obj.name }.header.paginator">
+                <mat-paginator #top_paginator [length]="dataSource.filteredData.length" (page)="pagingEvent( $event )"
+                       [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 100]">
+                </mat-paginator>
+            </span>
+            <span>
+                <app-help-component helpinfo="${ obj.name }_table" fallback="table_view"></app-help-component>
+            </span>
 % if obj.hasAutoUpdate():
+            <span>
                 <button mat-icon-button color="primary" (click)="toggleAutoUpdate()" id="${ obj.name }.header.autoupdate">
                     <mat-icon *ngIf="toggleUpdate == false; else isAutoRefresh" aria-label="Autoupdate">update</mat-icon>
                     <ng-template #isAutoRefresh>
                         <mat-icon *ngIf="toggleUpdate" aria-label="Stop autoupdate">link_off</mat-icon>
                     </ng-template>
                 </button>
+            </span>
 % endif
-				<app-help helpitem="${ obj.name }" fallback="table-overview" color="primary"></app-help>
-				<button mat-icon-button color="primary"
-							(click)="refresh()" id="${ obj.name }.header.refresh">
-					<mat-icon aria-label="Refresh the view">refresh</mat-icon>
-				</button>
-			</div>
-		</div>
-	</div>
-    <mat-card-content class="card-content">
+            <span>
+                <button mat-icon-button color="primary" (click)="refresh()" id="${ obj.name }.header.refresh">
+                    <mat-icon aria-label="Refresh the view">refresh</mat-icon>
+                </button>
+            </span>
+        </div>
         <mat-table id="${ obj.name }.table" #table${ obj.cls } [dataSource]="dataSource" matSort class="mat-cell" ${obj.table.sortedInfo()}>
 % for field in obj.table.listViewColumns:
             <!-- ${ field.name } Column -->
             <ng-container matColumnDef="${ field.name }" class="column_${ field.name }">
                 <mat-header-cell *matHeaderCellDef mat-sort-header>
-                    <filter-header title="${ field.label }" field="${ field.name }"
-									[filterRecord]="filterRecord"
-									[dataSource]="dataSource"
-									(applyFilter)="applyFilter( filterRecord )">
-					</filter-header>
+                    ${ field.label }
                 </mat-header-cell>
                 <mat-cell *matCellDef="let row; let i=index;" id="${ obj.cls }.${ field.name }" matTooltip="ID: {{ row.${field.name} }}"
                           ${ obj.actions.getRowRouterLink() }>
+                    <span class="truncate-text">
 % if field.ui is not None:
 %  if field.ui.hasService():
 %   if field.hasAttribute( "NULL" ):
-                    <div *ngIf="row.${ field.name }_FK !== null">{{ row.${ field.name }_FK.${ field.ui.service.label } }}</div>
-                    <ng-template #elseBlock_${ field.name }_FK>N/A</ng-template>
+%    if ',' in field.ui.service.label:
+                        ${ " - ".join( [ "{{{{ row.{0}_FK.{1} }}}}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) }
+%    else:
+                        <span *ngIf="row.${ field.name }_FK; else no_${ field.name }_FK">
+                            {{ row.${ field.name }_FK.${ field.ui.service.label } }}
+                        </span>
+                        <ng-template #no_${ field.name }_FK> not avaiable </ng-template>
+%    endif
 %   else:
-                    {{ row.${ field.name }_FK.${ field.ui.service.label } }}
+%    if ',' in field.ui.service.label:
+                        ${ " - ".join( [ "{{{{ row.{0}_FK.{1} }}}}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) }
+%    else:
+                        <span *ngIf="row.${ field.name }_FK; else no_${ field.name }_FK">
+                            {{ row.${ field.name }_FK.${ field.ui.service.label } }}
+                        </span>
+                        <ng-template #no_${ field.name }_FK> not avaiable </ng-template>
+%    endif
 %   endif
-%  elif field.hasResolveList():
-                    {{ row.${ field.name }_LABEL }}
 
-%  elif field.ui.isUiType( 'date', 'datepicker', 'time', 'timepicker', 'datetime', 'datetimepicker' ) and field.ui.format != 'text':
-                    {{ row.${ field.name } | date: "${ field.ui.format }" }}
-%  elif field.ui.isUiType( 'datetime', 'datetimepicker' ):
-                    {{ row.${ field.name } | date: "yyyy-MM-dd HH:mm:ss" }}
-%  elif field.ui.isUiType( 'date', 'datepicker' ):
-                    {{ row.${ field.name } | date: "yyyy-MM-dd" }}
-%  elif field.ui.isUiType( 'time', 'timepicker' ):
-                    {{ row.${ field.name } | date: "HH:mm:ss" }}
+%  elif field.hasResolveList():
+                        {{ row.${ field.name }_LABEL }}
+%  elif field.ui.isDateTime() and field.ui.isDate() and field.ui.isTime() and field.ui.format != 'text':
+                        {{ row.${ field.name } | date: "${ field.ui.format }" }}
+%  elif field.ui.isDateTime():
+                        {{ row.${ field.name } | date: "yyyy-MM-dd HH:mm:ss" }}
+%  elif field.ui.isDate():
+                        {{ row.${ field.name } | date: "yyyy-MM-dd" }}
+%  elif field.ui.isTime():
+                        {{ row.${ field.name } | date: "HH:mm:ss" }}
 %  elif field.ui.pipe != '':
-                    {{ dataSource.reFormat( row.${ field.name }, '${ field.ui.pipe }', '${ field.ui.format }' ) }}
+                        {{ dataSource.reFormat( row.${ field.name }, '${ field.ui.pipe }', '${ field.ui.format }' ) }}
 %  else:
-                    {{ row.${ field.name } }}
+                        {{ row.${ field.name } }}
 %  endif
 % endif
+                    </span>
                 </mat-cell>
             </ng-container>
 % endfor
@@ -90,38 +104,33 @@
             <mat-row *matRowDef="let row; columns: displayedColumns;">
             </mat-row>
         </mat-table>
-    </mat-card-content>
-    <mat-card-footer style="margin-left: 5px; width: 100%;" >
-		<div fxFlex fxLayout="row">
-			<div fxFlex="grow">
-				<div id="${ obj.name }.spinner" *ngIf="spinnerService.visibility | async as visibility; else loading_done" class="loading-progress">
-					<mat-progress-bar mode="indeterminate"></mat-progress-bar>
-				</div>
-				<ng-template #loading_done>
-					<div class="no-results" id="${ obj.name }.no-results"
-							[style.display]="dataSource.renderedData.length == 0 ? '' : 'none'">
-						No results
-					</div>
-				</ng-template>
-			</div>
-			<mat-paginator #bot_paginator fxFlex="40"
-							id="${ obj.name }.botton.paginator"
-							[length]="dataSource.filteredData.length"
-							(page)="pagingEvent( $event )"
-							[pageIndex]="pageIndex"
-							[pageSize]="pageSize"
-							[pageSizeOptions]="[5, 10, 25, 100]">
-			</mat-paginator>
-			<div class="align-paginator" fxFlex fxLayoutAlign="end">
+        <div class="http-spinner" *ngIf="spinnerService.visibility | async as visibility; else loading_done">
+            <div class="http-spinner-inner">
+                <mat-spinner [diameter]="50"></mat-spinner>
+            </div>
+        </div>
+        <ng-template #loading_done>
+            <div class="no-results" id="no-results" [style.display]="dataSource.renderedData.length == 0 ? '' : 'none'">
+                No results
+            </div>
+        </ng-template>
+        <div class="navigator-row">
+            <span>
 % for action in obj.actions.getFooterButtons():
                 ${ action.buttonObject() }
 % endfor
-				<button mat-icon-button color="primary"
-				        id="${ obj.name }.botton.refresh"
-						(click)="refresh()">
-					<mat-icon aria-label="Refresh the view">refresh</mat-icon>
-				</button>
-			</div>
-		</div>
-	</mat-card-footer>
+            </span>
+            <span class="spacer"></span>
+            <span id="${ obj.name }.botton.paginator">
+                <mat-paginator #bot_paginator [length]="dataSource.filteredData.length" (page)="pagingEvent( $event )"
+                               [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 100]">
+                </mat-paginator>
+            </span>
+            <span>
+                <button mat-icon-button color="primary" (click)="refresh()" id="${ obj.name }.botton.refresh">
+                    <mat-icon aria-label="Refresh the view">refresh</mat-icon>
+                </button>
+            </span>
+        </div>
+    </mat-card-content>
 </mat-card>

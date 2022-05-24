@@ -47,14 +47,18 @@ class AngularModule( TemplateBase ):
         return self.__config.get( C_CLASS, self.get_default( C_MODULE ) )
 
     @property
+    def module( self ):
+        return self.__config.get( C_MODULE, "module" )
+
+    @property
     def importPath( self ):
         if '.' in self.path or '/' in self.path:
             # seems to be a full path
-            path = posixpath.join( self.path, C_MODULE )
+            path = posixpath.join( self.path, self.module )
 
         else:
             # Another module should be one level up in the filesystem
-            path = posixpath.join( "..", self.path, C_MODULE )
+            path = posixpath.join( "..", self.path, self.module )
 
         return path
 
@@ -73,6 +77,10 @@ class AngularModules( TemplateBase ):
 
     def __iter__( self ):
         return iter( self.__config )
+
+    @property
+    def items(self):
+        return self.__config
 
 
 class InjectionBlockTemplate( TemplateBase ):
@@ -191,7 +199,7 @@ class InjectionTemplate( TemplateBase ):
 
 
 class TemplateObject( TemplateBase ):
-    def __init__( self, parent, cfg ):
+    def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__config       = cfg
         if C_NAME not in self.__config:
@@ -203,11 +211,11 @@ class TemplateObject( TemplateBase ):
         if C_TABLE not in self.__config:
             raise MissingAttribute( C_OBJECT, C_TABLE )
 
-        self.__menu         = TemplateMenuItem( C_MENU, cfg ) if C_MENU in cfg else None
+        self.__menu         = TemplateMenuItem( C_MENU, **cfg ) if C_MENU in cfg else None
         self.__actions      = TemplateActions( self, self.name, self.__config.get( C_ACTIONS, [] ) )
-        self.__table        = TemplateTable( self, self.__config.get( C_TABLE, {} ) )
-        self.__extra        = TemplateExtra( self, self.__config.get( C_EXTRA, {} ) )
-        self.__mixin        = TemplateMixin( self, self.__config.get( C_MIXIN, {} ) )
+        self.__table        = TemplateTable( self, **self.__config.get( C_TABLE, {} ) )
+        self.__extra        = TemplateExtra( self, **self.__config.get( C_EXTRA, {} ) )
+        self.__mixin        = TemplateMixin( self, **self.__config.get( C_MIXIN, {} ) )
         return
 
     #
@@ -232,10 +240,6 @@ class TemplateObject( TemplateBase ):
     @property
     def cls( self ) -> str:
         return self.__config.get( C_CLASS, '' )
-
-    @property
-    def Mixin( self ):
-        return self.__mixin
 
     @property
     def mixin( self ):

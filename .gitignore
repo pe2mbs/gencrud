@@ -1,6 +1,5 @@
 # PyCharm
 .idea/
-
 # some working folders
 output/
 templates.old/
@@ -21,3 +20,5 @@ __pycache__/
 # due to using tox and pytest
 .tox
 .cache
+
+.pytest_cache

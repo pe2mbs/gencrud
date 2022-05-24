@@ -52,7 +52,7 @@ class RelationShip( TemplateBase ):
 
 
 class TemplateTable( TemplateBase ):
-    def __init__( self, parent, table ):
+    def __init__( self, parent, **table ):
         TemplateBase.__init__( self, parent )
         self.__table            = table
         self.__columns          = []
@@ -96,11 +96,17 @@ class TemplateTable( TemplateBase ):
     def config( self ):
         return self.object.config
 
-    def hasTabs( self ) -> bool:
-        return len( self.__table.get( C_TABS, [] ) ) > 0
+    def hasTabs( self, tp = C_DIALOG ) -> bool:
+        if C_TABS in self.__table:
+            return len( self.__table.get( C_TABS,[ ] ) ) > 0
 
-    def tabs( self ) -> TemplateTabs:
-        return TemplateTabs( self, self.__table.get( C_TABS, {} ) )
+        return len( self.__table.get( tp + C_TABS, [] ) ) > 0
+
+    def tabs( self, tp = C_DIALOG ) -> TemplateTabs:
+        if C_TABS in self.__table:
+            return TemplateTabs( self,**self.__table.get( C_TABS,{ } ) )
+
+        return TemplateTabs( self, **self.__table.get( tp + C_TABS, {} ) )
 
     def sortedInfo( self ) -> str:
         if self.__viewSort is not None:
@@ -196,7 +202,7 @@ class TemplateTable( TemplateBase ):
     def buildFilter( self ) -> str:
         result = [ ]
         for item in self.listViewColumns:
-            if item.ui.isChoice() or item.ui.isCombobox():
+            if item.ui.isUiType(C_CHOICE, C_CHOICE_AUTO) or item.ui.isUiType(C_COMBOBOX, C_COMBO):
                 result.append( "( this.{0}_Label( record.{0} ) )".format( item.name ) )
 
             elif item.ui.isCheckbox() or item.ui.isSliderToggle():

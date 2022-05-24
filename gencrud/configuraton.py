@@ -1,6 +1,6 @@
 #
 #   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2021 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -22,12 +22,14 @@ import os
 import io
 import gencrud.util.utils
 from gencrud.config.object import TemplateObject, TemplateObjects
-from gencrud.config.location import TemplateLocation, SourceLocation
+from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular
 from gencrud.config.options import TemplateOptions
 from gencrud.config.references import TemplateReferences
 from gencrud.config.dynamic.controls import DymanicControls
 from gencrud.constants import *
 from gencrud.util.exceptions import MissingAttribute
+import jsonschema
+from gencrud.schema import GENCRUD_SCHEME
 
 
 OptionalString = TypeVar( 'OptionalString', str, None )
@@ -44,7 +46,7 @@ yaml.SafeLoader.compose_document = my_compose_document
 
 
 def yaml_include( loader, node ):
-    if not node.value.startswith( os.sep ):
+    if node.value.startswith( '.' ):
         include_name = os.path.join( os.path.dirname( node.start_mark.name ), node.value )
 
     else:
@@ -99,27 +101,43 @@ class TemplateConfiguration( object ):
 
         else:
             self.__config       = cfg
+        
+        # in case there is a 'defaults' field specified, we need to concat
+        # its content with the root dict. This is a workaround since
+        # include cannot be used at root level alongside other fields
+        if C_DEFAULTS in self.__config:
+            self.__config = dict(self.__config[C_DEFAULTS], **self.__config)
+            del self.__config[C_DEFAULTS]
 
-        self.__config.update( self.__config.get( 'project_defaults', {} ) )
+        # Veryfy the loaded template against the schema
+        try:
+            jsonschema.Draft7Validator(GENCRUD_SCHEME)
+            jsonschema.validate(instance=self.__config, schema=GENCRUD_SCHEME)
+
+        except jsonschema.SchemaError as exc:
+            print(exc)
+            raise SystemExit
+
+        except jsonschema.ValidationError as exc:
+            print(exc)
+            raise SystemExit
+
         self.__controls     = None
-        if C_OBJECTS not in self.__config:
-            raise MissingAttribute( C_ROOT, C_OBJECTS )
-
-        if C_APPLICATION not in self.__config:
-            raise MissingAttribute( C_ROOT, C_APPLICATION )
-
         controls            = cfg.get( C_CONTROLS, None )
         if controls is not None:
             self.__controls = DymanicControls( controls )
 
-        self.__options      = TemplateOptions( self.__config )
-        self.__source       = SourceLocation( self,  self.__config )
-        self.__template     = TemplateLocation( self, self.__config )
-        self.__references   = TemplateReferences( self.__config )
+        opts                = self.__config[ C_OPTIONS ] if C_OPTIONS in self.__config else { }
+        self.__options      = TemplateOptions( **opts )
+        # encapsulate the information where python/angular templates are located and where
+        # the output location is
+        self.__python       = TemplateSourcePython( **self.__config )
+        self.__angular      = TemplateSourceAngular( **self.__config )
+        opts                = self.__config[ C_REFERENCES ] if C_REFERENCES in self.__config else { }
+        self.__references   = TemplateReferences( **opts )
         self.__objects      = []
         for obj in self.__config[ C_OBJECTS ]:
-            self.__objects.append( TemplateObject( self, obj ) )
-
+            self.__objects.append( TemplateObject( self, **obj ) )
         return
 
     @property
@@ -131,12 +149,12 @@ class TemplateConfiguration( object ):
         return None
 
     @property
-    def source( self ) -> SourceLocation:
-        return self.__source
+    def python( self ) -> TemplateSourcePython:
+        return self.__python
 
     @property
-    def template( self ) -> TemplateLocation:
-        return self.__template
+    def angular( self ) -> TemplateSourceAngular:
+        return self.__angular
 
     @property
     def objects( self ) -> TemplateObjects:

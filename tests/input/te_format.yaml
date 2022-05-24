@@ -1,0 +1,164 @@
+source:
+    base:                           .\tests\input\source
+    python:                         python
+    angular:                        angular
+templates:
+    base:                           .\gencrud\templates
+    python:                         python
+    angular:                        angular
+    common:
+        base:                       .\gencrud\templates\common
+        python:                     python
+        angular:                    angular
+application:                        testrun
+nogen:                              false
+options:
+    ignore-case-db-ids:             true
+    overwrite:                      true
+    use-module:                     true
+objects:
+-   name:                           te_test_format
+    title:                          Test format
+    remark:                         This defines the test format
+    class:                          TestFormat
+    uri:                            /api/te_test_format
+    modules:
+    -   class:                      TestProcessModule
+        module:                     testprocess.module
+        path:                       ../../testprocess
+    actions:
+    -   name:                       new
+        type:                       screen
+        icon:                       add
+        position:                   header
+        route:
+            class:                  ScreenTestFormatComponent
+            params:
+                mode:               "'new'"
+    -   name:                       edit
+        type:                       screen
+        icon:                       edit
+        position:                   row
+        route:
+            class:                  ScreenTestFormatComponent
+            params:
+                mode:               "'edit'"
+                id:                 "'TF_ID'"
+                value:              row.TF_ID
+    -   name:                       delete
+        label:                      Delete
+        type:                       dialog
+        icon:                       delete
+        position:                   cell
+        function:                   deleteRecord( i, row, 'TF_NAME' )
+    -   name:                       edit format
+        label:                      Edit/New Format
+        type:                       screen
+        index:                      1
+        directive:                  app-defintion-button
+        params:
+            value:                  row.TF_ID
+            id:                     "'TF_ID'"
+    menu:
+        caption:                    Administration
+        icon:                       donut_small
+        index:                      -2
+        menu:
+            caption:                Test
+            index:                  0
+            menu:
+                caption:            Test format
+                icon:               dvr
+                route:              /te_test_format
+                index:              0
+    table:
+        name:                       TE_TEST_FORMAT
+        tabs:
+            labels:
+                - Format
+                - Remark
+        # unique-key:
+        #     TF_NAME_VERSION:        TF_NAME, TF_VERSION
+        columns:
+        -   field:                  TF_ID                       INT             AUTO NUMBER  PRIMARY KEY
+        -   field:                  TF_NAME                     CHAR( 250 )     NOT NULL
+            label:                  Name
+            ui:
+                type:               textbox
+            tab:
+                label:              Format
+                index:              0
+            listview:
+                index:              0
+                width:              45%
+        -   field:                  TF_VERSION                  CHAR( 10 )      NOT NULL
+            label:                  Version
+            ui:
+                type:               textbox
+            listview:
+                index:              0
+                width:              10%
+            tab:
+                label:              Format
+                index:              1
+        -   field:                  TF_ENGINE                   CHAR( 100 )     NOT NULL
+            label:                  Engine
+            hint:                   This is the data engine
+            ui:
+                type:               textbox
+            tab:
+                label:              Format
+                index:              2
+            listview:
+                index:              0
+                width:              35%
+        -   field:                  TF_MEDIUM                      INT     NOT NULL
+            # This type of field shall also in TE_TEMPLATE, TE_TEST_MESSAGE
+            label:                  Input/output medium
+            ui:
+                type:               choice
+                resolve-list:
+                    0:              Any
+                    1:              File
+                    2:              Queue
+                    3:              Http(s)
+            tab:
+                label:              Format
+                index:              3
+        -   field:                  TF_S_ID                        INT             FOREIGN KEY GN_SYS.S_ID             NULL
+            label:                  System
+            ui:
+                type:               choice-auto-complete
+                service:
+                    name:           te_system
+                    class:          System
+                    value:          S_ID
+                    label:          S_FULL_NAME
+        -   field:                  TF_DATA                     CLOB            NULL
+            frontend:               False
+        -   field:                  TF_JSON_DATA                CLOB            NULL
+            frontend:               False
+        -   field:                  TF_PATTERN_DATA             CHAR( 256 )     NULL
+            label:                  Output pattern
+            ui:
+                type:               textbox
+            tab:
+                label:              Format
+                index:              3
+        -   field:                  TF_ORIGNAL_FILES            CLOB            NULL
+            frontend:               false
+            remark: >
+                This is used by the scheme uploader to register the orginal files,
+                So that those can be used during the regression reference compare.
+        -   field:                  TF_REMARK                   CLOB            NULL
+            label:                  Remark
+            ui:
+                type:               editor
+                attributes:
+                    language:       markdown
+                    height:         auto
+                    minimap:        ^true
+                    heightAdjust:   ^-120
+            tab:
+                label:              Remark
+                index:              0

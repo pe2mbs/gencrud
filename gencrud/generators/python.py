@@ -1,6 +1,6 @@
 #
 #   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2021 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -34,9 +34,9 @@ import gencrud.util.utils as API
 
 logger = logging.getLogger()
 
-MENU_CHILDEREN_LABEL    = 'children'
-MENU_DISPLAY_NAME       = 'caption'
-MENU_ICON_NAME          = 'icon'
+MENU_CHILDREN_LABEL    = 'children'
+MENU_DISPLAY_NAME       = 'displayName'
+MENU_ICON_NAME          = 'iconName'
 
 MENU_DISPLAY_NAME_V2    = 'caption'
 MENU_ICON_NAME_V2       = 'icon'
@@ -44,7 +44,9 @@ MENU_ICON_NAME_V2       = 'icon'
 MENU_INDEX              = 'index'
 MENU_ID                 = 'id'
 MENU_ROUTE              = 'route'
-
+#LABEL_LIST_MODULES      = 'listModules = ['
+#LABEL_MENU_ITEMS        = 'menuItems = ['
+#LABEL_END_LIST          = ']'
 
 
 def makePythonModules( root_path, *args ):
@@ -70,19 +72,19 @@ def makePythonModules( root_path, *args ):
 
 
 def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
-    logger.debug( config.source.python )
+    logger.debug( config.python.sourceFolder )
     # Copy the following files from the common-py folder to the source folder of the project
-    for src_filename in ( 'main.py', ):
-        fnd = os.path.abspath( os.path.join( config.source.python, config.application, src_filename ) )
+    for src_filename in ( 'common.py', 'main.py' ):
+        fnd = os.path.abspath( os.path.join( config.python.sourceFolder, config.application, src_filename ) )
         if not os.path.isfile( fnd ):
-            fns = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', 'templates', 'common', 'python', src_filename ) )
+            fns = os.path.abspath( os.path.join( config.python.commonFolder, src_filename ) )
             logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
             shutil.copy( fns, fnd )
 
     def makeMenuId( menu,prefix ):
         return hashlib.md5( (prefix + menu.caption).encode('ascii') ).hexdigest().upper()
 
-    menuFilename = os.path.join( config.source.python, config.application, 'menu.yaml' )
+    menuFilename = os.path.join( config.python.sourceFolder, config.application, 'menu.yaml' )
     if os.path.isfile( menuFilename ):
         with open( menuFilename, 'r' )  as stream:
             menuItems = yaml.load( stream, Loader = yaml.Loader )
@@ -99,10 +101,10 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                 foundMenu = True
                 if menu.menu is not None:
                     # sub menu
-                    if MENU_CHILDEREN_LABEL not in menuItem:
-                        menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                    if MENU_CHILDREN_LABEL not in menuItem:
+                        menuItem[ MENU_CHILDREN_LABEL ] = [ ]
 
-                    processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                    processMenuStructure_V2( menuItem[ MENU_CHILDREN_LABEL ],
                                              menu.menu,
                                              menuItem[ MENU_ID ] + '_' )
 
@@ -114,10 +116,10 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                         menuItem[ MENU_ROUTE ] = menu.route
 
                     # elif menu.menu is not None:
-                    #     if MENU_CHILDEREN_LABEL not in menuItem:
-                    #         menuItem[ MENU_CHILDEREN_LABEL ] = [ ]
+                    #     if MENU_CHILDREN_LABEL not in menuItem:
+                    #         menuItem[ MENU_CHILDREN_LABEL ] = [ ]
                     #
-                    #     processMenuStructure_V2( menuItem[ MENU_CHILDEREN_LABEL ],
+                    #     processMenuStructure_V2( menuItem[ MENU_CHILDREN_LABEL ],
                     #                              menu.menu,
                     #                              menuItem[ MENU_ID ] + '_' )
 
@@ -129,8 +131,8 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                 newMenuItem[ MENU_ROUTE ] = menu.route
 
             elif menu.menu is not None:
-                newMenuItem[ MENU_CHILDEREN_LABEL ] = [ ]
-                processMenuStructure_V2( newMenuItem[ MENU_CHILDEREN_LABEL ],
+                newMenuItem[ MENU_CHILDREN_LABEL ] = [ ]
+                processMenuStructure_V2( newMenuItem[ MENU_CHILDREN_LABEL ],
                                          menu.menu,
                                          newMenuItem[ MENU_ID ] + '_' )
 
@@ -166,12 +168,7 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
 
 
 def updatePythonModels( config:  TemplateConfiguration ):
-    modulesPath = os.path.join( config.source.python, config.application )
-    logger.debug( "Python source folder: {}".format( modulesPath ) )
-    if not os.path.exists( modulesPath ):
-        os.makedirs( modulesPath, exist_ok = True )
-
-    modelsFilename = os.path.join( modulesPath, 'modules.yaml' )
+    modelsFilename = os.path.join( config.python.sourceFolder, config.application, 'modules.yaml' )
     if os.path.isfile( modelsFilename ):
         with open( modelsFilename, 'r' ) as stream:
             modules = yaml.load( stream, Loader = yaml.Loader )
@@ -203,16 +200,15 @@ def updatePythonModels( config:  TemplateConfiguration ):
         yaml.dump( modules, stream, Dumper = yaml.Dumper )
 
     # Now generate the models.py module
-
-    template = os.path.abspath( os.path.join( config.template.common.python, 'models.py.templ' ) )
-    modeles_py_file = os.path.join( modulesPath, 'models.py' )
+    template = os.path.abspath( os.path.join( config.python.commonFolder, 'models.py.templ' ) )
+    modeles_py_file = os.path.join( config.python.sourceFolder, config.application, 'models.py' )
     with open( modeles_py_file, 'w' ) as stream:
         stream.write( Template( filename = template ).render( config = config, modules = modules ) )
 
     return
 
 def generatePython( config: TemplateConfiguration, templates: list ):
-    # modules = []
+    modules = []
     constants = []
     logger.info( 'application : {0}'.format( config.application ) )
     dt = datetime.datetime.now()
@@ -220,7 +216,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
     userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
     updatePythonModels( config )
     for cfg in config:
-        modulePath = os.path.join( config.source.python,
+        modulePath = os.path.join( config.python.sourceFolder,
                                    config.application,
                                    cfg.name )
         logger.info( 'name        : {0}'.format( cfg.name ) )
@@ -230,27 +226,22 @@ def generatePython( config: TemplateConfiguration, templates: list ):
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
         for col in cfg.table.columns:
             logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
-
         for templ in templates:
             if cfg.ignoreTemplates( templ ):
                 continue
-
             logger.info( 'template    : {0}'.format( templ ) )
-            if not os.path.isdir( config.source.python ):
+            if not os.path.isdir( config.python.sourceFolder ):
                 os.makedirs( config.python.sourceFolder )
 
             if os.path.isdir( modulePath ) and not config.options.overWriteFiles:
                 raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
-
             outputSourceFile = os.path.join( modulePath, gencrud.util.utils.sourceName( templ ) )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( outputSourceFile )
-
             if os.path.isfile( outputSourceFile ):
                 # remove the file first
                 os.remove( outputSourceFile )
-
-            makePythonModules( config.source.python, config.application, cfg.name )
+            makePythonModules( config.python.sourceFolder, config.application, cfg.name )
             with open( outputSourceFile,
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
@@ -283,6 +274,17 @@ def generatePython( config: TemplateConfiguration, templates: list ):
 
             with open( filename, 'w' ) as stream:
                 stream.writelines( constants )
+
+        entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
+        if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
+            # use the template from 'common-py'
+            templateFolder  = config.python.commonFolder
+            templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
+
+            with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
+                with open( templateFile, 'r' ) as templateStream:
+                    for line in Template( templateStream ).render( obj = cfg, root = config ).split( '\n' ):
+                        stream.write( line + '\n' )
 
     updatePythonProject( config, '' )
     return

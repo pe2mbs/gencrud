@@ -22,54 +22,57 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 import { ${obj.cls}DataService } from './service';
-import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from "@angular/router";
 import { ${obj.cls}Record } from './model';
 % for field in obj.table.columns:
- % if field.ui is not None and field.ui.isUiType( 'choice', 'choice-auto-complete', 'combo' ):
-import { GcSelectList } from '../../common/crud-dataservice';
+ % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+import { PytSelectList } from '../../common/crud-dataservice';
 <%
     break
 %>
  % endif
 % endfor
-% for field in obj.table.columns:
- % if field.ui is not None and field.ui.hasService():
-   % if field.ui.service is not None:
-import { ${ field.ui.service.cls } } from '${ field.ui.service.path }';
-   % endif
- % endif
+% for service in services.unique( 'class', 'path' ):
+import { ${ service.cls } } from '${ service.path }';
 % endfor
+% if obj.mixin.Angular.hasScreenComponent():
+import { ${ obj.mixin.Angular.ScreenComponent.cls } } from '${obj.mixin.Angular.ScreenComponent.filename}';
+% else:
 import { ScreenBaseComponent } from 'src/app/common/crud-screen-component';
-
+% endif
 
 @Component({
-    // tslint:disable-next-line:component-selector
     selector: 'app-${obj.name}-screen',
     templateUrl: './screen.component.html',
-    styleUrls: [ '../../common/common-mat-card.scss' ]
+    styleUrls: [ './screen.component.scss' ]
 })
+% if obj.mixin.Angular.hasScreenComponent():
+export class Screen${obj.cls}Component extends ${ obj.mixin.Angular.ScreenComponent.cls } implements OnInit, OnDestroy
+% else:
 export class Screen${obj.cls}Component extends ScreenBaseComponent<${obj.cls}Record> implements OnInit, OnDestroy
+% endif
 {
 % for field in obj.table.columns:
 %  if field.ui is not None:
-%   if field.ui.isUiType( 'password' ):
+%   if field.ui.isPassword():
     public hide_${ field.name }: boolean  = true;
 %   elif field.ui is not None:
-%    if field.ui.hasService():
-    public ${ field.ui.service.name }List: GcSelectList[];
-%    elif field.ui.hasResolveList():
-    public ${ field.name }List = ${ field.ui.typescriptResolveList() };
+%    if field.ui.hasResolveList():
+    public ${ field.name }List = ${ field.ui.typescriptResolveList() }
 %    endif
 %   endif
 %  endif
 % endfor
+% for service in services.unique( 'name' ):
+    public ${ service.uniqueName( 'List' ) }: PytSelectList[];
+% endfor
 
-    constructor( private route: ActivatedRoute
-               , private router: Router
+    constructor( route: ActivatedRoute
+               , router: Router
                , public dataService: ${obj.cls}DataService
-${ obj.externalService }  )
+${ services.externalService }  )
     {
-        super();
+        super( 'Screen${obj.cls}Component', route, router );
         this.row = new ${obj.cls}Record();
         this.formGroup = new FormGroup( {
 % for field in obj.table.columns:
@@ -91,10 +94,11 @@ ${ obj.externalService }  )
                 this.id             = params.id;    // Contains the key field, currently only the primary key is supported.
                 this.value          = params.value; // Contains val value for the key field.
                 this.mode           = params.mode;  // edit or new, filter only supported on the table component.
-                this.updateFixedValues( params );
+                this.updateFixedValues( params )
             } ) );
         }
-        if ( this.value != null || this.value !== undefined )
+        super.ngOnInit();
+        if ( this.value != null || this.value != undefined )
         {
             this.registerSubscription( this.dataService.getRecordById( this.value ).subscribe( record => {
                 this.row = record;
@@ -107,22 +111,21 @@ ${ obj.externalService }  )
                 this.dataService.lockRecord( this.row );
             } ) );
         }
-% for field in obj.table.columns:
-%  if field.ui is not None:
-%   if field.ui.hasService():
-        this.registerSubscription( this.${ field.ui.service.name }Service.getSelectList( '${ field.ui.service.value }'
-                                    , '${ field.ui.service.label }'
-%    if field.ui.service.hasInitial():
-                                    , ${ field.ui.service.initial }
-%    endif
-%    if field.ui.service.hasFinal():
-                                    , ${ field.ui.service.final }
-%    endif
-                                     ).subscribe( dataList => {
-            this.${ field.ui.service.name }List = dataList;
-        } ) );
-%   endif
+% for service in services.unique( 'name' ):
+        this.registerSubscription( this.${ service.name }Service.getSelectList( '${ service.value }'
+                                    , '${ service.label }'
+%  if service.hasInitial():
+                                    , ${ service.initial }
 %  endif
+%  if service.hasFinal():
+                                    , ${ service.final }
+%  endif
+                                     ).subscribe( dataList => {
+            this.${ service.uniqueName( 'List' ) } = dataList;
+%  if field.hasAttribute( 'NULL' ):
+            this.${ service.uniqueName( 'List' ) }.splice( 0, 0, { label: 'No ${ service.fieldLabel.lower() }', value: 0 } );
+%  endif
+        } ) );
 % endfor
         return;
     }
