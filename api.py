@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 import os
+from tasks.tsk_common.constants import *
 from flask_marshmallow import Marshmallow
 
 app             = None
