@@ -521,11 +521,17 @@ class CrudInterface( object ):
         return result
 
     def selectList( self ):
+        name_field = self._model_cls.__field_list__[ 1 ]
+        for fld in self._model_cls.__field_list__:
+            if fld.endswith( 'NAME' ):
+                name_field = fld
+                break
+
         self.checkAuthentication()
         data = getDictFromRequest( request )
         API.app.logger.debug( 'GET {}/select: {} by {}'.format( self._uri, repr( data ), self._lock_cls().user ) )
-        value = data.get( 'value', 'N_ID' )    # primary key
-        label = data.get( 'label', 'N_MESSAGE' )  # first field name
+        value = data.get( 'value', self._model_cls.__field_list__[ 0 ] )    # primary key
+        label = data.get( 'label', name_field )  # first field name
         labels = label.split(',')
         # TODO if label contains comma, split --> list
         # ' '.join( [ getattr( record, l ) for l in labels ] )
