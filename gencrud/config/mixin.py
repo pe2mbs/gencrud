@@ -103,6 +103,7 @@ class TemplateMixinAngular( TemplateBase ):
         self.__datasource       = TemplateMixinComponent( self, 'datasource', mixin.get( 'datasource',{ } ) )
         self.__service          = TemplateMixinComponent( self, 'service', mixin.get( 'service',{ } ) )
         self.__model            = TemplateMixinComponent( self, 'model', mixin.get( 'model',{ } ) )
+        self.__module           = TemplateMixinComponent( self, 'module', mixin.get( 'module',{ } ) )
         return
 
     def hasTableComponent( self ):

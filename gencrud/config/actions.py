@@ -112,7 +112,7 @@ class TemplateActions( TemplateBase ):
 
     def hasCellButtons( self ):
         for action in self.__actions:
-            if action.position == C_CELL and action.type != C_NONE:
+            if action.position in ( C_CELL, C_ROW ) and action.type != C_NONE and action.hasIcon():
                 return True
 
         return False
@@ -120,7 +120,7 @@ class TemplateActions( TemplateBase ):
     def getCellButtons( self ):
         result = []
         for action in self.__actions:
-            if action.position == C_CELL and action.type != C_NONE:
+            if action.position in ( C_CELL, C_ROW ) and action.type != C_NONE and action.hasIcon():
                 result.append( action )
 
         return result

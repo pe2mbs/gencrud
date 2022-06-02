@@ -349,7 +349,8 @@ class TemplateUi( TemplateBase ):
 
         # result = [ "{}: '{}'".format( item[ 'value' ], item[ 'label' ] ) for item in resolveList ]
         result = "{}".format( json.dumps( newResolveList, indent = 4 ) )
-        return result.replace( '\n', '\n{}'.format( " " * 4 ) )
+        return result.replace( ' ', '' ).replace(':', ': ').replace(",", ", ")
+        # return result.replace( '\n', '\n{}'.format( " " * 4 ) )
 
     @property
     def resolveList( self ):

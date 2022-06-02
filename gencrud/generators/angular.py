@@ -399,7 +399,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
 
         servicesList = ServicesList()
         for field in cfg.table.columns:
-            if ( field.ui is not None and (field.ui.isChoice() or field.ui.isCombobox()) ) and field.hasService():
+            if field.ui is not None and field.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_COMBOBOX, C_COMBO, C_CHECKBOX) and field.hasService():
                 field.ui.service.fieldLabel = field.label
                 servicesList.append( field.ui.service )
 
