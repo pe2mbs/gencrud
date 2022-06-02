@@ -45,7 +45,7 @@ class DbBaseMemory( object ):
         return [ cls( record ) for record in query.all() ]
 
     def __repr__( self ):
-        return "<<{} {}>".format( self.__name__, ", ".join(
+        return "<<{} {}>".format( self.__class__.__name__, ", ".join(
                 [ "{} = {}".format( field, getattr( self, field ) ) for field in self.__model_cls__.__field_list__ ]
             ) )
 
