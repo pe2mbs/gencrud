@@ -72,7 +72,6 @@ def dev( info, host, port, reload, debugger, eager_loading,
     show_server_banner( get_env(), debug, info.app_import_path, eager_loading )
     app = DispatchingApp( info.load_app, use_eager_loading = eager_loading )
     applic      = info.load_app()
-    print( "HOST {} PORT {}".format( host,port ) )
     if host is None:
         host        = applic.config.get( 'HOST', 'localhost' )
 
@@ -82,14 +81,16 @@ def dev( info, host, port, reload, debugger, eager_loading,
     else:
         port = int( port )
 
-    print( "HOST {} PORT {}".format( host, port ) )
+    API.logger.info( "Serving application on http://{}:{}".format( host, port ) )
     # appPath     = applic.config.get( 'APP_PATH', os.curdir )
     # appApiMod   = applic.config.get( 'API_MODULE', '' )
     # As those files may change, but are only loaded when the application starts
     # we monitor them, so that the application restart when they change
     extra_files = applic.config.get( 'EXTRA_FILES', [] )
-    # extra_files = [ os.path.join( appPath, appApiMod, 'menu.yaml' ),
-    #                 os.path.join( appPath, appApiMod, 'release.yaml' ) ]
+    appPath     = applic.config.get( 'APP_PATH', os.curdir )
+    appApiMod   = applic.config.get( 'API_MODULE', '' )
+    extra_files.extend( [ os.path.join( appPath, appApiMod, 'menu.yaml' ),
+                          os.path.join( appPath, appApiMod, 'release.yaml' ) ] )
     if API.socketio is not None:
         app.debug = True
         API.socketio.run( app, host, port,
@@ -129,6 +130,7 @@ def production( info, host, port, *args, **kwargs ):
     applic = info.load_app()
     host = applic.config.get( 'HOST', host )
     port = applic.config.get( 'PORT', port )
+    API.logger.info( "Serving application on http://{}:{}".format( host, port ) )
     waitress.serve( app, host = host, port = port )
     return
 
@@ -148,6 +150,7 @@ def staged( info, host, port, *args, **kwargs ):
     applic = info.load_app()
     host = applic.config.get( 'HOST', host )
     port = applic.config.get( 'PORT', port )
+    API.logger.info( "Serving application on http://{}:{}".format( host, port ) )
     waitress.serve( app, host = host, port = port )
     return
 
@@ -208,9 +211,9 @@ def ssl( info, host, port, reload, debugger, eager_loading,
 
     show_server_banner( get_env(), debug, info.app_import_path, eager_loading )
     app = DispatchingApp( info.load_app, use_eager_loading = eager_loading )
-
+    applic      = info.load_app()
     if cert is None:
-        ssl = info._loaded_app.config.get( 'SSL', {} )
+        ssl = applic.config.get( 'SSL', {} )
         if ssl is {}:
             raise Exception( "'SSL' section in configuration is missing" )
 
@@ -238,6 +241,7 @@ def ssl( info, host, port, reload, debugger, eager_loading,
     extra_files = [ os.path.join( appPath, appApiMod, 'menu.yaml' ),
                     os.path.join( appPath, appApiMod, 'release.yaml' ) ]
     from werkzeug.serving import run_simple
+    API.logger.info( "Serving application on https://{}:{}".format( host, port ) )
     run_simple( host, port, app,
                 use_reloader = reload,
                 reloader_type = 'stat',

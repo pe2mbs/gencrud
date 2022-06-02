@@ -366,6 +366,9 @@ class Config( BaseConfig ):
         return True
 
     def _dump( self, segment = None, stream = None ):
+        if os.environ.get( 'FLASK_DEBUG', 0 ) == 0:
+            return
+
         logger = logging.getLogger( 'flask.app' )
         def logit( data ):
             if stream:

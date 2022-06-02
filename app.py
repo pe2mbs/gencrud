@@ -25,6 +25,7 @@ import logging.config
 import logging.handlers
 import traceback
 import importlib
+
 from inspect import signature
 from webapp2.version import version_no, date, author
 import webapp2.api as API
@@ -36,9 +37,12 @@ from webapp2.common.plugins import loadPlugins
 from webapp2.extensions.register import registerExtensions
 from webapp2.commands.register import registerCommands
 from webapp2.extensions.flask import Flask
-import webapp2.extensions.database
-import webapp2.extensions.marshmallow
-import webapp2.extensions.migrate
+import webapp2.extensions.database              # noqa
+import webapp2.extensions.marshmallow           # noqa
+import webapp2.extensions.migrate               # noqa
+import webapp2.extensions.tracking              # noqa
+from webapp2.common.locking import *            # noqa
+
 
 # Try to load optional packages
 try:
@@ -83,11 +87,20 @@ except ModuleNotFoundError:
     print( "webapp2.extensions.websocket NOT loaded" )
     pass
 
+try:
+    from webapp2.extensions.mondash import dashboard
 
+except Exception:
+    print( "webapp2.monitoring.dashboard NOT loaded" )
+    dashboard = None
 
 __version__     = version_no
 __date__        = date
 __author__      = author
+
+
+class NormalEndProcess( Exception ):
+    pass
 
 
 def createApp( root_path, config_file = None, module = None, full_start = True, verbose = False, logging_name = None, process_name = 'app' ):
@@ -192,33 +205,60 @@ def createApp( root_path, config_file = None, module = None, full_start = True, 
 
         API.logger      = API.app.logger
         API.app.logger.warning( "Logging Flask application: {}".format( logging.getLevelName( API.app.logger.level ) ) )
-        API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
+        if os.environ.get( 'FLASK_DEGUG', 0 ) == 1:
+            API.app.logger.info( "{}".format( yaml.dump( API.app.config.struct, default_flow_style = False ) ) )
         API.logger = API.app.logger
         sys.stderr = LoggerWriter( API.app.logger.warning )
+
+        # import tracking and locking modules
+        import webapp2.common.tracking as tracking
+        API.app.logger.debug( 'registering module {0}'.format( tracking ) )
+        tracking.registerApi()
+
+        import webapp2.common.locking as locking
+        API.app.logger.debug( 'registering module {0}'.format( locking ) )
+        locking.registerApi()
+
+        # register other modules of generated and non generated classes
         module = None
+        API.logger.info( "Current process ID: {}".format( os.getpid() ) )
         sys.path.append( root_path )
         API.app.json_encoder = WebAppJsonEncoder
         registerExtensions( module )
         registerCommands()
-        if full_start:
-            loadPlugins( root_path )
-            API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
-            API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
-            API.app.url_map.strict_slashes = False
-            if module is None and 'API_MODULE' in API.app.config:
-                API.app.logger.info("Loading module : {}".format( API.app.config[ 'API_MODULE' ] ) )
-                # import testrun.main to import registerApi,registerExtensions,registerShellContext,registerCommands,registerErrorHandler
-                module = importlib.import_module( API.app.config[ 'API_MODULE' ] + ".main" )
+        if not full_start:
+            # Not starting the full application, therefore we do not load all the application modules.
+            raise NormalEndProcess()
 
-            API.app.logger.info("Application module : {}".format( module ) )
-            registerAngular()
-            if hasattr( module, 'registerApi' ):
-                sig = signature( module.registerApi )
-                if len( sig.parameters ) == 2:
-                    module.registerApi( API.app, API.db )
+        loadPlugins( root_path )
+        API.app.logger.info( "AngularPath : {}".format( API.app.config[ 'ANGULAR_PATH' ] ) )
+        API.app.static_folder   = os.path.join( root_path, API.app.config[ 'ANGULAR_PATH' ] ) + "/"
+        API.app.url_map.strict_slashes = False
+        if module is None and 'API_MODULE' in API.app.config:
+            API.app.logger.info("Loading module : {}".format( API.app.config[ 'API_MODULE' ] ) )
+            # import testrun.main to import registerApi,registerExtensions,registerShellContext,registerCommands,registerErrorHandler
+            module = importlib.import_module( API.app.config[ 'API_MODULE' ] + ".main" )
 
-                else:
-                    module.registerApi()
+        API.app.logger.info("Application module : {}".format( module ) )
+        registerAngular()
+        if hasattr( module, 'registerApi' ):
+            sig = signature( module.registerApi )
+            if len( sig.parameters ) == 2:
+                module.registerApi( API.app, API.db )
+
+            else:
+                module.registerApi()
+
+        # Check for Flask_MonitoringDashboard
+        if dashboard is None:
+            raise NormalEndProcess()
+
+        # Check for config attribute in main configuration
+        if dashboard.config.init_from_config( API.app.config ):
+            dashboard.bind( API.app )
+
+    except NormalEndProcess:
+        pass
 
     except Exception:
         # restore the STDERR, as we may have modified it.
@@ -244,4 +284,7 @@ def SetApiReferences( api ):
     api.app     = API.app
     api.db      = API.app.db
     api.logger  = API.app.logger
+
+    # TODO: This is at the wrong place, but now now it works
+    API.C_TESTRUN_OBJECT = "testrunObject"
     return

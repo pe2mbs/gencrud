@@ -14,7 +14,7 @@ class YamlDbInporter( DbInporter ):
 
     def _insertDict( self, blob, model, clear ):
         # Handle the yaml/json data
-        if len( records ) > 0:
+        if len( blob[ 'records' ] ) > 0:
             self._insertList( blob[ 'records' ], model, clear )
 
         return
