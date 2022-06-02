@@ -536,7 +536,7 @@ class CrudInterface( object ):
         # TODO if label contains comma, split --> list
         # ' '.join( [ getattr( record, l ) for l in labels ] )
         result = [ { 'value': getattr( record, value ),
-                     'label': ' '.join( [ getattr( record, l ) for l in labels ] ) }
+                     'label': ' '.join( [ str(getattr( record, l )) for l in labels ] ) }
                                 for record in API.db.session.query( self._model_cls ).order_by( getattr( self._model_cls, labels[0] ) ).all()
         ]
         API.app.logger.debug( 'selectList => count: {}'.format( len( result ) ) )
