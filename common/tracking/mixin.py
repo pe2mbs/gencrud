@@ -7,7 +7,7 @@ import webapp2.api as API
 from webapp2.common.crud import getDictFromRequest, render_query
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.exc import IntegrityError
-import webapp2.common.tracking.constant as constant
+# import webapp2.common.tracking.constant as constant
 from webapp2.common.tracking.model import Tracking
 
 
