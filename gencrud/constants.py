@@ -138,7 +138,6 @@ C_TAB_GROUP_TAG         = 'grouptag'
 C_MIXIN                 = 'mixin'
 C_VIEW_SORT             = 'viewSort'
 C_VIEW_SIZE             = 'viewSize'
-C_ORDER_BY              = 'order-by'
 C_UNIQUE_KEY            = 'unique-key'
 C_UNIQUE                = 'unique'
 

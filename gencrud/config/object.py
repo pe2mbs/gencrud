@@ -323,11 +323,7 @@ class TemplateObject( TemplateBase ):
     #   internal functions and properties to gencrud
     #
     def orderBy( self ) -> str:
-        orderList = []
-        for field in self.__table.orderBy:
-            orderList.append( 'order_by( {}.{} )'.format( self.cls, field ) )
-
-        return '.'.join( orderList )
+        return  'order_by( {}.{} )'.format( self.cls, self.table.sortField )
 
     @property
     def externalService( self ) -> str:
