@@ -184,10 +184,7 @@ class TemplateAction( TemplateBase ):
     
     @property
     def ngIf( self ):
-        if self.hasNgIf():
-            return '*ngIf="{}"'.format( self.__cfg.get( 'ngIf', '' ) )
-
-        return ''
+        return self.__cfg.get( 'ngIf', 'true' )
 
     def routingPath( self ) -> str:
         route = ""
