@@ -26,6 +26,7 @@ from gencrud.constants import *
 from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import MissingAttribute
 from gencrud.config.mixin import TemplateMixin
+from gencrud.config.injection import InjectionTemplate
 import posixpath
 
 
@@ -65,7 +66,6 @@ class AngularModule( TemplateBase ):
     # "import {{ {modCls} }} from '{path}';".format( modCls = mod.module, path = path ) )
 
 
-
 class AngularModules( TemplateBase ):
     def __init__( self, parent, cfg ):
         TemplateBase.__init__( self, parent )
@@ -83,119 +83,6 @@ class AngularModules( TemplateBase ):
         return self.__config
 
 
-class InjectionBlockTemplate( TemplateBase ):
-    def __init__( self, parent, cfg ):
-        TemplateBase.__init__( self,parent )
-        self.__config = cfg
-        return
-
-    def hasDeclarations( self ):
-        return self.hasDialog() or self.hasScreen()
-
-    @property
-    def declarations( self ):
-        declare = []
-        if self.hasDialog():
-            declare.append( self.dialogComponent() )
-
-        if self.hasScreen():
-            declare.append( self.screenComponent() )
-
-        if len( declare ) > 0:
-            return ", ".join( declare )
-
-        return ""
-
-    def hasEntryComponents( self ):
-        return self.hasDialog()
-
-    @property
-    def entryComponents( self ):
-        declare = [ ]
-        if self.hasDialog():
-            declare.append( self.dialogComponent() )
-
-        if len( declare ) > 0:
-            return ", ".join( declare )
-
-        return ""
-
-    def hasExports( self ):
-        return self.hasDialog() or self.hasScreen() or self.hasProviders()
-
-    @property
-    def exports( self ):
-        declare = []
-        if self.hasDialog():
-            declare.append( self.dialogComponent() )
-
-        if self.hasScreen():
-            declare.append( self.screenComponent() )
-
-        if self.hasImports():
-            declare.append( self.imports )
-
-        if len( declare ) > 0:
-            return ", ".join( declare )
-
-        return ""
-
-    def hasScreen( self ):
-        return C_SCREEN in self.__config
-
-    def screenComponent( self ):
-        return self.__config.get( C_SCREEN, None )
-
-    def hasDialog( self ):
-        return C_DIALOG in self.__config
-
-    def dialogComponent( self ):
-        return self.__config.get( C_DIALOG, None )
-
-    def hasProviders( self ):
-        return C_PROVIDERS in self.__config
-
-    @property
-    def providers( self ):
-        declare = [ ]
-        if self.hasProviders():
-            for provider in self.__config.get( C_PROVIDERS, [] ):
-                declare.append( provider )
-
-        if len( declare ) > 0:
-            return ", ".join( declare )
-
-        return ""
-
-    def hasImports( self ):
-        return C_IMPORTS in self.__config
-
-    @property
-    def imports( self ):
-        declare = []
-        if self.hasImports():
-            for filename, objectName in self.__config.get( C_IMPORTS, {} ).items():
-                declare.append( objectName )
-
-        if len( declare ) > 0:
-            return ", ".join( declare )
-
-        return ""
-
-
-class InjectionTemplate( TemplateBase ):
-    def __init__( self,parent, cfg ):
-        TemplateBase.__init__( self,parent )
-        self.__config = cfg
-        self.__moduleTs = InjectionBlockTemplate( self,self.__config.get( 'module.ts', None ) )
-        return
-
-    def hasModuleTs( self ):
-        return 'module.ts' in self.__config
-
-    @property
-    def moduleTs( self ):
-        return self.__moduleTs
 
 
 class TemplateObject( TemplateBase ):
