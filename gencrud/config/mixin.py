@@ -156,6 +156,9 @@ class TemplateMixinAngular( TemplateBase ):
         return self.__model
 
     def hasModule( self ):
+        if self.__module is None:
+            return False
+
         return self.__module.hasClass()
 
     @property
