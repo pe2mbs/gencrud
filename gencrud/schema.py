@@ -277,7 +277,7 @@ GENCRUD_SCHEME = {
                                     'type': 'integer'
                                 },
                                 'disabled': {
-                                    'type': 'string'
+                                    'type': ['string', 'boolean']
                                 },
                                 'ngIf': {
                                     'type': 'string'
