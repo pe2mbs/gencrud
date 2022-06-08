@@ -240,7 +240,23 @@ GENCRUD_SCHEME = {
                         }
                     },
                     'ignore_templates': { 'type': 'array' },
-                    'injection': { 'type': 'object' },
+                    'injection': {
+                        'type': 'object',
+                        'properties': {
+                            'module.ts': {
+                                'type': 'object',
+                                'properties': {
+                                    'dialog': {
+                                        'type': 'object',
+                                        'properties': {
+                                            'class': { 'type': 'string' },
+                                            'file': { 'type': 'string' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     'route': { 'type': 'string' },
                     'actions': {
                         'type': 'array',
