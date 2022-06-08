@@ -86,6 +86,9 @@ class TemplateAction( TemplateBase ):
     def icon( self ):
         return self.__cfg.get( C_ICON, '' )
 
+    def hasIcon( self ):
+        return self.__cfg.get( C_ICON ) is not None
+
     @property
     def function( self ):
         return self.__cfg.get( C_FUNCTION, '' )
@@ -299,8 +302,13 @@ class TemplateAction( TemplateBase ):
             params = " ".join( [ '[{}]="{}"'.format( par, val ) for par, val in self.__cfg.get( 'params', {} ).items() ] )
             if self.hasDisabed():
                 params += ' [disabled]="{}"'.format( self.disabled )
-            return '<{directive} name="{name}" tooltip="{label}" {control}></{directive}>'.format( **self.__cfg, control = params )
-
+            # define properties without binding to components attributes
+            unbindedProps = [("name", "name"), ("tooltip", "label")]
+            # only include props that were not defined already through params
+            unbindedProps = [prop for prop in unbindedProps if prop[0] not in self.__cfg.get( 'params', {} ).keys()]
+            # first, set unbinded props within inner format function, later set other code in outer format function
+            return ('<{directive} ' + " ".join([ '{}="{{{}}}"'.format(prop, val) for prop, val in unbindedProps ]) +
+             ' {control}></{directive}>').format( **self.__cfg, control = params )
         return ""
 
 

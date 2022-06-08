@@ -140,8 +140,16 @@ class TemplateTable( TemplateBase ):
         return self.__table.get( C_NAME, '' )
 
     @property
-    def orderBy( self ) -> list:
-        return self.__table.get( C_ORDER_BY, [ self.__primaryKey ] )
+    def sortField( self ) -> str:
+        if C_VIEW_SORT in self.__table:
+            return self.__viewSort.field
+        return self.__primaryKey
+
+    @property
+    def sortDirection( self ) -> str:
+        if C_VIEW_SORT in self.__table:
+            return self.__viewSort.direction
+        return C_DESENDING
 
     @property
     def uniqueKey( self ) -> dict:

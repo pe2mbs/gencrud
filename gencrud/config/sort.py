@@ -35,11 +35,11 @@ class SortInfo( TemplateBase ):
         return
 
     @property
-    def Field( self ):
+    def field( self ):
         return self.__field
 
     @property
-    def Direction( self ):
+    def direction( self ):
         return self.__direction
 
     def htmlMaterialSorting( self ):
