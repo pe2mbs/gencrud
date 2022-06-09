@@ -300,8 +300,7 @@ class TemplateAction( TemplateBase ):
     def screenObject( self ):
         if self.__cfg.get( 'directive', None ) is not None:
             params = " ".join( [ '[{}]="{}"'.format( par, val ) for par, val in self.__cfg.get( 'params', {} ).items() ] )
-            if self.hasDisabed():
-                params += ' [disabled]="{}"'.format( self.disabled )
+            params += ' [disabled]="{}"'.format( self.disabled )
             # define properties without binding to components attributes
             unbindedProps = [("name", "name"), ("tooltip", "label")]
             # only include props that were not defined already through params
