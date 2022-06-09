@@ -56,6 +56,10 @@ class InjectionBlockTemplate( TemplateBase ):
 
         return
 
+    @property
+    def declaredClasses( self ):
+        return [ obj.cls for obj in self.__components ]
+
     def hasDeclarations( self ):
         return len( self.declarations ) > 0
 
