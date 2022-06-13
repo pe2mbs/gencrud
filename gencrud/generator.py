@@ -285,8 +285,8 @@ def main():
                             continue
 
                         filename = os.path.join( path, entry.name )
-                        print("Filename: {} from wildcard -> {}d".format( filename, entry ))
-                        initializeCodeGenerationProcess(filename)
+                        print( f"Filename: {filename} from wildcard" )
+                        initializeCodeGenerationProcess( filename )
 
             for arg in args:
                 doRecursiveFolders( os.path.abspath( os.path.expanduser( arg ) ), extension, ignoreFolders )
@@ -296,7 +296,7 @@ def main():
                 if '*' in arg:
                     # Wild card handling
                     for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
-                        print( "Filename: {} from wildcard".format( filename ) )
+                        print( f"Filename: {filename} from wildcard" )
                         if filename.lower().endswith( extension ):
                             # process the configuration file and create code files
                             initializeCodeGenerationProcess( filename )
@@ -318,7 +318,7 @@ def main():
     except FileNotFoundError as exc:
         logger.error( "File not found" )
         if exc.filename in args:
-            logger.error( "Input file '{0}' is not found.".format( exc.filename ) )
+            logger.error( f"Input file '{exc.filename}' is not found." )
 
         else:
             logger.debug( traceback.format_exc() )
