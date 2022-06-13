@@ -32,6 +32,7 @@ from gencrud.util.typescript import TypeScript
 from gencrud.util.positon import PositionInterface
 from gencrud.util.sha import sha256sum
 import posixpath
+import time
 
 logger = logging.getLogger()
 
@@ -499,6 +500,8 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                 else:
                     appModule = gencrud.util.utils.joinJson( appModule, data )
 
+            # This is just to give the OS some time to actually close the file
+            time.sleep(.01)
             os.remove( app_module_json_file )
 
         exportsModules.append( { 'application':   app,
