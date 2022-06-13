@@ -169,6 +169,9 @@ Parameters:
 Options:
     -h / --help                         This help information.
     -b / --backup                       Make backup of the original project files files.
+    -r / --recurse                      do recursive generation of all templates.
+    -e / --extension <extension>        to override the default extension .yaml 
+    -i / --ignore <folder>              ignore folder (by default all folders starting with 'template' are ignored.   
     -o / --overwrite                    Force overwriting the files.
     -c / --ignore-case-db-ids           All database names shall be in lower case. 
     -M / --module                       Create module component for template and use GenCrudModule.
@@ -186,20 +189,25 @@ def main():
     logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hi:s:obvVcM', [ 'help',
-                                                     'input=',
-                                                     'ssl-verify=',
-                                                     'overwrite',
-                                                     'backup'
-                                                     'module'
-                                                     'version',
-                                                     'ignore-case-db-ids' ] )
+                                    'hs:obvVcMri:e:', [ 'help',
+                                                        'ssl-verify=',
+                                                        'overwrite',
+                                                        'backup',
+                                                        'module',
+                                                        'recursive',
+                                                        'ignore=',
+                                                        'extension='
+                                                        'version',
+                                                        'ignore-case-db-ids' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
         usage( str( err ) )
         sys.exit( 2 )
 
+    ignoreFolders = [ ]
+    recursive = False
+    extension   = '.yaml'
     try:
         for o, a in opts:
             if o == '-v':
@@ -212,6 +220,15 @@ def main():
             elif o in ( '-h', '--help' ):
                 usage()
                 sys.exit()
+
+            elif o in ('-r', '--recursive'):
+                recursive = True
+
+            elif o in ('-e', '--extension'):
+                extension = a
+
+            elif o in ('-i', '--ignore'):
+                ignoreFolders.append( a )
 
             elif o in ( '-M', '--module' ):
                 gencrud.util.utils.useModule = True
@@ -241,18 +258,52 @@ def main():
             sys.exit( 1 )
 
         banner()
-        for arg in args:
-            if '*' in arg:
-                # Wild card handling
-                for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
-                    print( "Filename: {} from wildcard".format( filename ) )
-                    if filename.lower().endswith( '.yaml' ):
-                        # process the configuration file and create code files
-                        initializeCodeGenerationProcess( filename )
+        if recursive:
+            def doRecursiveFolders( path, extension, ignore_folders ):
+                with os.scandir(path) as it:
+                    for entry in it:
+                        entry: os.DirEntry
+                        if entry.name.startswith('.') and entry.is_dir():
+                            print( f'Skipping: {entry.name}')
+                            continue
 
-            else:
-                print( "Filename: {}".format( arg ) )
-                initializeCodeGenerationProcess( arg )
+                        if entry.is_dir():
+                            if entry.name in ignore_folders:
+                                print(f'Skipping: {entry.name}')
+                                continue
+
+                            elif entry.name.startswith( 'template' ):
+                                print(f'Skipping: {entry.name}')
+                                continue
+
+                            else:
+                                doRecursiveFolders( os.path.join( path, entry.name ), extension, ignore_folders )
+                                continue
+
+                        if not entry.name.endswith( extension ):
+                            print(f'Skipping: {entry.name}')
+                            continue
+
+                        filename = os.path.join( path, entry.name )
+                        print("Filename: {} from wildcard -> {}d".format( filename, entry ))
+                        initializeCodeGenerationProcess(filename)
+
+            for arg in args:
+                doRecursiveFolders( os.path.abspath( os.path.expanduser( arg ) ), extension, ignoreFolders )
+
+        else:
+            for arg in args:
+                if '*' in arg:
+                    # Wild card handling
+                    for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
+                        print( "Filename: {} from wildcard".format( filename ) )
+                        if filename.lower().endswith( extension ):
+                            # process the configuration file and create code files
+                            initializeCodeGenerationProcess( filename )
+
+                else:
+                    print( "Filename: {}".format( arg ) )
+                    initializeCodeGenerationProcess( arg )
 
         print( "Done" )
 
