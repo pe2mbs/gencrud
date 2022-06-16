@@ -240,7 +240,7 @@ class CrudInterface( object ):
         self.registerRoute( '<int:id>', self.recordDelete, methods = [ 'DELETE' ] )
         self.registerRoute( 'put', self.recordPut, methods = [ 'POST' ] )
         self.registerRoute( 'update', self.recordPatch, methods = [ 'POST' ] )
-        self.registerRoute( 'select', self.selectList, methods = [ 'GET' ] )
+        self.registerRoute( 'select', self.selectList, methods = [ 'GET', 'POST' ] )
         self.registerRoute( 'lock', self.lock, methods = [ 'POST' ] )
         self.registerRoute( 'unlock', self.unlock, methods = [ 'POST' ] )
         self.__useJWT   = use_jwt
@@ -268,23 +268,19 @@ class CrudInterface( object ):
 
         return
 
-    def pagedList( self ):
-        self.checkAuthentication()
-        t1 = time.time()
-        data = getDictFromRequest( request )
-        if self.__useJWT:
-            user_info = get_jwt_identity()
-            API.app.logger.debug( 'POST: {}/pagedlist by {}'.format( self._uri, user_info ) )
-        filter = data.get( 'filters', [] )
-        API.app.logger.debug( "Filter {}".format( filter ) )
-        query = API.db.session.query( self._model_cls )
+    def makeFilter( self, query, filter: list ):
         for item in filter:
             operator = item.get( 'operator', None )
             if operator is None:
                 continue
 
             column  = item.get( 'column', None )
-            value1, value2   = item.get( 'value', [ None, None ] )
+            if isinstance( item.get( 'value' ), ( list, tuple ) ):
+                value1, value2   = item.get( 'value', [ None, None ] )
+
+            else:
+                value1, value2 = item.get( 'value' ), None
+
             API.app.logger.debug( "Filter {} {} {} / {}".format( column, operator, value1, value2 ) )
             if operator == 'EQ':
                 query = query.filter( getattr( self._model_cls, column ) == value1 )
@@ -325,6 +321,18 @@ class CrudInterface( object ):
             elif operator == 'EW': # Endswith
                 query = query.filter( getattr( self._model_cls, column ).like( "%{}".format( value1 ) ) )
 
+        return query
+
+    def pagedList( self ):
+        self.checkAuthentication()
+        t1 = time.time()
+        data = getDictFromRequest( request )
+        if self.__useJWT:
+            user_info = get_jwt_identity()
+            API.app.logger.debug( 'POST: {}/pagedlist by {}'.format( self._uri, user_info ) )
+        filter = data.get( 'filters', [] )
+        API.app.logger.debug( "Filter {}".format( filter ) )
+        query = self.makeFilter( API.db.session.query( self._model_cls ), filter )
         API.app.logger.debug( "SQL-QUERY : {}".format( render_query( query ) ) )
         recCount = query.count()
         API.app.logger.debug( "SQL-QUERY count {}".format( recCount ) )
@@ -532,12 +540,19 @@ class CrudInterface( object ):
         API.app.logger.debug( 'GET {}/select: {} by {}'.format( self._uri, repr( data ), self._lock_cls().user ) )
         value = data.get( 'value', self._model_cls.__field_list__[ 0 ] )    # primary key
         label = data.get( 'label', name_field )  # first field name
+        if isinstance( data.get( 'filter' ), dict ):
+            filter = [ data.get( 'filter' ) ]
+
+        else:
+            filter = []
+
+        query = self.makeFilter( API.db.session.query( self._model_cls ), filter )
         labels = label.split(',')
         # TODO if label contains comma, split --> list
         # ' '.join( [ getattr( record, l ) for l in labels ] )
         result = [ { 'value': getattr( record, value ),
                      'label': ' '.join( [ str(getattr( record, l )) for l in labels ] ) }
-                                for record in API.db.session.query( self._model_cls ).order_by( getattr( self._model_cls, labels[0] ) ).all()
+                                for record in query.order_by( getattr( self._model_cls, labels[0] ) ).all()
         ]
         API.app.logger.debug( 'selectList => count: {}'.format( len( result ) ) )
         # API.app.logger.debug( 'selectList => result: {}'.format( result ) )
