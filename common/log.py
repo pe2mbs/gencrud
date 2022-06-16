@@ -142,7 +142,7 @@ def loadLoggingFile( root_path, filename = None, folder = None, verbose = False,
         if os.path.isfile( os.path.join( root_path, filename ) ):
             with open( os.path.join( root_path, filename ) ) as stream:
                 if filename.lower().endswith( '.yaml' ):
-                    logDict = yaml.load( stream )
+                    logDict = yaml.load( stream, loader=yaml.loader )
 
                 elif filename.lower().endswith( '.json' ):
                     logDict = json.load( stream )
