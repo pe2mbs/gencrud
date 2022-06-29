@@ -593,7 +593,29 @@ GENCRUD_SCHEME = {
                                                             'type': 'string',
                                                         }
                                                     }
-                                                }
+                                                },
+                                                'actions': {
+                                                    'type': 'array',
+                                                    'items': {
+                                                        'type': 'object',
+                                                        'required': [ 'name', 'icon', 'position' ],
+                                                        "additionalProperties": False,
+                                                        'properties': {
+                                                            'name': {
+                                                                'type': 'string'
+                                                            },
+                                                            'icon': {
+                                                                'type': 'string'
+                                                            },
+                                                            'position': {
+                                                                'enum': [ 'row', 'left', 'right' ],
+                                                            },
+                                                            'function': {
+                                                                'type': 'string'
+                                                            },
+                                                        }
+                                                    }
+                                                },
                                             }
                                         },
                                         'listview': {

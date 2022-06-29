@@ -545,7 +545,7 @@ class TemplateColumn( TemplateBase ):
 
         return '[ {} ] '.format( result )
 
-    def angularUiInput( self ):
+    def angularUiInput( self, mixin="" ):
         if self.__ui is None:
             raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field,
                                                                                     self.__tableName ) )
@@ -554,7 +554,8 @@ class TemplateColumn( TemplateBase ):
 
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
-                                            self.__config.get( C_LABEL, '' ) )
+                                            self.__config.get( C_LABEL, '' ),
+                                            mixin = mixin )
 
     @property
     def readonly( self ) -> bool:

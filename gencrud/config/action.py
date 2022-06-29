@@ -50,7 +50,7 @@ class TemplateAction( TemplateBase ):
     def name( self ):
         result = self.__cfg.get( C_NAME, None )
         if result is None:
-            raise InvalidSetting( C_NAME, C_ACTION, self.name )
+            raise InvalidSetting( C_NAME, C_ACTION, self.__name )
 
         return result
 
@@ -58,7 +58,7 @@ class TemplateAction( TemplateBase ):
     def type( self ):
         result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] ).lower()
         if result not in C_ACTION_TYPES:
-            raise InvalidSetting( C_TYPE, C_ACTION, self.name )
+            raise InvalidSetting( C_TYPE, C_ACTION, self.__name )
 
         return result
 
@@ -66,7 +66,7 @@ class TemplateAction( TemplateBase ):
     def position( self ):
         result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] ).lower()
         if result not in C_ACTION_POSITIONS:
-            raise InvalidSetting( C_POSITION, C_ACTION, self.name )
+            raise InvalidSetting( C_POSITION, C_ACTION, self.__name )
 
         return result
 

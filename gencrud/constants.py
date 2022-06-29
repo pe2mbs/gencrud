@@ -106,8 +106,11 @@ C_DBLCLICK              = 'dblclick'
 C_DOUBLE_CLICK          = 'dblclick'
 C_MIXIN                 = 'mixin'
 
+C_LEFT                  = 'left'
+C_RIGHT                 = 'right'
+
 C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_NONE )
-C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE, C_SCREEN )
+C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE, C_SCREEN, C_LEFT, C_RIGHT )
 C_ACTION_ATTRIBUTES     = ( C_FUNCTION,
                             C_NAME,
                             C_LABEL,

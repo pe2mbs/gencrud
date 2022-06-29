@@ -19,6 +19,7 @@
 import logging
 import traceback
 import json
+from gencrud.config.actions import TemplateActions
 from gencrud.config.base import TemplateBase
 from gencrud.config.service import TemplateService
 from gencrud.constants import *
@@ -72,9 +73,13 @@ class TemplateUi( TemplateBase ):
         self.__cfg = cfg
         if C_SERVICE in cfg:
             self.__service = TemplateService( **cfg[ C_SERVICE ] )
-
         else:
             self.__service = None
+
+        if C_ACTIONS in cfg:
+            self.__actions = TemplateActions( self, "name", cfg[C_ACTIONS] )
+        else:
+            self.__actions = []
 
         return
 
@@ -214,7 +219,7 @@ class TemplateUi( TemplateBase ):
     def isSet( self, property ):
         return property in self.__cfg or self.parent.isSet( property )
 
-    def buildInputElement( self, table, field, label, options = None ):
+    def buildInputElement( self, table, field, label, options = None, mixin = "" ):
         if options is None:
             options = []
 
@@ -247,6 +252,18 @@ class TemplateUi( TemplateBase ):
 
             else:
                 options.append( '[items]="{}List"'.format( self.__service.name ) )
+                options.append( 'serviceName="{}"'.format( self.__service.name ) )
+                # TODO: right now, only one action button is supported for a service and
+                # the functionality is the same (redirecting to the screen view of the service class)
+                # in case multiple functionalities and buttons should be supported, the following lines
+                # need an adjustment
+                if len(self.__actions) > 0:
+                    action = self.__actions[0] 
+                    options.append( 'buttonPosition="{}"'.format( action.position ) )
+                    options.append( 'icon="{}"'.format( action.icon ) )
+                    if action.function != '' and action.function != None:
+                        options.append( '[contextObject]="this"' )
+                        options.append( 'funcToEvaluate="{}"'.format( action.function ) )
 
         elif self.isUiType( C_TEXTAREA ):
             options.append( 'rows="{0}" cols="{1}"'.format( self.rows, self.cols ) )
@@ -262,6 +279,15 @@ class TemplateUi( TemplateBase ):
             options.append( 'step="{0}"'.format( self.step ) )
             options.append( 'thumbLabel="{0}"'.format( self.thumbLabel ) )
             options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
+
+         # no service defined --> custom button with custom function
+        if len(self.__actions) > 0 and self.__service is None:
+            action = self.__actions[0] 
+            options.append( 'buttonPosition="{}"'.format( action.position ) )
+            options.append( '[contextObject]="this"' )
+            options.append( 'icon="{}"'.format( action.icon ) )
+            if action.function != '' and action.function != None:
+                options.append( 'funcToEvaluate="{}"'.format( action.function ) )
 
         if C_DISABLED in self.__cfg:
             options.append( 'disabled="{0}"'.format( self.disabled ) )
@@ -293,13 +319,14 @@ class TemplateUi( TemplateBase ):
         if C_DEBUG in self.__cfg:
             options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
-        return '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"></{tag}>'''.\
+        return '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}></{tag}>'''.\
                 format( tag         = self.__components.getComponentTag( self.uiObject ),
                         table       = self.table.name,
                         name        = self.parent.name,
                         placeholder = label,
                         option      = ' '.join( options ),
-                        field       = field )
+                        field       = field,
+                        mixin       = " " + mixin if len(mixin) > 0 else "" )
 
     def hasNgIf( self ):
         return 'ngif' in self.__cfg
