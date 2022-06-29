@@ -474,7 +474,10 @@ class CrudInterface( object ):
 
         # the .data was added after the merge from github into gitlab since
         # unmarshalresult objects have a data attribute containing the result
-        result = self._schema_cls.load( self.beforeUpdate( data ) ).data
+        result = self._schema_cls.load( self.beforeUpdate( data ) )
+        # workaround to consider different Marshmallow versions
+        if not isinstance(result, dict):
+            result = result.data
         API.app.logger.debug( "{}".format( result ) )
         if len( result ) > 1:
             for field, value in result.items():
