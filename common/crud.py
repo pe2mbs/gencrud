@@ -235,6 +235,7 @@ class CrudInterface( object ):
         self.registerRoute( 'pagedlist', self.pagedList, methods = [ 'POST' ] )
         self.registerRoute( 'list', self.recordList, methods = [ 'GET' ] )
         self.registerRoute( 'new', self.newRecord, methods = [ 'POST' ] )
+        self.registerRoute( 'primarykey', self.primaryKey, methods = [ 'GET' ] )
         self.registerRoute( 'get', self.recordGet, methods = [ 'GET' ] )
         self.registerRoute( 'get/<int:id>', self.recordGetId, methods = [ 'GET' ] )
         self.registerRoute( '<int:id>', self.recordDelete, methods = [ 'DELETE' ] )
@@ -388,6 +389,13 @@ class CrudInterface( object ):
         recordList = API.db.session.query( self._model_cls ).all()
         result = self._schema_list_cls.jsonify( recordList )
         API.app.logger.debug( 'recordList => count: {}'.format( len( recordList ) ) )
+        return result
+
+    def primaryKey( self, **kwargs ):
+        self.checkAuthentication()
+        # get primary key of class
+        primary_key = self._model_cls.__field_list__[ 0 ]
+        result = jsonify({"primaryKey": primary_key})
         return result
 
     def newRecord( self, **kwargs ):
