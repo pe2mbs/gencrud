@@ -591,6 +591,15 @@ GENCRUD_SCHEME = {
                                                         },
                                                         'heightAdjust': {
                                                             'type': 'string',
+                                                        },
+                                                        'decodeFunc': {
+                                                            'type': 'string',
+                                                        },
+                                                        'encodeFunc': {
+                                                            'type': 'string',
+                                                        },
+                                                        'onSaveClick': {
+                                                            'type': 'string',
                                                         }
                                                     }
                                                 },
