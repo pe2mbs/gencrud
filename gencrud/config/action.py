@@ -71,6 +71,11 @@ class TemplateAction( TemplateBase ):
         return result
 
     @property
+    def directive( self ):
+        result = self.__cfg.get( C_DIRECTIVE, None )
+        return result
+
+    @property
     def on( self ):
         value = self.__cfg.get( C_ON, C_DOUBLE_CLICK if self.position == C_ROW else C_CLICK )
         if value not in C_ACTION_ON_ACTIONS:
@@ -141,6 +146,11 @@ class TemplateAction( TemplateBase ):
     def params( self ):
         return self.__cfg.get( C_PARAMS, {} )
 
+    def angularParams(self):
+        params = self.__cfg.get( C_PARAMS, {} )
+        # tems = params.items()
+        return TypeScript().build( params )
+
     def routeParams( self ) -> str:
         params = self.params
         if len( params ) > 0:
@@ -184,6 +194,9 @@ class TemplateAction( TemplateBase ):
 
     def hasNgIf( self ):
         return "ngIf" in self.__cfg
+
+    def isDirective( self ):
+        return self.type == C_DIRECTIVE
     
     @property
     def ngIf( self ):

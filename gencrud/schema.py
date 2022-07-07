@@ -272,7 +272,7 @@ GENCRUD_SCHEME = {
                                     'type': 'string',
                                 },
                                'type': {
-                                    'enum': [ 'screen', 'dialog', 'api', 'function', 'none' ],
+                                    'enum': [ 'screen', 'dialog', 'api', 'function', 'directive', 'none' ],
                                 },
                                 'icon': {
                                     'type': 'string',
