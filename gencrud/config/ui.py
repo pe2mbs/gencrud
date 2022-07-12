@@ -202,6 +202,12 @@ class TemplateUi( TemplateBase ):
     def error( self ):
         return str( self.__cfg.get( C_ERROR, True ) ).lower()
 
+    @property
+    def serviceLabel( self ):
+        if self.__service is not None:
+            return self.__service.label
+        return None
+
     def get( self, property, default = None ):
         return self.__cfg.get( property, default )
 
@@ -337,6 +343,9 @@ class TemplateUi( TemplateBase ):
 
     def hasService( self ):
         return self.__service is not None
+
+    def hasServiceBaseClass( self ):
+        return self.__service is not None and self.__service.hasBaseClass()
 
     @property
     def service( self ):
@@ -516,3 +525,13 @@ class TemplateUi( TemplateBase ):
 
     def detailButton( self ):
         return self.__cfg.get( 'detail-button', {} )
+
+    def nullSafeAngularObject( self, inputString, startIndex = 1):
+        if inputString is None:
+            return None
+        else:
+            components = inputString.split(".")
+            result = ""
+            for i in range(startIndex, len(components) + 1):
+                result += "!isNullOrUndefined(" + ".".join(components[:i]) + ") && "
+            return result[:-4] + " ? " + inputString + " : null"

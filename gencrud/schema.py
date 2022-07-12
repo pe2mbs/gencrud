@@ -565,6 +565,9 @@ GENCRUD_SCHEME = {
                                                         'path': {
                                                             'type': 'string',
                                                         },
+                                                        'base-class': {
+                                                            'type': 'string',
+                                                        },
                                                         'class': {
                                                             'type': 'string',
                                                         },
