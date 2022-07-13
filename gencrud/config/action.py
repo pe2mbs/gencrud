@@ -50,7 +50,7 @@ class TemplateAction( TemplateBase ):
     def name( self ):
         result = self.__cfg.get( C_NAME, None )
         if result is None:
-            raise InvalidSetting( C_NAME, C_ACTION, self.name )
+            raise InvalidSetting( C_NAME, C_ACTION, self.__name )
 
         return result
 
@@ -58,7 +58,7 @@ class TemplateAction( TemplateBase ):
     def type( self ):
         result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] ).lower()
         if result not in C_ACTION_TYPES:
-            raise InvalidSetting( C_TYPE, C_ACTION, self.name )
+            raise InvalidSetting( C_TYPE, C_ACTION, self.__name )
 
         return result
 
@@ -66,8 +66,13 @@ class TemplateAction( TemplateBase ):
     def position( self ):
         result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] ).lower()
         if result not in C_ACTION_POSITIONS:
-            raise InvalidSetting( C_POSITION, C_ACTION, self.name )
+            raise InvalidSetting( C_POSITION, C_ACTION, self.__name )
 
+        return result
+
+    @property
+    def directive( self ):
+        result = self.__cfg.get( C_DIRECTIVE, None )
         return result
 
     @property
@@ -141,6 +146,11 @@ class TemplateAction( TemplateBase ):
     def params( self ):
         return self.__cfg.get( C_PARAMS, {} )
 
+    def angularParams(self):
+        params = self.__cfg.get( C_PARAMS, {} )
+        # tems = params.items()
+        return TypeScript().build( params )
+
     def routeParams( self ) -> str:
         params = self.params
         if len( params ) > 0:
@@ -184,6 +194,9 @@ class TemplateAction( TemplateBase ):
 
     def hasNgIf( self ):
         return "ngIf" in self.__cfg
+
+    def isDirective( self ):
+        return self.type == C_DIRECTIVE
     
     @property
     def ngIf( self ):
@@ -300,8 +313,7 @@ class TemplateAction( TemplateBase ):
     def screenObject( self ):
         if self.__cfg.get( 'directive', None ) is not None:
             params = " ".join( [ '[{}]="{}"'.format( par, val ) for par, val in self.__cfg.get( 'params', {} ).items() ] )
-            if self.hasDisabed():
-                params += ' [disabled]="{}"'.format( self.disabled )
+            params += ' [disabled]="{}"'.format( self.disabled )
             # define properties without binding to components attributes
             unbindedProps = [("name", "name"), ("tooltip", "label")]
             # only include props that were not defined already through params

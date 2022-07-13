@@ -236,6 +236,9 @@ class TemplateColumn( TemplateBase ):
     def hasService( self ) -> bool:
         return self.__ui is not None and self.__ui.hasService()
 
+    def hasServiceBaseClass( self ) -> bool:
+        return self.__ui is not None and self.__ui.hasServiceBaseClass()
+
     def __repr__(self):
         return "<TemplateColumn name='{}' label='{}'".format( self.name, self.label )
 
@@ -299,6 +302,14 @@ class TemplateColumn( TemplateBase ):
 
     def hasForeign( self ) -> bool:
         return 'FOREIGN KEY' in self.__attrs
+
+    @property
+    def foreignReferenceID( self ) -> str:
+        if self.__ui is not None and isinstance(self.__ui.serviceLabel, str):
+            # remove the last item of the label string since that is the actual label but we want
+            # the foreign key id of the row that contains the label. Also, remove the "_FK" at the end
+            return self.name + "_FK." +  ".".join(self.__ui.serviceLabel.split(".")[:-1])[:-3]
+        return None
 
     @property
     def ui( self ):
@@ -545,7 +556,7 @@ class TemplateColumn( TemplateBase ):
 
         return '[ {} ] '.format( result )
 
-    def angularUiInput( self ):
+    def angularUiInput( self, mixin="" ):
         if self.__ui is None:
             raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field,
                                                                                     self.__tableName ) )
@@ -554,7 +565,8 @@ class TemplateColumn( TemplateBase ):
 
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
-                                            self.__config.get( C_LABEL, '' ) )
+                                            self.__config.get( C_LABEL, '' ),
+                                            mixin = mixin )
 
     @property
     def readonly( self ) -> bool:

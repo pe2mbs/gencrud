@@ -272,7 +272,7 @@ GENCRUD_SCHEME = {
                                     'type': 'string',
                                 },
                                'type': {
-                                    'enum': [ 'screen', 'dialog', 'api', 'function', 'none' ],
+                                    'enum': [ 'screen', 'dialog', 'api', 'function', 'directive', 'none' ],
                                 },
                                 'icon': {
                                     'type': 'string',
@@ -293,7 +293,7 @@ GENCRUD_SCHEME = {
                                     'type': 'integer'
                                 },
                                 'disabled': {
-                                    'type': 'string'
+                                    'type': ['string', 'boolean']
                                 },
                                 'ngIf': {
                                     'type': 'string'
@@ -565,6 +565,9 @@ GENCRUD_SCHEME = {
                                                         'path': {
                                                             'type': 'string',
                                                         },
+                                                        'base-class': {
+                                                            'type': 'string',
+                                                        },
                                                         'class': {
                                                             'type': 'string',
                                                         },
@@ -591,9 +594,40 @@ GENCRUD_SCHEME = {
                                                         },
                                                         'heightAdjust': {
                                                             'type': 'string',
+                                                        },
+                                                        'decodeFunc': {
+                                                            'type': 'string',
+                                                        },
+                                                        'encodeFunc': {
+                                                            'type': 'string',
+                                                        },
+                                                        'onSaveClick': {
+                                                            'type': 'string',
                                                         }
                                                     }
-                                                }
+                                                },
+                                                'actions': {
+                                                    'type': 'array',
+                                                    'items': {
+                                                        'type': 'object',
+                                                        'required': [ 'name', 'icon', 'position' ],
+                                                        "additionalProperties": False,
+                                                        'properties': {
+                                                            'name': {
+                                                                'type': 'string'
+                                                            },
+                                                            'icon': {
+                                                                'type': 'string'
+                                                            },
+                                                            'position': {
+                                                                'enum': [ 'row', 'left', 'right' ],
+                                                            },
+                                                            'function': {
+                                                                'type': 'string'
+                                                            },
+                                                        }
+                                                    }
+                                                },
                                             }
                                         },
                                         'listview': {

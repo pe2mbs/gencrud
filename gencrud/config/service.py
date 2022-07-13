@@ -63,11 +63,28 @@ class TemplateService( TemplateBase ):
 
     @property
     def label( self ):
+        label = self.__config.get( C_LABEL, None )
         return self.__config.get( C_LABEL, None )
 
     @property
+    def resolveLabel( self ):
+        # in case a foreign key label is taken, only the actual label name
+        # is retrieved, i.e., SOME_LABEL instead of SOME_ID_FK.SOME_LABEL
+        label = self.__config.get( C_LABEL, None )
+        if label != None:
+            return label.split(".")[-1]
+        return None
+
+    @property
     def baseClass( self ):
+        # in case a base class is explicitly provided, e.g., when a foreign key is used,
+        # we will take that one
+        if C_BASECLASS in self.__config:
+            return self.__config.get( C_BASECLASS )
         return self.__config.get( C_CLASS, None )
+
+    def hasBaseClass( self ):
+        return C_BASECLASS in self.__config
 
     @property
     def cls( self ):
