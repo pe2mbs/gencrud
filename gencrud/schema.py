@@ -487,6 +487,9 @@ GENCRUD_SCHEME = {
                                                         'caption': {
                                                             'type': 'boolean',
                                                         },
+                                                        'displayedColumns': {
+                                                            'type': 'string',
+                                                        },
                                                     }
                                                 }
                                             }
