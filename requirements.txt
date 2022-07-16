@@ -17,7 +17,7 @@ Flask-Bcrypt==0.7.1
 Flask-Builder==0.9
 Flask-Caching==1.4.0
 Flask-CLI==0.4.0
-Flask-Cors==3.0.6
+Flask-Cors==3.0.9
 Flask-JWT==0.3.2
 Flask-JWT-Extended==3.13.1
 Flask-Mail==0.9.1
