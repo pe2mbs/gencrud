@@ -55,7 +55,7 @@ def listTables( schema = None, exclude = None, remote = None ):
     return result
 
 
-def getCurrentVersion( schema = None, remote = None ):
+def getCurrentVersion( schema = None, remote = None):
     version_num = ''
     if schema is None:
         schema = getCurrentSchema()
@@ -178,6 +178,7 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
     connection = API.db.session.connection()
     API.app.logger.info( "Begin work" )
     connection.execute( "SET FOREIGN_KEY_CHECKS=0;" )
+    connection.execute( "SET SESSION sql_mode='ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION'" )
     connection.execute( "BEGIN WORK;" )
     total = 0
     errors = 0
@@ -257,7 +258,6 @@ def copySchema2( destSchema, srcSchema, clear, ignore_errors = False ):
                     API.app.logger.error( "InternalError {} not inserted into '{}' table".format( count,table ) )
                     errorTable[ table ] = count
                     skipped.append( (table, exc) )
-
                 else:
                     raise
 

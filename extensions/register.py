@@ -20,6 +20,7 @@
 import webapp2.api as API
 from inspect import signature
 
+
 def registerExtensions( module ):
     """Register Flask extensions.
 
@@ -45,18 +46,22 @@ def registerExtensions( module ):
 
     if EXTENSIONS.get( "JWT", False ):
         if hasattr( module, 'registerJwt' ):
+            API.logger.info( "Register JWT via registerJwt" )
             API.jwt.init_app( API.app )
             module.registerJwt( API.app, API.jwt )
 
+        elif API.jwt is not None:
+            API.logger.info( "Register JWT direct" )
+            API.jwt.init_app( API.app )
+
         else:
-            API.app.logger.info( "Not registering JWT" )
+            API.app.logger.error( "Not registering JWT" )
 
     if EXTENSIONS.get( "STOMP", False ):
         API.stomp.init_app( API.app )
 
     if API.socketio is not None:
         API.socketio.init_app( API.app, async_mode='eventlet' )
-
 
         @API.socketio.on( 'message' )
         def handle_unnamed_message( message ):

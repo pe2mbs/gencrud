@@ -18,8 +18,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import webapp2.api as API
 from flask_cors import CORS
+import webapp2.api as API
 
 
 API.cors    = CORS()

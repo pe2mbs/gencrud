@@ -26,7 +26,7 @@ import datetime
 class WebAppJsonEncoder( flask.json.JSONEncoder ):
     def default( self, obj ):
         if isinstance( obj, ( bytes, bytearray ) ):
-             return obj.decode('utf-8')
+            return obj.decode('utf-8')
 
         elif isinstance( obj, datetime.datetime ):
             obj = obj.strftime( "%Y-%m-%dT%H:%M:%S%z" )

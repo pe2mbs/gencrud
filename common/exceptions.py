@@ -18,6 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 from flask import jsonify
+from werkzeug.exceptions import HTTPException
 
 
 def template( data, code=500 ):
@@ -69,3 +70,20 @@ class InvalidUsage( Exception ):
 
 class InvalidFileType( Exception ):
     pass
+
+
+class InvalidRequestExecption( HTTPException ):
+    code = 412
+    description = 'Invalid request, missing Record'
+
+
+class RecordLockedException( HTTPException ):
+    code = 409
+    description = 'The requested record is locked.'
+    def __init__( self,  description = None, request = None, user = None ):
+        if user is not None and description is None:
+            description = "The requested record is locked by user : {}.".format( user )
+
+        self.user = user
+        HTTPException.__init__( self, description, request )
+        return

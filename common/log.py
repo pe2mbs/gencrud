@@ -23,6 +23,7 @@ import yaml
 import json
 from webapp2.common.exceptions import InvalidFileType
 from functools import wraps
+from socket import gethostname
 
 logObject = None
 
@@ -88,8 +89,6 @@ def appLogger( func ):
 
     return wrapper
 
-from socket import gethostname
-
 def updateKeywordArguments( kwargs ):
     MAPPED = {
         'hostname': gethostname,
@@ -104,7 +103,6 @@ def updateKeywordArguments( kwargs ):
                 kwargs[key] = value
 
     return kwargs
-
 
 def updateLogging( tree, folder, verbose = False, level = None, **kwargs ):
     if folder is None:
@@ -144,7 +142,7 @@ def loadLoggingFile( root_path, filename = None, folder = None, verbose = False,
         if os.path.isfile( os.path.join( root_path, filename ) ):
             with open( os.path.join( root_path, filename ) ) as stream:
                 if filename.lower().endswith( '.yaml' ):
-                    logDict = yaml.load( stream )
+                    logDict = yaml.load( stream, loader=yaml.loader )
 
                 elif filename.lower().endswith( '.json' ):
                     logDict = json.load( stream )

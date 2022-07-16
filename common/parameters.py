@@ -37,6 +37,7 @@ class SerializationDictField( fields.Field ):
         fields.Field.__init__( self, default, attribute, load_from, dump_to,
                                     error, validate, required, allow_none, load_only,
                                     dump_only, missing, error_messages, **metadata )
+        # fields.Field.__init__( self )
         return
 
     def _serialize( self, value, attr, obj ):

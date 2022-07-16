@@ -1,5 +1,4 @@
 import os
-import logging
 import click
 import yaml
 from yamlinclude import YamlIncludeConstructor
@@ -476,15 +475,11 @@ COPY_HELP = """Copy schema to another.
 @click.option( '--force/--noforce',
                default = False,
                help = "Copies even when version differ." )
-# @click.option( '--remote',
-#                default = None,
-#                help = "defines the remote system from where the copy should be done" )
 @click.option( '--ignore_errors/--noignore_errors',
                default = False,
                help = "Copies even when version differ." )
 @click.argument( 'schema', nargs = -1)
 def copy( schema, clear, force, ignore_errors ):
-    # logging.getLogger('sqlalchemy.engine').setLevel( logging.WARNING )
     remote = None
     destSchema = getCurrentSchema()
     oVersion = getCurrentVersion()
@@ -538,5 +533,4 @@ def copy( schema, clear, force, ignore_errors ):
         print( "Total Errors: {:40}: {}".format( "total",total ) )
         for skip, exc in skipped:
             print( f"{skip:40} was skipped, due { ' '.join(exc.args ) }." )
-
     return

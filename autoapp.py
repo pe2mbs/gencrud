@@ -88,7 +88,7 @@ def handle_exception( e: Exception ):
         e.description += "\nRequest URL {}\nSource address {}".format( request.url, ", ".join( addresses ) )
         response: Response = make_response( e.description, e.code )
         description = e.description
-
+    print( "Error handler: {} :: {}".format( type( e ), e ) )
     if isinstance( e, werkzeug.exceptions.HTTPException ):
         response: Response = make_response( e.description, e.code )
         description = e.description
@@ -157,8 +157,10 @@ def handle_exception( e: Exception ):
             },
             "traceback":    traceback.format_exc().splitlines( keepends = False )
         }
+
     except Exception:
         app.logger.error( traceback.format_exc() )
+        print( traceback.format_exc(), file = sys.stderr )
 
     response.data = json.dumps( response_data, indent = 4 )
     response.content_type = "application/json"
