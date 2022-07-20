@@ -19,10 +19,12 @@
 import logging
 import traceback
 import json
+from typing import List
 from gencrud.config.actions import TemplateActions
 from gencrud.config.base import TemplateBase
 from gencrud.config.service import TemplateService
 from gencrud.constants import *
+from gencrud.util.validators import Validator, ValidatorType
 
 
 class TypeComponents( object ):
@@ -225,7 +227,7 @@ class TemplateUi( TemplateBase ):
     def isSet( self, property ):
         return property in self.__cfg or self.parent.isSet( property )
 
-    def buildInputElement( self, table, field, label, options = None, mixin = "" ):
+    def buildInputElement( self, table, field, label, options = None, mixin = "", validators: List[Validator] = [] ):
         if options is None:
             options = []
 
@@ -325,7 +327,7 @@ class TemplateUi( TemplateBase ):
         if C_DEBUG in self.__cfg:
             options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
-        return '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}></{tag}>'''.\
+        result = '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}></{tag}>'''.\
                 format( tag         = self.__components.getComponentTag( self.uiObject ),
                         table       = self.table.name,
                         name        = self.parent.name,
@@ -333,6 +335,30 @@ class TemplateUi( TemplateBase ):
                         option      = ' '.join( options ),
                         field       = field,
                         mixin       = " " + mixin if len(mixin) > 0 else "" )
+
+        if validators != None and len(validators) > 0:
+            errorHandler = ""
+            for validator in validators:
+                if validator.validatorType == ValidatorType.REQUIRED:
+                    errorHandler = "\n <span class=\"form-error\" \n" +\
+                                "*ngIf=\"formGroup.get('{field}').errors && \n" +\
+                                "formGroup.get('{field}').hasError('required')\" \n" +\
+                                ">{label} is a required field</span>"
+                    result += errorHandler.format(field = field, label = label)
+                elif validator.validatorType == ValidatorType.MAXLENGTH:
+                    errorHandler = "\n <span class=\"form-error\" \n" +\
+                                "*ngIf=\"formGroup.get('{field}').errors && \n" +\
+                                "formGroup.get('{field}').hasError('maxlength')\" \n" +\
+                                ">Maximum size limit ({size}) exceeded for {label} field</span>"
+                    result += errorHandler.format(field = field, label = label, size = validator.value)
+                elif validator.validatorType == ValidatorType.MINLENGTH:
+                    errorHandler = "\n <span class=\"form-error\" \n" +\
+                                "*ngIf=\"formGroup.get('{field}').errors && \n" +\
+                                "formGroup.get('{field}').hasError('minlength')\" \n" +\
+                            ">Minimum size limit ({size}) not reached for {label} field</span>"
+                    result += errorHandler.format(field = field, label = label, size = validator.value)
+    
+        return result
 
     def hasNgIf( self ):
         return 'ngif' in self.__cfg

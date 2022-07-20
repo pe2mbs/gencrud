@@ -25,6 +25,7 @@ from gencrud.config.tab import TemplateTab
 from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import InvalidSetting
 from gencrud.constants import *
+from gencrud.util.validators import Validator, ValidatorType
 import gencrud.util.utils as root
 from gencrud.util.exceptions import MissingAttribute
 logger = logging.getLogger()
@@ -459,11 +460,11 @@ class TemplateColumn( TemplateBase ):
                 result += ', nullable = False'
 
             elif attr.startswith( 'FOREIGN KEY' ):
-                if root.config.options.ignoreCaseDbIds:
-                    result += ', API.db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ].lower() )
-
+                foreignKeyName = attr.split( ' ' )[ 2 ].lower() if root.config.options.ignoreCaseDbIds else attr.split( ' ' )[ 2 ]
+                if 'NULL' in self.__attrs and 'NOT NULL' not in self.__attrs:
+                    result += ', API.db.ForeignKey( "{0}" )'.format( foreignKeyName )
                 else:
-                    result += ', API.db.ForeignKey( "{0}" )'.format( attr.split( ' ' )[ 2 ] )
+                    result += ', API.db.ForeignKey( "{0}", ondelete = "CASCADE" )'.format( foreignKeyName )
 
             elif attr.startswith( 'DEFAULT' ):
                 value = attr.split( ' ' )[ 1 ]
@@ -556,6 +557,18 @@ class TemplateColumn( TemplateBase ):
 
         return '[ {} ] '.format( result )
 
+    @property
+    def validatorsList( self ):
+        result = []
+        if not self.isPrimaryKey():
+            if 'NOT NULL' in self.__attrs or self.hasForeign():
+                result.append(Validator(ValidatorType.REQUIRED, True))
+
+            if self.__length > 0:
+                result.append(Validator(ValidatorType.MAXLENGTH, self.__length))
+
+        return result
+
     def angularUiInput( self, mixin="" ):
         if self.__ui is None:
             raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field,
@@ -566,7 +579,8 @@ class TemplateColumn( TemplateBase ):
         return self.__ui.buildInputElement( self.__tableName,
                                             self.__field,
                                             self.__config.get( C_LABEL, '' ),
-                                            mixin = mixin )
+                                            mixin = mixin,
+                                            validators=self.validatorsList )
 
     @property
     def readonly( self ) -> bool:
