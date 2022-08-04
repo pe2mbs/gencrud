@@ -20,6 +20,7 @@ import logging
 from nltk.tokenize import word_tokenize
 from gencrud.config.listview import TemplateListView
 from gencrud.config.relation import TemplateRelation
+from gencrud.config.testdata import TemplateTestData
 from gencrud.config.ui import TemplateUi
 from gencrud.config.tab import TemplateTab
 from gencrud.config.base import TemplateBase
@@ -69,6 +70,25 @@ class TemplateColumn( TemplateBase ):
                           'TEXT': 'API.db.LONGTEXT',
                           'TIME': 'API.db.Time' }
 
+    NATIVE_PY_TYPES_FROM_SQL = { 'CHAR': 'str',
+                          'VARCHAR': 'str',
+                          'INT': 'int',
+                          'BIGINT': 'int',
+                          'BOOLEAN': 'bool',
+                          'BOOL': 'bool',
+                          'TIMESTAMP': 'str',
+                          'DATETIME': 'str',
+                          'DATE': 'str',
+                          'FLOAT': 'float',
+                          'REAL': 'float',
+                          'INTERVAL': 'tuple',
+                          'BLOB': 'bytes',
+                          'NUMERIC': 'float',
+                          'DECIMAL': 'int',
+                          'CLOB': 'str',
+                          'TEXT': 'str',
+                          'TIME': 'str' }
+
     SCHEMA_TYPES_FROM_SQL = { 'CHAR': 'String',
                           'VARCHAR': 'String',
                           'INT': 'Integer',
@@ -99,6 +119,7 @@ class TemplateColumn( TemplateBase ):
         self.__tableName    = table_name
         self.__config       = cfg
         self.__field        = ''
+        self.__testdata     = None
         self.__sqlType      = ''
         self.__length       = 0
         self.__relationShip = None
@@ -165,6 +186,7 @@ class TemplateColumn( TemplateBase ):
 
         self.__relationShip = TemplateRelation( self, **self.__config.get( C_RELATION_SHIP, {} ) )
         self.__listview     = TemplateListView( self, **self.__config.get( C_LIST_VIEW, {} ) )
+        self.__testdata     = TemplateTestData( self, **self.__config.get( C_TEST_DATA, {} ))
 
         if root.config.options.ignoreCaseDbIds:
             self.__dbField = self.__dbField.lower()
@@ -230,6 +252,13 @@ class TemplateColumn( TemplateBase ):
     @property
     def listview( self ):
         return self.__listview
+    
+    @property
+    def testdata( self ):
+        return self.__testdata
+
+    def hasTestdata( self ):
+        return C_TEST_DATA in self.__config
 
     def hasResolveList( self ) -> bool:
         return self.__ui is not None and self.__ui.hasResolveList()
@@ -357,6 +386,13 @@ class TemplateColumn( TemplateBase ):
         raise Exception( 'Invalid SQL type: {0} for field {1}'.format( self.__sqlType, self.name ) )
 
     @property
+    def nativePythonType( self ) -> str:
+        if self.__sqlType in self.NATIVE_PY_TYPES_FROM_SQL:
+            return self.NATIVE_PY_TYPES_FROM_SQL[ self.__sqlType ]
+
+        raise Exception( 'Invalid SQL type: {0} for field {1}'.format( self.__sqlType, self.name ) )
+
+    @property
     def tsType( self ) -> str:
         if self.__sqlType in self.TS_TYPES_FROM_SQL:
             return self.TS_TYPES_FROM_SQL[ self.__sqlType ]
@@ -391,7 +427,7 @@ class TemplateColumn( TemplateBase ):
     def sqlAttrs2Dict( self ):
         options = { 'autoincrement': False,
                     'primary_key': False,
-                    'nullable': False,
+                    'nullable': True,
                     'foreign_key': None,
                     'default': None,
                   }

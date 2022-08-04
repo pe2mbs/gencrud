@@ -22,7 +22,7 @@ import os
 import io
 import gencrud.util.utils
 from gencrud.config.object import TemplateObject, TemplateObjects
-from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular
+from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular, TemplateSourceUnittest
 from gencrud.config.options import TemplateOptions
 from gencrud.config.references import TemplateReferences
 from gencrud.config.dynamic.controls import DymanicControls
@@ -133,6 +133,7 @@ class TemplateConfiguration( object ):
         # the output location is
         self.__python       = TemplateSourcePython( **self.__config )
         self.__angular      = TemplateSourceAngular( **self.__config )
+        self.__unittest     = TemplateSourceUnittest( **self.__config )
         opts                = self.__config[ C_REFERENCES ] if C_REFERENCES in self.__config else { }
         self.__references   = TemplateReferences( **opts )
         self.__objects      = []
@@ -155,6 +156,10 @@ class TemplateConfiguration( object ):
     @property
     def angular( self ) -> TemplateSourceAngular:
         return self.__angular
+
+    @property
+    def unittest( self ) -> TemplateSourceUnittest:
+        return self.__unittest
 
     @property
     def objects( self ) -> TemplateObjects:

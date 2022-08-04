@@ -21,6 +21,10 @@ GENCRUD_SCHEME = {
                 },
                 'angular': {
                     'type': 'string'
+                },
+                'unittest': {
+                    'type': 'string',
+                    'optional': True
                 }
             }
         },
@@ -39,6 +43,10 @@ GENCRUD_SCHEME = {
                 'angular': {
                     'type': 'string',
                 },
+                'unittest': {
+                    'type': 'string',
+                    'optional': True
+                },
                 'common': {
                     'type': 'object',
                     "additionalProperties": False,
@@ -52,6 +60,10 @@ GENCRUD_SCHEME = {
                         },
                         'angular': {
                             'type': 'string',
+                        },
+                        'unittest': {
+                            'type': 'string',
+                            'optional': True
                         }
                     }
                 }
@@ -432,6 +444,10 @@ GENCRUD_SCHEME = {
                             'name': {
                                 'type': 'string',
                             },
+                            'secondary-key': {
+                                'type': 'string',
+                                "optional": True
+                            },
                             'unique-key': { 'type': 'string' },
                             'viewSort': {
                                 'type': 'object',
@@ -662,6 +678,24 @@ GENCRUD_SCHEME = {
                                                 },
                                                 'index': {
                                                     'type': 'integer'
+                                                }
+                                            }
+                                        },
+                                        'test-data': {
+                                            'type': 'object',
+                                            "optional": True,
+                                            "additionalProperties": False,
+                                            'properties': {
+                                                'value': {
+                                                    'type': ['string', 'boolean', 'integer', 'number', 'object', 'null'],
+                                                    "optional": True,
+                                                },
+                                                'values': {
+                                                    'type': 'array',
+                                                    "optional": True,
+                                                    'items': {
+                                                        'type': ['string', 'boolean', 'integer', 'number', 'object', 'null'],
+                                                    }
                                                 }
                                             }
                                         },

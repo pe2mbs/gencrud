@@ -165,3 +165,8 @@ class TemplateSourceAngular( TemplateSource ):
     def __init__( self, **cfg ):
         TemplateSource.__init__( self, C_ANGULAR, **cfg )
         return
+
+class TemplateSourceUnittest( TemplateSource ):
+    def __init__( self, **cfg ):
+        TemplateSource.__init__( self, C_UNITTEST, **cfg )
+        return
