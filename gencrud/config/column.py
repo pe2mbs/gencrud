@@ -437,6 +437,7 @@ class TemplateColumn( TemplateBase ):
 
             elif 'PRIMARY KEY' in attr:
                 options[ 'primary_key'] = True
+                options[ 'nullable'] = False
 
             elif 'NOT NULL' in attr:
                 options[ 'nullable' ] = False
