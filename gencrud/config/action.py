@@ -56,6 +56,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def type( self ):
+        # TODO: This should nolong be nessary as we have the schema.py now
         result = self.__cfg.get( C_TYPE, C_ACTION_TYPES[ -1 ] ).lower()
         if result not in C_ACTION_TYPES:
             raise InvalidSetting( C_TYPE, C_ACTION, self.__name )
@@ -64,6 +65,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def position( self ):
+        # TODO: This should nolong be nessary as we have the schema.py now
         result = self.__cfg.get( C_POSITION, C_ACTION_POSITIONS[ -1 ] ).lower()
         if result not in C_ACTION_POSITIONS:
             raise InvalidSetting( C_POSITION, C_ACTION, self.__name )
@@ -196,6 +198,7 @@ class TemplateAction( TemplateBase ):
         return "ngIf" in self.__cfg
 
     def isDirective( self ):
+        # TODO: This is wrong !!!!!
         return self.type == C_DIRECTIVE
     
     @property

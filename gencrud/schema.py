@@ -290,7 +290,7 @@ GENCRUD_SCHEME = {
                                     'type': 'string',
                                 },
                                 'position': {
-                                    'enum': [ 'row', 'header', 'footer', 'cell', 'none', 'screen' ],
+                                    'enum': [ 'row', 'header', 'footer', 'cell', 'none', 'screen', 'sidebar' ],
                                 },
                                 'uri': {
                                     'type': 'string'
