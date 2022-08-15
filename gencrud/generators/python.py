@@ -80,10 +80,10 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
             fns = os.path.abspath( os.path.join( config.python.commonFolder, src_filename ) )
             logger.debug( "Source: {}\nTarget: {}".format( fns, fnd ) )
             shutil.copy( fns, fnd )
-
     def makeMenuId( menu,prefix ):
         return hashlib.md5( (prefix + menu.caption).encode('ascii') ).hexdigest().upper()
 
+    # retrieve default global menu structure from menu.yaml
     menuFilename = os.path.join( config.python.sourceFolder, config.application, 'menu.yaml' )
     if os.path.isfile( menuFilename ):
         with open( menuFilename, 'r' )  as stream:
@@ -97,20 +97,23 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
     def processMenuStructure_V2( items, menu, id_prefix = '' ):
         foundMenu = False
         for menuItem in items:
-            if menuItem[ MENU_DISPLAY_NAME ] == menu.caption:
+            if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.caption:
                 foundMenu = True
                 if menu.menu is not None:
                     # sub menu
                     if MENU_CHILDREN_LABEL not in menuItem:
                         menuItem[ MENU_CHILDREN_LABEL ] = [ ]
 
+                    if MENU_ID not in menuItem:
+                        menuItem[ MENU_ID ] = makeMenuId( menu, id_prefix )
+
                     processMenuStructure_V2( menuItem[ MENU_CHILDREN_LABEL ],
                                              menu.menu,
                                              menuItem[ MENU_ID ] + '_' )
 
                 else:
-                    menuItem[ MENU_DISPLAY_NAME ] = menu.caption
-                    menuItem[ MENU_ICON_NAME ] = menu.icon
+                    menuItem[ MENU_DISPLAY_NAME_V2 ] = menu.caption
+                    menuItem[ MENU_ICON_NAME_V2 ] = menu.icon
                     menuItem[ MENU_ID ] = makeMenuId( menu, id_prefix )
                     if menu.route is not None:
                         menuItem[ MENU_ROUTE ] = menu.route
@@ -124,9 +127,9 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                     #                              menuItem[ MENU_ID ] + '_' )
 
         if not foundMenu:
-            newMenuItem = { MENU_DISPLAY_NAME: menu.caption,
+            newMenuItem = { MENU_DISPLAY_NAME_V2: menu.caption,
                             MENU_ID: makeMenuId( menu, id_prefix ),
-                            MENU_ICON_NAME: menu.icon }
+                            MENU_ICON_NAME_V2: menu.icon }
             if menu.route is not None:
                 newMenuItem[ MENU_ROUTE ] = menu.route
 
@@ -140,12 +143,12 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                 index = -1
                 if menu.after is not None:
                     for idx, menuItem in enumerate( items ):
-                        if menuItem[ MENU_DISPLAY_NAME ] == menu.after:
+                        if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.after:
                             index = idx + 1
 
                 else: # before
                     for idx, menuItem in enumerate( items ):
-                        if menuItem[ MENU_DISPLAY_NAME ] == menu.before:
+                        if menuItem[ MENU_DISPLAY_NAME_V2 ] == menu.before:
                             index = idx
 
                 items.insert( index, newMenuItem )
@@ -154,13 +157,11 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                 items.insert( menu.index if menu.index >= 0 else (len( items ) + menu.index + 1), newMenuItem )
 
         return
-
     for cfg in config:
         if cfg.menu is None:
             continue
-
         processMenuStructure_V2( menuItems, cfg.menu )
-
+    # write new global menu file based on the changes in the module yaml files
     with open( menuFilename, 'w' )  as stream:
         yaml.dump( menuItems, stream, default_style=False, default_flow_style=False )
 
@@ -252,7 +253,6 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                     stream.write( line )
                     if sys.platform.startswith( 'linux' ):
                         stream.write( '\n' )
-
         for column in cfg.table.columns:
             if column.ui is not None:
                 if column.ui.hasResolveList():
@@ -274,7 +274,6 @@ def generatePython( config: TemplateConfiguration, templates: list ):
 
             with open( filename, 'w' ) as stream:
                 stream.writelines( constants )
-
         entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
         if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
             # use the template from 'common-py'
@@ -285,6 +284,5 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                 with open( templateFile, 'r' ) as templateStream:
                     for line in Template( templateStream ).render( obj = cfg, root = config ).split( '\n' ):
                         stream.write( line + '\n' )
-
     updatePythonProject( config, '' )
     return

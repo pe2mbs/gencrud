@@ -63,6 +63,11 @@ class TemplateOptions( TemplateBase ):
         return self.__config.get( C_GENERATE_BACKEND, True )
 
     @property
+    def generateTests( self ) -> bool:
+        # This override/set commandline options from the template defintion.
+        return self.__config.get( C_GENERATE_TESTS, True )
+
+    @property
     def copySupport( self ):
         return self.__config.get( 'copy-support-files', True )
 

@@ -57,6 +57,7 @@ class TemplateTable( TemplateBase ):
         self.__table            = table
         self.__columns          = []
         self.__primaryKey       = ''
+        self.__secondaryKey     = ''
         self.__viewSort         = None
         self.__viewSize         = None
         self.__defaultViewSize  = 10
@@ -72,6 +73,9 @@ class TemplateTable( TemplateBase ):
             self.__columns.append( column )
             if column.isPrimaryKey():
                 self.__primaryKey = column.name
+
+        if C_SECONDARY_KEY in table:
+            self.__secondaryKey = table[C_SECONDARY_KEY]
 
         if C_VIEW_SORT in table:
             self.__viewSort = SortInfo( table[ C_VIEW_SORT ] )
@@ -113,6 +117,15 @@ class TemplateTable( TemplateBase ):
             return self.__viewSort.htmlMaterialSorting()
 
         return ''
+
+    def columnsHaveMultipleValues( self ) -> bool:
+        for column in self.columns:
+            if len(column.testdata.values) > 1:
+                return True
+        return False
+
+    def maximumTestValues( self ) -> bool:
+        return max( len( column.testdata.values ) for column in self.columns ) 
 
     @property
     def leadIn( self ) -> str:
@@ -193,6 +206,10 @@ class TemplateTable( TemplateBase ):
     @property
     def primaryKey( self ) -> str:
         return self.__primaryKey
+
+    @property
+    def secondaryKey( self ) -> str:
+        return self.__secondaryKey
 
     @property
     def firstTextField( self ):

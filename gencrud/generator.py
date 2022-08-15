@@ -29,6 +29,7 @@ import gencrud.util.utils
 from gencrud.configuraton import TemplateConfiguration, my_safe_load
 from gencrud.generators.python import generatePython
 from gencrud.generators.angular import generateAngular
+from gencrud.generators.unittest import generateUnittest
 from gencrud.version import __version__, __author__, __email__, __copyright__
 from gencrud.util.exceptions import ( InvalidEnvironment,
                                       EnvironmentInvalidMissing,
@@ -58,7 +59,9 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
 
         else:
             raise Exception( "Could not find the Python Flask configuration file."  )
-
+    #elif env == C_UNITTEST:
+    #    root = config.unittest
+    #    pass
     else:
         raise InvalidEnvironment( env )
 
@@ -130,6 +133,9 @@ def initializeCodeGenerationProcess( input_file ):
     if config.options.generateBackend:
         verifyLoadProject( config, C_PYTHON )
 
+    #if config.options.generateTests:
+    #    verifyLoadProject( config, C_UNITTEST )
+
     else:
         logger.info( "NOT generating backend code" )
 
@@ -144,6 +150,13 @@ def initializeCodeGenerationProcess( input_file ):
         generateAngular( config,
                          [ os.path.abspath( os.path.join( config.angular.templateFolder, t ) )
                                         for t in os.listdir( config.angular.templateFolder ) ] )
+
+    if config.options.generateTests:
+        logger.info( "*** Generating Unittest source code. ***" )
+        generateUnittest( config,
+                         [ os.path.abspath( os.path.join( config.unittest.templateFolder, t ) )
+                                        for t in os.listdir( config.unittest.templateFolder ) ] )
+
     return
 
 

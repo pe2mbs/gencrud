@@ -104,8 +104,9 @@ class TemplateTabs( TemplateBase ):
     def params( self, label, mode = None ):
         result = ''
         for key, value in self.__params[ label ].items():
-            value = str(self.variable2typescript( value )).replace("'", "").replace("\"", "")
-            if key in ( 'value', ):
+            value = str(self.variable2typescript( value )).replace("'", "").replace("\"", "") if \
+                "[" not in str(value) else str(self.variable2typescript( value )) 
+            if key in ( 'value', 'displayedColumns' ):
                 result += '[{}]="{}" '.format( key, value )
 
             else:
