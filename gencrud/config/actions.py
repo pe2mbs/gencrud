@@ -202,7 +202,7 @@ class TemplateActions( TemplateBase ):
         return False
 
     def getScreenActions( self ):
-        return sorted( [ action for action in self.__actions if action.position == 'screen' ],
+        return sorted( [ action for action in self.__actions if action.type == 'screen' and action.position == 'sidebar' ],
                        key = lambda k: k.get( 'index', 0 ) )
 
     @property
