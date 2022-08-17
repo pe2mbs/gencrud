@@ -206,16 +206,15 @@ def updatePythonModels( config:  TemplateConfiguration ):
     with open( modeles_py_file, 'w' ) as stream:
         stream.write( Template( filename = template ).render( config = config, modules = modules ) )
 
-    return
+    return modules
 
 def generatePython( config: TemplateConfiguration, templates: list ):
-    modules = []
     constants = []
     logger.info( 'application : {0}'.format( config.application ) )
     dt = datetime.datetime.now()
     generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
     userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
-    updatePythonModels( config )
+    modules = updatePythonModels( config )
     for cfg in config:
         modulePath = os.path.join( config.python.sourceFolder,
                                    config.application,
@@ -247,6 +246,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                        gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                     root = config,
+                                                                                    modules = modules,
                                                                                     date = generationDateTime,
                                                                                     version = gencrud.version.__version__,
                                                                                     username = userName ).split( '\n' ):

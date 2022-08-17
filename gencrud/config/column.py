@@ -569,6 +569,23 @@ class TemplateColumn( TemplateBase ):
 
         return None
 
+    @property 
+    def dbField( self ):
+        return self.__dbField
+
+    def serviceClass( self, modules: list, table: str ):
+        for module in modules:
+            if module.get("table") == table:
+                return module.get("model")
+        return None
+
+    @property 
+    def foreignKey ( self ):
+        for attr in self.__attrs:
+            if "FOREIGN KEY" in attr:
+                return attr.split(" ")[-1]
+        return None
+
     @property
     def initValue( self ):
         def initValueDefault():
