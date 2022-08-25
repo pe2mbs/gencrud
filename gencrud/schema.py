@@ -557,7 +557,13 @@ GENCRUD_SCHEME = {
                                                               'textarea', 'checkbox', 'password', 'date', 'time', 'datetime',
                                                               'label' ]
                                                 },
-                                                'format':{
+                                                'format': {
+                                                    'type': 'string'
+                                                },
+                                                'width': {
+                                                    'type': 'integer'
+                                                },
+                                                'group': {
                                                     'type': 'string'
                                                 },
                                                 'ngIf': {
