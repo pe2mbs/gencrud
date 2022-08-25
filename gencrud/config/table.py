@@ -30,6 +30,7 @@ import gencrud.util.utils as root
 from gencrud.util.exceptions import *
 from gencrud.constants import *
 from gencrud.util.exceptions import InvalidViewSize
+from typing import List
 
 logger = logging.getLogger()
 
@@ -113,7 +114,7 @@ class TemplateTable( TemplateBase ):
         return self.object.config
 
     @property
-    def groups ( self ) -> list[InputGroup]:
+    def groups ( self ) -> List[InputGroup]:
         return self.__groups
 
     def getFieldByName( self, name ):
