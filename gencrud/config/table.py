@@ -17,10 +17,12 @@
 #   Boston, MA 02110-1301 USA
 #
 #
+from collections import defaultdict
 import logging
 from gencrud.config.base import TemplateBase
 from gencrud.config._inports import SourceImport
 from gencrud.config.column import TemplateColumn
+from gencrud.config.inputgroup import InputGroup
 from gencrud.config.tab import TemplateTabs
 from gencrud.config.sort import SortInfo
 from gencrud.config.mixin import TemplateMixin
@@ -28,6 +30,7 @@ import gencrud.util.utils as root
 from gencrud.util.exceptions import *
 from gencrud.constants import *
 from gencrud.util.exceptions import InvalidViewSize
+from typing import List
 
 logger = logging.getLogger()
 
@@ -56,6 +59,7 @@ class TemplateTable( TemplateBase ):
         TemplateBase.__init__( self, parent )
         self.__table            = table
         self.__columns          = []
+        self.__groups           = []
         self.__primaryKey       = ''
         self.__secondaryKey     = ''
         self.__viewSort         = None
@@ -87,6 +91,15 @@ class TemplateTable( TemplateBase ):
             else:
                 raise InvalidViewSize()
 
+        groups = defaultdict(list)
+        for column in self.__columns:
+            if column.ui:
+                if column.ui.group:
+                    groups[column.ui.group].append(column)
+                else:
+                    groups[ C_NOGROUP ].append(column)
+        self.__groups = [InputGroup(group, fields) for group, fields in groups.items()]
+
         return
 
     @property
@@ -99,6 +112,27 @@ class TemplateTable( TemplateBase ):
     @property
     def config( self ):
         return self.object.config
+
+    @property
+    def groups ( self ) -> List[InputGroup]:
+        return self.__groups
+
+    def getFieldByName( self, name ):
+        for column in self.__columns:
+            if column.name == name:
+                return column
+        return None
+
+    def groupInTab( self, group, tab ) -> bool:
+        # iterate through fields of the tab
+        for column in self.tabs().fieldsFor( tab ):
+            # check for overlapping field between group and tab
+            if column in group.fields:
+                return True
+        return False
+
+    def hasInputGroups( self ) -> bool:
+        return len( self.groups ) > 0
 
     def hasTabs( self, tp = C_DIALOG ) -> bool:
         if C_TABS in self.__table:

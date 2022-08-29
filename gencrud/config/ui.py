@@ -28,28 +28,29 @@ from gencrud.util.validators import Validator, ValidatorType
 
 
 class TypeComponents( object ):
+    # TODO; remove flex
     _Component = {
-        C_LABEL: { 'tag': 'gc-label', 'fxflex': '60px' },
-        C_TEXTBOX: { 'tag': 'gc-text-input', 'fxflex': '60px' },
-        C_TEXT: { 'tag': 'gc-text-input', 'fxflex': '60px' },
-        C_CHECKBOX: { 'tag': 'gc-checkbox-input', 'fxflex': '60px' },
-        C_PASSWORD: { 'tag': 'gc-password-input', 'fxflex': '60px' },
+        C_LABEL: { 'tag': 'gc-label' },
+        C_TEXTBOX: { 'tag': 'gc-text-input' },
+        C_TEXT: { 'tag': 'gc-text-input' },
+        C_CHECKBOX: { 'tag': 'gc-checkbox-input' },
+        C_PASSWORD: { 'tag': 'gc-password-input' },
         C_TEXTAREA: { 'tag': 'gc-textarea-input', 'fxflex': '98' },
         C_EDITOR: { 'tag': 'gc-monaco-editor', 'fxflex': '98' },
-        C_NUMBER: { 'tag': 'gc-number-input', 'fxflex': '60px' },
-        C_EMAIL: { 'tag': 'gc-mail-input', 'fxflex': '60px' },
-        C_CHOICE: { 'tag': 'gc-choice-input', 'fxflex': '60px' },
-        C_CHOICE_AUTO: { 'tag': 'gc-choice-autocomplete-input', 'fxflex': '60px' },
-        C_COMBOBOX: { 'tag': 'gc-combo-input', 'fxflex': '60px' },
-        C_COMBO: { 'tag': 'gc-combo-input', 'fxflex': '60px' },
+        C_NUMBER: { 'tag': 'gc-number-input' },
+        C_EMAIL: { 'tag': 'gc-mail-input' },
+        C_CHOICE: { 'tag': 'gc-choice-input' },
+        C_CHOICE_AUTO: { 'tag': 'gc-choice-autocomplete-input' },
+        C_COMBOBOX: { 'tag': 'gc-combo-input' },
+        C_COMBO: { 'tag': 'gc-combo-input' },
         C_SLIDER: { 'tag': 'gc-slider-input', 'fxflex': '30px' },
         C_SLIDER_TOGGLE: { 'tag': 'gc-slidertoggle-input', 'fxflex': '30px' },
-        C_DATE: { 'tag': 'gc-date-input', 'fxflex': '60px' },
-        C_TIME: { 'tag': 'gc-time-input', 'fxflex': '60px' },
-        C_DATE_TIME: { 'tag': 'gc-datetime-input', 'fxflex': '60px' },
-        C_DATE_PICKER: { 'tag': 'gc-datepicker-input', 'fxflex': '60px' },
-        C_TIME_PICKER: { 'tag': 'gc-timepicker-input', 'fxflex': '60px' },
-        C_DATE_TIME_PICKER: { 'tag': 'gc-datetimepicker-input', 'fxflex': '60px' } }
+        C_DATE: { 'tag': 'gc-date-input' },
+        C_TIME: { 'tag': 'gc-time-input' },
+        C_DATE_TIME: { 'tag': 'gc-datetime-input' },
+        C_DATE_PICKER: { 'tag': 'gc-datepicker-input' },
+        C_TIME_PICKER: { 'tag': 'gc-timepicker-input' },
+        C_DATE_TIME_PICKER: { 'tag': 'gc-datetimepicker-input' } }
 
     def getComponentTag( self, component ):
         if component in TypeComponents._Component:
@@ -83,6 +84,7 @@ class TemplateUi( TemplateBase ):
         else:
             self.__actions = []
 
+        self.__group = self.__cfg.get( C_GROUP, None )
         return
 
     @property
@@ -104,6 +106,10 @@ class TemplateUi( TemplateBase ):
     @property
     def type( self ):
         return self.__cfg.get( C_TYPE, None )
+
+    @property
+    def group( self ):
+        return self.__group
 
     @property
     def label( self ):
@@ -230,8 +236,13 @@ class TemplateUi( TemplateBase ):
     def buildInputElement( self, table, field, label, options = None, mixin = "", validators: List[Validator] = [] ):
         if options is None:
             options = []
+        
+        if C_WIDTH in self.__cfg:
+                options.append('fxFlex="{}"'.format( self.__cfg.get( C_WIDTH ) ))
+        else:
+            # default width
+            options.append( self.__components.getFlex( self.uiObject ) )
 
-        options.append( self.__components.getFlex( self.uiObject ) )
         if self.hasNgIf():
             options.append( '*ngIf="{}"'.format( self.ngIf ) )
 

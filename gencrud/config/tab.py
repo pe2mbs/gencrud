@@ -47,13 +47,15 @@ class TemplateTabs( TemplateBase ):
     def __init__( self, parent, **cfg ):
         TemplateBase.__init__( self, parent )
         self.__cfg      = cfg
-        self.__fields   = { l: [] for l in self.labels }
+        self.__fields   = { l: [] for l in (self.labels + [C_NOTAB]) }
         self.__comps    = { l: None for l in self.labels }
         self.__params   = { l: None for l in self.labels }
         for col in self.parent.columns:
             if col.hasTab:
                 logging.info( col.tab )
                 self.__fields[ col.tab.label ].append( col )
+            else:
+                self.__fields[ C_NOTAB ].append( col )
 
         for key in self.__fields.keys():
             self.__fields[ key ].sort( key = lambda x: x.tab.index, reverse = False )
@@ -84,8 +86,9 @@ class TemplateTabs( TemplateBase ):
         return self.__cfg.get( C_TAB_GROUP_TAG, 'mat-tab-group' )
 
     def fieldsFor( self, label ):
-        result = self.__fields[ label ]
-        return result
+        if label == None:
+            return self.__fields[ "notab" ]
+        return self.__fields[ label ]
 
     def hasComponent( self, label ):
         value = self.__comps.get( label, None )

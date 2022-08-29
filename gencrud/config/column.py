@@ -272,6 +272,9 @@ class TemplateColumn( TemplateBase ):
     def __repr__(self):
         return "<TemplateColumn name='{}' label='{}'".format( self.name, self.label )
 
+    def __eq__(self, other):
+        return self.name == other.name
+
     def definedNotNull( self ) -> bool:
         return not self.sqlAttrs2Dict()[ 'nullable' ]
 
@@ -499,7 +502,8 @@ class TemplateColumn( TemplateBase ):
             elif attr.startswith( 'FOREIGN KEY' ):
                 foreignKeyName = attr.split( ' ' )[ 2 ].lower() if root.config.options.ignoreCaseDbIds else attr.split( ' ' )[ 2 ]
                 if 'NULL' in self.__attrs and 'NOT NULL' not in self.__attrs:
-                    result += ', API.db.ForeignKey( "{0}" )'.format( foreignKeyName )
+                    # TODO: maybe better to set to default if it is specified
+                    result += ', API.db.ForeignKey( "{0}", ondelete = "SET NULL" )'.format( foreignKeyName )
                 else:
                     result += ', API.db.ForeignKey( "{0}", ondelete = "CASCADE" )'.format( foreignKeyName )
 
@@ -569,6 +573,23 @@ class TemplateColumn( TemplateBase ):
 
         return None
 
+    @property 
+    def dbField( self ):
+        return self.__dbField
+
+    def serviceClass( self, modules: list, table: str ):
+        for module in modules:
+            if module.get("table") == table:
+                return module.get("model")
+        return None
+
+    @property 
+    def foreignKey ( self ):
+        for attr in self.__attrs:
+            if "FOREIGN KEY" in attr:
+                return attr.split(" ")[-1]
+        return None
+
     @property
     def initValue( self ):
         def initValueDefault():
@@ -622,6 +643,12 @@ class TemplateColumn( TemplateBase ):
     @property
     def readonly( self ) -> bool:
         return self.__config.get( C_READ_ONLY, False )
+
+    @property
+    def group( self ):
+        if self.ui:
+            return self.ui.group
+        return None
 
     @property
     def disabled( self ) -> bool:
