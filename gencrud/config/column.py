@@ -129,6 +129,8 @@ class TemplateColumn( TemplateBase ):
         self.__leadIn       = []
         self.__dbField      = ''
         self.unique         = False
+        self._isSibling      = cfg.get( C_ISSIBLING, False)
+        self._siblings       = []
         if C_FIELD not in self.__config:
             raise MissingAttribute( C_TABLE, C_FIELD )
 
@@ -184,6 +186,13 @@ class TemplateColumn( TemplateBase ):
         if C_UI in cfg and type( cfg[ C_UI ] ) is dict:
             self.__ui = TemplateUi( self, **cfg.get( C_UI, {} ) )
 
+        if C_SIBLINGS in cfg and type( cfg[ C_SIBLINGS ] ) is list:
+            for subConfig in cfg[ C_SIBLINGS ]:
+                subConfig[ C_ISSIBLING ] = True
+                # TODO: check necessity
+                subConfig[ C_FIELD ] = cfg.get( C_FIELD, '' )
+                self._siblings.append( TemplateColumn( parent, table_name, **subConfig ) )
+
         self.__relationShip = TemplateRelation( self, **self.__config.get( C_RELATION_SHIP, {} ) )
         self.__listview     = TemplateListView( self, **self.__config.get( C_LIST_VIEW, {} ) )
         self.__testdata     = TemplateTestData( self, **self.__config.get( C_TEST_DATA, {} ))
@@ -215,6 +224,14 @@ class TemplateColumn( TemplateBase ):
     @property
     def object( self ):
         return self.table.object
+
+    @property
+    def isSibling( self ):
+        return self._isSibling
+
+    @property
+    def siblings( self ):
+        return self._siblings
 
     @property
     def leadIn( self ) -> list:
@@ -317,6 +334,12 @@ class TemplateColumn( TemplateBase ):
 
     @property
     def name( self ) -> str:
+        if self.isSibling:
+            return self.__field + "_" + self.label.upper().replace(" ", "_")
+        return self.__field
+
+    @property
+    def fieldName( self ) -> str:
         return self.__field
 
     def hasLabel( self ) -> bool:
@@ -341,7 +364,7 @@ class TemplateColumn( TemplateBase ):
         if self.__ui is not None and isinstance(self.__ui.serviceLabel, str):
             # remove the last item of the label string since that is the actual label but we want
             # the foreign key id of the row that contains the label. Also, remove the "_FK" at the end
-            return self.name + "_FK." +  ".".join(self.__ui.serviceLabel.split(".")[:-1])[:-3]
+            return self.__field + "_FK." +  ".".join(self.__ui.serviceLabel.split(".")[:-1])[:-3]
         return None
 
     @property
@@ -635,7 +658,7 @@ class TemplateColumn( TemplateBase ):
             return self.build()
 
         return self.__ui.buildInputElement( self.__tableName,
-                                            self.__field,
+                                            self.name,
                                             self.__config.get( C_LABEL, '' ),
                                             mixin = mixin,
                                             validators=self.validatorsList )

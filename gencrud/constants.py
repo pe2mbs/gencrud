@@ -220,6 +220,8 @@ C_AFTER                 = 'after'
 C_BEFORE                = 'before'
 
 C_DEBUG                 = 'debug'
+C_SIBLINGS              = 'siblings'
+C_ISSIBLING             = 'isSibling'
 
 C_FIELD_NAME            = 'field-name'
 C_LAZY                  = 'lazy'

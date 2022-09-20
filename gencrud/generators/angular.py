@@ -403,6 +403,11 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
             if field.ui is not None and field.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_COMBOBOX, C_COMBO, C_CHECKBOX) and field.hasService():
                 field.ui.service.fieldLabel = field.label
                 servicesList.append( field.ui.service )
+            # required ad-on for the support of siblings, i.e., multiple usage of the same database field
+            for sibling in field.siblings:
+                if sibling.ui is not None and sibling.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_COMBOBOX, C_COMBO, C_CHECKBOX) and sibling.hasService():
+                    sibling.ui.service.fieldLabel = sibling.label
+                    servicesList.append( sibling.ui.service )
 
         for templ in templates:
             templateFilename = os.path.join( config.angular.sourceFolder,

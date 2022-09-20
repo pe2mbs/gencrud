@@ -705,6 +705,169 @@ GENCRUD_SCHEME = {
                                                 }
                                             }
                                         },
+                                        'siblings': {
+                                            'type': 'array',
+                                            'items': {
+                                                "type": "object",
+                                                "required": [ 'label' ],
+                                                "additionalProperties": False,
+                                                "properties": {
+                                                    'hint': {
+                                                        'type': 'string',
+                                                    },
+                                                    'readonly': {
+                                                        'type': 'boolean'
+                                                    },
+                                                    "remark": {
+                                                        'type': 'string'
+                                                    },
+                                                    'label': {
+                                                        'type': 'string'
+                                                    },
+                                                    'ui': {
+                                                        'type': 'object',
+                                                        'required': [ 'type' ],
+                                                        "additionalProperties": False,
+                                                        'properties': {
+                                                            'type': {
+                                                                "enum": [ 'textbox', 'editor', 'number', 'choice', 'choice-auto-complete',
+                                                                        'textarea', 'checkbox', 'password', 'date', 'time', 'datetime',
+                                                                        'label' ]
+                                                            },
+                                                            'format': {
+                                                                'type': 'string'
+                                                            },
+                                                            'width': {
+                                                                'type': 'integer'
+                                                            },
+                                                            'group': {
+                                                                'type': 'string'
+                                                            },
+                                                            'ngIf': {
+                                                                'type': 'string'
+                                                            },
+                                                            'hint': {
+                                                                'type': 'string'
+                                                            },
+                                                            'pipe': {
+                                                                'enum': [ 'date', 'datetime', 'time' ]
+                                                            },
+                                                            'cols': { 'type': 'integer', },
+                                                            'rows': { 'type': 'integer', },
+                                                            'resolve-list': {
+                                                                'type': 'object',
+                                                            },
+                                                            'service': {
+                                                                'type': 'object',
+                                                                "additionalProperties": False,
+                                                                'properties': {
+                                                                    'name': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'path': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'base-class': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'class': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'value': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'label': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                }
+                                                            },
+                                                            'attributes': {
+                                                                'type': 'object',
+                                                                "additionalProperties": False,
+                                                                'properties': {
+                                                                    'language': {
+                                                                        'enum': [ 'markdown',  'json', 'python', 'yaml', 'xml', 'sql', 'xpath' ]
+                                                                    },
+                                                                    'height': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'minimap': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'heightAdjust': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'decodeFunc': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'encodeFunc': {
+                                                                        'type': 'string',
+                                                                    },
+                                                                    'onSaveClick': {
+                                                                        'type': 'string',
+                                                                    }
+                                                                }
+                                                            },
+                                                            'actions': {
+                                                                'type': 'array',
+                                                                'items': {
+                                                                    'type': 'object',
+                                                                    'required': [ 'name', 'icon', 'position' ],
+                                                                    "additionalProperties": False,
+                                                                    'properties': {
+                                                                        'name': {
+                                                                            'type': 'string'
+                                                                        },
+                                                                        'icon': {
+                                                                            'type': 'string'
+                                                                        },
+                                                                        'position': {
+                                                                            'enum': [ 'row', 'left', 'right' ],
+                                                                        },
+                                                                        'function': {
+                                                                            'type': 'string'
+                                                                        },
+                                                                    }
+                                                                }
+                                                            },
+                                                        }
+                                                    },
+                                                    'listview': {
+                                                        'type': 'object',
+                                                        "additionalProperties": False,
+                                                        'required': [ 'width', 'index' ],
+                                                        'properties': {
+                                                            'width': {
+                                                                'type': 'string'
+                                                            },
+                                                            'index': {
+                                                                'type': 'integer'
+                                                            },
+                                                            'sort': {
+                                                                'type': 'boolean'
+                                                            },
+                                                            'filter': {
+                                                                'type': 'boolean'
+                                                            }
+                                                        }
+                                                    },
+                                                    'tab': {
+                                                        'type': 'object',
+                                                        "additionalProperties": False,
+                                                        'required': [ 'label', 'index' ],
+                                                        'properties': {
+                                                            'label': {
+                                                                'type': 'string'
+                                                            },
+                                                            'index': {
+                                                                'type': 'integer'
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        },
+
                                         # TODO: These need to be removed
                                         'default': {
                                             'type': 'string'
