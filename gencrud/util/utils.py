@@ -149,6 +149,9 @@ def sourceName( templateName ):
 
 
 from six.moves.urllib.request import ProxyHandler
+import pypac.parser
+from urllib.parse import unquote, urlparse
+import base64
 
 class PacProxyHandler( ProxyHandler ):
     def __init__( self, pac_file ):
@@ -156,37 +159,21 @@ class PacProxyHandler( ProxyHandler ):
         self.pacFile = pac_file
         return
 
+    def http_open( self, r ):
+        return self.proxy_open( r, '', 'http' )
+
+    def https_open( self, r ):
+        return self.proxy_open( r, '', 'https' )
+
     def proxy_open(self, req, proxy, type):
-        orig_type = req.type
-        proxy_type, user, password, hostport = _parse_proxy(proxy)
-        if proxy_type is None:
-            proxy_type = orig_type
-
-        if req.host and proxy_bypass(req.host):
+        result = self.pacFile.find_proxy_for_url( req.full_url, req.host )
+        print( result )
+        if not result.startswith( 'PROXY ' ):
             return None
 
-        if user and password:
-            user_pass = '%s:%s' % (unquote(user),
-                                   unquote(password))
-            creds = base64.b64encode(user_pass.encode()).decode("ascii")
-            req.add_header('Proxy-authorization', 'Basic ' + creds)
-
-        hostport = unquote(hostport)
-        req.set_proxy(hostport, proxy_type)
-        if orig_type == proxy_type or orig_type == 'https':
-            # let other handlers take care of it
-            return None
-        else:
-            # need to start over, because the other handlers don't
-            # grok the proxy's URL type
-            # e.g. if we have a constructor arg proxies like so:
-            # {'http': 'ftp://proxy.example.com'}, we may end up turning
-            # a request for http://acme.example.com/a into one for
-            # ftp://proxy.example.com/a
-            return self.parent.open(req, timeout=req.timeout)
-
-
-
+        hostport = unquote( result.split(' ')[-1] )
+        req.set_proxy(hostport, type )
+        return self.parent.open(req, timeout=req.timeout)
 
 
 def update_nltk():
@@ -200,7 +187,8 @@ def update_nltk():
         proxy_support = None
         if isinstance( proxyUrl, PACFile ):
             # diferent opener
-            session = PACSession( proxyUrl )
+            proxy_support = PacProxyHandler( proxyUrl )
+
         elif isinstance( proxyUrl, str ):
             if proxyUrl.startswith( 'http' ):
                 # Need to strip
@@ -209,11 +197,9 @@ def update_nltk():
             proxy_support = ProxyHandler( { 'http': proxyUrl, 'https': proxyUrl } )
 
         ctx = _create_unverified_context()
-        if proxy_support is not None:
-            opener = build_opener( HTTPSHandler( context = ctx ), proxy_support )
-
-        else:
-            opener = build_opener(HTTPSHandler(context=ctx))
+        opener = build_opener(HTTPSHandler(context=ctx),proxy_support)
+#        if proxy_support is not None:
+#            opener.add_handler( proxy_support )
 
         install_opener(opener)
 
