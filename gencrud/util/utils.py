@@ -24,6 +24,7 @@ from gencrud.util.positon import PositionInterface
 from platform import system
 
 sslVerify       = True
+proxyUrl        = None
 backupFiles     = False
 overWriteFiles  = False
 ignoreCaseDbIds = False
@@ -147,21 +148,85 @@ def sourceName( templateName ):
     return os.path.splitext( os.path.basename( templateName ) )[ 0 ]
 
 
+from six.moves.urllib.request import ProxyHandler
+
+class PacProxyHandler( ProxyHandler ):
+    def __init__( self, pac_file ):
+        ProxyHandler.__init__( self )
+        self.pacFile = pac_file
+        return
+
+    def proxy_open(self, req, proxy, type):
+        orig_type = req.type
+        proxy_type, user, password, hostport = _parse_proxy(proxy)
+        if proxy_type is None:
+            proxy_type = orig_type
+
+        if req.host and proxy_bypass(req.host):
+            return None
+
+        if user and password:
+            user_pass = '%s:%s' % (unquote(user),
+                                   unquote(password))
+            creds = base64.b64encode(user_pass.encode()).decode("ascii")
+            req.add_header('Proxy-authorization', 'Basic ' + creds)
+
+        hostport = unquote(hostport)
+        req.set_proxy(hostport, proxy_type)
+        if orig_type == proxy_type or orig_type == 'https':
+            # let other handlers take care of it
+            return None
+        else:
+            # need to start over, because the other handlers don't
+            # grok the proxy's URL type
+            # e.g. if we have a constructor arg proxies like so:
+            # {'http': 'ftp://proxy.example.com'}, we may end up turning
+            # a request for http://acme.example.com/a into one for
+            # ftp://proxy.example.com/a
+            return self.parent.open(req, timeout=req.timeout)
+
+
+
+
+
+def update_nltk():
+    from nltk import download
+    from pypac import PACSession
+    from pypac.parser import PACFile
+    global proxyUrl
+    if not sslVerify:
+        from ssl import _create_unverified_context
+        from six.moves.urllib.request import install_opener, HTTPSHandler, build_opener
+        proxy_support = None
+        if isinstance( proxyUrl, PACFile ):
+            # diferent opener
+            session = PACSession( proxyUrl )
+        elif isinstance( proxyUrl, str ):
+            if proxyUrl.startswith( 'http' ):
+                # Need to strip
+                proxyUrl = proxyUrl.split('://')[-1]
+
+            proxy_support = ProxyHandler( { 'http': proxyUrl, 'https': proxyUrl } )
+
+        ctx = _create_unverified_context()
+        if proxy_support is not None:
+            opener = build_opener( HTTPSHandler( context = ctx ), proxy_support )
+
+        else:
+            opener = build_opener(HTTPSHandler(context=ctx))
+
+        install_opener(opener)
+
+    download('punkt')
+    return
+
+
 def check_nltk():
     try:
         from nltk.tokenize import word_tokenize
         word_tokenize( 'It\'s.' )
 
     except Exception:
-        from nltk import download
-        if not sslVerify:
-            from ssl import _create_unverified_context
-            from six.moves.urllib.request import install_opener, HTTPSHandler, build_opener
-            # TODO: This needs still proxy support !
-            ctx = _create_unverified_context()
-            opener = build_opener( HTTPSHandler( context = ctx ) )
-            install_opener( opener )
-
-        download( 'punkt' )
+        update_nltk()
 
     return
