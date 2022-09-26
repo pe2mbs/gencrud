@@ -157,7 +157,7 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires = [ 'mako',
                          'pypac',
-                         'jsonschema'
+                         'jsonschema',
                          'nltk',
                          'pyyaml',
                          'six' ],  # Optional
