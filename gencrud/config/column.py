@@ -473,6 +473,10 @@ class TemplateColumn( TemplateBase ):
             elif 'NOT NULL' in attr:
                 options[ 'nullable' ] = False
 
+            elif 'UNIQUE' in attr:
+                options[ 'unique' ] = True
+                options[ 'nullable' ] = False
+
             elif attr.startswith( 'FOREIGN KEY' ):
                 if root.config.options.ignoreCaseDbIds:
                     options[ 'foreign_key' ] = attr.split( ' ' )[ 2 ].lower()
@@ -497,9 +501,6 @@ class TemplateColumn( TemplateBase ):
 
             elif attr.startswith( 'NULL' ):
                 options[ 'nullable' ] = True
-
-            elif 'UNIQUE' in attr:
-                options[ 'unique' ] = True
 
             else:
                 logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
@@ -530,6 +531,9 @@ class TemplateColumn( TemplateBase ):
             elif 'NOT NULL' in attr:
                 result += ', nullable = False'
 
+            elif 'UNIQUE' in attr:
+                result += ', unique = True'
+
             elif attr.startswith( 'FOREIGN KEY' ):
                 foreignKeyName = attr.split( ' ' )[ 2 ].lower() if root.config.options.ignoreCaseDbIds else attr.split( ' ' )[ 2 ]
                 if 'NULL' in self.__attrs and 'NOT NULL' not in self.__attrs:
@@ -555,9 +559,6 @@ class TemplateColumn( TemplateBase ):
 
             elif attr.startswith( 'NULL' ):
                 result += ', nullable = True'
-
-            elif 'UNIQUE' in attr:
-                result += ', unique = True'
 
             else:
                 logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
