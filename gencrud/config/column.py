@@ -459,7 +459,7 @@ class TemplateColumn( TemplateBase ):
                     'primary_key': False,
                     'nullable': True,
                     'foreign_key': None,
-                    'unique': False
+                    'unique': False,
                     'default': None,
                   }
         for attr in self.__attrs:
