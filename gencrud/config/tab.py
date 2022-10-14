@@ -56,6 +56,12 @@ class TemplateTabs( TemplateBase ):
                 self.__fields[ col.tab.label ].append( col )
             else:
                 self.__fields[ C_NOTAB ].append( col )
+            for sibling in col.siblings:
+                if sibling.hasTab:
+                    logging.info( sibling.tab )
+                    self.__fields[ sibling.tab.label ].append( col )
+                else:
+                    self.__fields[ C_NOTAB ].append( sibling )
 
         for key in self.__fields.keys():
             self.__fields[ key ].sort( key = lambda x: x.tab.index, reverse = False )
@@ -71,7 +77,7 @@ class TemplateTabs( TemplateBase ):
         if isinstance( self.__cfg, ( list, tuple ) ):
             return self.__cfg
 
-        return self.__cfg.get( C_LABELS, None )
+        return self.__cfg.get( C_LABELS, [] )
 
     @property
     def tabTag( self ):

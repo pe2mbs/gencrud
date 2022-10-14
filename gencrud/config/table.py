@@ -98,6 +98,13 @@ class TemplateTable( TemplateBase ):
                     groups[column.ui.group].append(column)
                 else:
                     groups[ C_NOGROUP ].append(column)
+            # ad-on for sibling support
+            for sibling in column.siblings:
+                if sibling.ui:
+                    if sibling.ui.group:
+                        groups[sibling.ui.group].append(sibling)
+                    else:
+                        groups[ C_NOGROUP ].append(sibling)
         self.__groups = [InputGroup(group, fields) for group, fields in groups.items()]
 
         return
@@ -255,8 +262,14 @@ class TemplateTable( TemplateBase ):
 
     @property
     def listViewColumns( self ) -> list:
-        return sorted( [ col for col in self.__columns if col.listview.index is not None ],
+        return sorted( [ col for col in self.__columns if col.listview.index is not None ] +
+                       [ sibling for col in self.__columns for sibling in col.siblings if sibling.listview.index is not None ],
                        key = lambda col: col.listview.index )
+
+    @property
+    def uiColumns( self ) -> list:
+        return [ col for col in self.__columns if col.ui is not None ] +\
+                [ sibling for col in self.__columns for sibling in col.siblings if sibling.ui is not None ]
 
     def buildFilter( self ) -> str:
         result = [ ]

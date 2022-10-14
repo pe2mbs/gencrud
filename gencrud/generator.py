@@ -38,6 +38,9 @@ from gencrud.util.exceptions import ( InvalidEnvironment,
                                       ModuleExistsAlready,
                                       InvalidSetting )
 from gencrud.constants import *
+import pypac.os_settings
+from pypac.parser import PACFile
+from pypac import get_pac
 logger = logging.getLogger()
 
 
@@ -191,6 +194,8 @@ Options:
                                         instead of adding the components directly into app.module.ts   
     -s / --ssl-verify                    Disable the verification of ssl certificate when    
                                         retrieving some external profile data.
+    -p / --proxy <addr|pac>             Using the IP address, url address of the proxy or the address for the PAC file
+    -P / --proxy-system                 Use system proxy Windows Only 
     -v                                  Verbose option, prints what the tool is doing.
     -V / --version                      Print the version of the tool.
 ''' )
@@ -202,7 +207,7 @@ def main():
     logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hs:obvVcMri:e:', [ 'help',
+                                    'hs:obvVcMri:e:np:P', [ 'help',
                                                         'ssl-verify=',
                                                         'overwrite',
                                                         'backup',
@@ -211,7 +216,10 @@ def main():
                                                         'ignore=',
                                                         'extension='
                                                         'version',
-                                                        'ignore-case-db-ids' ] )
+                                                        'ignore-case-db-ids',
+                                                        'proxy=',
+                                                        'proxy-system',
+                                                        'nltk-update' ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -261,6 +269,49 @@ def main():
 
             elif o.lower() in ( '-s', '--ssl-verify' ):
                 gencrud.util.utils.sslVerify = a.lower() == 'true'
+
+            elif o.lower() in ( '-P', '--proxy-system' ):
+                if pypac.os_settings.ON_WINDOWS:
+                    gencrud.util.utils.proxyUrl = get_pac( url = pypac.os_settings.autoconfig_url_from_registry() )
+
+                else:
+                    raise Exception( "use manual proxy settings" )
+
+            elif o.lower() in ( '-p', '--proxy' ):
+                pacFile = None
+                if a.startswith( 'http' ):
+                    if a.endswith( '.pac' ):
+                        # PAC file
+                        pacFile = a
+                    else:
+                        # URL
+                        gencrud.util.utils.proxyUrl = a
+
+                elif a[0].isdigit():
+                    import socket
+                    try:
+                        socket.inet_aton( a.split( ':' )[ 0 ] )
+                        # legal IP address
+                        gencrud.util.utils.proxyUrl = a
+
+                    except socket.error:
+                        # Not legal
+                        if os.path.isfile( a ) and os.path.exists( a ):
+                            # PAC file
+                            pacFile = a
+
+                if pacFile is not None:
+                    if pacFile.startswith( 'http' ):
+                        pac = get_pac( url = pacFile )
+
+                    else:
+                        with open( pacFile, 'r' ) as stream:
+                            pac = PACFile( stream.read() )
+
+                    gencrud.util.utils.proxyUrl = pac
+
+            elif o.lower() in ( '-n', '--nltk-update' ):
+                gencrud.util.utils.update_nltk()
 
             else:
                 assert False, 'unhandled option'
