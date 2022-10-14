@@ -150,6 +150,7 @@ class TemplateColumn( TemplateBase ):
         # DEFAULT <value>
         # PRIMARY KEY
         # AUTO NUMBER
+        # UNIQUE
         # FOREIGN KEY <reference>
         while offset < len( tokens ):
             if tokens[ offset ] == 'NULL':
@@ -171,6 +172,9 @@ class TemplateColumn( TemplateBase ):
 
             elif tokens[ offset ] == 'AUTO':
                 self.__attrs.append( 'AUTO NUMBER' )
+
+            elif tokens[ offset ] == 'UNIQUE':
+                self.__attrs.append( 'UNIQUE' )
 
             elif tokens[ offset ] == 'FOREIGN':
                 self.__attrs.append( 'FOREIGN KEY {0}'.format( tokens[ offset + 2 ] ) )
@@ -432,6 +436,7 @@ class TemplateColumn( TemplateBase ):
                     'primary_key': False,
                     'nullable': True,
                     'foreign_key': None,
+                    'unique': False
                     'default': None,
                   }
         for attr in self.__attrs:
@@ -469,6 +474,9 @@ class TemplateColumn( TemplateBase ):
 
             elif attr.startswith( 'NULL' ):
                 options[ 'nullable' ] = True
+
+            elif 'UNIQUE' in attr:
+                options[ 'unique' ] = True
 
             else:
                 logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
@@ -524,6 +532,9 @@ class TemplateColumn( TemplateBase ):
 
             elif attr.startswith( 'NULL' ):
                 result += ', nullable = True'
+
+            elif 'UNIQUE' in attr:
+                result += ', unique = True'
 
             else:
                 logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
