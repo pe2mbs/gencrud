@@ -1,6 +1,7 @@
 # PyCharm
 .idea/
 settings.json
+gh-md-toc
 # some working folders
 output/
 templates.old/
