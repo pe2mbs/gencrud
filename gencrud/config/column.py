@@ -177,6 +177,7 @@ class TemplateColumn( TemplateBase ):
 
             elif tokens[ offset ] == 'UNIQUE':
                 self.__attrs.append( 'UNIQUE' )
+                offset -= 1
 
             elif tokens[ offset ] == 'FOREIGN':
                 self.__attrs.append( 'FOREIGN KEY {0}'.format( tokens[ offset + 2 ] ) )
@@ -475,7 +476,6 @@ class TemplateColumn( TemplateBase ):
 
             elif 'UNIQUE' in attr:
                 options[ 'unique' ] = True
-                options[ 'nullable' ] = False
 
             elif attr.startswith( 'FOREIGN KEY' ):
                 if root.config.options.ignoreCaseDbIds:

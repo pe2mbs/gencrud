@@ -1,10 +1,11 @@
 # PyCharm
 .idea/
+settings.json
 # some working folders
 output/
 templates.old/
 test_prg/
-
+\__main__.py
 
 # general things to ignore
 build/
