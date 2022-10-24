@@ -4,5 +4,6 @@ mako
 nltk
 ruamel.yaml
 pytest
+pypac
 pyyaml
 six
