@@ -22,6 +22,7 @@ from gencrud.util.exceptions import InvalidSetting
 from gencrud.config.route import RouteTemplate
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
+from gencrud.util.angular import keyValueToHTML
 
 logger = logging.getLogger()
 
@@ -134,7 +135,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def color( self ) -> str:
-        return self.__cfg.get( C_COLOR, 'primary' )
+        return self.__cfg.get( C_COLOR, C_COLOR_PRIMARY )
 
     @property
     def css( self ) -> str:
@@ -315,7 +316,7 @@ class TemplateAction( TemplateBase ):
 
     def screenObject( self ):
         if self.__cfg.get( 'directive', None ) is not None:
-            params = " ".join( [ '[{}]="{}"'.format( par, val ) for par, val in self.__cfg.get( 'params', {} ).items() ] )
+            params = " ".join( [ keyValueToHTML(par, val) for par, val in self.__cfg.get( 'params', {} ).items() ] )
             params += ' [disabled]="{}"'.format( self.disabled )
             # define properties without binding to components attributes
             unbindedProps = [("name", "name"), ("tooltip", "label")]
