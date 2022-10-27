@@ -253,6 +253,10 @@ class TemplateTable( TemplateBase ):
         return self.__secondaryKey
 
     @property
+    def hasSecondaryKey( self ) -> bool:
+        return self.__secondaryKey not in ('', None)
+
+    @property
     def firstTextField( self ):
         for col in self.__columns:
             if col.isString():
