@@ -40,6 +40,7 @@ class TypeComponents( object ):
         C_NUMBER: { 'tag': 'gc-number-input' },
         C_EMAIL: { 'tag': 'gc-mail-input' },
         C_CHOICE: { 'tag': 'gc-choice-input' },
+        C_CHOICE_BASE: { 'tag': 'gc-choice-base-input' },
         C_CHOICE_AUTO: { 'tag': 'gc-choice-autocomplete-input' },
         C_COMBOBOX: { 'tag': 'gc-combo-input' },
         C_COMBO: { 'tag': 'gc-combo-input' },
@@ -75,12 +76,12 @@ class TemplateUi( TemplateBase ):
         self.__components = TypeComponents()
         self.__cfg = cfg
         if C_SERVICE in cfg:
-            self.__service = TemplateService( **cfg[ C_SERVICE ] )
+            self.__service = TemplateService( parent=self, **cfg[ C_SERVICE ] )
         else:
             self.__service = None
 
         if C_ACTIONS in cfg:
-            self.__actions = TemplateActions( self, "name", cfg[C_ACTIONS] )
+            self.__actions = TemplateActions( self, "name", cfg[C_ACTIONS], includeDefault=False )
         else:
             self.__actions = []
 
@@ -224,7 +225,7 @@ class TemplateUi( TemplateBase ):
 
     # deprecated
     def isChoice( self ):
-        return self.uiObject in ( C_CHOICE, C_CHOICE_AUTO )
+        return self.uiObject in ( C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE )
 
     # deprecated
     def isCombobox( self ):
@@ -265,24 +266,39 @@ class TemplateUi( TemplateBase ):
         if self.isSet( 'suffix-type' ) or self.isSet( 'suffix' ):
             options.append( 'suffix="{0}" suffix-type="{1}"'.format( self.suffix, self.suffixType ) )
 
-        if self.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO ):
-            if self.__service is None:
+        if self.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE, C_TEXTBOX ):
+            if self.__service is None and not self.isUiType( C_CHOICE, C_TEXTBOX ): # choice is backend rendered and does not take items list
                 options.append( '[items]="{}List"'.format( self.parent.name ) )
 
             else:
-                options.append( '[items]="{}List"'.format( self.__service.name ) )
-                options.append( 'serviceName="{}"'.format( self.__service.name ) )
-                # TODO: right now, only one action button is supported for a service and
-                # the functionality is the same (redirecting to the screen view of the service class)
-                # in case multiple functionalities and buttons should be supported, the following lines
-                # need an adjustment
-                if len(self.__actions) > 0:
-                    action = self.__actions[0] 
-                    options.append( 'buttonPosition="{}"'.format( action.position ) )
-                    options.append( 'icon="{}"'.format( action.icon ) )
-                    if action.function != '' and action.function != None:
+                if self.__service is not None:
+                    options.append( 'serviceName="{}"'.format( self.__service.name ) )
+                    if not self.isUiType( C_TEXTBOX ):
+                        if not self.isUiType( C_CHOICE ):
+                            options.append( '[items]="{}List"'.format( self.__service.name ) )
+                        else:
+                            # TODO: fix this part since it assumes Sercive explicitly as the name
+                            options.append( '[service]="{}Service"'.format( self.__service.name ) )
+                            options.append( 'valueField="{}"'.format( self.__service.value ) )
+                            options.append( 'labelField="{}"'.format( self.__service.label ) )
+
+                        # apply (backend) filter if specified
+                        if self.service.hasFilter():
+                            filterDictString = ", ".join([key + ": " + value for key, value in self.service.filter.items()])
+                            options.append( '[filterDict]="{ ' + filterDictString + '}"' )
+                    # TODO: right now, only one action button is supported for a service and
+                    # the functionality is the same (redirecting to the screen view of the service class)
+                    # in case multiple functionalities and buttons should be supported, the following lines
+                    # need an adjustment
+                    if len(self.__actions) > 0:
+                        buttonPosition = self.__actions[0].position if len(self.__actions) == 1 else 'both'
+                        options.append( 'buttonPosition="{}"'.format( buttonPosition ) )
                         options.append( '[contextObject]="this"' )
-                        options.append( 'funcToEvaluate="{}"'.format( action.function ) )
+                        for action in self.__actions:
+                            position = 'Left' if action.position == 'left' else 'Right'
+                            options.append( 'icon{}="{}"'.format( position, action.icon ) )
+                            if action.function != '' and action.function != None:
+                                options.append( 'funcToEvaluate{}="{}"'.format( position, action.function ) )
 
         elif self.isUiType( C_TEXTAREA ):
             options.append( 'rows="{0}" cols="{1}"'.format( self.rows, self.cols ) )
@@ -299,17 +315,20 @@ class TemplateUi( TemplateBase ):
             options.append( 'thumbLabel="{0}"'.format( self.thumbLabel ) )
             options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
 
-         # no service defined --> custom button with custom function
+
+        # no service defined --> custom button with custom function
         if len(self.__actions) > 0 and self.__service is None:
-            action = self.__actions[0] 
-            options.append( 'buttonPosition="{}"'.format( action.position ) )
+            buttonPosition = self.__actions[0].position if len(self.__actions) == 1 else 'both'
+            options.append( 'buttonPosition="{}"'.format( buttonPosition ) )
             options.append( '[contextObject]="this"' )
-            options.append( 'icon="{}"'.format( action.icon ) )
-            if action.function != '' and action.function != None:
-                options.append( 'funcToEvaluate="{}"'.format( action.function ) )
+            for action in self.__actions:
+                position = 'Left' if action.position == 'left' else 'Right'
+                options.append( 'icon{}="{}"'.format( position, action.icon ) )
+                if action.function != '' and action.function != None:
+                    options.append( 'funcToEvaluate{}="{}"'.format( position, action.function ) )
 
         if C_DISABLED in self.__cfg:
-            options.append( 'disabled="{0}"'.format( self.disabled ) )
+            options.append( '[disabled]="{0}"'.format( self.__cfg[C_DISABLED] ) )
 
         if self.field.isPrimaryKey():
             options.append( 'readonly="true"' )
@@ -570,5 +589,5 @@ class TemplateUi( TemplateBase ):
             components = inputString.split(".")
             result = ""
             for i in range(startIndex, len(components) + 1):
-                result += "!isNullOrUndefined(" + ".".join(components[:i]) + ") && "
+                result += ".".join(components[:i]) + " != null && "
             return result[:-4] + " ? " + inputString + " : null"

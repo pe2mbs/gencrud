@@ -219,7 +219,7 @@ class TemplateObject( TemplateBase ):
         result = []
         for field in self.__table.columns:
             if field.ui is not None:
-                if field.ui.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO ):
+                if field.ui.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE ):
                     if field.ui.service is not None:
                         result.append( 'public {name}Service: {cls}'.format(
                                         name = field.ui.service.name,

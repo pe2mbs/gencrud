@@ -22,8 +22,8 @@ from gencrud.util.exceptions import MissingAttribute
 
 
 class TemplateService( TemplateBase ):
-    def __init__( self, **cfg ):
-        TemplateBase.__init__( self, None )
+    def __init__( self, parent=None, **cfg ):
+        TemplateBase.__init__( self, parent )
         self.__config = cfg
         if C_NAME not in self.__config:
             raise MissingAttribute( C_SERVICE, C_NAME )
@@ -37,12 +37,18 @@ class TemplateService( TemplateBase ):
         if C_CLASS not in self.__config:
             raise MissingAttribute( C_SERVICE, C_CLASS )
 
+        #if C_FILTER in self.__config:
+        #    self.__filter = cfg[C_FILTER]
+
         self.__fieldLabel = ''
         return
 
     @property
     def fieldLabel( self ):
         return self.__fieldLabel
+
+    def hasFilter( self ) -> bool:
+        return C_FILTER in self.__config
 
     @fieldLabel.setter
     def fieldLabel( self, value ):
@@ -60,6 +66,10 @@ class TemplateService( TemplateBase ):
     @property
     def value( self ):
         return self.__config.get( C_VALUE, None )
+
+    @property
+    def filter( self ):
+        return self.__config.get( C_FILTER, None )
 
     @property
     def label( self ):

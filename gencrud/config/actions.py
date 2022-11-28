@@ -28,7 +28,7 @@ logger = logging.getLogger()
 
 
 class TemplateActions( TemplateBase ):
-    def __init__( self, parent, objname, cfg ):
+    def __init__( self, parent, objname, cfg, includeDefault=True ):
         TemplateBase.__init__( self, parent )
         self.__name = objname
         self.__actions = []
@@ -36,11 +36,11 @@ class TemplateActions( TemplateBase ):
         for action in cfg:
             self.__actions.append( TemplateAction( self.parent, objname, **action ) )
         # Disabled for now, user should specify all actions manually
-        if not self.has( C_NEW ):
+        if not self.has( C_NEW ) and includeDefault:
             self.__actions.append( DEFAULT_NEW_ACTION.clone( objname ) )
-        if not self.has( C_EDIT ):
+        if not self.has( C_EDIT ) and includeDefault:
             self.__actions.append( DEFAULT_EDIT_ACTION.clone( objname ) )
-        if not self.has( C_DELETE ):
+        if not self.has( C_DELETE ) and includeDefault:
             self.__actions.append( DEFAULT_DELETE_ACTION.clone( objname ) )
         return
 
@@ -202,7 +202,7 @@ class TemplateActions( TemplateBase ):
         return False
 
     def getScreenActions( self ):
-        return sorted( [ action for action in self.__actions if action.type == 'screen' and action.position == 'sidebar' ],
+        return sorted( [ action for action in self.__actions if action.type in [C_SCREEN, C_API] and action.position == 'sidebar' ],
                        key = lambda k: k.get( 'index', 0 ) )
 
     @property

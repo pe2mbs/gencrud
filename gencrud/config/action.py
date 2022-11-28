@@ -294,7 +294,7 @@ class TemplateAction( TemplateBase ):
 
         condition = ''
         if self.hasNgIf():
-            condition = self.ngIf
+            condition = "*ngIf=\"" + self.ngIf + "\""
 
         return button + BUTTON_STR.format( button = button_type,
                                            route = route,
@@ -325,6 +325,8 @@ class TemplateAction( TemplateBase ):
             # first, set unbinded props within inner format function, later set other code in outer format function
             return ('<{directive} ' + " ".join([ '{}="{{{}}}"'.format(prop, val) for prop, val in unbindedProps ]) +
              ' {control}></{directive}>').format( **self.__cfg, control = params )
+        elif self.type == C_API:
+            return self.buttonObject()
         return ""
 
 
