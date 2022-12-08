@@ -186,6 +186,9 @@ class TemplateColumn( TemplateBase ):
         if C_UI in cfg and type( cfg[ C_UI ] ) is dict:
             self.__ui = TemplateUi( self, **cfg.get( C_UI, {} ) )
 
+        if C_UNIQUE in cfg and type( cfg[ C_UNIQUE ] ) is bool:
+            self.unique = cfg[C_UNIQUE]
+
         if C_SIBLINGS in cfg and type( cfg[ C_SIBLINGS ] ) is list:
             for subConfig in cfg[ C_SIBLINGS ]:
                 subConfig[ C_ISSIBLING ] = True
