@@ -111,6 +111,9 @@ GENCRUD_SCHEME = {
                 },
                 'use-module': {
                     'type': 'boolean'
+                },
+                'generate-tests': {
+                    'type': 'boolean'
                 }
             }
         },
