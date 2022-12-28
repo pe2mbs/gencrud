@@ -345,16 +345,17 @@ class ServicesList( list ):
         self.__mapper[ new_item.mapperName ] = idx
         return
 
-    def unique( self, *args ):
+    def unique( self, *args, exclude=[] ):
         logger.debug("ServicesList.unique: {}".format( args ) )
         intermediate  = {}
         for service in list( self ):
-            key = ''.join( [ v for k, v in service.dictionary.items() if k in args ] )
-            logger.debug( "ServicesList.service: {} => {} | {}".format( service, args, key ) )
-            if key == '':
-                continue
-
-            intermediate[ key ] = service
+            if service.parent is None or service.parent.uiObject not in exclude:
+                key = ''.join( [ v for k, v in service.dictionary.items() if k in args ] )
+                logger.debug( "ServicesList.service: {} => {} | {}".format( service, args, key ) )
+                if key == '':
+                    continue
+                
+                intermediate[ key ] = service
 
         logger.debug("ServicesList.unique => {}".format( intermediate.values() ) )
         return intermediate.values()
@@ -399,15 +400,21 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
 
         servicesList = ServicesList()
+        # TODO: temporary solutionto include all services
+        fullServiceList = ServicesList()
         for field in cfg.table.columns:
-            if field.ui is not None and field.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_COMBOBOX, C_COMBO, C_CHECKBOX) and field.hasService():
+            if field.ui is not None and field.hasService():
                 field.ui.service.fieldLabel = field.label
-                servicesList.append( field.ui.service )
+                if field.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE, C_COMBOBOX, C_COMBO, C_CHECKBOX):
+                    servicesList.append( field.ui.service )
+                fullServiceList.append( field.ui.service )
             # required ad-on for the support of siblings, i.e., multiple usage of the same database field
             for sibling in field.siblings:
-                if sibling.ui is not None and sibling.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_COMBOBOX, C_COMBO, C_CHECKBOX) and sibling.hasService():
+                if sibling.ui is not None and sibling.hasService():
                     sibling.ui.service.fieldLabel = sibling.label
-                    servicesList.append( sibling.ui.service )
+                    if sibling.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE, C_COMBOBOX, C_COMBO, C_CHECKBOX):
+                        servicesList.append( sibling.ui.service )
+                    fullServiceList.append( sibling.ui.service )
 
         for templ in templates:
             templateFilename = os.path.join( config.angular.sourceFolder,
@@ -462,6 +469,7 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
                                                                                         version = gencrud.version.__version__,
                                                                                         username = userName,
                                                                                         services = servicesList,
+                                                                                        allServices=fullServiceList,
                                                                                         date = generationDateTime ).split( '\n' ):
 
                         if line.startswith( 'export ' ):

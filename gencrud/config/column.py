@@ -191,6 +191,9 @@ class TemplateColumn( TemplateBase ):
         if C_UI in cfg and type( cfg[ C_UI ] ) is dict:
             self.__ui = TemplateUi( self, **cfg.get( C_UI, {} ) )
 
+        if C_UNIQUE in cfg and type( cfg[ C_UNIQUE ] ) is bool:
+            self.unique = cfg[C_UNIQUE]
+
         if C_SIBLINGS in cfg and type( cfg[ C_SIBLINGS ] ) is list:
             for subConfig in cfg[ C_SIBLINGS ]:
                 subConfig[ C_ISSIBLING ] = True
@@ -350,6 +353,11 @@ class TemplateColumn( TemplateBase ):
     def hasLabel( self ) -> bool:
         return self.__config.get( C_LABEL, '' ) != ''
 
+    def hasTextWithService( self ) -> bool:
+        if self.hasService() and self.__ui.isUiType( C_TEXTBOX, C_TEXTAREA ):
+            return True
+        return False
+
     @property
     def label( self ) -> str:
         return self.__config.get( C_LABEL, '' )
@@ -370,6 +378,14 @@ class TemplateColumn( TemplateBase ):
             # remove the last item of the label string since that is the actual label but we want
             # the foreign key id of the row that contains the label. Also, remove the "_FK" at the end
             return self.__field + "_FK." +  ".".join(self.__ui.serviceLabel.split(".")[:-1])[:-3]
+        return None
+
+    @property
+    def foreignRecordValue( self ) -> str:
+        if self.__ui is not None and isinstance(self.__ui.serviceLabel, str):
+            # creates a concatenation of foreign key references so that the service label
+            # is correctly accessed.
+            return self.__field + "_FK." +  ".".join([self.__ui.serviceLabel])
         return None
 
     @property
@@ -490,7 +506,7 @@ class TemplateColumn( TemplateBase ):
                     options[ 'default' ] = value
 
                 elif self.isBooleanField():
-                    if value.lower() == ( "true", "1", "yes" ):
+                    if value.lower() in ( "true", "1", "yes", 1 ):
                         options[ 'default' ] = True
 
                     else:
@@ -548,7 +564,7 @@ class TemplateColumn( TemplateBase ):
                     result += ', default = {0}'.format( value )
 
                 elif self.isBooleanField():
-                    if value.lower() == ( "true", "1", "yes" ):
+                    if value.lower() in ( "true", "1", "yes", 1 ):
                         result += ', default = True'
 
                     else:

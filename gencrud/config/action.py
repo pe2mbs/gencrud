@@ -119,12 +119,23 @@ class TemplateAction( TemplateBase ):
     def uri( self ) -> str:
         return self.__cfg.get( C_URI, '' )
 
-    @property
-    def disabled( self ) -> str:
-        return self.__cfg.get( 'disabled', 'false' )
+    def hasNgIf( self ):
+        return C_NGIF in self.__cfg
 
-    def hasDisabed( self ) -> bool:
-        return 'disabled' in self.__cfg
+    def hasDisabled( self ):
+        return C_DISABLED in self.__cfg
+
+    def isDirective( self ):
+        # TODO: This is wrong !!!!!
+        return self.type == C_DIRECTIVE
+    
+    @property
+    def ngIf( self ):
+        return self.__cfg.get( C_NGIF, 'true' )
+
+    @property
+    def disabled( self ):
+        return self.__cfg.get( C_DISABLED, 'false' )
 
     def isAngularRoute( self ) -> bool:
         return C_ROUTE in self.__cfg
@@ -194,17 +205,6 @@ class TemplateAction( TemplateBase ):
                                icon = self.icon,
                                position = self.position,
                                function = self.function )
-
-    def hasNgIf( self ):
-        return "ngIf" in self.__cfg
-
-    def isDirective( self ):
-        # TODO: This is wrong !!!!!
-        return self.type == C_DIRECTIVE
-    
-    @property
-    def ngIf( self ):
-        return self.__cfg.get( 'ngIf', 'true' )
 
     def routingPath( self ) -> str:
         route = ""
@@ -294,7 +294,7 @@ class TemplateAction( TemplateBase ):
 
         condition = ''
         if self.hasNgIf():
-            condition = self.ngIf
+            condition = "*ngIf=\"" + self.ngIf + "\""
 
         return button + BUTTON_STR.format( button = button_type,
                                            route = route,
@@ -325,6 +325,8 @@ class TemplateAction( TemplateBase ):
             # first, set unbinded props within inner format function, later set other code in outer format function
             return ('<{directive} ' + " ".join([ '{}="{{{}}}"'.format(prop, val) for prop, val in unbindedProps ]) +
              ' {control}></{directive}>').format( **self.__cfg, control = params )
+        elif self.type == C_API:
+            return self.buttonObject()
         return ""
 
 

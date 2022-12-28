@@ -278,7 +278,7 @@ class TemplateTable( TemplateBase ):
     def buildFilter( self ) -> str:
         result = [ ]
         for item in self.listViewColumns:
-            if item.ui.isUiType(C_CHOICE, C_CHOICE_AUTO) or item.ui.isUiType(C_COMBOBOX, C_COMBO):
+            if item.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE) or item.ui.isUiType(C_COMBOBOX, C_COMBO):
                 result.append( "( this.{0}_Label( record.{0} ) )".format( item.name ) )
 
             elif item.ui.isCheckbox() or item.ui.isSliderToggle():

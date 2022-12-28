@@ -246,6 +246,10 @@ GENCRUD_SCHEME = {
                                     'view': {
                                         'type': 'object',
                                         "additionalProperties": False,
+                                        'properties': {
+                                            'class': {'type': 'string'},
+                                            'filename': {'type': 'string'},
+                                        }
                                     }
                                 }
                             }
@@ -553,7 +557,7 @@ GENCRUD_SCHEME = {
                                             "additionalProperties": False,
                                             'properties': {
                                                 'type': {
-                                                    "enum": [ 'textbox', 'editor', 'number', 'choice', 'choice-auto-complete',
+                                                    "enum": [ 'textbox', 'editor', 'number', 'choice', 'choice-auto-complete', 'choice-base',
                                                               'textarea', 'checkbox', 'password', 'date', 'time', 'datetime',
                                                               'label' ]
                                                 },
@@ -567,6 +571,9 @@ GENCRUD_SCHEME = {
                                                     'type': 'string'
                                                 },
                                                 'ngIf': {
+                                                    'type': 'string'
+                                                },
+                                                'disabled': {
                                                     'type': 'string'
                                                 },
                                                 'hint': {
@@ -601,6 +608,11 @@ GENCRUD_SCHEME = {
                                                         },
                                                         'label': {
                                                             'type': 'string',
+                                                        },
+                                                        'filter': {
+                                                            'type': 'object',
+                                                            "optional": True,
+                                                            "additionalProperties": True
                                                         },
                                                     }
                                                 },
@@ -730,7 +742,7 @@ GENCRUD_SCHEME = {
                                                         "additionalProperties": False,
                                                         'properties': {
                                                             'type': {
-                                                                "enum": [ 'textbox', 'editor', 'number', 'choice', 'choice-auto-complete',
+                                                                "enum": [ 'textbox', 'editor', 'number', 'choice', 'choice-auto-complete', 'choice-base',
                                                                         'textarea', 'checkbox', 'password', 'date', 'time', 'datetime',
                                                                         'label' ]
                                                             },
@@ -744,6 +756,9 @@ GENCRUD_SCHEME = {
                                                                 'type': 'string'
                                                             },
                                                             'ngIf': {
+                                                                'type': 'string'
+                                                            },
+                                                            'disabled': {
                                                                 'type': 'string'
                                                             },
                                                             'hint': {
@@ -778,6 +793,11 @@ GENCRUD_SCHEME = {
                                                                     },
                                                                     'label': {
                                                                         'type': 'string',
+                                                                    },
+                                                                    'filter': {
+                                                                        'type': 'object',
+                                                                        "optional": True,
+                                                                        "additionalProperties": True
                                                                     },
                                                                 }
                                                             },
