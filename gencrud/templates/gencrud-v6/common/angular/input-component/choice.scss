@@ -1,0 +1,23 @@
+
+::ng-deep .mat-select-panel .mat-optgroup-label, ::ng-deep .mat-select-panel .mat-option, ::ng-deep .mat-option-text, ::ng-deep .mat-option-ripple.mat-ripple, mat-option
+{
+    font-size: inherit !important;
+    line-height: 2em !important;
+    height: 2em !important;
+}
+
+::ng-deep .ng-dropdown-panel, ::ng-deep .ng-dropdown-panel-items
+{
+    max-height: 14em !important;
+}
+
+.custom-input
+{
+    width: 100%;
+}
+
+mat-form-field
+{
+    width: 100%;
+}
+

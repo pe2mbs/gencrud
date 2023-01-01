@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 #
 #   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   main generator script
+#   Copyright (C) 2018-2023 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -26,6 +27,7 @@ import glob
 import traceback
 import logging
 import gencrud.util.utils
+import gencrud.installer
 from gencrud.configuraton import TemplateConfiguration, my_safe_load
 from gencrud.generators.python import generatePython
 from gencrud.generators.angular import generateAngular
@@ -198,6 +200,8 @@ Options:
     -P / --proxy-system                 Use system proxy Windows Only 
     -v                                  Verbose option, prints what the tool is doing.
     -V / --version                      Print the version of the tool.
+    -I / --install <angular-version>    Install templates into project, angular-version is the major Angular version 
+                                        to be installed. current supported versions 8, 10 and 12                                       
 ''' )
     return
 
@@ -207,19 +211,23 @@ def main():
     logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hs:obvVcMri:e:np:P', [ 'help',
-                                                        'ssl-verify=',
-                                                        'overwrite',
-                                                        'backup',
-                                                        'module',
-                                                        'recursive',
-                                                        'ignore=',
-                                                        'extension='
-                                                        'version',
-                                                        'ignore-case-db-ids',
-                                                        'proxy=',
-                                                        'proxy-system',
-                                                        'nltk-update' ] )
+                                    'hs:obvVcMri:e:np:PI:',
+                                    [
+                                        'help',
+                                        'ssl-verify=',
+                                        'overwrite',
+                                        'backup',
+                                        'module',
+                                        'recursive',
+                                        'ignore=',
+                                        'extension='
+                                        'version',
+                                        'ignore-case-db-ids',
+                                        'proxy=',
+                                        'proxy-system',
+                                        'install=',
+                                        'nltk-update'
+                                    ] )
 
     except getopt.GetoptError as err:
         # print help information and exit:
@@ -312,6 +320,11 @@ def main():
 
             elif o.lower() in ( '-n', '--nltk-update' ):
                 gencrud.util.utils.update_nltk()
+
+            elif o in ( '-I', '--install' ):
+                gencrud.installer.install( int( a ) )
+                print( "Done" )
+                raise SystemExit()
 
             else:
                 assert False, 'unhandled option'

@@ -1,0 +1,119 @@
+/*
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+*/
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material';
+import { Component, Inject } from '@angular/core';
+import { FormControl, Validators, FormGroup } from '@angular/forms';
+% if obj.mixin.Angular.hasComponentDialog():
+import { ${obj.mixin.Angular.ComponentDialog.cls} } from '${obj.mixin.Angular.ComponentDialog.filename}';
+% else:
+import { BaseDialog } from '../../common/dialog/dialog';
+% endif
+import { ${ obj.cls }DataService } from './service';
+% for field in obj.table.columns:
+ % if field.ui is not None and ( field.ui.isChoice() or field.ui.isCombobox() ):
+import { PytSelectList } from '../../common/crud-dataservice';
+<%
+    break
+%>
+ % endif
+% endfor
+% for service in services.unique( 'class', 'path' ):
+import { ${ service.cls } } from '${ service.path }';
+% endfor
+
+
+@Component({
+    selector: 'app-${ obj.name }-dialog',
+    templateUrl: './dialog.component.html',
+    styleUrls: ['../../common/dialog/dialog.scss' ]
+})
+
+% if obj.mixin.Angular.hasComponentDialog():
+export class Dialog${ obj.cls }Component extends ${obj.mixin.Angular.ComponentDialog.cls}
+%else:
+export class Dialog${ obj.cls }Component extends BaseDialog
+% endif
+{
+% for field in obj.table.columns:
+ % if field.ui is not None:
+  % if field.ui.isPassword():
+    public hide_${ field.name }: boolean  = true;
+  % elif field.ui is not None:
+    % if field.ui.hasResolveList():
+      public ${ field.name }List = ${ field.ui.typescriptResolveList().replace( ' ', '' ) }
+    % endif
+  % endif
+ % endif
+% endfor
+% for service in services.unique( 'name' ):
+    public ${ service.uniqueName( 'List' ) }: PytSelectList[];
+% endfor
+    constructor( dialogRef: MatDialogRef<Dialog${ obj.cls }Component>
+                 , @Inject( MAT_DIALOG_DATA ) public data: any
+                 , dataService: ${ obj.cls }DataService
+${ services.externalService } )
+    { 
+        super( dialogRef, dataService, data.mode, data.fixed );
+        if ( !this.isEditMode() )
+        {
+            data.id = 'New';
+        }
+        this.formGroup = new FormGroup( {
+% for field in obj.table.columns:
+%  if field.hasLabel():
+            ${ field.name }: new FormControl( data.record.${ field.name } || ${ field.initValue },
+                                              ${ field.validators } ),
+%  endif
+% endfor
+        } );
+% for service in services.unique( 'name' ):
+        this.${ service.name }Service.getSelectList( '${ service.value }', '${ service.label }' ).subscribe( dataList => {
+            this.${ service.uniqueName( 'List' ) } = dataList;
+        } );
+% endfor
+        this.updateFixedValues()
+        return;
+    }
+
+% for field in obj.table.columns:
+%  if field.frontend:
+    public get ${ field.name }()
+    {
+        return ( this.formGroup.get( '${ field.name }' ) );
+    }
+
+%  endif
+% endfor
+    onSaveClick(): void
+    {
+        if ( !this.isEditMode() )
+        {
+            this.dataService.addRecord( this.formGroup.value );
+        }
+        else
+        {
+            this.dataService.updateRecord( this.formGroup.value );
+        }
+        super.onSaveClick();
+        return;
+    }
+}

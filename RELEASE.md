@@ -14,3 +14,12 @@ Older releases that contain many changes to improve the;
 
 # Release 2.0.577
 Was used to build the first application. 
+
+# Release 2.x.y up to Release 2.3.705
+Internal releases by the testrun-web project of Worldline
+
+# Release 2.3.706
+-   Added -I/--install option to install default files into a project folder
+-   Added obj.menu.json() to create a json structure of the menu
+-   Changed 'field' attribute to handle a dictionary as well besides the SQL like string
+

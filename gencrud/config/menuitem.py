@@ -87,3 +87,9 @@ class TemplateMenuItem( TemplateBase ):
     def after( self ):
         return self.__item.get( 'after', None )
 
+    @property
+    def access( self ):
+        return self.__item.get( 'access', '*' )
+
+    def json( self ):
+        return json.dumps( self.__config, indent = 4 )

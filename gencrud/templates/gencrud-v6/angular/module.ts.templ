@@ -1,0 +1,229 @@
+/*
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+*/
+import { NgModule, ModuleWithProviders, CUSTOM_ELEMENTS_SCHEMA, Injector } from '@angular/core';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Routes, Route } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CustomMaterialModule } from '../../material.module';
+import { GenCrudModule } from '../../common/gencrud.module';
+import { HelpModule } from 'src/app/components/help-component/help.module';
+import { SpinnerService } from '../../common/spinner-service';
+import { CustomHttpInterceptor } from '../../common/http-interceptor';
+import { ${ obj.cls }TableComponent } from './table.component';
+import { ${ obj.cls }DataService } from './service';
+% if obj.mixin.Angular.hasModule():
+import { ${ obj.mixin.Angular.Module.cls } } from '${ obj.mixin.Angular.Module.filename }';
+% endif
+<%  componentList = []  %>
+% for action in obj.actions.unique:
+%  if action.position != 'none':
+%   if action.type == 'dialog':
+%    if action.name == 'delete':
+import { Delete${ obj.cls }Dialog } from './delete.dialog';
+%    else:
+# TODO: in pe_report_main, this is not an if else, but an AND!
+# requires manual
+import { Dialog${ obj.cls }Component } from './dialog.component';
+%    endif
+%   elif action.type == 'screen' and "Screen${ obj.cls }Component" not in componentList:
+import { Screen${ obj.cls }Component } from './screen.component';
+<%
+    componentList.append( "Screen${ obj.cls }Component" )
+%>
+%   elif action.type == 'screen' and action.route is not None and action.route.cls not in componentList:
+%    if "Table" in action.route.cls:
+import { ${ action.route.cls } } from '../${ action.route.module }/table.component';
+%    else:
+import { ${ action.route.cls } } from '../${ action.route.module }/screen.component';
+%    endif
+<%
+    componentList.append( "${ action.route.cls }" )
+%>
+%   endif
+%  endif
+% endfor
+% for module in obj.modules.items:
+import { ${ module.cls } } from '${ module.importPath }';
+% endfor
+
+export const ${ obj.name }Route: Route = {
+% if obj.menu:
+%  if root.options.lazyLoading:
+    path:           '',
+%  else:
+    path:           '${ obj.menu.activateItem() }',
+%  endif
+% elif obj.route:
+    path:           '${ obj.route }',
+% endif
+    data:
+    {
+        breadcrumb: '${ obj.title }',
+        title:      '${ obj.title }'
+    },
+    children: [
+        {
+            path: '',
+            component: ${ obj.cls }TableComponent,
+            data:
+            {
+                breadcrumb: '',
+                title:      ''
+            }
+        },
+%  for action in obj.actions:
+%   if action.type == 'screen' and action.position != 'none':
+        {
+            path: '${ action.name }',
+%    if action.isAngularRoute():
+            component: ${ action.route.cls },
+%    else:
+            component: Screen${ obj.cls }Component,
+%    endif
+            data:
+            {
+                breadcrumb: '${ action.label }',
+                title:      '${ action.label }'
+            }
+        },
+%   endif
+%  endfor
+    ]
+}
+/*
+*   This NgModule is injected in the app-module.ts. This deals with declaring, importing,
+*   creating entry point and providing the services for the ${ obj.name } screens and dialogs.
+*
+*   This don't clutter the app-module.ts, instead of at least 4 components that are added to the app-module.ts
+*   it only adds this module and includes it in the import section.
+*/
+@NgModule( {
+    declarations: [
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+        Dialog${ obj.cls }Component,
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+        Delete${ obj.cls }Dialog,
+% endif
+% if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
+        Screen${ obj.cls }Component,
+% endif
+        ${ obj.cls }TableComponent,
+% if obj.hasExtra():
+%  for inp in obj.extra.getTypeScriptComponents( 'module' ):
+        ${ inp.component },
+%  endfor
+% endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasDeclarations():
+        ${ obj.injection.moduleTs.declarations },
+% endif
+    ],
+    entryComponents: [
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+        Dialog${ obj.cls }Component,
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+        Delete${ obj.cls }Dialog,
+% endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasEntryComponents():
+        ${ obj.injection.moduleTs.entryComponents },
+% endif
+    ],
+    providers: [
+        ${ obj.cls }DataService,
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: CustomHttpInterceptor,
+            multi: true
+        },
+        SpinnerService,
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasProviders():
+        ${ obj.injection.moduleTs.providers }
+% endif
+    ],
+    schemas: [ CUSTOM_ELEMENTS_SCHEMA ],
+    imports: [
+        CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
+        CustomMaterialModule,
+        GenCrudModule,
+        HelpModule,
+% for mod in obj.modules:
+        ${ mod.cls },
+% endfor
+% if obj.menu or obj.route:
+        RouterModule.forChild( [ ${ obj.name }Route ] )
+% endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasImports():
+        ${ obj.injection.moduleTs.imports },
+% endif
+    ],
+    exports: [
+% if ( obj.actions.get( 'new' ).type == 'screen' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'screen' and obj.actions.get( 'edit' ).position != 'none' ):
+        Screen${ obj.cls }Component,
+% endif
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+        Dialog${ obj.cls }Component,
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+        Delete${ obj.cls }Dialog,
+% endif
+        ${ obj.cls }TableComponent,
+% if obj.hasExtra():
+%  for inp in obj.extra.getTypeScriptComponents( 'module' ):
+        ${ inp.component },
+%  endfor
+% endif
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasExports():
+        ${ obj.injection.moduleTs.exports },
+% endif
+    ]
+} )
+% if obj.mixin.Angular.hasModule():
+export class ${ obj.cls }Module extends ${ obj.mixin.Angular.Module.cls }
+{
+    constructor( inject: Injector )
+    {
+        super( inject );
+    }
+% else:
+export class ${ obj.cls }Module
+{
+% endif
+    static forRoot(): ModuleWithProviders {
+        return {
+            ngModule: ${ obj.cls }Module,
+            providers: [
+                ${ obj.cls }DataService,
+% if obj.injection.hasModuleTs() and obj.injection.moduleTs.hasProviders():
+                ${ obj.injection.moduleTs.providers },
+% endif
+            ]
+        }
+    }
+    static forChild(): ModuleWithProviders
+    {
+        return { ngModule: ${ obj.cls }Module };
+    }
+}

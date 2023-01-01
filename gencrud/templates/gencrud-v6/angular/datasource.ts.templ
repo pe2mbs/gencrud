@@ -1,0 +1,117 @@
+/*
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+*/
+import { EventEmitter } from '@angular/core';
+import { CrudDataSource } from '../../common/crud-datasource';
+import { CrudDataService, PytSelectList } from '../../common/crud-dataservice';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { ${ obj.cls }Record } from './model';
+% for service in services.unique( 'name' ):
+import { ${service.cls} } from '${ service.path }';
+% endfor
+
+
+export class ${ obj.cls }DataSource extends CrudDataSource<${ obj.cls }Record>
+{
+    constructor( public dataService: CrudDataService<${ obj.cls }Record>
+                 , _paginator: MatPaginator
+                 , _sort: MatSort
+                 , _event: EventEmitter<PageEvent>
+                 , _backend_filter: any
+${ services.externalService } )
+    {
+        super( dataService, _paginator, _sort, _event, _backend_filter );
+        return;
+    }
+
+    sortActive( active: string, a: any, b: any ) : string[] 
+    {
+        switch ( active ) 
+        {
+% for field in obj.table.listViewColumns:
+%  if field.hasService():
+        case '${ field.name }':
+            // TODO: fix the the resolved items
+%   if field.hasAttribute( "NULL" ):
+            if ( a.${ field.name }_FK && b.${ field.name }_FK )
+            {
+%    if ',' in field.ui.service.label:
+                return ( [ ${ " + ".join( [ "a.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) },
+                           ${ " + ".join( [ "b.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) } ] );
+%    else:
+                return ( [ a.${ field.name }_FK.${ field.ui.service.label }, b.${ field.name }_FK.${ field.ui.service.label } ] );
+%    endif
+            }
+%   else:
+%    if ',' in field.ui.service.label:
+            return ( [ ${ " + ".join( [ "a.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) },
+                       ${ " + ".join( [ "b.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) } ] );
+%    else:
+            return ( [ a.${ field.name }_FK.${ field.ui.service.label }, b.${ field.name }_FK.${ field.ui.service.label } ] );
+%    endif
+%   endif
+%  elif field.hasResolveList():
+        case '${ field.name }':
+            return ( [ a.${ field.name }_LABEL, b.${ field.name }_LABEL ] );
+%  else:
+        case '${ field.name }':
+            return ( [ a.${ field.name }, b.${ field.name } ] );
+%  endif
+% endfor
+        }
+        return ( [ null, null ] );        
+    }
+
+    public makeSearchString( record: any ) : string
+    {
+        let searchString: string = '';
+% for field in obj.table.listViewColumns:
+%  if field.hasService():
+%   if field.hasAttribute( "NULL" ):
+        if ( record.${ field.name }_FK )
+        {
+%    if ',' in field.ui.service.label:
+            searchString += ${ " + ".join( [ "record.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) }
+%    else:
+            searchString += record.${ field.name }_FK.${ field.ui.service.label }
+%    endif
+        }
+        else
+        {
+            searchString += "N/A";
+        }
+%   else:
+%    if ',' in field.ui.service.label:
+        searchString += ${ " + ".join( [ "record.{0}_FK.{1}".format( field.name, elem ) for elem in field.ui.service.label.split(',') ] ) }
+%    else:
+        searchString += record.${ field.name }_FK.${ field.ui.service.label }
+%    endif
+%   endif
+%  elif field.hasResolveList():
+        searchString += record.${ field.name }_LABEL
+%  else:
+        searchString += record.${ field.name }
+%  endif
+% endfor
+        return ( searchString.toLowerCase() );
+    }
+}

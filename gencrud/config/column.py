@@ -29,6 +29,8 @@ from gencrud.constants import *
 from gencrud.util.validators import Validator, ValidatorType
 import gencrud.util.utils as root
 from gencrud.util.exceptions import MissingAttribute
+from depricated import depricated
+
 logger = logging.getLogger()
 
 
@@ -131,69 +133,85 @@ class TemplateColumn( TemplateBase ):
         self.unique         = False
         self._isSibling      = cfg.get( C_ISSIBLING, False)
         self._siblings       = []
-        if C_FIELD not in self.__config:
-            raise MissingAttribute( C_TABLE, C_FIELD )
+        field_data = cfg.get( C_FIELD, None )
+        if isinstance( field_data, str ):
+            tokens = [ x for x in word_tokenize( field_data ) ]
+            self.__dbField  = self.__field = tokens[ 0 ]
+            self.__sqlType  = tokens[ 1 ]
+            if self.__sqlType not in self.TS_TYPES_FROM_SQL:
+                raise InvalidSetting( C_FIELD, self.__tableName, self.__field, expected = self.TS_TYPES_FROM_SQL )
 
-        field_data = cfg.get( C_FIELD, '' )
-        tokens = [ x for x in word_tokenize( field_data ) ]
-        self.__dbField  = self.__field = tokens[ 0 ]
-        self.__sqlType  = tokens[ 1 ]
-        if self.__sqlType not in self.TS_TYPES_FROM_SQL:
-            raise InvalidSetting( C_FIELD, self.__tableName, self.__field, expected = self.TS_TYPES_FROM_SQL )
-
-        offset = 2
-        if offset < len( tokens ) and tokens[ offset ] == '(':
-            offset += 1
-            self.__length   = int( tokens[ offset ] )
-            offset += 2
-
-        # attributes
-        # NOT NULL
-        # DEFAULT <value>
-        # PRIMARY KEY
-        # AUTO NUMBER
-        # UNIQUE
-        # FOREIGN KEY <reference>
-        while offset < len( tokens ):
-            if tokens[ offset ] == 'NULL':
-                self.__attrs.append( 'NULL' )
-
-            elif tokens[ offset ] == 'NOT':
+            offset = 2
+            if offset < len( tokens ) and tokens[ offset ] == '(':
                 offset += 1
+                self.__length   = int( tokens[ offset ] )
+                offset += 2
+
+            # attributes
+            # NOT NULL
+            # DEFAULT <value>
+            # PRIMARY KEY
+            # AUTO NUMBER
+            # UNIQUE
+            # FOREIGN KEY <reference>
+            while offset < len( tokens ):
                 if tokens[ offset ] == 'NULL':
-                    self.__attrs.append( 'NOT NULL' )
+                    self.__attrs.append( 'NULL' )
+
+                elif tokens[ offset ] == 'NOT':
+                    offset += 1
+                    if tokens[ offset ] == 'NULL':
+                        self.__attrs.append( 'NOT NULL' )
+
+                    else:
+                        raise InvalidSetting( C_FIELD, 'attr: "NOT ' + tokens[ offset ] + '"', self.__field )
+
+                elif tokens[ offset ] == 'DEFAULT':
+                    self.__attrs.append( 'DEFAULT {0}'.format( tokens[ offset + 1 ] ) )
+
+                elif tokens[ offset ] == 'PRIMARY':
+                    self.__attrs.append( 'PRIMARY KEY' )
+
+                elif tokens[ offset ] == 'AUTO':
+                    self.__attrs.append( 'AUTO NUMBER' )
+
+                elif tokens[ offset ] == 'UNIQUE':
+                    self.__attrs.append( 'UNIQUE' )
+                    offset -= 1
+
+                elif tokens[ offset ] == 'FOREIGN':
+                    self.__attrs.append( 'FOREIGN KEY {0}'.format( tokens[ offset + 2 ] ) )
+                    offset += 1
 
                 else:
-                    raise InvalidSetting( C_FIELD, 'attr: "NOT ' + tokens[ offset ] + '"', self.__field )
+                    raise InvalidSetting( C_FIELD, 'attr: "' + tokens[ offset ] + '"', self.__field )
 
-            elif tokens[ offset ] == 'DEFAULT':
-                self.__attrs.append( 'DEFAULT {0}'.format( tokens[ offset + 1 ] ) )
+                offset += 2
 
-            elif tokens[ offset ] == 'PRIMARY':
-                self.__attrs.append( 'PRIMARY KEY' )
+        elif isinstance( field_data, dict ):
+            #
+            #   This is the new way of constructing the field defintion
+            #
+            self.__dbField = field_data.get( 'name' )
+            self.__sqlType = field_data.get( 'type' )
+            self.__attrs.append( "FOREIGN KEY {}".format( field_data.get( 'foreignkey' ) ) )
+            attrs = field_data.get( 'attribute' )
+            if isinstance( attrs, str ):
+                self.__attrs.append( attrs )
 
-            elif tokens[ offset ] == 'AUTO':
-                self.__attrs.append( 'AUTO NUMBER' )
-
-            elif tokens[ offset ] == 'UNIQUE':
-                self.__attrs.append( 'UNIQUE' )
-                offset -= 1
-
-            elif tokens[ offset ] == 'FOREIGN':
-                self.__attrs.append( 'FOREIGN KEY {0}'.format( tokens[ offset + 2 ] ) )
-                offset += 1
+            elif isinstance( attrs, list ):
+                self.__attrs.extend( attrs )
 
             else:
-                raise InvalidSetting( C_FIELD, 'attr: "' + tokens[ offset ] + '"', self.__field )
+                raise InvalidAttribute( C_TABLE, C_FIELD, 'attribute' )
 
-            offset += 2
+        else:
+            raise MissingAttribute( C_TABLE, C_FIELD )
 
         if C_UI in cfg and type( cfg[ C_UI ] ) is dict:
             self.__ui = TemplateUi( self, **cfg.get( C_UI, {} ) )
 
-        if C_UNIQUE in cfg and type( cfg[ C_UNIQUE ] ) is bool:
-            self.unique = cfg[C_UNIQUE]
-
+        self.unique = cfg.get( C_UNIQUE, 'UNIQUE' in self.__attrs )
         if C_SIBLINGS in cfg and type( cfg[ C_SIBLINGS ] ) is list:
             for subConfig in cfg[ C_SIBLINGS ]:
                 subConfig[ C_ISSIBLING ] = True
@@ -250,6 +268,7 @@ class TemplateColumn( TemplateBase ):
         return C_AUTO_UPDATE in self.__config
 
     @property
+    @depricated( 'autoUpdate should be executed via view class mixin, shall be removed next release 2.4' )
     def autoUpdate( self ):
         if C_AUTO_UPDATE in self.__config:
             logger.debug( "AUTO UPDATE {}".format( self.__config[ C_AUTO_UPDATE ] ) )
@@ -269,7 +288,7 @@ class TemplateColumn( TemplateBase ):
                 # A scalar
                 pass
 
-            logger.debug("AUTO UPDATE {}".format( autoValue ) )
+            logger.debug( "AUTO UPDATE {}".format( autoValue ) )
             return autoValue
 
         return None
@@ -392,9 +411,11 @@ class TemplateColumn( TemplateBase ):
     def ui( self ):
         return self.__ui
 
+    @depricated( 'minimal() should be executed via view class mixin, shall be removed next release 2.4' )
     def minimal( self ) -> str:
         return self.__config.get( C_MINIMAL, '0' )
 
+    @depricated( 'maximal() should be executed via view class mixin, shall be removed next release 2.4' )
     def maximal( self ):
         if self.__sqlType == 'BIGINT':
             return self.__config.get( C_MAXIMAL, str( 2 ** 63 - 1 ) )

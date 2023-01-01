@@ -1,0 +1,181 @@
+/*
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+*/
+import { Component, ElementRef, OnInit, OnDestroy, ViewChild, EventEmitter, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Router, ActivatedRoute } from  '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { MatDialog } from '@angular/material/dialog';
+import { SpinnerService } from '../../common/spinner-service';
+% if obj.hasAutoUpdate():
+import { Observable, interval, Subscription } from 'rxjs';
+% endif
+% if obj.mixin.Angular.hasTableComponent():
+import { ${obj.mixin.Angular.TableComponent.cls} } from '${obj.mixin.Angular.TableComponent.filename}';
+% else:
+import { TableBaseComponent } from '../../common/crud-table-component';
+% endif
+import { ${ obj.cls }Record } from './model';
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+import { Dialog${ obj.cls }Component } from './dialog.component';
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+import { Delete${ obj.cls }Dialog } from './delete.dialog';
+% endif
+import { ${ obj.cls }DataService } from './service';
+import { ${ obj.cls }DataSource } from './datasource';
+% for service in services.unique( 'path', 'class' ):
+import { ${ service.cls } } from '${ service.path }';
+% endfor
+import { ConfirmDialogService } from 'src/app/common/confirm-dialog/confirm-service';
+import { environment } from './../../../environments/environment';
+
+
+@Component({
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-${ obj.name }-table',
+    templateUrl: './table.component.html',
+    styleUrls: [ './table.component.scss' ]
+})
+% if obj.mixin.Angular.hasTableComponent():
+export class ${ obj.cls }TableComponent extends ${ obj.mixin.Angular.TableComponent.cls } implements OnInit, OnDestroy
+% else:
+export class ${ obj.cls }TableComponent extends TableBaseComponent<${ obj.cls }Record> implements OnInit, OnDestroy
+% endif
+{
+% if obj.hasAutoUpdate():
+    public toggleUpdate = false;
+    private updateSubscription: Subscription = null;
+% endif
+    displayedColumns = [
+% for field in obj.table.listViewColumns:
+                            '${ field.name }',
+% endfor
+% if obj.actions.hasRowButtons():
+                            'actions'
+% endif
+                        ];
+    constructor( public httpClient: HttpClient
+                 , public route: ActivatedRoute
+                 , public dialog: MatDialog
+                 , public router: Router
+                 , public dataService: ${ obj.cls }DataService
+                 , public spinnerService: SpinnerService
+% if obj.table.hasViewSizeService:
+                 , public viewSizeService: ${ obj.table.viewSize }
+% endif
+${ services.externalService } )
+    {
+        super( '${ obj.cls }Table',
+% if obj.actions.get( 'edit' ).position != 'none' and obj.actions.get( 'edit' ).type == 'dialog':
+                Dialog${ obj.cls }Component,
+% else:
+                null,
+% endif
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+                Delete${ obj.cls }Dialog,
+% else:
+                null,
+% endif
+                route,
+                dialog,
+% if obj.mixin.Angular.hasTableComponent():
+                router,
+% endif
+                dataService );
+        this.spinnerService.setUrl( dataService.uri );
+        return;
+    }
+
+% if obj.actions.get( 'delete' ).position != 'none' and obj.actions.get( 'delete' ).type == 'dialog':
+    public deleteRecord( i: number, record: ${ obj.cls }Record, field_name: string = null ): void
+    {
+        super.deleteRecord( i, record, field_name, record.${ obj.table.primaryKey } );
+    }
+
+% endif
+    public loadData(): void
+    {
+        this.dataSource = new ${ obj.cls }DataSource( this.dataService
+                                                , this.bot_paginator
+                                                , this.sort
+                                                , this.paginatorEvent
+                                                , this.backendFilter
+% for service in services.unique( 'name', 'label'  ):
+                                                , this.${ service.name }Service
+% endfor
+                                               );
+        return;
+    }
+
+% if obj.hasAutoUpdate():
+    public toggleAutoUpdate()
+    {
+        if ( !this.toggleUpdate )
+        {
+            let pollIntervalLocal: number = 12000;
+            this.toggleUpdate = true;
+            if ( environment.pollInterval && environment.pollInterval < ${ obj.AutoUpdate } )
+            {
+                pollIntervalLocal = environment.pollInterval * 1000
+            }
+            else
+            {
+                pollIntervalLocal = ${ obj.AutoUpdate * 1000 }
+            }
+            this.updateSubscription = interval( pollIntervalLocal ).subscribe( (val) => {
+                this.loadData()
+            } )
+            this.registerSubscription( this.updateSubscription );
+        }
+        else
+        {
+            this.toggleUpdate = false
+            this.unregisterSubscription( this.updateSubscription );
+            this.updateSubscription = null;
+        }
+        // console.log( "toggleUpdate", this.toggleUpdate );
+        return;
+    }
+% endif
+
+    public newRecord()
+    {
+        return ( new ${ obj.cls }Record );
+    }
+
+    public setFilter( filter: string )
+    {
+        this.dataSource.filter = filter;
+        return;
+    }
+
+    public lockRecord( record: ${ obj.cls }Record ): void
+    {
+        this.dataService.lockRecord( record );
+        return;
+    }
+
+    public unlockRecord( record: ${ obj.cls }Record ): void
+    {
+        this.dataService.unlockRecord( record );
+        return;
+    }
+}

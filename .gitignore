@@ -24,3 +24,5 @@ __pycache__/
 .cache
 
 .pytest_cache
+venv/
+wheel/

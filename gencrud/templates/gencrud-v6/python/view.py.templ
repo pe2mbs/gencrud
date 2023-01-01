@@ -1,0 +1,297 @@
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+#
+import time
+from flask import Blueprint, request, jsonify
+import webapp2.api as API
+import traceback
+from common.sql import getSqlStatement
+from ${ root.application }.${ obj.name }.model import ${ obj.cls }
+from ${ root.application }.${ obj.name }.schema import ${ obj.name }Schema, ${ obj.name }sSchema
+from ${ root.application }.common import fieldConversion
+% if obj.mixin.Python.hasView():
+from ${obj.mixin.Python.View.filename} import ${obj.mixin.Python.View.cls}
+% endif
+
+db = API.db
+${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
+
+
+# Args is for downwards compatibility !!!!!
+def registerApi( *args ):
+    # Set the logger for the users module
+    API.app.logger.debug( 'Register ${ obj.cls } routes' )
+    API.app.register_blueprint( ${ obj.name }Api )
+    try:
+        import ${ root.application }.${ obj.name }.entry_points  as EP
+        if hasattr( EP, 'entryPointApi' ):
+            API.app.logger.debug( 'Register ${ obj.cls } entrypoint routes' )
+            API.app.register_blueprint( EP.entryPointApi )
+
+        if hasattr( EP, 'registerWebSocket' ):
+            EP.registerWebSocket()
+    except ModuleNotFoundError:
+        pass
+
+    except Exception:
+        API.app.logger.error( traceback.format_exc() )
+
+% if obj.mixin.Python.hasView():
+    API.app.logger.debug( 'Registering ${ obj.cls } view mixin' )
+    API.app.register_blueprint( ${obj.mixin.Python.View.cls}.blueprint )
+% endif
+    # TODO: Here we need to add dynamically the menus for this module
+    return
+
+<%!
+    def makeServiceFieldList( columns, first ):
+        resultList = [ '"{}"'.format( first ) ]
+        for field in columns:
+            if field.ui is not None:
+                if field.hasForeignKey() and field.ui.hasService():
+                    resultList.append( '"{}_FK"'.format( field.name ) )
+
+                elif field.hasResolveList():
+                    resultList.append( '"{}_LABEL"'.format( field.name ) )
+
+        return ", ".join( resultList ) + ","
+
+    def makeForeignKeyFieldList( columns ):
+        resultList = []
+        for field in columns:
+            if field.ui is not None and field.hasForeignKey() and field.hasAttribute( "NULL" ):
+                resultList.append( '"{}"'.format( field.name ) )
+
+        return ", ".join( resultList ) + ","
+
+    def countForeignKeyFieldList( columns ):
+        cnt = 0
+        for field in columns:
+            if field.ui is not None and field.hasForeignKey() and field.hasAttribute( "NULL" ):
+                cnt += 1
+
+        return cnt
+%>
+def removeGeneratedFieldsFromRecord( record ):
+    for field in ( ${makeServiceFieldList( obj.table.columns, obj.table.primaryKey ) } ):
+        if field in record:
+            del record[ field ]
+
+%if countForeignKeyFieldList( obj.table.columns ) > 0:
+    for field in ( ${ makeForeignKeyFieldList( obj.table.columns ) } ):
+        if record.get( field, None ) in ( 0, '' ):
+            record[ field ] = None
+%endif
+    return record
+
+
+@${ obj.name }Api.route( '${ obj.uri }/list/<id>/<value>', methods=[ 'GET' ] )
+def get${ obj.cls }ListFiltered( id, value ):
+    filter = { id: value }
+    recordList = db.session.query( ${ obj.cls } ).filter_by( **filter ).${ obj.orderBy() }.all()
+    result = ${ obj.name }sSchema.jsonify( recordList )
+    API.app.logger.debug( 'GET: ${ obj.uri }/list/{0}/{1} => {2}'.format( id, value, result ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/list', methods=[ 'GET' ] )
+def get${ obj.cls }List():
+    t1 = time.time()
+    recordList = db.session.query( ${ obj.cls } ).${ obj.orderBy() }.all()
+    t2 = time.time()
+    result = ${ obj.name }sSchema.jsonify( recordList )
+    t3 = time.time()
+    API.app.logger.debug( 'GET: ${ obj.uri }/list => {0}'.format( result ) )
+    t4 = time.time()
+    API.app.logger.debug( 'Timestamps ${ obj.uri }/list query: {0:.2f} jsonify: {1:.2f} debug: {2:.2f} total: {3:.2f}'.format( t2 - t1, t3 - t2, t4 - t3, t4 - t1 ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/new', methods = [ 'POST' ] )
+def api${ obj.cls }New():
+    data    = request.json
+    if data is None:
+        return "Invalid request, missing ${ obj.cls }Record", 500
+
+    API.app.logger.info( 'POST: ${ obj.uri }/new {0}'.format( repr( data ) ) )
+    data = removeGeneratedFieldsFromRecord( data )
+    record = ${ obj.cls }()
+    for key, value in data.items():
+        setattr( record, key, fieldConversion( record, key, value ) )
+
+    API.db.session.add( record )
+    API.db.session.commit()
+    result = ${ obj.name }Schema.jsonify( record )
+    API.app.logger.debug( 'get${obj.cls}New() => {0}'.format( result ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/get', methods = [ 'GET' ] )
+def api${ obj.cls }Get():
+    data    = request.json
+    if data is None:
+        return "Invalid request, missing ${ obj.cls }Record", 500
+
+    API.app.logger.info( 'GET: ${ obj.uri }/get {0}'.format( repr( data ) ) )
+    record = ${ obj.cls }.query.get( int( data[ '${ obj.table.primaryKey }' ] ) )
+    result = ${ obj.name }Schema.jsonify( record )
+    API.app.logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/get/<int:id>', methods = [ 'GET' ] )
+def api${ obj.cls }GetId( id ):
+    API.app.logger.info( 'GET: ${ obj.uri }/get/{0}'.format( id ) )
+    record = ${ obj.cls }.query.get( int( id ) )
+    result = ${ obj.name }Schema.jsonify( record )
+    API.app.logger.debug( 'get${ obj.cls }Get() => {0}'.format( result ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/<int:id>', methods = [ 'DELETE' ] )
+def api${ obj.cls }Delete( id ):
+    API.app.logger.info( 'DELETE: ${ obj.uri }/delete {0}'.format( id ) )
+    record = ${ obj.cls }.query.get( int( id ) )
+    API.db.session.delete( record )
+    API.db.session.commit()
+    result = jsonify( ok = True )
+    API.app.logger.debug( 'get${ obj.cls }Delete() => {0}'.format( result ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/put', methods=[ 'POST' ] )
+def api${ obj.cls }Put():
+    data    = request.json
+    if data is None:
+        return "Invalid request, missing ${ obj.cls }Record", 500
+
+    API.app.logger.info( 'POST: ${ obj.uri }/put {0}'.format( repr( data ) ) )
+    record = ${obj.cls}.query.get( data[ '${ obj.table.primaryKey }' ] )
+    data = removeGeneratedFieldsFromRecord( data )
+    for key, value in data.items():
+        if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
+            setattr( record, key, fieldConversion( record, key, value ) )
+
+    API.db.session.commit()
+    result = ${ obj.name }Schema.jsonify( record )
+    API.app.logger.debug( 'get${ obj.cls }Put() => {0}'.format( result ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/update', methods=[ 'POST' ] )
+def api${ obj.cls }Patch():
+    data    = request.json
+    API.app.logger.info( 'POST: ${ obj.uri }/update {0}'.format( repr( data ) ) )
+    record = ${ obj.cls }.query.get( data[ '${ obj.table.primaryKey }' ] )
+    data = removeGeneratedFieldsFromRecord( data )
+    for key, value in data.items():
+        if key != '${ obj.table.primaryKey }' and not key.endswith( '_REL' ):
+            setattr( record, key, fieldConversion( record, key, value ) )
+
+    API.db.session.commit()
+    result = ${ obj.name }Schema.jsonify( record )
+    API.app.logger.debug( 'get${ obj.cls }Patch() => {0}'.format( result ) )
+    db.session.close()
+    db.session.remove()
+    return result
+
+
+@${ obj.name }Api.route( '${ obj.uri }/select', methods=[ 'GET' ] )
+def api${ obj.cls }Select():
+    labels = []
+    data    = request.json
+    if data is None:
+        data = request.args
+
+    # API.app.logger.info( 'GET ${ obj.uri }/select: {0}'.format( repr( data ) ) )
+    value = data.get( 'value', '${ obj.table.primaryKey }' )    # primary key
+    label = data.get( 'label', '${ obj.table.firstTextField }' )  # first field name
+    sorton = data.get( 'sorton', label )  # column to sort on
+    if ',' in label:
+        labels = label.strip().split( ',' )
+        separator = ' '
+        label = labels[ 0 ]
+
+    elif '-' in label:
+        labels = label.strip().split( '-' )
+        separator = '-'
+        label = labels[ 0 ]
+
+    elif ';' in label:
+        labels = label.strip().split( ';' )
+        separator = '; '
+        label = labels[ 0 ]
+
+    initialItem = data.get( 'initialItem', None )
+    finalItem   = data.get( 'finalItem', None )
+
+    result = []
+    q = db.session.query( ${ obj.cls } ).order_by( getattr( ${ obj.cls }, sorton ) )
+    # API.app.logger.debug( "api${ obj.cls }SQL: {}".format( getSqlStatement( q ) ) )
+    for record in q.all():
+        if len( labels ) > 0:
+            fields = [ getattr( record, lbl.strip() ) for lbl in labels ]
+            result.append( { 'value': getattr( record, value ),
+                             'label': separator.join( fields ) } )
+
+        else:
+            result.append( { 'value': getattr( record, value ),
+                             'label': getattr( record, label ) } )
+
+    if initialItem is not None:
+        result.insert( 0, initialItem )
+
+    if finalItem is not None:
+        result.append( finalItem )
+
+    db.session.close()
+    db.session.remove()
+    # API.app.logger.debug( 'api${ obj.cls }Select => {0}'.format( result ) )
+    return jsonify( result )
+
+
+@${ obj.name }Api.route( '${ obj.uri }/lock', methods=[ 'POST' ] )
+def api${ obj.cls }Lock():
+    data    = request.json
+    API.app.logger.info( 'POST: ${ obj.uri }/lock {0}'.format( repr( data ) ) )
+    # TODO: This needs to be implemented for correct multiuser support
+    return jsonify( { 'result': 'OK' } )
+
+
+@${ obj.name }Api.route( '${ obj.uri }/unlock', methods=[ 'POST' ] )
+def api${ obj.cls }Unlock():
+    data    = request.json
+    API.app.logger.info( 'POST: ${ obj.uri }/unlock {0}'.format( repr( data ) ) )
+    # TODO: This needs to be implemented for correct multiuser support
+    return jsonify( { 'result': 'OK' } )

@@ -122,14 +122,18 @@ repository.
 ```bash
     pip3 install pytemplate-master.zip
 ```
+## 2.2 Install from source code
 
 ```bash
-    git clone https://gitlab.pe2mbs.nl/angular/pytemplate.git
-    cd pytemplate
-    pip3 install .
+    git clone https://github.com/pe2mbs/gencrud.git
 ```
 
-**Note: if you're using Python 2.7.x use pip2**
+In your project folder    
+```bash
+    pip3 install /path/gencrud-source
+```
+
+**Note: Python 2.7.x is no longer supported**
 
 # 3. Usage
 
@@ -208,58 +212,32 @@ app.module.ts, instead of at least 4 components. And in app-routing.module.ts th
 as a single variable instead of all the routes needed to handle the template components.  
 This is override by the `options.use-module` in the template file.
 
+
+> -I / --install Installs the stadard files for the project environment.  
+
 # 4. Requirements
 
 For the default templates there are requirements to the Python and Angular project setup.
 
 ## 4.1. Python
-
-### 4.1.1. Packages
-
-The following packages are a minimal requirement;
-
-- Flask, version 1.0.2 or higher
-- SQLAlchemy, version 1.2.12 or higher
-- marshmallow, version 2.15.6 or higher
-- flask-marshmallow, version 0.10.1 or higher
-- Flask-SQLAlchemy, version 2.3.2, or higher
-- marshmallow-sqlalchemy, version 0.19.0 or higher
-
-## 4.1.2. modules
-
-In the root of the project the following modules and variables must be present;
-
-- from applic.database import db
-- from applic.extensions import mm
-- import common
+The miniman Python version 3.6.x and currently tested upto version 3.10.x
+Using the package webapp (version 3.x) provides the standard framework to get a web application with angular running.  
 
 ## 4.2. Angular
+Current supported and tested are Angular versions 8 and 10, Angular version 12 is under testing.
 
 ### 4.2.1. Packages
 
 The following packages are a minimal requirement;
 
-- @angular, version 6 or higher (tested with 6 and 7).
-- @angular/material, version 6 or higher (tested with 6 and 7).
-- @angular/flex-layout, version 7.0.0-beta.24
-- ngx-material-timepicker, version 2.13.0
-- html2canvas, version 1.0.0-rc.1
-- core-js, version 2.4.1
-- zone.js, version 0.8.26
-
-## 4.2.2. modules
-
-# 4.3. Example files
-
-The folowing example files use the templates that where installed with the
-package.
-
-- examples\role-table.yaml
-- examples\user-table.yaml
-- examples\screens-base.yaml
-
-The folowing example file use private templates that where created by you.
-examples\screens.yaml
+- @angular
+- @angular/material
+- @angular/flex-layout
+- ngx-material-timepicker
+  ng-select
+- html2canvas
+- core-js
+- zone.js
 
 # 5. YAML Template
 
@@ -286,13 +264,17 @@ objects:
     application: testapp
     uri: /api/role
     menu:
-      displayName: Database
-      iconName: database
-      index: 0
+      caption: Database
+      icon: database
+      access: admin
+      before: null | '*'
+      after: ...
       menu:
-        displayName: Roles
-        iconName: roles
-        index: 0
+        caption: Roles
+        icon: roles
+        access: admin
+        before: ...
+        after: ...
         route: /roles
     table:
       name: WA_ROLES
