@@ -354,7 +354,7 @@ class TemplateColumn( TemplateBase ):
         return self.__config.get( C_LABEL, '' ) != ''
 
     def hasTextWithService( self ) -> bool:
-        if self.hasService() and self.__ui.isUiType( C_TEXTBOX, C_TEXTAREA ):
+        if self.hasService() and self.__ui.isUiType( C_TEXTBOX, C_TEXTAREA, C_EDITOR ):
             return True
         return False
 
