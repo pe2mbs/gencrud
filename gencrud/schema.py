@@ -643,7 +643,10 @@ GENCRUD_SCHEME = {
                                                         },
                                                         'onSaveClick': {
                                                             'type': 'string',
-                                                        }
+                                                        },
+                                                        'prettyPrintOption': {
+                                                            'type': 'string',
+                                                        },
                                                     }
                                                 },
                                                 'actions': {
@@ -828,7 +831,10 @@ GENCRUD_SCHEME = {
                                                                     },
                                                                     'onSaveClick': {
                                                                         'type': 'string',
-                                                                    }
+                                                                    },
+                                                                     'prettyPrintOption': {
+                                                                        'type': 'string',
+                                                                    },
                                                                 }
                                                             },
                                                             'actions': {
