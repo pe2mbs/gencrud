@@ -8,3 +8,4 @@ pypac
 pyyaml
 six
 pypac
+deprecated

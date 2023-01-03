@@ -29,7 +29,7 @@ from gencrud.constants import *
 from gencrud.util.validators import Validator, ValidatorType
 import gencrud.util.utils as root
 from gencrud.util.exceptions import MissingAttribute
-from depricated import depricated
+from deprecated import deprecated
 
 logger = logging.getLogger()
 
@@ -268,7 +268,7 @@ class TemplateColumn( TemplateBase ):
         return C_AUTO_UPDATE in self.__config
 
     @property
-    @depricated( 'autoUpdate should be executed via view class mixin, shall be removed next release 2.4' )
+    @deprecated( 'autoUpdate should be executed via view class mixin, shall be removed next release 2.4' )
     def autoUpdate( self ):
         if C_AUTO_UPDATE in self.__config:
             logger.debug( "AUTO UPDATE {}".format( self.__config[ C_AUTO_UPDATE ] ) )
@@ -411,11 +411,11 @@ class TemplateColumn( TemplateBase ):
     def ui( self ):
         return self.__ui
 
-    @depricated( 'minimal() should be executed via view class mixin, shall be removed next release 2.4' )
+    @deprecated( 'minimal() should be executed via view class mixin, shall be removed next release 2.4' )
     def minimal( self ) -> str:
         return self.__config.get( C_MINIMAL, '0' )
 
-    @depricated( 'maximal() should be executed via view class mixin, shall be removed next release 2.4' )
+    @deprecated( 'maximal() should be executed via view class mixin, shall be removed next release 2.4' )
     def maximal( self ):
         if self.__sqlType == 'BIGINT':
             return self.__config.get( C_MAXIMAL, str( 2 ** 63 - 1 ) )

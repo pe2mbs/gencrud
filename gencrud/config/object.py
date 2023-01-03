@@ -27,7 +27,7 @@ from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import MissingAttribute
 from gencrud.config.mixin import TemplateMixin
 from gencrud.config.injection import InjectionTemplate
-from gengrud.config.angular import AngularModule, AngularModules
+from gencrud.config.angular import AngularModule, AngularModules
 import posixpath
 
 

@@ -1,3 +1,4 @@
+from gencrud.config.base import TemplateBase
 from gencrud.constants import *
 
 
