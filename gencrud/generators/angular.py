@@ -632,10 +632,11 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
 
         "entryComponents": [ ],
             "providers": [
-                { "multi": "true",
-                  "provide": "HTTP_INTERCEPTORS",
-                  "useClass": "AuthInterceptorService"
-                } ]
+                #{ "multi": "true",
+                #  "provide": "HTTP_INTERCEPTORS",
+                #  "useClass": "AuthInterceptorService"
+                #} 
+            ]
     }
 
     for imp in files:

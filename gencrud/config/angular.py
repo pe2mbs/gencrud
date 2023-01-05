@@ -1,6 +1,6 @@
 from gencrud.config.base import TemplateBase
 from gencrud.constants import *
-
+import posixpath
 
 class AngularModule( TemplateBase ):
     def __init__( self,parent, **cfg ):
