@@ -140,6 +140,7 @@ C_NEW                   = 'new'
 C_EDIT                  = 'edit'
 C_DELETE                = 'delete'
 
+C_COLUMN                = 'column'
 C_COLUMNS               = 'columns'
 
 C_TABS                  = 'tabs'
@@ -149,6 +150,7 @@ C_TAB_CONTENT_TAG       = 'contenttag'
 C_TAB_GROUP_TAG         = 'grouptag'
 C_MIXIN                 = 'mixin'
 C_VIEW_SORT             = 'viewSort'
+C_VIEW_FILTER           = 'viewFilter'
 C_VIEW_SIZE             = 'viewSize'
 C_UNIQUE_KEY            = 'unique-key'
 C_UNIQUE                = 'unique'
@@ -160,6 +162,7 @@ C_DIRECTIONS            = ( C_ASCENDING, C_DESENDING, '' )
 
 C_FIELD                 = 'field'
 C_DIRECTION             = 'direction'
+C_OPERATOR              = 'operator'
 
 C_MODEL                 = 'model'
 C_SCHEMA                = 'schema'

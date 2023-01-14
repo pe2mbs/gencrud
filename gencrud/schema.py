@@ -469,6 +469,25 @@ GENCRUD_SCHEME = {
                                     },
                                 }
                             },
+                            'viewFilter': {
+                                'type': 'array',
+                                'items': {
+                                    'type': 'object',
+                                    'required': [ 'column', 'value', 'operator' ],
+                                    "additionalProperties": False,
+                                    'properties': {
+                                        'column': {
+                                            'type': 'string',
+                                        },
+                                        'value': {
+                                            'type': 'string',
+                                        },
+                                        'operator': {
+                                            'type': 'string',
+                                        },
+                                    }
+                                }
+                            },
                             'hint': {
                                 'type': 'string',
                             },

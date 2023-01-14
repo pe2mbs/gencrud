@@ -22,6 +22,7 @@ import logging
 from gencrud.config.base import TemplateBase
 from gencrud.config._inports import SourceImport
 from gencrud.config.column import TemplateColumn
+from gencrud.config.filter import FilterInfoList
 from gencrud.config.inputgroup import InputGroup
 from gencrud.config.tab import TemplateTabs
 from gencrud.config.sort import SortInfo
@@ -63,6 +64,7 @@ class TemplateTable( TemplateBase ):
         self.__primaryKey       = ''
         self.__secondaryKey     = ''
         self.__viewSort         = None
+        self.__viewFilter       = None
         self.__viewSize         = None
         self.__defaultViewSize  = 10
         self.__inports          = SourceImport()
@@ -83,6 +85,9 @@ class TemplateTable( TemplateBase ):
 
         if C_VIEW_SORT in table:
             self.__viewSort = SortInfo( table[ C_VIEW_SORT ] )
+
+        if C_VIEW_FILTER in table:
+            self.__viewFilter =  FilterInfoList( table[ C_VIEW_FILTER ] )
 
         if C_VIEW_SIZE in table:
             if type( table[ C_VIEW_SIZE ] ) in ( int, str ):
@@ -297,6 +302,10 @@ class TemplateTable( TemplateBase ):
         return self.__viewSort
 
     @property
+    def viewFilter( self ) -> FilterInfoList:
+        return self.__viewFilter
+
+    @property
     def hasViewSizeService( self ) -> bool:
         if self.__viewSize is not None:
             return type( self.__viewSize ) is str
@@ -309,6 +318,10 @@ class TemplateTable( TemplateBase ):
             return type( self.__viewSize ) is int
 
         return False
+
+    @property
+    def hasViewFilter( self ) -> bool:
+        return self.__viewFilter is not None
 
     @property
     def viewSize( self ):
