@@ -55,6 +55,22 @@ class RelationShip( TemplateBase ):
         return self.__relation.get( C_CASCADE )
 
 
+class TemplateDatabaseEngine( TemplateBase ):
+    def __init__( self, parent, **engine ):
+        TemplateBase.__init__( self, parent )
+        self.__engine = engine
+        return
+
+    @property
+    def Module( self ) -> str:
+        return self.__engine[ 'module' ]
+
+    @property
+    def Connect( self ) -> str:
+        return self.__engine[ 'connect' ]
+
+
+
 class TemplateTable( TemplateBase ):
     def __init__( self, parent, **table ):
         TemplateBase.__init__( self, parent )
@@ -110,9 +126,24 @@ class TemplateTable( TemplateBase ):
                         groups[sibling.ui.group].append(sibling)
                     else:
                         groups[ C_NOGROUP ].append(sibling)
+
         self.__groups = [InputGroup(group, fields) for group, fields in groups.items()]
+        # New addition for genating table views that do not belong to the regular database
+        engine = self.__table.get( 'engine', None )
+        if isinstance( engine, dict ) and engine.get( 'module' ) and engine.get( 'connect' ):
+            self.__engine = TemplateDatabaseEngine( self, **engine )
+
+        else:
+            self.__engine = None
 
         return
+
+    def hasEngine( self ) -> bool:
+        return self.__engine is not None
+
+    @property
+    def Engine( self ):
+        return self.__engine
 
     @property
     def object( self ):

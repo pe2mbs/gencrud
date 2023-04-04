@@ -446,8 +446,17 @@ GENCRUD_SCHEME = {
                     'table': {
                         'type': 'object',
                         'required': [ 'name', 'columns' ],
-                        "additionalProperties": False,
+                        "additionalProperties": True,
                         'properties': {
+                            'engine': {
+                                'type': 'object',
+                                'required': [ 'module', 'connect' ],
+                                "additionalProperties": True,
+                                'properties': {
+                                    "module": { "Type": "string" },
+                                    "connect": { "Type": "string" },
+                                }
+                            },
                             'name': {
                                 'type': 'string',
                             },

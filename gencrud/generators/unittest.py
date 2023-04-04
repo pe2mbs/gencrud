@@ -85,7 +85,6 @@ def updateUnittestDirectory( config: TemplateConfiguration, app_module ):   # no
 
 
 def generateCommonTemplateFiles( config:  TemplateConfiguration ):
-
     modelsFilename = os.path.join( config.python.sourceFolder, config.application, 'modules.yaml' )
     if os.path.isfile( modelsFilename ):
         with open( modelsFilename, 'r' ) as stream:
@@ -117,6 +116,9 @@ def generateCommonTemplateFiles( config:  TemplateConfiguration ):
     # Now generate the suite.py module
     template = os.path.abspath( os.path.join( config.unittest.commonFolder, 'suite.py.templ' ) )
     suite_py_file = os.path.join( config.unittest.sourceFolder, config.application, 'suite.py' )
+    if not os.path.exists( os.path.dirname( suite_py_file ) ):
+        os.makedirs( os.path.dirname(suite_py_file ) )
+
     with open( suite_py_file, 'w' ) as stream:
         for line in  Template( filename = template ).render( config = config, modules = modules ).split( '\n' ):
             stream.write( line )

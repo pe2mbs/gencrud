@@ -197,6 +197,9 @@ def updatePythonModels( config:  TemplateConfiguration ):
                               'model': cfg.cls,
                               'table': cfg.table.name.lower() } )
 
+    if not os.path.exists( os.path.dirname( modelsFilename ) ):
+        os.makedirs( os.path.dirname( modelsFilename ) )
+
     with open( modelsFilename, 'w' ) as stream:
         yaml.dump( modules, stream, Dumper = yaml.Dumper )
 

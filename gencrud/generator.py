@@ -108,7 +108,10 @@ def verifyLoadProject( config: TemplateConfiguration, env ):
                 raise FlaskEnvironmentNotFound()
 
             logging.info( "Application: {} target application: {}".format( config.application, data[ 'COMMON' ][ 'API_MODULE' ] ) )
-            if data[ 'COMMON' ][ 'API_MODULE' ] != config.application:
+            # if data[ 'COMMON' ][ 'API_MODULE' ] != config.application:
+            #     raise FlaskEnvironmentNotFound()
+
+            if config.application not in data[ 'COMMON' ][ 'API_MODULE' ]:
                 raise FlaskEnvironmentNotFound()
 
             data = data[ 'COMMON' ]
