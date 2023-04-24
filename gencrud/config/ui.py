@@ -355,7 +355,7 @@ class TemplateUi( TemplateBase ):
                     options.append( 'detail_id="{}"'.format( s.get( 'id', None ) ) )
 
         if C_DEBUG in self.__cfg:
-            options.append( 'debug="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
+            options.append( '[debug]="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
         result = '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}></{tag}>'''.\
                 format( tag         = self.__components.getComponentTag( self.uiObject ),
