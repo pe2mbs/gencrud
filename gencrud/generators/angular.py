@@ -60,17 +60,21 @@ def updateImportSection( lines, files ):
     stage = 0
     for lineNo, lineText in enumerate( lines ):
         lineText = lineText.strip( ' \n' )
-        if stage == 0 and lineText.startswith( 'import' ):
-            if lineText.endswith( ';' ):
-                rangePos.end = lineNo
+        # if stage == 0 and lineText.startswith( 'import' ):
+        #     if lineText.endswith( ';' ):
+        #         rangePos.end = lineNo
+        #
+        #     else:
+        #         stage = 1
+        #
+        # elif stage == 1:
+        #     if lineText.endswith( ';' ):
+        #         stage = 0
+        #         rangePos.end = lineNo
 
-            else:
-                stage = 1
+        if lineText.startswith( 'import' ):
+            rangePos.end = lineNo
 
-        elif stage == 1:
-            if lineText.endswith( ';' ):
-                stage = 0
-                rangePos.end = lineNo
 
     rangePos.end += 1
     for imp in files:
@@ -84,6 +88,7 @@ def updateImportSection( lines, files ):
             lines.insert( rangePos.end, imp + '\n' )
             rangePos.end += 1
 
+    return
 
 def updateAngularAppModuleTs( config: TemplateConfiguration, app_module, exportsModules ):
     del exportsModules  # unused
