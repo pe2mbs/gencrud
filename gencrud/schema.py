@@ -1,3 +1,5 @@
+import os.path
+import yaml
 #
 #   This is the JSON schema for the templates
 #
@@ -103,18 +105,16 @@ GENCRUD_SCHEME = {
             'type': 'object',
             "additionalProperties": False,
             'properties': {
-                'ignore-case-db-ids': {
-                    'type': 'boolean'
-                },
-                'overwrite': {
-                    'type': 'boolean'
-                },
-                'use-module': {
-                    'type': 'boolean'
-                },
-                'generate-tests': {
-                    'type': 'boolean'
-                }
+                'ignore-case-db-ids':   { 'type': 'boolean' },
+                'overwrite':            { 'type': 'boolean' },
+                'use-module':           { 'type': 'boolean' },
+                'generate-tests':       { 'type': 'boolean' }
+            }
+        },
+        'interface': {
+            'type': 'object',
+            'properties': {
+                'backend': { 'type': 'string' }
             }
         },
         'objects': {
@@ -124,27 +124,13 @@ GENCRUD_SCHEME = {
                 'type': 'object',
                 "additionalProperties": False,
                 'properties': {
-                    'name': {
-                        'type': 'string'
-                    },
-                    'autoupdate':  {
-                        'type': 'integer'
-                    },
-                    'title': {
-                        'type': 'string'
-                    },
-                    'remark': {
-                        'type': 'string'
-                    },
-                    'class': {
-                        'type': 'string'
-                    },
-                    'uri': {
-                        'type': 'string'
-                    },
-                    'action-width': {
-                        'type': 'string'
-                    },
+                    'name':         { 'type': 'string' },
+                    'autoupdate':   { 'type': 'integer' },
+                    'title':        { 'type': 'string' },
+                    'remark':       { 'type': 'string' },
+                    'class':        { 'type': 'string' },
+                    'uri':          { 'type': 'string' },
+                    'action-width': { 'type': 'string' },
                     'modules': {
                         'type': 'array',
                         "items": {
@@ -152,15 +138,9 @@ GENCRUD_SCHEME = {
                             'required': [ 'class', 'path' ],
                             "additionalProperties": False,
                             'properties': {
-                                'class': {
-                                    'type': 'string',
-                                },
-                                'path': {
-                                    'type': 'string',
-                                },
-                                'module': {
-                                    'type': 'string',
-                                }
+                                'class':    { 'type': 'string', },
+                                'path':     { 'type': 'string', },
+                                'module':   { 'type': 'string', }
                             }
                         }
                     },
@@ -235,7 +215,7 @@ GENCRUD_SCHEME = {
                                         "additionalProperties": False,
                                         'properties': {
                                             'class': { 'type': 'string' },
-                                            'filename': { 'type': 'string' },
+                                            'file': { 'type': 'string' },
                                         }
                                     },
                                     'schema': {
@@ -243,7 +223,7 @@ GENCRUD_SCHEME = {
                                         "additionalProperties": False,
                                         'properties': {
                                             'class': {'type': 'string'},
-                                            'filename': {'type': 'string'},
+                                            'file': {'type': 'string'},
                                         }
                                     },
                                     'view': {
@@ -251,7 +231,7 @@ GENCRUD_SCHEME = {
                                         "additionalProperties": False,
                                         'properties': {
                                             'class': {'type': 'string'},
-                                            'filename': {'type': 'string'},
+                                            'file': {'type': 'string'},
                                         }
                                     }
                                 }
@@ -284,80 +264,40 @@ GENCRUD_SCHEME = {
                             'required': [ 'name', 'type' ],
                             "additionalProperties": False,
                             'properties': {
-                                'name': {
-                                    'type': 'string',
-                                },
-                                'label': {
-                                    'type': 'string',
-                                },
-                               'type': {
-                                    'enum': [ 'screen', 'dialog', 'api', 'function', 'directive', 'none' ],
-                                },
-                                'icon': {
-                                    'type': 'string',
-                                },
-                                'position': {
-                                    'enum': [ 'row', 'header', 'footer', 'cell', 'none', 'screen', 'sidebar' ],
-                                },
-                                'uri': {
-                                    'type': 'string'
-                                },
-                                'function': {
-                                    'type': 'string'
-                                },
-                                'directive': {
-                                    'type': 'string'
-                                },
-                                'index': {
-                                    'type': 'integer'
-                                },
-                                'disabled': {
-                                    'type': ['string', 'boolean']
-                                },
-                                'ngIf': {
-                                    'type': 'string'
-                                },
+                                'name':     { 'type': 'string', },
+                                'label':    { 'type': 'string', },
+                                'type':     { 'enum': [ 'screen', 'dialog', 'api', 'function', 'directive', 'none' ], },
+                                'icon':     { 'type': 'string', },
+                                'position': { 'enum': [ 'row', 'header', 'footer', 'cell', 'none', 'screen', 'sidebar' ], },
+                                'uri':      { 'type': 'string' },
+                                'function': { 'type': 'string' },
+                                'directive': { 'type': 'string' },
+                                'index':    { 'type': 'integer' },
+                                'disabled': { 'type': ['string', 'boolean'] },
+                                'ngIf':     { 'type': 'string' },
                                 'params': {
                                     'type': 'object',
                                     "additionalProperties": True,
                                     'properties': {
-                                        'id': {
-                                            'type': 'string',
-                                        },
-                                        'value': {
-                                            'type': 'string',
-                                        },
+                                        'id':       { 'type': 'string', },
+                                        'value':    { 'type': 'string', },
                                     }
                                 },
                                 'route': {
                                     'type': 'object',
                                     "additionalProperties": False,
                                     'properties': {
-                                        'class': {
-                                            'type': 'string',
-                                        },
-                                        'name': {
-                                            'type': 'string',
-                                        },
-                                        'module': {
-                                            'type': 'string',
-                                        },
-                                        'route': {
-                                            'type': 'string',
-                                        },
+                                        'class': { 'type': 'string', },
+                                        'name': { 'type': 'string', },
+                                        'module': { 'type': 'string', },
+                                        'route': { 'type': 'string', },
                                         'params': {
                                             'type': 'object',
                                             'required': [ 'mode' ],
                                             'properties': {
-                                                'mode': {
-                                                    'type': 'string',
-                                                },
-                                                'id': {
-                                                    'type': ["number", "string" ],
-                                                },
-                                                'value': {
-                                                    'type': 'string',
-                                                },
+                                                'mode': { 'type': 'string', },
+                                                'id': { 'type': ["number", "string" ], },
+                                                'value': { 'type': 'string', },
                                             }
                                         }
                                     }
@@ -942,3 +882,15 @@ GENCRUD_SCHEME = {
         }
     }
 }
+
+
+def getSchema():
+    global GENCRUD_SCHEME
+    schema_filename = os.path.join(os.path.dirname(__file__), 'schema.yaml')
+    print( f"schema-file: {schema_filename}")
+    if os.path.exists( schema_filename ):
+        print( f"Loading schema {schema_filename}" )
+        with open( schema_filename, 'rt' ) as stream:
+            GENCRUD_SCHEME = yaml.load( stream, yaml.Loader )
+
+    return GENCRUD_SCHEME

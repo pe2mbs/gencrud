@@ -1,0 +1,305 @@
+/*
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+*/
+import { Component, Input, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { CustDataTableComponent } from 'src/app/common/crud/cust.data.table.component';
+import { isNullOrUndefined } from 'util';
+import { TableDefintion } from 'src/app/common/crud/model';
+import { ${ obj.cls }Record } from './model';
+% if obj.mixin.Angular.hasTableComponent():
+import { ${obj.mixin.Angular.TableComponent.cls} } from '${obj.mixin.Angular.TableComponent.filename}';
+% endif
+% if ( obj.actions.get( 'new' ).type == 'dialog' and obj.actions.get( 'new' ).position != 'none' ) or ( obj.actions.get( 'edit' ).type == 'dialog' and obj.actions.get( 'edit' ).position != 'none' ):
+import { Dialog${ obj.cls }Component } from './dialog.component';
+% endif
+import { ${ obj.cls }DataService } from './service';
+% for service in allServices.unique( 'path', 'class' ):
+import { ${ service.cls } } from '${ service.path }';
+% endfor
+% for column in obj.table.listViewColumns:
+%   if column.tsType == 'Date' or (column.hasService() and "date" in column.ui.pipe ):
+import { toLocalTimeString } from 'src/app/addons/date-parser';
+<% break %> 
+%   endif
+% endfor
+
+
+@Component({
+    // tslint:disable-next-line:component-selector
+    selector: 'app-${ obj.name }-table',
+    template: `<app-cust-data-table
+				class="card-content"
+				[id]="id"
+				[value]="value"
+				[mode]="mode"
+				[definition]="definition">
+</app-cust-data-table>`,
+    styleUrls: [ '../../common/common-mat-card.scss' ]
+})
+% if obj.mixin.Angular.hasTableComponent():
+export class ${ obj.cls }TableComponent extends ${ obj.mixin.Angular.TableComponent.cls }
+% else:
+export class ${ obj.cls }TableComponent
+% endif
+{
+    @ViewChild( CustDataTableComponent, { static: true } )	tableComponent: CustDataTableComponent;
+    @Input()	id: string;
+	@Input()	value: any;
+	@Input()	mode: string;
+    @Input()    displayedColumns: string[] = [];
+
+    public definition: TableDefintion<${ obj.cls }Record> = {
+        toggleUpdate: ${ 'true' if obj.hasAutoUpdate() else 'false' },
+        idField: '${ obj.table.primaryKey }',
+        name: '${ obj.cls }Table',
+		helpTopic: '${ obj.name }-table',
+		defaultSortField: '${ obj.table.sortField }',
+		defaultSortDirection: '${ obj.table.sortDirection }',
+% if obj.table.hasViewFilter:
+        defaultFilter: ${ obj.table.viewFilter.toTypeScript() },
+% endif
+		sortDisableClear: true,
+% if obj.hasAutoUpdate():
+        autoUpdate: ${ obj.AutoUpdate },
+% endif
+        title: '${ obj.title }',
+        headerButtons: [
+% for button in obj.actions.getHeaderButtons():
+			{
+				label: '${ button.label }',
+				icon: '${ button.icon }',
+				action: (core: any, self: any) => {
+				% if button.function != '':
+					${button.function};
+                % elif button.isAngularRoute():
+                    this.routerNavigate('${ button.routingPath() }', ${ button.routingParams() } );
+                 % elif button.name == 'new':
+                    self.addRecord();
+                % else:
+                    ;
+                % endif
+				}
+			},
+% endfor
+		],
+		footerButtons: [
+% for button in obj.actions.getFooterButtons():
+			{
+				label: '${ button.label }',
+				icon: '${ button.icon }',
+				action: (core: any, self: any) => {
+					${ button.function };
+				}
+			},
+% endfor
+		],
+        rowDoubleClick: (core: any, self: any, i: number, row: ${ obj.cls }Record) => {
+% if obj.actions.get( 'edit' ).position == 'row':
+    % if obj.actions.get( 'edit' ).function != '':
+			${obj.actions.get( 'edit' ).function};
+    % else:
+			self.editRecord(i, row);
+    % endif
+% endif
+		},
+		columns: [
+% for column in obj.table.listViewColumns:
+            {
+                columnDef: '${ column.fieldName }',
+				header: ${ '"{}"'.format( column.label ) },
+				display: ${ 'true' if len( column.listview ) > 0 else 'false' },
+				width: "${ column.listview.get( 'width', '' ) }",
+				filter: ${ str( column.listview.get( 'filter', 'false' ) ).lower() },
+				sort: ${ str( column.listview.get( 'sort', 'false' ) ).lower() },
+%  if column.hasResolveList():
+                resolveList: ${ column.ui.typescriptResolveList() },
+				cell: (row: ${ obj.cls }Record) => ${ 'row.' + column.fieldName + '_LABEL' if column.tsType != 'Date' else 'toLocalTimeString(row.' + column.fieldName + '_LABEL' + ', "' + column.ui.format + '")'}
+%  elif column.hasService():
+                ## resolveList: this.${ column.ui.service.name }Service.getSelectList('${ column.ui.service.value }', '${ column.ui.service.resolveLabel }'),
+                filterField: '${ column.fieldName + '_FK.' + column.ui.service.label }',
+                cell: (row: ${ obj.cls }Record) => {
+                    return ${column.ui.nullSafeAngularObject('row.' + column.fieldName + '_FK.' + column.ui.service.label, startIndex = 2) if 'date' not in column.ui.pipe else 'toLocalTimeString(' + column.ui.nullSafeAngularObject('row.' + column.fieldName + '_FK.' + column.ui.service.label, startIndex = 2) + ', "' + column.ui.format + '")'} ;
+                }
+%  else:
+                cell: (row: ${ obj.cls }Record) => ${ 'row.' + column.fieldName if column.tsType != 'Date' else 'toLocalTimeString(row.' + column.fieldName + ', "' + column.ui.format + '")'}
+%  endif
+            },
+% endfor
+% if obj.actions.hasCellButtons():
+            {
+                columnDef: null,
+				display: true,
+				header: 'Options',
+				width: '70px',
+				cell: (row: ${ obj.cls }Record) => {},
+                buttons: [
+%   for button in obj.actions.getCellButtons():
+                    {
+                        label: '${ button.label }',
+%    if button.isDirective():
+                        directive: '${ button.directive }',
+                        attributes: ${ button.angularParams() }
+%    else:
+						icon: '${ button.icon }',
+##                      color: ${ "'primary'" if button.color == 'primary' else button.color },
+%    if button.hasNgIf():
+                        ngIf: '${ button.ngIf }',
+%    endif
+%    if button.hasDisabled():
+                        disabled: '${ button.disabled }',
+%    endif
+						action: (core: any, self: any, i: number, row: ${ obj.cls }Record) => {
+                            % if button.function != '':
+							    ${button.function};
+                            % elif button.isAngularRoute():
+                                this.routerNavigate('${ button.routingPath() }', ${ button.routingParams() + ", { record: row }" if button.routingPath().split("/")[0] == button.parent.name else "" } );
+                            % elif button.name == 'delete':
+                                self.deleteRecord( i, row, '${ obj.table.secondaryKey if obj.table.hasSecondaryKey else obj.table.listViewColumns[0].columnDef }');
+                            % elif button.name == 'edit':
+                                self.editRecord(i, row);
+                            % else:
+                                ;
+                            % endif
+						}
+%      endif
+					},
+%   endfor
+                ]
+            }
+% endif
+        ]
+    };
+
+% if obj.mixin.Angular.hasTableComponent():
+    constructor( dataService: ${ obj.cls }DataService
+               , dialog: MatDialog
+               , router: Router
+${ allServices.externalService } )
+    {
+        super( dataService, dialog, router );
+% else:
+    constructor( dataService: ${ obj.cls }DataService
+               , protected sysEnvService: DefaultEnvironmentService
+               , protected dialog: MatDialog
+               , public router: Router
+${ allServices.externalService } )
+    {
+% endif
+        this.definition.dataService = dataService;
+		this.definition.dialog = dialog;
+		this.definition.self = this;
+        // This options is also forwarded to the backend, to notify which env, sys, sysenv is selected by the user.
+        this.definition.dataService.setBackendData( {
+            env_id: this.sysEnvService.environmentId,
+            sys_id: this.sysEnvService.systemId,
+            sysend_id: this.sysEnvService.systemEnvironmentId
+        } );
+        return;
+    }
+
+    public addRecord(): void
+	{
+% if obj.actions.isDialog( 'new' ):
+        const newRecord = new ${ obj.cls }Record();
+        const options: MatDialogConfig = {
+            data: { record: newRecord,
+                    fixed: null,
+%  for key, value in obj.actions.get( 'new' ).params.items():
+                    ${key}: ${value},
+%  endfor
+                    mode: 'add'
+            },
+            width: "${ obj.actions.get( 'new' ).width }",
+%  if obj.actions.get( 'new' ).hasHeight():
+            height: "${ obj.actions.get( 'new' ).height }",
+%  endif
+        };
+        if ( !isNullOrUndefined( this.id ) && !isNullOrUndefined( this.value ) )
+		{
+		    options.data.fixed = {}
+			options.data.fixed[ this.id ] = this.value;
+		}
+        const dialogRef = this.dialog.open( Dialog${ obj.cls }Component, options );
+        dialogRef.afterClosed().subscribe( result =>
+        {
+            console.log( 'addNew() dialog result ', result );
+            this.tableComponent.refresh();
+        } );
+% else:
+        this.routerNavigate('/${ obj.name }/edit', { mode: 'new' });
+% endif
+		return;
+	}
+
+    public editRecord( i: number, row: ${ obj.cls }Record ): void
+	{
+% if obj.actions.isDialog( 'edit' ):
+        this.definition.dataService.lockRecord( row );
+        const options: MatDialogConfig = {
+            data: { record: row,
+                    fixed: null,
+%  for key, value in obj.actions.get( 'edit' ).params.items():
+                    ${key}: ${value},
+%  endfor
+                    mode: 'edit'
+            },
+            width: "${ obj.actions.get( 'edit' ).width }",
+%  if obj.actions.get( 'edit' ).hasHeight():
+            height: "${ obj.actions.get( 'edit' ).height }",
+%  endif
+        };
+        if ( !isNullOrUndefined( this.id ) && !isNullOrUndefined( this.value ) )
+		{
+		    options.data.fixed = {}
+			options.data.fixed[ this.id ] = this.value;
+		}
+        const dialogRef = this.dialog.open( Dialog${ obj.cls }Component, options );
+        dialogRef.afterClosed().subscribe( result =>
+        {
+            console.log( 'editRecord() dialog result ', result );
+            this.definition.dataService.unlockRecord( row );
+            this.tableComponent.refresh();
+        } );
+% else:
+        this.routerNavigate('/${ obj.name }/edit', { id: '${ obj.table.primaryKey }', mode: 'edit', value: row.${ obj.table.primaryKey } }, { record: row });
+% endif
+        return;
+	}
+
+    
+    public deleteRecord( i: number, row: ${ obj.cls }Record, nameField: string ): void
+	{
+        const fields = nameField.split('.');
+        var title = row;
+        for (var j = 0; j < fields.length; j++) {
+            title = title[fields[j]];
+        }
+        this.tableComponent.deleteRecord(i, row, '${ obj.table.primaryKey }', title);
+        return;
+	}
+
+    public routerNavigate(path: string, queryParams: any, data: any = null): void
+    {
+        this.router.navigate( [path], {queryParams: queryParams, state: data } );
+    }
+}

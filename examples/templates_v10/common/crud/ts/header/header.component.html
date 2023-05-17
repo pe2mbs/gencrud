@@ -1,0 +1,22 @@
+<mat-toolbar color="primary">
+	<mat-toolbar-row fxLayout="row">
+		<span fxFlex="40px">
+			<button mat-icon-button (click)="toggleSidebar()" id="app.sidebar.menu">
+				<mat-icon>menu</mat-icon>
+			</button>
+		</span>
+		<span fxFlex="200px" id="app.logo" class="worldline-logo">
+			<a href="/#/">
+                <img src="{{headerLogo}}" alt="logo">
+			</a>
+		</span>
+		<span fxFlex="90%" id="app.title" class="component-title">{{ headerTitle }}</span>
+		<span fxFlex="200px" id="app.release" class="component-release">{{ release }}<br>{{this.releaseDate}}</span>
+		<span fxFlex="300px">
+			<app-select-default-environment class="environment-select"></app-select-default-environment>
+		</span>
+		<span fxFlex="50px">
+        	<gc-help id="app.help" helpitem="main" colorTheme="alert"></gc-help>
+		</span>
+	</mat-toolbar-row>
+</mat-toolbar>

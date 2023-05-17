@@ -1,0 +1,160 @@
+/*
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2021 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+*/
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+% if obj.mixin.Angular.hasScreenComponent():
+import { ${ obj.mixin.Angular.ScreenComponent.cls } } from '${obj.mixin.Angular.ScreenComponent.filename}';
+% else:
+import { GcScreenBase } from 'src/app/common/crud/crud.screen.base';
+% endif
+import { ${obj.cls}DataService } from './service';
+import { ${obj.cls}Record } from './model';
+import { isNullOrUndefined } from 'util';
+% for field in obj.table.uiColumns:
+ % if field.ui.isUiType( 'choice', 'choice-base', 'choice-auto-complete', 'combo' ):
+import { GcSelectList } from 'src/app/common/crud/model';
+<%
+    break
+%>
+ % endif
+% endfor
+% for service in services.unique( 'class', 'path' ):
+import { ${ service.cls } } from '${ service.path }';
+% endfor
+
+@Component({
+    // tslint:disable-next-line:component-selector
+    selector: 'app-${obj.name}-screen',
+    templateUrl: './screen.component.html',
+    styleUrls: [ '../../common/common-mat-card.scss' ]
+})
+% if obj.mixin.Angular.hasScreenComponent():
+export class Screen${obj.cls}Component extends ${ obj.mixin.Angular.ScreenComponent.cls } implements OnInit
+% else:
+export class Screen${obj.cls}Component extends GcScreenBase<${obj.cls}Record> implements OnInit
+% endif
+{
+% for field in obj.table.uiColumns:
+%   if field.ui.isUiType( 'password' ):
+    public hide_${ field.name }: boolean  = true;
+%   elif field.ui is not None:
+%    if field.ui.hasResolveList():
+    public ${ field.name }List = ${ field.ui.typescriptResolveList() };
+%    endif
+%   endif
+% endfor
+% for service in services.unique( 'name' ):
+    public ${ service.name }List: GcSelectList[];
+% endfor
+
+    constructor( route: ActivatedRoute, 
+                 dataService: ${obj.cls}DataService
+${ services.externalService }
+    )
+    {
+        super( 'Screen${obj.cls}Component', route, dataService );
+        this.row = new ${obj.cls}Record();
+        this.formGroup = new FormGroup( {
+% for field in obj.table.columns:
+%  if field.hasLabel():
+            ${ field.name }: new FormControl( ${ field.initValue },
+                                ${ field.validators } ),
+%  endif
+%  for sibling in field.siblings:
+            ${ field.name + "_" + sibling.label.upper().replace(" ", "_") }: new FormControl( ${ sibling.initValue },
+                                ${ sibling.validators } ),
+%  endfor
+% endfor
+        } );
+        this.fieldsToExcludeFromChangeDetection =  ${ [ field.name for field in obj.table.columns if field.readonly] + [ field.name + "_" + sibling.label.upper().replace(" ", "_") for sibling in field.siblings if sibling.readonly] };
+        return;
+    }
+
+    ngOnInit()
+    {
+        super.ngOnInit();
+% for service in services.unique( 'name', exclude=['choice'] ):
+        this.registerSubscription( this.${ service.name }Service.getSelectList( '${ service.value }'
+                                    , '${ service.resolveLabel }'
+%  if service.hasInitial():
+                                    , ${ service.initial }
+%  endif
+%  if service.hasFinal():
+                                    , ${ service.final }
+%  endif
+                                     ).subscribe( dataList => {
+            this.${ service.name }List = dataList;
+%  if field.definedNull():
+            this.${ service.name }List.splice( 0, 0, { label: 'No ${ service.fieldLabel.lower() }', value: 0 } );
+%  endif
+        } ) );
+% endfor
+        return;
+    }
+
+    protected updateFormGroup( record: ${obj.cls}Record ): void
+	{
+		this.formGroup.patchValue( {
+% for field in obj.table.columns:
+%  if field.hasLabel():
+%    if field.hasTextWithService():
+            ${ field.name }: ${ field.ui.nullSafeAngularObject("this.row." + field.foreignRecordValue, startIndex = 2 ) },
+%    elif field.hasServiceBaseClass():
+            ${ field.name }: this.row.${ field.foreignReferenceID },
+%    else:
+            ${ field.name }: this.row.${ field.name },
+%    endif
+%  endif
+%  for sibling in field.siblings:
+%   if sibling.hasLabel():
+%     if sibling.hasTextWithService():
+            ${ field.name }: ${ sibling.ui.nullSafeAngularObject("this.row." + sibling.foreignRecordValue, startIndex = 2 ) },
+%     elif sibling.hasServiceBaseClass():
+            ${ field.name + "_" + sibling.label.upper().replace(" ", "_") }: ${ sibling.ui.nullSafeAngularObject("this.row." + sibling.foreignReferenceID, startIndex = 2) },
+%     else:
+            ${ field.name + "_" + sibling.label.upper().replace(" ", "_") }: this.row.${ field.name },
+%     endif
+%   endif
+%  endfor
+% endfor
+		} );
+        super.updateFormGroup( record );
+		return;
+	}
+
+% for field in obj.table.columns:
+%  if field.isPrimaryKey():
+    public get ${ field.name }()
+    {
+        return ( this.row.${ field.name } );
+    }
+
+%  elif field.frontend:
+    public get ${ field.name }()
+    {
+        return ( this.formGroup.get( '${ field.name }' ) );
+    }
+
+%  endif
+% endfor
+}

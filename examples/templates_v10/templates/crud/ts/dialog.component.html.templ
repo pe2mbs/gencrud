@@ -1,0 +1,40 @@
+<div id="${ obj.name }" fxLayout="column">
+    <h3 mat-dialog-title id="${ obj.name }.title">{{ mode }} ${ obj.title }</h3>
+    <form fxLayout="column" (ngSubmit)="submit" [formGroup]="formGroup" id="${ obj.name }.form">
+% for field in obj.table.columns:
+ % if field.hasLabel() and not field.hasTab:
+        ${ field.angularUiInput() }
+ % endif
+% endfor
+% if obj.table.hasTabs():
+        <mat-tab-group fxFlex="100">
+% for label in obj.table.tabs().labels:
+            <mat-tab label="${ label }" id="${ obj.name }.tab.${label.lower().replace( ' ', '_' )}">
+                <mat-card fxLayout="column" class="max-box">
+%   if obj.table.tabs().hasComponent( label ):
+                <${obj.table.tabs( 'dialog' ).component( label )}>
+                </${obj.table.tabs( 'dialog' ).component( label )}>
+%   else:
+%     for field in obj.table.tabs().fieldsFor( label ):
+                    ${ field.angularUiInput() }
+%     endfor
+                </mat-card>
+%   endif
+            </mat-tab>
+%  endfor
+        </mat-tab-group>
+% endif
+    </form>
+    <div mat-dialog-actions fxFlex="5">
+        <button mat-button
+                [type]="submit"
+                id="${ obj.name }.submit"
+                [disabled]="!formGroup.valid"
+                [mat-dialog-close]="1"
+                (click)="onSaveClick()">Save</button>
+        <button mat-button
+                (click)="onCancelClick()"
+                id="${ obj.name }.cancel"
+                tabindex="-1">Cancel</button>
+    </div>
+</div>

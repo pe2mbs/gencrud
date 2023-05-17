@@ -1,0 +1,71 @@
+<div class="header" click-stop-propagation>
+	<span [class]="title_filter">
+		<span *ngIf="title_filter !== ''">* </span>
+		{{ title }}
+		<span *ngIf="title_filter !== ''"> *</span>
+	</span>
+	<button mat-icon-button class="btn-toggle" [matMenuTriggerFor]="menu" #menuTrigger="matMenuTrigger">
+		<mat-icon>keyboard_arrow_down</mat-icon>
+	</button>
+</div>
+<mat-menu #menu>
+	<div mat-menu-item mat-filter-item [disableRipple]="true" 
+						class="menu-title" color="primary">
+		<div fxLayout="row">
+			<div fxFlex>{{ 'Field' }}</div>
+			<div fxFlex fxLayoutAlign="end">{{ title }}</div>
+		</div>
+	</div>
+	<div mat-menu-item mat-filter-item [disableRipple]="true">
+		<mat-form-field>
+			<mat-select [panelClass]="'mat-elevation-z10'" 
+						defaultTabIndex="9"
+						(selectionChange)="selectCondition( $event )"
+						[(value)]="conditionPosition">
+				<mat-option *ngFor="let condition of conditionsList" [value]="condition.value" class="cond_option">
+					{{ condition.label }}
+				</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+	<div mat-menu-item mat-filter-item [disableRipple]="true" *ngIf="fields === 0">
+		<mat-form-field>
+			<mat-select [panelClass]="'mat-elevation-z10'" 
+						[placeholder]="'Value'"
+						(selectionChange)="selectValue( $event )"
+						[(value)]="valuePosition">
+				<mat-option *ngFor="let item of resolveItems" [value]="item.value" class="cond_option">
+					{{ item.label }}
+				</mat-option>
+			</mat-select>
+		</mat-form-field>
+	</div>
+	<div mat-menu-item mat-filter-item [disableRipple]="true" *ngIf="fields > 0">
+		<mat-form-field>
+			<input
+			#firstinput
+			id="first-filter-input"
+			(keydown)="onKeyDown( $event, firstinput )"
+			(keyup.enter)="applyColumnFilter(menuTrigger)"
+			tabindex="0"
+			matInput [placeholder]="caption[ 0 ]" [(ngModel)]="value[ 0 ]">
+		</mat-form-field>
+	</div>
+	<div mat-menu-item mat-filter-item [disableRipple]="true" *ngIf="fields === 2">
+		<mat-form-field>
+			<input
+			#secondinput
+			id="second-filter-input"
+			(keydown)="onKeyDown( $event, secondinput )"
+			(keyup.enter)="applyColumnFilter(menuTrigger)"
+			tabindex="1"
+			matInput [placeholder]="caption[ 1 ] " [(ngModel)]="value[ 1 ]">
+		</mat-form-field>
+	</div>
+	<div mat-menu-item [disableRipple]="true">
+		<div fxLayout="row">
+			<button mat-raised-button fxFlex class="action-button" (click)="clearColumnFilter()">{{ 'Clear' }}</button>
+			<button mat-raised-button id="filter-button" color="primary" fxFlex class="action-button" (click)="applyColumnFilter(menuTrigger)">{{ 'Search' }}</button>
+		</div>
+	</div>
+</mat-menu>

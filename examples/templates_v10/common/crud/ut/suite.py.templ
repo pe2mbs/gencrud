@@ -1,0 +1,21 @@
+import os
+import unittest
+import logging
+%for module in modules:            # For this we use the modules.yaml file in the testrun/ source folder
+try:
+    import utests.${ module.get('module') }.restapi
+except ModuleNotFoundError:
+    pass
+%endfor
+
+
+logging.basicConfig( level = logging.INFO, filename=os.path.join( os.path.dirname(__file__), 'unittest.log' ) )
+runner = unittest.TextTestRunner(verbosity=3)
+suite = unittest.TestSuite()
+%for module in modules:            # For this we use the modules.yaml file in the testrun/ source folder
+try:
+    utests.${ module.get('module') }.restapi.registerTestSuite( suite )
+except (AttributeError, NameError) as e:
+    pass
+%endfor
+runner.run( suite )

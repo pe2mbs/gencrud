@@ -1,0 +1,9 @@
+<ng-container>
+    <mat-card
+      class="menu-link"
+      *ngFor="let menuItem of contextMenuItems; index as i"
+      (click)="onContextMenuClick($event, menuItem.menuEvent)">
+      {{ menuItem.menuText }}
+      <hr *ngIf="i < contextMenuItems.length - 1" />
+    </mat-card>
+</ng-container>

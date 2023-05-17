@@ -1,0 +1,26 @@
+source:
+    python:                     \src\python\virtual-demo
+    angular:                    \src\angular\virtual-demo\src\app
+templates:
+    base:                       \src\python\gencrud\examples\templates_v10
+    python:                     templates\crud\py
+    angular:                    templates\crud\ts
+    common:
+        base:                   \src\python\gencrud\examples\templates_v10
+        python:                 common\crud\py
+        angular:                common\crud\ts
+application:                    example
+options:
+    ignore-case-db-ids:         true
+    overwrite:                  true
+    use-module:                 true
+    generate-tests:             false
+references:
+    app-module:
+        file:                   app.module.ts
+        class:                  AppModule
+        module:                 app.module.ts
+    app-routing:
+        file:                   app.routingmodule.ts
+        class:                  AppRoutingModule
+        module:                 app.routingmodule.ts

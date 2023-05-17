@@ -21,6 +21,7 @@ from ruamel import yaml
 import os
 import io
 import gencrud.util.utils
+# from gencrud.config.interface import Interface
 from gencrud.config.object import TemplateObject, TemplateObjects
 from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular, TemplateSourceUnittest
 from gencrud.config.options import TemplateOptions
@@ -29,7 +30,7 @@ from gencrud.config.dynamic.controls import DymanicControls
 from gencrud.constants import *
 from gencrud.util.exceptions import MissingAttribute
 import jsonschema
-from gencrud.schema import GENCRUD_SCHEME
+from gencrud.schema import getSchema
 
 
 OptionalString = TypeVar( 'OptionalString', str, None )
@@ -111,8 +112,9 @@ class TemplateConfiguration( object ):
 
         # Veryfy the loaded template against the schema
         try:
-            jsonschema.Draft7Validator(GENCRUD_SCHEME)
-            jsonschema.validate(instance=self.__config, schema=GENCRUD_SCHEME)
+            GENCRUD_SCHEME = getSchema()
+            jsonschema.Draft7Validator( GENCRUD_SCHEME )
+            jsonschema.validate( instance = self.__config, schema = GENCRUD_SCHEME )
 
         except jsonschema.SchemaError as exc:
             print(exc)
@@ -187,3 +189,13 @@ class TemplateConfiguration( object ):
     @property
     def version( self ):
         return self.__config.get( C_VERSION, C_VERSION_DEFAULT )
+
+    # def hasBackendInterface( self ):
+    #     return C_INTERFACE in self.__config and C_BACKEND in self.__config[ C_INTERFACE ]
+    #
+    # def hasFrontendInterface( self ):
+    #     return C_INTERFACE in self.__config and C_FRONTEND in self.__config[ C_INTERFACE ]
+    #
+    # @property
+    # def Interface( self ):
+    #     return Interface( self, **self.__config.get( C_INTERFACE, {} ) )

@@ -1,0 +1,5 @@
+<form (ngSubmit)="onSaveClick" [formGroup]="formGroup">
+    <gc-choice-autocomplete-input id="SE_SYSENV" placeholder="Test system environment" 
+                    error="true" debug="false" formControlName="environment" [items]="items" (change)="onChange( $event )">
+    </gc-choice-autocomplete-input>
+</form>

@@ -1,0 +1,12 @@
+<h2 mat-dialog-title>{{ title }}</h2>
+<mat-dialog-content class="error">
+	<p>
+		Reason: {{ data.reason }}
+	</p>
+	<p>
+		Status: {{ data.status }}
+	</p>
+</mat-dialog-content>
+<div style="align-content: center; text-align: center;">
+	<button mat-raised-button color="warn" (click)="closeDialog()">Close</button>
+</div>

@@ -1,0 +1,38 @@
+{
+    "files": [
+% if obj.actions.has( 'new' ) and obj.actions.isDialog( 'new' ) or  obj.actions.has( 'edit' ) and obj.actions.isDialog( 'edit' ):
+        "import { Dialog${obj.cls}Component } from './${ root.application }/${ obj.name }/dialog.component';",
+% endif
+% if obj.actions.has( 'new' ) and obj.actions.isScreen( 'new' ) or  obj.actions.has( 'edit' ) and obj.actions.isScreen( 'edit' ):
+        "import { Screen${obj.cls}Component } from './${ root.application }/${ obj.name }/screen.component';",
+% endif
+
+        "import { ${ obj.cls }TableComponent } from './${ root.application }/${ obj.name }/table.component';",
+        "import { ${ obj.cls }DataService } from './${ root.application }/${ obj.name }/service';"
+    ],
+    "imports": [
+        "BrowserModule",
+        "BrowserAnimationsModule",
+        "HttpClientModule",
+        "FormsModule",
+        "ReactiveFormsModule",
+        "GenCrudModule"
+    ],
+    "declarations": [
+% if obj.actions.has( 'new' ) and obj.actions.isDialog( 'new' ) or  obj.actions.has( 'edit' ) and obj.actions.isDialog( 'edit' ):
+        "Dialog${ obj.cls }Component",
+% endif
+% if obj.actions.has( 'new' ) and obj.actions.isScreen( 'new' ) or  obj.actions.has( 'edit' ) and obj.actions.isScreen( 'edit' ):
+        "Screen${ obj.cls }Component",
+% endif
+        "${ obj.cls }TableComponent"
+    ],
+    "entryComponents": [
+% if obj.actions.has( 'new' ) and obj.actions.isDialog( 'new' ) or  obj.actions.has( 'edit' ) and obj.actions.isDialog( 'edit' ):
+        "Dialog${ obj.cls }Component"
+% endif
+    ],
+    "providers": [
+        "${ obj.cls }DataService"
+    ]
+}

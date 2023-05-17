@@ -1,0 +1,15 @@
+<a mat-list-item class="color-primary" 
+				 [ngStyle]="{ 'padding-left': (depth * 12) + 'px' }" 
+				 (click)="onItemSelected( item )"
+				 [ngClass]="{ 'active': active, 'expanded': expanded }" 
+				 id="{{ item.id }}">
+	<mat-icon color="primary" class="title-icon">{{ item.icon }}</mat-icon> {{ item.caption }}
+	<span fxFlex *ngIf="item.children && item.children.length">
+		<span fxFlex></span>
+		<mat-icon color="primary" [@indicatorRotate]="expanded ? 'expanded': 'collapsed'">expand_more</mat-icon>
+	</span>
+</a>
+<div *ngIf="expanded">
+	<gc-menu-list-item *ngFor="let child of item.children" [item]="child" [depth]="depth+1">
+	</gc-menu-list-item>
+</div>

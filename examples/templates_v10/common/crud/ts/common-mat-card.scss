@@ -1,0 +1,235 @@
+:host, .standard-container
+{
+	width: calc( 100% - 5px );
+	height: 100%;
+	padding: 0px;
+}
+
+.standard-container-details
+{
+	width: calc( 100% - 32px ) !important;
+    height: calc( 100% - 32px ) !important;
+}
+
+.sticky
+{
+    position: sticky;
+}
+
+mat-tab-group
+{
+	flex: 1;
+}
+
+:host ::ng-deep .mat-tab-body-wrapper
+{
+	flex-grow: 1;
+}
+
+// TODO: this is an ugly fix at the moment to make tables fit the screen and not
+// be over the footer buttons
+:host ::ng-deep .mat-card-content
+{
+	overflow-y: auto;
+}
+
+.loading-progress
+{
+	margin-left: 15px;
+	margin-top: 25px;
+}
+
+.mat-form-field
+{
+    font-size: 14px;
+    flex-grow: 1;
+    margin-top: 8px;
+}
+
+.no-results
+{
+    display: flex;
+    justify-content: center;
+    padding: 14px;
+    font-size: 14px;
+	font-style: italic;
+}
+
+.mat-header-row
+{
+	height: 36px;
+	min-height: 36px;
+	max-height: 36px;
+	vertical-align: middle;
+}
+
+.equensworldline-theme
+{
+	.align-paginator
+	{
+		background-color: #fafafa;
+	}
+}
+
+.align-paginator
+{
+	margin-top: 8px;
+}
+
+.mat-tab
+{
+    height: 100%!important;
+}
+
+.mat-tab-body-wrapper
+{
+    height: 100%!important;
+}
+
+form
+{
+    height: 100%!important;
+}
+
+.form-error {
+    color: red;
+    font-size: 11px;
+}
+
+.mat-row
+{
+	min-height: 28px;
+	height: 28px;
+	vertical-align: middle;
+}
+
+.table-header
+{
+	padding-left: 0px;
+}
+
+.table-header:first-of-type
+{
+	padding-left: 5px;
+}
+
+th.mat-sort-header
+{
+    border-right: 1px dotted rgba(0,0,0,.3);
+    border-left: 1px dotted rgba(0,0,0,.3);
+}
+
+td.mat-cell, td.mat-cell:last-of-type, td.mat-footer-cell:last-of-type, th.mat-header-cell:last-of-type {
+    padding-right: 5px;
+}
+
+td.mat-cell, td.mat-cell:first-of-type, td.mat-footer-cell:first-of-type, th.mat-header-cell:first-of-type {
+    padding-left: 5px;
+}
+
+::ng-deep .row-button
+{
+	min-height: 28px;
+	height: 28px;
+	vertical-align: middle;
+}
+
+::ng-deep mat-icon.row-button
+{
+	margin-top: -7px;
+}
+
+.overflow-auto
+{
+    overflow: auto;
+}
+
+.max-box
+{
+	width: 100%;
+	height: 100%;
+}
+
+.max-box-content
+{
+    width: 100%;
+	height: calc( 100% - 60px );
+}
+
+mat-cell > span.ellipsis 
+{
+	text-overflow: ellipsis; 
+	overflow: hidden; 
+	white-space: nowrap;
+}
+
+/* Added for span inside table so we do not see the text cursor wehn
+we hover over text */
+mat-card span {
+    cursor: default;
+}
+
+/* Screen Styles */
+.screen
+{
+    height: calc( 100% - 40px );
+    flex-direction: row;
+    box-sizing: border-box;
+    display: flex;
+    place-content: stretch space-between;
+    align-items: stretch;
+}
+
+.field-layout
+{
+    display: block;
+    box-sizing: border-box;
+    flex: 1 1 100%;
+    width: calc( 100% - 42px );
+    max-width: calc( 100% - 42px );
+    min-width: calc( 100% - 42px );
+    height: 100%;
+}
+
+.side-buttons
+{
+    display: block;
+    box-sizing: border-box;
+    flex: 1 1 42px;
+    width: 42px;
+    max-width: 42px;
+    min-width: 42px;
+    height: 100%;
+}
+
+::ng-deep tr.mat-row:hover .mat-cell{
+    border-width: 1px !important;
+    border-top-color: orange !important;
+    border-bottom-color: orange !important;
+}
+
+.mat-row:nth-child(odd){
+    background-color: white;
+
+    .mat-cell {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+        border-right: 1px dotted #D8D8D8;
+        border-left: 1px dotted #D8D8D8;
+    }
+}
+        
+.mat-row:nth-child(even){
+    background-color: #D8D8D8;
+
+    .mat-cell {
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+        border-right: 1px dotted white;
+        border-left: 1px dotted white;
+    }
+}
+
+::ng-deep .highlightedRow {
+    background-color: gold !important;
+}

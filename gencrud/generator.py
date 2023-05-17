@@ -149,9 +149,16 @@ def initializeCodeGenerationProcess( input_file ):
 
     if config.options.generateBackend:
         logger.info( "*** Generating Python backend source code.***" )
+        # Check if the interface is defined
+        # if config.hasBackendInterface():
+        #     backend = config.Interface.Backend
+        #     templateFolder = backend.Templates.templateFolder
+        #
+        # else:
+        templateFolder = config.python.templateFolder
         generatePython( config,
-                        [ os.path.abspath( os.path.join( config.python.templateFolder, t ) )
-                                   for t in os.listdir( config.python.templateFolder ) ] )
+                        [ os.path.abspath( os.path.join( templateFolder, t ) )
+                                   for t in os.listdir( templateFolder ) ] )
 
     if config.options.generateFrontend:
         logger.info( "*** Generating Typescript Angular frontend source code. ***" )

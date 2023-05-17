@@ -40,7 +40,11 @@ class TemplateSource( TemplateBase ):
         self.__key = tp
         self.__source = self.__config.get( platf, self.__config ).get( C_SOURCE, {} )
         # if there is no templates directory specified, the gencrud default templates will be used
-        self.__template = self.__config.get( platf, self.__config ).get( C_TEMPLATES_DIR, {} )
+        self.__template = self.__config.get( platf, self.__config ).get( C_TEMPLATES, {} )
+        return
+
+    def set( self, key, value ):
+        self.__config[ key ] = value
         return
 
     @property
@@ -54,6 +58,9 @@ class TemplateSource( TemplateBase ):
             raise PathNotFoundException( folder )
 
         return folder
+
+    def hasBaseFolder( self ):
+        return C_BASE in self.__template
 
     @property
     def templateBaseFolder( self ) -> str:
@@ -92,12 +99,15 @@ class TemplateSource( TemplateBase ):
 
         return folder
 
+    def isTemplateFolderAbs( self ):
+        return self.__template[ self.__key ].startswith( os.path.pathsep )
+
     @property
     def templateFolder( self ) -> str:
         folder = self.__template.get( self.__key, None )
         # if template folder not specified take default
         if folder is None:
-            folder = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', C_TEMPLATES_DIR ) )
+            folder = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', C_TEMPLATES ) )
 
         if not folder.startswith( os.path.pathsep ):
             # not absolute path
@@ -126,7 +136,7 @@ class TemplateSource( TemplateBase ):
         folder = self.__template.get( C_COMMON, {} ).get( self.__key, None )
         # if there is no common templates directory specified, the gencrud default common will be used
         if folder is None:
-            folder = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', C_TEMPLATES_DIR, C_COMMON, self.__key ) )
+            folder = os.path.abspath( os.path.join( os.path.dirname( __file__ ), '..', C_TEMPLATES, C_COMMON, self.__key ) )
 
         if not folder.startswith( os.path.pathsep ):
             # not absolute path
@@ -165,6 +175,7 @@ class TemplateSourceAngular( TemplateSource ):
     def __init__( self, **cfg ):
         TemplateSource.__init__( self, C_ANGULAR, **cfg )
         return
+
 
 class TemplateSourceUnittest( TemplateSource ):
     def __init__( self, **cfg ):

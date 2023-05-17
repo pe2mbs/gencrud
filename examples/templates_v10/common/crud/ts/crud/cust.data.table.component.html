@@ -1,0 +1,128 @@
+<mat-card id="crud.table" class="max-box" fxLayout="column">
+	<div fxFlex="60px" class="sticky">
+		<div fxFlex fxLayout="row">
+			<div fxFlex="grow">
+				<h2>{{ definition.title || definition.title }}</h2>
+			</div>
+			<div class="align-paginator" fxFlex="none" fxLayoutAlign="end">
+				<ng-container *ngFor="let but of definition.headerButtons;" >
+					<button mat-icon-button [matTooltip]="but.label || ''"
+							color="primary" (click)="but.action( self, definition.self )" [id]="'crud.header.' + but.label">
+						<mat-icon aria-label="[but.label]">{{ but.icon }}</mat-icon>
+					</button>
+				</ng-container>
+				<gc-help *ngIf="definition.helpTopic" [helpitem]="definition.helpTopic" 
+													fallback="table-overview"
+													color="primary"></gc-help>
+				<button mat-icon-button color="primary" (click)="toggleAutoUpdate()" id="te_test_execution.header.autoupdate"
+                                                        *ngIf="definition.autoUpdate || false" matTooltip="Auto refresh">
+
+                    <mat-icon *ngIf="toggleUpdate == false; else isAutoRefresh" aria-label="Autoupdate">update</mat-icon>
+                    <ng-template #isAutoRefresh>
+                        <mat-icon *ngIf="toggleUpdate" aria-label="Stop autoupdate">link_off</mat-icon>
+                    </ng-template>
+                </button>
+				<button mat-icon-button color="primary"
+						matTooltip="Refresh"
+							(click)="refresh()" id="crud.header.refresh">
+					<mat-icon aria-label="Refresh the view">refresh</mat-icon>
+				</button>
+			</div>
+		</div>
+	</div>
+	<mat-card-content fxFlex="100" class="max-box-content">
+		<mat-table #table class="mat-cell" 
+					[dataSource]="dataSource" 
+					matSort>
+<!-- 			
+                    [matSortActive]="definition.defaultSortField" 
+					[matSortDirection]="definition.defaultSortDirection" 
+                    [matSortDisableClear]="definition.sortDisableClear">  -->
+           
+			<ng-container *ngFor="let column of definition.columns" [matColumnDef]="column.header">
+				<th *matHeaderCellDef class="table-header" 
+									mat-sort-header
+									[disabled]="!column.sort" 
+									[style.width]="column.width" 
+									[style.min-width]="column.width">
+					<span *ngIf="!column.filter; else filter_active">
+						{{ column.header }}
+					</span>
+					<ng-template #filter_active>
+						<filter-header [title]="column.header" 
+										[field]="column.filterField != null ? column.filterField : column.columnDef"
+										[items]="column.resolveList"
+										[filterRecord]="filterRecord"
+						>
+						</filter-header>
+					</ng-template>
+				</th>
+				<td mat-cell *matCellDef="let row; let idx = index;" 
+							[style.flex]="column.width"
+							(dblclick)="definition.rowDoubleClick( self, definition.self, idx, row )">
+					<div *ngIf="!column.buttons; else buttons_active"
+						(contextmenu)="displayContextMenu($event, {'copy': column.cell( row )}); false">
+						<span class="ellipsis">
+							{{ column.cell( row ) }}
+						</span>
+						<app-context-menu
+							[hidden]="!(rightClickMenuItems.length > 0 && isDisplayContextMenu)"
+							[ngStyle]="getRightClickMenuStyle()"
+							[contextMenuItems]="rightClickMenuItems"
+							(onContextMenuItemClick)="handleMenuItemClick($event)"
+						></app-context-menu>
+					</div>
+					<ng-template #buttons_active >
+						<ng-container *ngFor="let but of column.buttons;" >
+							<button fxFlex class="row-button" *ngIf="!but.directive && ngIfCondition( row, but.ngIf )" mat-icon-button
+									[matTooltip]="but.label || ''" [disabled]="!but.directive && but.disabled != null && ngIfCondition( row, but.disabled )"
+									[color]="but.color != null ? but.color : 'primary'" (click)="but.action( self, definition.self, idx, row )" [id]="'crud.row.' + but.label">
+								<mat-icon [matTooltip]="but.label" class="row-button">{{ but.icon }}</mat-icon>
+							</button>
+							<app-row-extra-button cssClass="row-button" class="row-button" *ngIf="but.directive" [record]="row" [attributes]="but.attributes" [directive]="but.directive" [table]="this"></app-row-extra-button>
+						</ng-container>
+					</ng-template>
+				</td>
+			</ng-container>
+			<tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+			<tr mat-row [ngClass]="{'highlightedRow' : definition.self.highlightedRow && definition.idField && definition.self.highlightedRow[definition.idField] == row[definition.idField]}" *matRowDef="let row; columns: displayedColumns;"></tr>
+		</mat-table>
+	</mat-card-content>
+	<mat-card-footer fxFlex="60px" style="margin-left: 5px; width: 100%;" >
+		<div fxFlex fxLayout="row">
+			<div fxFlex="grow">
+				<div id="crud.spinner" *ngIf="isLoadingResults; else loading_done" class="loading-progress">
+					<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+				</div>
+				<ng-template #loading_done>
+					<div class="no-results" id="crud.no-results" [style.display]="resultsLength == 0 ? '' : 'none'">
+						{{ 'No results' }}
+					</div>
+				</ng-template>
+			</div>
+			<mat-paginator #bot_paginator fxFlex="550px"
+							class="color-primary"
+							id="crud.botton.paginator"
+							[length]="resultsLength"
+							[showFirstLastButtons]="true"
+							(page)="pagingEvent( $event, 'bottom' )"
+							[pageIndex]="pageData.pageIndex"
+							[pageSize]="pageData.pageSize"
+							[pageSizeOptions]="pageData.pageSizeOptions">
+			</mat-paginator>
+			<ng-container *ngFor="let but of definition.footerButtons;" >
+				<button mat-icon-button matTooltip="but.label || ''"
+						color="primary" (click)="but.action( self, definition.self )" [id]="'crud.header.' + but.label">
+					<mat-icon [matTooltip]="but.label" aria-label="[but.label]">{{ but.icon }}</mat-icon>
+				</button>
+			</ng-container>
+			<div class="align-paginator" fxFlex fxLayoutAlign="end">
+				<button mat-icon-button color="primary" matTooltip="Refresh"
+						id="crud.botton.refresh"
+						(click)="refresh()">
+					<mat-icon matTooltip="Refresh the view" aria-label="Refresh the view">refresh</mat-icon>
+				</button>
+			</div>
+		</div>
+	</mat-card-footer>
+</mat-card>

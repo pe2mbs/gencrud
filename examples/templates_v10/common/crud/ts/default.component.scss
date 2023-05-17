@@ -1,0 +1,41 @@
+:host 
+{ 
+	height: 100hv; 
+    max-height: 100hv; 
+    width: 100%;
+	overflow: hidden!important;
+}	
+
+mat-drawer-container
+{
+    overflow: hidden!important;
+}
+
+/*
+*   with-ticker     without-ticker
+*   header 64px         64px
+*   ticker 30px
+*   footer 39px         39px
+*   -----------     --------
+*         133px        103px
+*/
+mat-drawer-container.without-ticker 
+{
+    height: calc( 100vh - 144px ) !important;
+}
+
+mat-drawer-container.with-ticker
+{
+    height: calc( 100vh - 144px - 1.5rem ) !important;
+}
+
+mat-drawer 
+{ 
+	width: 260px; 
+	max-width: 300px; 
+}
+
+mat-drawer-content 
+{ 
+	padding-left: 5px; 
+}

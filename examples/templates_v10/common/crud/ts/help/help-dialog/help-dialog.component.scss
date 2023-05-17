@@ -1,0 +1,51 @@
+:host ::ng-deep
+{
+    padding: 0px;
+    margin: 0px;
+    width: 85%;
+    height: 85%;
+}
+
+::ng-deep .mat-dialog-content
+{
+    overflow-y: hidden!important;
+}
+
+.custom-dialog-container .mat-dialog-container
+{
+    overflow-y: hidden;
+}
+
+mat-dialog-content
+{
+    max-height: 100%;
+}
+
+.mat-markdown
+{
+    height: 100%!important;
+    font-size: 16px!important;
+    height: 100%!important;
+    box-sizing: content-box;
+}
+
+h2
+{
+    margin: 0px;
+    padding: 0px;
+    background-color: blue;
+    color: white;
+    width: 100%!important;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.mat-typography
+{
+    height: 100%;
+    font-family: Roboto!important;
+    width: 100%!important;
+    height: calc( 100% - 50px )!important;
+    box-sizing: content-box;
+    overflow-y: scroll!important;
+}

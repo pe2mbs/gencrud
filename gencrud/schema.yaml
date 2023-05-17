@@ -1,0 +1,712 @@
+#
+#   This is the schema for the templates
+#   This is a JSON schema, written in YAML for better readability.
+#
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://github.com/pe2mbs/gengrud
+$defs:
+    component:
+        type: object
+        required:
+        -   class
+        -   file
+        additionalProperties: false
+        properties:
+            class:
+                type: string
+                pattern: '^\w+$'
+            file:
+                type: string
+    module:
+        type: object
+        required:
+        -   class
+        -   file
+        additionalProperties: false
+        properties:
+            file:
+                type: string
+            class:
+                type: string
+                pattern: '^\w+$'
+            module:
+                type: string
+    uielement:
+        type: object
+        required:
+        -   type
+        additionalProperties: false
+        properties:
+            type:
+                enum:
+                -   textbox
+                -   editor
+                -   number
+                -   choice
+                -   choice-auto-complete
+                -   choice-base
+                -   textarea
+                -   checkbox
+                -   password
+                -   date
+                -   time
+                -   datetime
+                -   label
+            format:
+                type: string
+            width:
+                type: integer
+            group:
+                type: string
+            ngIf:
+                type: string
+            disabled:
+                type: string
+            hint:
+                type: string
+            pipe:
+                enum:
+                -   date
+                -   datetime
+                -   time
+            cols:
+                type: integer
+            rows:
+                type: integer
+            resolve-list:
+                type: object
+            service:
+                type: object
+                additionalProperties: false
+                properties:
+                    name:
+                        type: string
+                    path:
+                        type: string
+                    base-class:
+                        type: string
+                        pattern: '^\w+$'
+                    class:
+                        type: string
+                        pattern: '^\w+$'
+                    value:
+                        type: string
+                    label:
+                        type: string
+                    filter:
+                        type: object
+                        optional: true,
+                        additionalProperties: true
+            attributes:
+                type: object
+                additionalProperties: false
+                properties:
+                    language:
+                        enum:
+                        -   markdown
+                        -   json
+                        -   python
+                        -   yaml
+                        -   xml
+                        -   sql
+                        -   xpath
+                    height:
+                        type: string
+                    minimap:
+                        type: string
+                    heightAdjust:
+                        type: string
+                    decodeFunc:
+                        type: string
+                    encodeFunc:
+                        type: string
+                    onSaveClick:
+                        type: string
+                    prettyPrintOption:
+                        type: string
+            actions:
+                type: array
+                items:
+                    type: object
+                    required:
+                    -   name
+                    -   icon
+                    -   position
+                    additionalProperties: false
+                    properties:
+                        name:
+                            type: string
+                            pattern: '^\w+$'
+                        icon:
+                            type: string
+                        position:
+                            enum:
+                            -   row
+                            -   left
+                            -   right
+                        function:
+                            type: string
+    listview:
+        type: object
+        additionalProperties: false
+        required:
+        -   width
+        -   index
+        properties:
+            width:
+                type: string
+            index:
+                type: integer
+                minimal: 0
+                maximal: 99
+            sort:
+                type: boolean
+            filter:
+                type: boolean
+    tabelement:
+        type: object
+        additionalProperties: false
+        required:
+        -   label
+        -   index
+        properties:
+            label:
+                type: string
+            index:
+                type: integer
+    test-data-item:
+        type:
+        -   string
+        -   boolean
+        -   integer
+        -   number
+        -   object
+        -   'null'
+title: GenCrud
+type: object
+required:
+-   source
+-   application
+-   objects
+additionalProperties: false
+properties:
+    source:
+        description: This defines the the location of the target sources.
+        type: object
+        additionalProperties: false
+        properties:
+            base:
+                description: This is the base location for Python, Python-unittest and Angular.
+                type: string
+                optional: true
+            python:
+                description: This is the Python source folder where the Python project is located and the config.yaml file can be found.
+                type: string
+            angular:
+                description: This is the Angular source folder where the Angular project is located and the angular.json file can be found.
+                type: string
+            unittest:
+                description: This is the location where the Python unittests are written.
+                type: string
+                optional: true
+    templates:
+        description: This defines the the location of the templates used for generation.
+        type: object
+        optional: true,
+        additionalProperties: false
+        properties:
+            base:
+                type: string
+                optional: true
+            python:
+                type: string
+            angular:
+                type: string
+            unittest:
+                type: string
+                optional: true
+            common:
+                type: object
+                additionalProperties: false
+                properties:
+                    base:
+                        type: string
+                        optional': true
+                    python:
+                        type: string
+                    angular:
+                        type: string
+                    unittest:
+                        type: string
+                        optional: true
+    application:
+        type: string
+    nogen:
+        type: boolean
+    references:
+        type: object
+        additionalProperties: false
+        properties:
+            app-module:
+                $ref:   '#/$defs/module'
+            app-routing:
+                $ref:   '#/$defs/module'
+    options:
+        type: object
+        additionalProperties: false
+        properties:
+            ignore-case-db-ids:
+                type: boolean
+            overwrite:
+                type: boolean
+            use-module:
+                type: boolean
+            generate-tests:
+                type: boolean
+    interface:
+        type: object
+        additionalProperties: false
+        optional: true
+        properties:
+            backend:
+                optional: true
+                additionalProperties: false
+                type: object
+                properties:
+                    target-class:
+                        optional:   false
+                        type:       string
+                        pattern:    '^\w+$'
+                    class:
+                        optional:   false
+                        type:       string
+                        pattern:    '^\w+$'
+                    file:
+                        optional:   false
+                        type:       string
+                    templates:
+                        optional:   false
+                        type:       object
+                        additionalProperties: false
+                        properties:
+                            python:
+                                optional:   true
+                                type:       string
+                            angular:
+                                optional:   true
+                                type:       string
+                            unittest:
+                                optional:   true
+                                type:       string
+            frontend:
+                type: object
+    objects:
+        type: array
+        uniqueItems: true
+        items:
+            required:
+            -   name
+            -   title
+            -   class
+            -   uri
+            -   actions
+            -   table
+            type: object
+            additionalProperties: false
+            properties:
+                name:
+                    type: string
+                autoupdate:
+                    type: integer
+                title:
+                    type: string
+                remark:
+                    type: string
+                class:
+                    type: string
+                uri:
+                    type: string
+                action-width:
+                    type: string
+                modules:
+                    type: array
+                    items:
+                        $ref:   '#/$defs/module'
+                        uniqueItems: true
+                mixin:
+                    type: object
+                    additionalProperties: False
+                    properties:
+                        angular:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                                module:
+                                    $ref: '#/$defs/component'
+                                component.dialog:
+                                    $ref: '#/$defs/component'
+                                screen.component:
+                                    $ref: '#/$defs/component'
+                                table.component:
+                                    $ref: '#/$defs/component'
+                        python:
+                            type: object
+                            additionalProperties: false
+                            properties:
+                                model:
+                                    $ref: '#/$defs/component'
+                                schema:
+                                    $ref: '#/$defs/component'
+                                view:
+                                    $ref: '#/$defs/component'
+                ignore_templates:
+                    type: array
+                injection:
+                    type: object
+                    properties:
+                        module.ts:
+                            type: object
+                            properties:
+                                dialog:
+                                    type: object
+                                    properties:
+                                        class:
+                                            type: string
+                                            pattern: '^\w+$'
+                                        file:
+                                            type: string
+                route:
+                    type: string
+                actions:
+                    type: array
+                    uniqueItems: true
+                    items:
+                        type: object
+                        required:
+                        -   name
+                        -   type
+                        additionalProperties: false
+                        properties:
+                            name:
+                                type: string
+                            label:
+                                type: string
+                            type:
+                                enum:
+                                -   screen
+                                -   dialog
+                                -   api
+                                -   function
+                                -   directive
+                                -   'none'
+                            icon:
+                                type: string
+                            position:
+                                enum:
+                                -   row
+                                -   header
+                                -   footer
+                                -   cell
+                                -   'none'
+                                -   screen
+                                -   sidebar
+                            uri:
+                                type: string
+                            function:
+                                type: string
+                            directive:
+                                type: string
+                            index:
+                                type: integer
+                            disabled:
+                                type:
+                                -   string
+                                -   boolean
+                            ngIf:
+                                type: string
+                            params:
+                                type: object
+                                additionalProperties: true
+                                properties:
+                                    id:
+                                        type: string
+                                    value:
+                                        type: string
+                            route:
+                                type: object
+                                additionalProperties: false
+                                properties:
+                                    class:
+                                        type: string
+                                    name:
+                                        type: string
+                                    module:
+                                        type: string
+                                    route:
+                                        type: string
+                                    params:
+                                        type: object
+                                        required:
+                                        -   mode
+                                        properties:
+                                            mode:
+                                                type: string
+                                                enum:
+                                                -   add
+                                                -   edit
+                                                -   del
+                                            id:
+                                                type:
+                                                -   number
+                                                -   string
+                                            value:
+                                                type: string
+                menu:
+                    type: object
+                    required:
+                    -   caption
+                    additionalProperties: false
+                    properties:
+                        caption:
+                            type: string
+                        index:
+                            type: integer
+                            minimum: -1
+                            maximum: 20
+                        icon:
+                            type: string
+                        after:
+                            type: string
+                        before:
+                            type: string
+                        route:
+                            type: string
+                        menu:
+                            type: object
+                            required:
+                            -   caption
+                            additionalProperties: false
+                            properties:
+                                caption:
+                                    type: string
+                                index:
+                                    type: integer
+                                    minimum: -1
+                                    maximum: 20
+                                icon:
+                                    type: string
+                                after:
+                                    type: string
+                                before:
+                                    type: string
+                                route:
+                                    type: string
+                                menu:
+                                    type: object
+                                    required:
+                                    -   caption
+                                    additionalProperties: false
+                                    properties:
+                                        caption:
+                                            type: string
+                                        index:
+                                            type: integer
+                                            minimum: -1
+                                            maximum: 20
+                                        icon:
+                                            type: string
+                                        after:
+                                            type: string
+                                        before:
+                                            type: string
+                                        route:
+                                            type: string
+                                        menu:
+                                            type: object
+                table:
+                    type: object
+                    required:
+                    -   name
+                    -   columns
+                    additionalProperties: true
+                    properties:
+                        engine:
+                            type: object
+                            required:
+                            -   module
+                            -   connect
+                            additionalProperties: true
+                            properties:
+                                module:
+                                    type: string
+                                connect:
+                                    type: string
+                        name:
+                            type:       string
+                            pattern:    '^\w+$'
+                        secondary-key:
+                            type:       string
+                            optional:   true
+                        unique-key:
+                            type:       string
+                        viewSort:
+                            type:       object
+                            required:
+                            -   field
+                            -   direction
+                            additionalProperties: false
+                            properties:
+                                field:
+                                    type: string
+                                direction:
+                                    enum:
+                                    -   desc
+                                    -   asc
+                        viewFilter:
+                            type: array
+                            items:
+                                type: object
+                                required:
+                                -   column
+                                -   value
+                                -   operator
+                                additionalProperties: false
+                                properties:
+                                    column:
+                                        type: string
+                                    value:
+                                        type: string
+                                    operator:
+                                        type: string
+                        hint:
+                            type: string
+                        tabs:
+                            type: object
+                            required:
+                            -   labels
+                            additionalProperties: false
+                            properties:
+                                labels:
+                                    type: array
+                                    items:
+                                        type: string
+                                tab:
+                                    type: array
+                                    items:
+                                        type: object
+                                        required:
+                                        -   label
+                                        -   component
+                                        -   params
+                                        additionalProperties: false
+                                        properties:
+                                            label:
+                                                type: string
+                                            component:
+                                                type: string
+                                            params:
+                                                type: object
+                                                required:
+                                                -   id
+                                                -   value
+                                                additionalProperties: false
+                                                properties:
+                                                    id:
+                                                        type: string
+                                                    value:
+                                                        type: string
+                                                    caption:
+                                                        type: boolean
+                                                    displayedColumns:
+                                                        type: string
+                        columns:
+                            type: array
+                            uniqueItems: true
+                            items:
+                                type: object
+                                additionalProperties: false
+                                properties:
+                                    field:
+                                        type: string
+                                        pattern: '^(\w+\s+\w+([(]\d+[)])?(\s+\w+){1,10})$'
+                                    column:
+                                        type: object
+                                        additionalProperties: false
+                                        required:
+                                        -   name
+                                        -   type
+                                        properties:
+                                            name:
+                                                type:   string
+                                            type:
+                                                type:   string
+                                            length:
+                                                type:   integer
+                                                minimal: 0
+                                                maximal: 1024
+                                            default:
+                                                anyOf:
+                                                -   type:   string
+                                                -   type:   integer
+                                                -   type:   boolean
+                                                -   type:   number
+                                            default-null:
+                                                type:   boolean
+                                            foreign-key:
+                                                type:   string
+                                                pattern: '^\w+.\w+$'
+                                    hint:
+                                        type:   string
+                                    readonly:
+                                        type:   boolean
+                                    frontend:
+                                        type:   boolean
+                                    remark:
+                                        type:   string
+                                    name:
+                                        type:   string
+                                    unique:
+                                        type:   boolean
+                                    label:
+                                        type:   string
+                                    ui:
+                                        $ref:   '#/$defs/uielement'
+                                    listview:
+                                        $ref:   '#/$defs/listview'
+                                    tab:
+                                        $ref:   '#/$defs/tabelement'
+                                    test-data:
+                                        type: object
+                                        optional: true
+                                        additionalProperties: false
+                                        properties:
+                                            value:
+                                                $ref:   '#/$defs/test-data-item'
+                                                optional: true
+                                            values:
+                                                type: array
+                                                optional: true
+                                                items:
+                                                    $ref:   '#/$defs/test-data-item'
+                                    siblings:
+                                        type: array
+                                        items:
+                                            type: object
+                                            required:
+                                            -   label
+                                            additionalProperties: false
+                                            properties:
+                                                hint:
+                                                    type: string
+                                                readonly:
+                                                    type:   boolean
+                                                remark:
+                                                    type:   string
+                                                label:
+                                                    type:   string
+                                                ui:
+                                                    $ref:   '#/$defs/uielement'
+                                                listview:
+                                                    $ref:   '#/$defs/listview'
+                                                tab:
+                                                    $ref:   '#/$defs/tabelement'

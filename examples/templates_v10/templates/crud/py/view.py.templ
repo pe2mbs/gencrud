@@ -1,0 +1,164 @@
+#
+#   Python backend and Angular frontend code generation by gencrud
+#   Copyright (C) 2018-2021 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
+#   gencrud: ${date} version ${version} by user ${username}
+#
+from flask import Blueprint, request, jsonify
+import webapp2.api as API
+from webapp2.common.crud import CrudInterface, RecordLock
+import traceback
+from ${ root.application }.${ obj.name }.model import ${ obj.cls }
+from ${ root.application }.${ obj.name }.schema import ${ obj.cls }Schema
+% if obj.mixin.Python.hasView():
+from ${obj.mixin.Python.View.filename} import ${obj.mixin.Python.View.cls}
+% endif
+% if obj.table.hasEngine():
+from ${obj.table.Engine.Module} import ${obj.table.Engine.Connect}
+% endif
+
+
+${ obj.name }Api = Blueprint( '${ obj.name }Api', __name__ )
+
+
+# Args is for downwards compatibility !!!!!
+def registerApi( *args ):
+    # Set the logger for the users module
+    API.app.logger.info( 'Register ${ obj.cls } routes' )
+    API.app.register_blueprint( ${ obj.name }Api )
+    try:
+        import ${ root.application }.${ obj.name }.entry_points  as EP
+        if hasattr( EP, 'entryPointApi' ):
+            API.app.logger.info( 'Register ${ obj.cls } entrypoint routes' )
+            API.app.register_blueprint( EP.entryPointApi )
+
+        if hasattr( EP, 'registerWebSocket' ):
+            EP.registerWebSocket()
+
+    except ModuleNotFoundError as exc:
+        if exc.name != '${ root.application }.${ obj.name }.entry_points':
+            API.app.logger.error( traceback.format_exc() )
+
+    except Exception:
+        API.app.logger.error( traceback.format_exc() )
+
+    # TODO: Here we need to add dynamically the menus for this module
+    return
+
+<%!
+    def makeServiceFieldList( columns ):
+        resultList = []
+        for field in columns:
+            if field.ui is not None:
+                if field.hasForeignKey() and field.ui.hasService():
+                    resultList.append( '"{}_FK"'.format( field.name ) )
+
+                elif field.hasResolveList():
+                    resultList.append( '"{}_LABEL"'.format( field.name ) )
+
+        return ", ".join( resultList ) + ","
+
+    def countServiceFieldList( columns ):
+        count = 0
+        for field in columns:
+            if field.ui is not None and ( ( field.hasForeignKey() and field.ui.hasService() ) or field.hasResolveList() ):
+                count += 1
+
+        return count
+
+    def makeForeignKeyFieldList( columns, nullable=False ):
+        resultList = []
+        for field in columns:
+            if field.hasForeignKey() and (field.definedNotNull() if not nullable else field.definedNull() ):
+                resultList.append( '"{}"'.format( field.name ) )
+
+        return ", ".join( resultList ) + ","
+
+    def countForeignKeyFieldList( columns, nullable=False ):
+        cnt = 0
+        for field in columns:
+            if field.hasForeignKey() and (field.definedNotNull() if not nullable else field.definedNull() ):
+                cnt += 1
+
+        return cnt
+
+    def makeInheritList( obj ):
+        result = [ 'CrudInterface' ]
+        if obj.mixin.Python.hasView():
+            result.append( obj.mixin.Python.View.cls )
+
+        return ', '.join( result )
+
+%>
+
+class ${ obj.cls }RecordLock( RecordLock ):
+    def __init__(self):
+        RecordLock.__init__( self, '${ obj.name }', '${ obj.table.primaryKey }' )
+        return
+
+
+class ${ obj.cls }CurdInterface( ${ makeInheritList( obj ) } ):
+    _model_cls = ${ obj.cls }
+    _lock_cls = ${ obj.cls }RecordLock
+    _schema_cls = ${ obj.cls }Schema()
+    _schema_list_cls = ${ obj.cls }Schema( many = True )
+    _uri = '/api/${ obj.name }'
+    _relations = ${ obj.table.relationShipList }
+
+    def __init__( self ):
+        CrudInterface.__init__( self
+                              , ${ obj.name }Api
+% if obj.table.hasEngine():
+                              , session_function = ${obj.table.Engine.Connect}
+% endif
+        )
+
+% if obj.mixin.Python.hasView():
+        ${ obj.mixin.Python.View.cls }.__init__( self )
+% endif
+        return
+
+    def beforeUpdate( self, record ):
+        if "${obj.table.primaryKey}" in record and record[ "${obj.table.primaryKey}" ] in ( None, 0 ):
+            del record[ "${obj.table.primaryKey}" ]
+
+% if countServiceFieldList( obj.table.columns ) > 0:
+        for field in ( ${makeServiceFieldList( obj.table.columns ) } ):
+            if field in record:
+                del record[ field ]
+% endif
+% if obj.mixin.Python.hasView():
+        if hasattr( ${ obj.mixin.Python.View.cls }, 'beforeUpdate' ):
+            record = ${ obj.mixin.Python.View.cls }.beforeUpdate( self, record )
+% endif
+
+% if countForeignKeyFieldList( obj.table.columns, nullable=False ) > 0:
+        for field in ( ${ makeForeignKeyFieldList( obj.table.columns, nullable=False ) } ):
+            if field in record and record[ field ] in ( None, 0 ):
+                del record[ field ]
+% endif
+
+% if countForeignKeyFieldList( obj.table.columns, nullable=True ) > 0:
+        for field in ( ${ makeForeignKeyFieldList( obj.table.columns, nullable=True ) } ):
+            if field in record and record[ field ] == 0:
+                record[ field ] = None
+% endif
+
+        return record
+
+
+${ obj.name } = ${ obj.cls }CurdInterface()

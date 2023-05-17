@@ -1,0 +1,17 @@
+<h1 mat-dialog-title><mat-icon color="warn">error_outline</mat-icon> {{ data.caption }}</h1>
+<div mat-dialog-content>
+
+	<div *ngIf="data.message != null && data.message != undefined">
+		{{ data.message }}
+	</div>
+	<p *ngIf="data.reason != null && data.reason != undefined">
+		Reason: {{ data.reason }}
+	</p>
+	<p *ngIf="data.status != null && data.status != undefined">
+		Status: {{ data.status }}
+	</p>
+
+</div>
+<div mat-dialog-actions align="end">	
+	<button mat-button color="primary" (click)="onCloseClick()">Close</button>
+</div>

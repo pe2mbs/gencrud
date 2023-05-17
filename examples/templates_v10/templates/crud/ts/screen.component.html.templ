@@ -1,0 +1,76 @@
+<div fxLayout="row" class="screen">
+    <div class="field-layout" fxFlex="100%">
+        <mat-card id="${ obj.name }.details" fxLayout="column" class="max-box">
+            <mat-card-content fxFlex="100">
+                <form fxLayout="column" (ngSubmit)="onSaveClick" [formGroup]="formGroup" id="${ obj.name }.form">
+                    <h2 style="margin: 1px;"> ${obj.title} </h2>
+                    <div fxLayout="column" ${ 'style="overflow: auto;"' if not obj.table.hasTabs() else ''  }>
+% for group in obj.table.groups:
+%  if group.name != "nogroup" and obj.table.groupInTab(group, None) :
+                        <div id="${ group.name }" fxLayoutAlign="space-between center">
+%  endif
+%   for field in group.fields:
+%    if field.hasLabel() and not field.hasTab:
+%       if field.hasService():
+                                ${ field.angularUiInput(mixin="[disableEdit]=\"formGroup.get( '" + field.name + "' ).value == 0 || formGroup.get( '" + field.name + "' ).value == null \" [serviceItem]=\"" + field.ui.nullSafeAngularObject("row." + (field.foreignReferenceID if field.hasServiceBaseClass() else field.name), startIndex = 2)  + "\"") }
+%       else:
+                                ${ field.angularUiInput() }
+%       endif
+%    endif
+%   endfor
+%   if group.name != "nogroup" and obj.table.groupInTab(group, None) :
+                        </div>
+%   endif
+% endfor
+                    </div>
+% if obj.table.hasTabs():
+                    <mat-tab-group fxFlex="100" animationDuration="0" (selectedTabChange)="onTabChanged( $event )" [selectedIndex]="tabIndex" class="overflow-auto">
+%  for label in obj.table.tabs().labels:
+                        <mat-tab label="${ label }" id="${obj.name}.tab.${ label.lower().replace(' ', '_' ) }" fxFlex="100">
+%   if obj.table.tabs().hasComponent( label ):
+                            <div fxLayout="column" class="max-box">
+                                <${obj.table.tabs().component( label )} fxFlex="98" ${obj.table.tabs().params( label, 'filter' ) }>
+                                </${obj.table.tabs().component( label )}>
+                            </div>
+%   else:
+                            <mat-card fxLayout="column" class="max-box overflow-auto">
+% for group in obj.table.groups:
+%  if group.name != "nogroup" and obj.table.groupInTab(group, label):
+                                <div id="${ group.name }" fxLayoutAlign="space-between center">
+%  endif
+%    for field in obj.table.tabs().fieldsFor( label ):
+%      if field in group.fields:
+%       if field.hasService():
+                                ${ field.angularUiInput(mixin="[disableEdit]=\"formGroup.get( '" + field.name + "' ).value == 0 || formGroup.get( '" + field.name + "' ).value == null \" [serviceItem]=\"" + field.ui.nullSafeAngularObject("row." + (field.foreignReferenceID if field.hasServiceBaseClass() else field.name), startIndex = 2)  + "\"") }
+%       else:
+                                ${ field.angularUiInput() }
+%       endif
+%      endif
+%    endfor
+%   if group.name != "nogroup" and obj.table.groupInTab(group, label):
+                                </div>
+%   endif
+% endfor
+                            </mat-card>
+%   endif
+                        </mat-tab>
+%  endfor
+                    </mat-tab-group>
+% endif
+                </form>
+            </mat-card-content>
+            <mat-card-actions fxFlex="50px">
+                <button mat-button id="${ obj.name }.submit" (click)="onSaveClick()" >Save</button>
+                <button mat-button id="${ obj.name }.submit" *ngIf="exitButton" (click)="onSaveExitClick()" >Save & Exit</button>
+                <button mat-button id="${ obj.name }.cancel" *ngIf="exitButton" (click)="onCancelClick()" tabindex="-1">Exit</button>
+            </mat-card-actions>
+            <span *ngIf="hasFormErrors" class="form-error">Please correct all invalid (red) input fields:  {{ invalidFields }}</span>
+        </mat-card>
+    </div>
+    <div class="side-buttons"  fxFlex="42px">
+        <gc-help helpitem="${ obj.name }"></gc-help>
+% for action in obj.actions.getScreenActions():
+        ${ action.screenObject() }
+% endfor
+    </div>
+</div>

@@ -214,10 +214,10 @@ def updatePythonModels( config:  TemplateConfiguration ):
 def generatePython( config: TemplateConfiguration, templates: list ):
     constants = []
     logger.info( 'application : {0}'.format( config.application ) )
-    dt = datetime.datetime.now()
-    generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
-    userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
-    modules = updatePythonModels( config )
+    dt                  = datetime.datetime.now()
+    generationDateTime  = dt.strftime( "%Y-%m-%d %H:%M:%S" )
+    userName            = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
+    modules             = updatePythonModels( config )
     for cfg in config:
         modulePath = os.path.join( config.python.sourceFolder,
                                    config.application,
@@ -229,6 +229,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
         for col in cfg.table.columns:
             logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
+
         for templ in templates:
             if cfg.ignoreTemplates( templ ):
                 continue
@@ -238,15 +239,17 @@ def generatePython( config: TemplateConfiguration, templates: list ):
 
             if os.path.isdir( modulePath ) and not config.options.overWriteFiles:
                 raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
+
             outputSourceFile = os.path.join( modulePath, gencrud.util.utils.sourceName( templ ) )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( outputSourceFile )
+
             if os.path.isfile( outputSourceFile ):
                 # remove the file first
                 os.remove( outputSourceFile )
+
             makePythonModules( config.python.sourceFolder, config.application, cfg.name )
-            with open( outputSourceFile,
-                       gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
+            with open( outputSourceFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
                 for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                     root = config,
                                                                                     modules = modules,
@@ -256,6 +259,7 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                     stream.write( line )
                     if sys.platform.startswith( 'linux' ):
                         stream.write( '\n' )
+
         for column in cfg.table.columns:
             if column.ui is not None:
                 if column.ui.hasResolveList():
@@ -277,15 +281,18 @@ def generatePython( config: TemplateConfiguration, templates: list ):
 
             with open( filename, 'w' ) as stream:
                 stream.writelines( constants )
-        entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
-        if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
-            # use the template from 'common-py'
-            templateFolder  = config.python.commonFolder
-            templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
 
-            with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                with open( templateFile, 'r' ) as templateStream:
-                    for line in Template( templateStream ).render( obj = cfg, root = config ).split( '\n' ):
-                        stream.write( line + '\n' )
+        # TODO: This is removed infavor of the mixin model now present in gencrud
+        # entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
+        # if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
+        #     # use the template from 'common-py'
+        #     templateFolder  = config.python.commonFolder
+        #     templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
+        #
+        #     with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
+        #         with open( templateFile, 'r' ) as templateStream:
+        #             for line in Template( templateStream ).render( obj = cfg, root = config ).split( '\n' ):
+        #                 stream.write( line + '\n' )
+
     updatePythonProject( config, '' )
     return

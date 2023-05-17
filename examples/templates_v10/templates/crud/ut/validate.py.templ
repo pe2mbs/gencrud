@@ -1,0 +1,21 @@
+%for field in obj.table.columns:
+% if field.frontend and field.ui is not None and field.hasForeignKey() and field.ui.hasService():
+from utests.${root.application}.${field.ui.service.name}.validate import validate${field.ui.service.baseClass}
+% endif
+%endfor
+
+def validate${obj.cls}( testcase, record ):
+%for field in obj.table.columns:
+% if field.frontend:
+% if field.definedNull() or field.isPrimaryKey():
+    testcase.assertIsInstance( record[ '${ field.name }' ], (${ field.nativePythonType }, type(None)) )
+% else:
+    testcase.assertIsInstance( record[ '${ field.name }' ], ${ field.nativePythonType } )
+% endif
+%  if field.ui is not None and field.hasForeignKey() and field.ui.hasService():
+    validate${field.ui.service.baseClass}(testcase, record[ '${ field.name }_FK' ] )
+%  endif
+% endif
+%endfor
+    return
+

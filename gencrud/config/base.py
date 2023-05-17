@@ -40,6 +40,14 @@ class TemplateBase( object ):
     def parent( self ):
         return self.__parent
 
+    @property
+    def Root( self ):
+        root = self
+        while root.parent:
+            root = root.parent
+
+        return root
+
     def get_default( self, name ):
         p = self.parent
         while p is not None:

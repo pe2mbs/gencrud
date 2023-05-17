@@ -1,0 +1,66 @@
+defaults:                       !include examples\include\defaults.yaml
+application:                    demo
+#interface:
+#    backend:
+#        target-class:           VirtualTableDemo
+#        class:                  VirtualTable
+#        file:                   webapp2.commin.virual_table
+#        # This overrides the template in the main configuration
+#        templates:
+#            python:             templates\virtual\py
+templates:
+    base:                       \src\python\gencrud\examples\templates_v10
+    python:                     templates\virtual\py
+    angular:                    templates\crud\ts
+    common:
+        base:                   \src\python\gencrud\examples\templates_v10
+        python:                 common\virtual\py
+        angular:                common\crud\ts
+objects:
+-   name:                       demo
+    title:                      Virtual Table Demo
+    class:                      DemoVirtualTable
+    uri:                        /api/demo
+    mixin:
+        python:
+            view:
+                class:          VirtualDataTable
+                file:           demo.demo.virtual_table_mixin.py
+    actions:
+    -   name:                   new
+        position:               none
+        type:                   none
+    -   name:                   edit
+        position:               none
+        type:                   none
+    -   name:                   del
+        position:               none
+        type:                   none
+    menu:
+        caption:                Database
+        icon:                   settings
+        index:                  -1
+        menu:
+            caption:            Virtual Table
+            icon:               verified_user
+            route:              /virtual
+            index:              1
+    table:
+        name:                   VIRTUAL_TABLE
+        columns:
+        -   field:              D_VIRTUAL_ID        INT           AUTO NUMBER  PRIMARY KEY
+        -   field:              D_VIRTUAL_NAME      CHAR(20)      NOT NULL
+            label:              Role
+            listview:
+                width:          50%
+                index:          1
+            ui:
+                type:           textbox
+
+        -   field:              D_VIRTUAL_DESCRIPTION CHAR(20)    NOT NULL
+            label:              Role
+            listview:
+                width:          50%
+                index:          1
+            ui:
+                type:           textbox

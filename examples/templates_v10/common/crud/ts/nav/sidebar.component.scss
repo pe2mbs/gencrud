@@ -1,0 +1,20 @@
+:host ::ng-deep .mat-list-base
+{
+	padding: 0px!important;
+}
+
+.mat-list-base
+{
+	padding: 0px!important;
+}
+
+:host ::ng-deep .mat-list-item 
+{ 
+	height: 36px;
+	padding: 0px;
+}
+
+menu-list-item 
+{ 
+	height: 36px; 
+}

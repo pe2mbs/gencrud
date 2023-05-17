@@ -1,0 +1,159 @@
+import logging
+import requests
+from datetime import datetime
+from utests.${root.application}.generic import TestCaseGeneric
+from utests.${root.application}.${obj.name}.validate import validate${obj.cls}
+
+
+logger = logging.getLogger()
+
+
+def registerTestSuite( suite ):
+    suite.addTest( UnitTest${obj.cls}( 'test_RecordCount' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_PageFirst' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_PageNext' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_PageLast' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_FullList' ) )
+%for field in obj.table.columns:
+% if field.frontend and field.hasService():
+    suite.addTest( UnitTest${obj.cls}( 'test_FilteredList_${field.name}' ) )
+% endif
+%endfor
+    suite.addTest( UnitTest${obj.cls}( 'test_SelectListByPost') )
+    suite.addTest( UnitTest${obj.cls}( 'test_SelectListByGet') )
+    suite.addTest( UnitTest${obj.cls}( 'test_CreateRecord' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_RetrieveRecordByParam' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_RetrieveRecordById' ) )
+%if obj.table.columnsHaveMultipleValues():
+    suite.addTest( UnitTest${obj.cls}( 'test_UpdateRecord' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_PatchRecord' ) )
+%endif
+    suite.addTest( UnitTest${obj.cls}( 'test_LockRecord' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_UnlockRecord' ) )
+    suite.addTest( UnitTest${obj.cls}( 'test_DeleteRecord') )
+    return suite
+
+
+
+class UnitTest${obj.cls}( TestCaseGeneric ):
+    def __init__( self, methodName = 'runTest' ):
+        TestCaseGeneric.__init__( self, methodName, validate${obj.cls} )
+        return
+
+    def setUp(self) -> None:
+        self.setModule( '/api/${obj.name}', '${obj.table.primaryKey}', '${obj.table.secondaryKey}' )
+        self.getRecCount()
+        return
+
+%for field in obj.table.columns:
+% if field.frontend and field.hasService():
+    def test_FilteredList_${field.name}( self ):
+        self.doFilteredListTest( '${field.name}' )
+        return
+% endif
+%endfor
+
+    def test_CreateRecord(self ):
+        record =  {
+%for field in obj.table.columns:
+% if field.frontend:
+%  if field.testdata.hasStringValue() or field.testdata.hasJSONValue():
+            '${field.name}': "${field.testdata.value}",
+%  elif isinstance(field.testdata.value, str) and "datetime" in field.testdata.value :
+            '${field.name}': ${field.testdata.value}.strftime( '%Y-%m-%dT%H:%M:%SZ' ),
+%  else:
+            '${field.name}': ${field.testdata.value},
+%  endif
+%  endif
+%endfor
+        }
+        record["tracking"] = False
+        r = requests.post( self.getUrl('new'), json = record )
+        logger.info(f"test_CreateRecord REST elapsed {r.elapsed}")
+        self.assertEqual( self.HTTP_OK, r.status_code )
+        record = r.json()
+        TestCaseGeneric.testItemID = record["${obj.table.primaryKey}"]
+        validate${obj.cls}(self, record)
+        return
+
+%if obj.table.columnsHaveMultipleValues():
+    def test_UpdateRecord( self ):
+        record = self.getTestRecord( TestCaseGeneric.testItemID )
+% for i in range(1, obj.table.maximumTestValues()):
+        # change iteration ${i}
+%  for column in obj.table.columns:
+%    if len(column.testdata.values) > i:
+%      if isinstance(column.testdata.values[i], str) and "datetime" in column.testdata.values[i]:
+        ${column.name} = ${column.testdata[i]}.strftime( '%Y-%m-%dT%H:%M:%SZ' )
+%      elif isinstance(column.testdata.values[i], (str, dict)):
+        ${column.name} = "${column.testdata[i]}"
+%      else:
+        ${column.name} = ${column.testdata[i]}
+%      endif
+        record[ '${column.name}' ] = ${column.name}
+%    endif
+%  endfor
+        record["tracking"] = False
+        r = requests.post( self.getUrl( 'put' ), json = record )
+        logger.info(f"test_UpdateRecord REST elapsed {r.elapsed}")
+        self.assertEqual( self.HTTP_OK, r.status_code )
+        record = r.json()
+%  for column in obj.table.columns:
+%    if len(column.testdata.values) > i:
+%      if isinstance(column.testdata.values[i], str) and "datetime" in column.testdata.values[i]:
+        ${column.name} = ${column.name}.replace( 'Z', '+00:00' )
+%      endif
+        self.assertEqual( ${column.name}, record[ '${column.name}' ] )
+
+%    endif
+%  endfor
+%endfor
+        TestCaseGeneric.testItemID = record["${obj.table.primaryKey}"]
+        validate${obj.cls}(self, record)
+        return
+
+    def test_PatchRecord( self ):
+        record = self.getTestRecord( TestCaseGeneric.testItemID )
+
+% for i in range(1, obj.table.maximumTestValues()):
+        # change iteration ${i}
+%  for column in obj.table.columns:
+%    if len(column.testdata.values) > i:
+%      if isinstance(column.testdata.values[i], str) and "datetime" in column.testdata.values[i]:
+        ${column.name} = ${column.testdata[i]}.strftime( '%Y-%m-%dT%H:%M:%SZ' )
+%      elif isinstance(column.testdata.values[i], (str, dict)):
+        ${column.name} = "${column.testdata[i]}"
+%      else:
+        ${column.name} = ${column.testdata[i]}
+%      endif
+%    endif
+%  endfor
+
+        updateRecord = {
+            '${obj.table.primaryKey}': record[ '${obj.table.primaryKey}' ],
+%  for column in obj.table.columns:
+%    if len(column.testdata.values) > i:
+            '${column.name}': ${column.name},
+%    endif
+%  endfor
+        }
+        updateRecord["tracking"] = False
+        r = requests.post( self.getUrl( 'update' ), json = updateRecord )
+        logger.info(f"test_UpdateRecord REST elapsed {r.elapsed}")
+        self.assertEqual( self.HTTP_OK, r.status_code )
+        record = r.json()
+%  for column in obj.table.columns:
+%    if len(column.testdata.values) > i:
+%      if isinstance(column.testdata.values[i], str) and "datetime" in column.testdata.values[i]:
+        ${column.name} = ${column.name}.replace( 'Z', '+00:00' )
+%      endif
+        self.assertEqual( ${column.name}, record[ '${column.name}' ] )
+
+%    endif
+%  endfor
+%endfor
+        TestCaseGeneric.testItemID = record["${obj.table.primaryKey}"]
+        validate${obj.cls}(self, record)
+        return
+%endif
+
