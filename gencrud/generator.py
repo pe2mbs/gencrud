@@ -288,7 +288,7 @@ def main():
             elif o.lower() in ( '-s', '--ssl-verify' ):
                 gencrud.util.utils.sslVerify = a.lower() == 'true'
 
-            elif o.lower() in ( '-P', '--proxy-system' ):
+            elif o in ( '-P', '--proxy-system' ):
                 if pypac.os_settings.ON_WINDOWS:
                     gencrud.util.utils.proxyUrl = get_pac( url = pypac.os_settings.autoconfig_url_from_registry() )
 

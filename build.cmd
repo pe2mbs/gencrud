@@ -1,2 +1,3 @@
 @echo off
-python3 setup.py sdist bdist_wheel
+python -m build
+copy /Y dist\*.* E:\var\pypi

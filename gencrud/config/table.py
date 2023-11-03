@@ -145,6 +145,17 @@ class TemplateTable( TemplateBase ):
     def Engine( self ):
         return self.__engine
 
+    def hasTableFilter( self ):
+        return C_TABLE_FILTER in self.__table
+
+    @property
+    def tableFilterFunction(self):
+        return self.__table.get( C_TABLE_FILTER, {} ).get( 'function', 'None' )
+
+    @property
+    def tableFilterFilename(self):
+        return self.__table.get( C_TABLE_FILTER, {} ).get( 'file' )
+
     @property
     def object( self ):
         return self.parent

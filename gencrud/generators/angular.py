@@ -18,6 +18,7 @@
 #
 import json
 import os
+import re
 import shutil
 import logging
 import datetime
@@ -56,25 +57,12 @@ def makeAngularModule( root_path, *args ):
 
 
 def updateImportSection( lines, files ):
+    REGEX_EXPR = "^import\s+{\s\w+\s}\sfrom\s"
     rangePos = PositionInterface()
     stage = 0
     for lineNo, lineText in enumerate( lines ):
-        lineText = lineText.strip( ' \n' )
-        # if stage == 0 and lineText.startswith( 'import' ):
-        #     if lineText.endswith( ';' ):
-        #         rangePos.end = lineNo
-        #
-        #     else:
-        #         stage = 1
-        #
-        # elif stage == 1:
-        #     if lineText.endswith( ';' ):
-        #         stage = 0
-        #         rangePos.end = lineNo
-
-        if lineText.startswith( 'import' ):
+        if re.match( REGEX_EXPR, lineText ) is not None:
             rangePos.end = lineNo
-
 
     rangePos.end += 1
     for imp in files:

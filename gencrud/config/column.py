@@ -720,6 +720,7 @@ class TemplateColumn( TemplateBase ):
     def group( self ):
         if self.ui:
             return self.ui.group
+
         return None
 
     @property

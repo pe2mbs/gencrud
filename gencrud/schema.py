@@ -295,9 +295,9 @@ GENCRUD_SCHEME = {
                                             'type': 'object',
                                             'required': [ 'mode' ],
                                             'properties': {
-                                                'mode': { 'type': 'string', },
-                                                'id': { 'type': ["number", "string" ], },
-                                                'value': { 'type': 'string', },
+                                                'mode':  { 'type': 'string' },
+                                                'id':    { 'type': ["number", "string" ] },
+                                                'value': { 'type': 'string' },
                                             }
                                         }
                                     }
@@ -429,7 +429,7 @@ GENCRUD_SCHEME = {
                                             'type': 'string',
                                         },
                                         'value': {
-                                            'type': 'string',
+                                            'type': ["integer", "string"],
                                         },
                                         'operator': {
                                             'type': 'string',
@@ -892,5 +892,8 @@ def getSchema():
         print( f"Loading schema {schema_filename}" )
         with open( schema_filename, 'rt' ) as stream:
             GENCRUD_SCHEME = yaml.load( stream, yaml.Loader )
+
+    else:
+        print( f"Using internal schema" )
 
     return GENCRUD_SCHEME

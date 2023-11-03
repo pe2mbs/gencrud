@@ -575,7 +575,9 @@ properties:
                                     column:
                                         type: string
                                     value:
-                                        type: string
+                                        type:
+                                        -   string
+                                        -   integer
                                     operator:
                                         type: string
                         hint:
@@ -628,7 +630,7 @@ properties:
                                 properties:
                                     field:
                                         type: string
-                                        pattern: '^(\w+\s+\w+([(]\d+[)])?(\s+\w+){1,10})$'
+                                        # pattern: '^(\w+\s+\w+([(]\d+[)])?(\s+\w+){1,10})$'
                                     column:
                                         type: object
                                         additionalProperties: false
