@@ -30,7 +30,7 @@ overWriteFiles  = False
 ignoreCaseDbIds = False
 useModule       = False
 lazyLoading     = False
-version         = 1
+version         = None
 config          = None
 
 C_FILEMODE_UPDATE = 'r+'

@@ -1,3 +1,3 @@
 @echo off
-python -m build
+python -m build --wheel
 copy /Y dist\*.* E:\var\pypi

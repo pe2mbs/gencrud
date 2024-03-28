@@ -34,7 +34,7 @@ import gencrud.util.utils as API
 
 logger = logging.getLogger()
 
-MENU_CHILDREN_LABEL    = 'children'
+MENU_CHILDREN_LABEL     = 'children'
 MENU_DISPLAY_NAME       = 'displayName'
 MENU_ICON_NAME          = 'iconName'
 
@@ -44,14 +44,11 @@ MENU_ICON_NAME_V2       = 'icon'
 MENU_INDEX              = 'index'
 MENU_ID                 = 'id'
 MENU_ROUTE              = 'route'
-#LABEL_LIST_MODULES      = 'listModules = ['
-#LABEL_MENU_ITEMS        = 'menuItems = ['
-#LABEL_END_LIST          = ']'
 
 
 def makePythonModules( root_path, *args ):
     def write__init__py():
-        with open( os.path.join( root_path, '__init__.py' ), 'w+' ) as stream:
+        with open(os.path.join(root_path, '../__init__.py'), 'w+') as stream:
             # Write one newline to the file
             print( '', file = stream )
 
@@ -65,7 +62,7 @@ def makePythonModules( root_path, *args ):
         makePythonModules( root_path, *args[ 1: ] )
 
     if len( args ) > 0:
-        if not os.path.isfile( os.path.join( root_path, '__init__.py' ) ):
+        if not os.path.isfile(os.path.join(root_path, '../__init__.py')):
             write__init__py()
 
     return
@@ -117,14 +114,6 @@ def updatePythonProject( config: TemplateConfiguration, app_module ):   # noqa
                     menuItem[ MENU_ID ] = makeMenuId( menu, id_prefix )
                     if menu.route is not None:
                         menuItem[ MENU_ROUTE ] = menu.route
-
-                    # elif menu.menu is not None:
-                    #     if MENU_CHILDREN_LABEL not in menuItem:
-                    #         menuItem[ MENU_CHILDREN_LABEL ] = [ ]
-                    #
-                    #     processMenuStructure_V2( menuItem[ MENU_CHILDREN_LABEL ],
-                    #                              menu.menu,
-                    #                              menuItem[ MENU_ID ] + '_' )
 
         if not foundMenu:
             newMenuItem = { MENU_DISPLAY_NAME_V2: menu.caption,
@@ -191,7 +180,6 @@ def updatePythonModels( config:  TemplateConfiguration ):
                 found = True
                 break
 
-
         if not found:
             modules.append( { 'module': module_name,
                               'model': cfg.cls,
@@ -206,8 +194,8 @@ def updatePythonModels( config:  TemplateConfiguration ):
     # Now generate the models.py module
     template = os.path.abspath( os.path.join( config.python.commonFolder, 'models.py.templ' ) )
     modeles_py_file = os.path.join( config.python.sourceFolder, config.application, 'models.py' )
-    with open( modeles_py_file, 'w' ) as stream:
-        stream.write( Template( filename = template ).render( config = config, modules = modules ) )
+    with open( modeles_py_file, 'wb' ) as stream:
+        stream.write( Template( filename = template ).render( config = config, modules = modules ).encode('utf-8') )
 
     return modules
 
@@ -249,16 +237,13 @@ def generatePython( config: TemplateConfiguration, templates: list ):
                 os.remove( outputSourceFile )
 
             makePythonModules( config.python.sourceFolder, config.application, cfg.name )
-            with open( outputSourceFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
+            with open( outputSourceFile, gencrud.util.utils.C_FILEMODE_WRITE + 'b' ) as stream:
+                stream.write( Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                     root = config,
                                                                                     modules = modules,
                                                                                     date = generationDateTime,
                                                                                     version = gencrud.version.__version__,
-                                                                                    username = userName ).split( '\n' ):
-                    stream.write( line )
-                    if sys.platform.startswith( 'linux' ):
-                        stream.write( '\n' )
+                                                                                    username = userName ).encode( 'utf-8' ) )
 
         for column in cfg.table.columns:
             if column.ui is not None:
@@ -281,18 +266,6 @@ def generatePython( config: TemplateConfiguration, templates: list ):
 
             with open( filename, 'w' ) as stream:
                 stream.writelines( constants )
-
-        # TODO: This is removed infavor of the mixin model now present in gencrud
-        # entryPointsFile = os.path.join( modulePath, 'entry_points.py' )
-        # if len( cfg.actions.getCustomButtons() ) > 0 and not os.path.isfile( entryPointsFile ):
-        #     # use the template from 'common-py'
-        #     templateFolder  = config.python.commonFolder
-        #     templateFile    = os.path.join( templateFolder, 'entry-points.py.templ' )
-        #
-        #     with open( entryPointsFile, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-        #         with open( templateFile, 'r' ) as templateStream:
-        #             for line in Template( templateStream ).render( obj = cfg, root = config ).split( '\n' ):
-        #                 stream.write( line + '\n' )
 
     updatePythonProject( config, '' )
     return

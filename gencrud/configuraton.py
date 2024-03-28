@@ -16,77 +16,23 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-from typing import TypeVar, Iterable
-from ruamel import yaml
+import typing as t
 import os
 import io
 import gencrud.util.utils
-# from gencrud.config.interface import Interface
 from gencrud.config.object import TemplateObject, TemplateObjects
 from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular, TemplateSourceUnittest
 from gencrud.config.options import TemplateOptions
 from gencrud.config.references import TemplateReferences
 from gencrud.config.dynamic.controls import DymanicControls
+from gencrud.config.interface import Interface
 from gencrud.constants import *
 from gencrud.util.exceptions import MissingAttribute
 import jsonschema
 from gencrud.schema import getSchema
+import gencrud.myyaml as yaml
 
-
-OptionalString = TypeVar( 'OptionalString', str, None )
-
-def my_compose_document(self):
-    self.get_event()
-    node = self.compose_node(None, None)
-    self.get_event()
-    # self.anchors = {}    # <<<< commented out
-    return node
-
-
-yaml.SafeLoader.compose_document = my_compose_document
-
-
-def yaml_include( loader, node ):
-    if node.value.startswith( '.' ):
-        include_name = os.path.join( os.path.dirname( node.start_mark.name ), node.value )
-
-    else:
-        include_name = node.value
-
-    include_name = os.path.abspath( include_name )
-    with open( include_name, 'r' ) as inputfile:
-        data = my_safe_load( inputfile, master = loader )
-        return data
-
-
-yaml.add_constructor( "!include", yaml_include, Loader=yaml.SafeLoader )
-
-
-def my_safe_load(stream, Loader=yaml.SafeLoader, master=None):
-    loader = Loader(stream)
-    if master is not None:
-        loader.anchors = master.anchors
-
-    try:
-        return loader.get_single_data()
-
-    finally:
-        loader.dispose()
-
-#
-# class IncludeLoader( yaml.SafeLoader ):
-#     def __init__( self, stream ):
-#         self._root = os.path.split( stream.name )[ 0 ]
-#         super( IncludeLoader, self ).__init__( stream )
-#         return
-#
-#     def include( self, node ):
-#         filename = os.path.join( self._root, self.construct_scalar( node ) )
-#
-#         with open( filename, 'r' ) as f:
-#             return yaml.load( f, Loader = IncludeLoader )
-#
-# IncludeLoader.add_constructor( '!include', IncludeLoader.include )
+OptionalString = t.TypeVar( 'OptionalString', str, None )
 
 
 class TemplateConfiguration( object ):
@@ -95,10 +41,10 @@ class TemplateConfiguration( object ):
         gencrud.util.utils.config = self
         if isinstance( filename, str ):
             with open( filename, 'r' ) as stream:
-                self.__config = my_safe_load( stream )
+                self.__config = yaml.load( stream )
 
         elif isinstance( filename, io.IOBase ):
-            self.__config = my_safe_load( filename )
+            self.__config = yaml.load( filename )
 
         else:
             self.__config       = cfg
@@ -112,7 +58,7 @@ class TemplateConfiguration( object ):
 
         # Veryfy the loaded template against the schema
         try:
-            GENCRUD_SCHEME = getSchema()
+            GENCRUD_SCHEME = getSchema( self.__config.get( C_VERSION, 1 ) )
             jsonschema.Draft7Validator( GENCRUD_SCHEME )
             jsonschema.validate( instance = self.__config, schema = GENCRUD_SCHEME )
 
@@ -141,6 +87,11 @@ class TemplateConfiguration( object ):
         self.__objects      = []
         for obj in self.__config[ C_OBJECTS ]:
             self.__objects.append( TemplateObject( self, **obj ) )
+
+        self.__interface    = None
+        if C_INTERFACE in self.__config:
+            self.__interface = Interface( self, **self.__config[ C_INTERFACE ] )
+
         return
 
     @property
@@ -167,12 +118,32 @@ class TemplateConfiguration( object ):
     def objects( self ) -> TemplateObjects:
         return self.__objects
 
-    def __iter__( self ) -> Iterable[ TemplateObject ]:
+    def __iter__( self ) -> t.Iterable[ TemplateObject ]:
         return iter( self.__objects )
 
     @property
     def application( self ) -> OptionalString:
         return self.__config.get( C_APPLICATION, None )
+
+    @property
+    def applicationType( self ) -> int:
+        result = self.__config.get( C_APPLICATION, None )
+        if isinstance( result, str ):
+            return 1
+
+        result = self.__config.get( "interface", None )
+        if isinstance( result, dict ):
+            if isinstance( result.get( 'backend' ), str ) and isinstance( result.get( 'frontend' ), str ):
+                return 2
+
+        raise Exception( "Invalid schema, missing application or interface" )
+
+    def hasInterface( self ):
+        return self.__interface is not None
+
+    @property
+    def Interface( self ) -> Interface:
+        return self.__interface
 
     @property
     def options( self ) -> TemplateOptions:
@@ -189,13 +160,3 @@ class TemplateConfiguration( object ):
     @property
     def version( self ):
         return self.__config.get( C_VERSION, C_VERSION_DEFAULT )
-
-    # def hasBackendInterface( self ):
-    #     return C_INTERFACE in self.__config and C_BACKEND in self.__config[ C_INTERFACE ]
-    #
-    # def hasFrontendInterface( self ):
-    #     return C_INTERFACE in self.__config and C_FRONTEND in self.__config[ C_INTERFACE ]
-    #
-    # @property
-    # def Interface( self ):
-    #     return Interface( self, **self.__config.get( C_INTERFACE, {} ) )

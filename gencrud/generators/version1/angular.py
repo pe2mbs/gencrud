@@ -7,7 +7,8 @@
 #   as published by the Free Software Foundation.
 #
 #   This library is distributed in the hope that it will be useful, but
-#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   WITHOUT ANY WARRAN
+#   TY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
 #   Library General Public License for more details.
 #
@@ -455,25 +456,24 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
             else:
                 pass
 
-            with open( templateFilename, gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
+            with open( templateFilename, gencrud.util.utils.C_FILEMODE_WRITE + 'b' ) as stream:
                 try:
-                    for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
-                                                                                        root = config,
-                                                                                        version = gencrud.version.__version__,
-                                                                                        username = userName,
-                                                                                        services = servicesList,
-                                                                                        allServices=fullServiceList,
-                                                                                        date = generationDateTime ).split( '\n' ):
-
+                    templateData = Template(filename=os.path.abspath(templ)).render(obj=cfg,
+                                                                     root=config,
+                                                                     version=gencrud.version.__version__,
+                                                                     username=userName,
+                                                                     services=servicesList,
+                                                                     allServices=fullServiceList,
+                                                                     date=generationDateTime)
+                    stream.write( templateData.encode('utf-8') )
+                    for line in templateData.split( '\n' ):
                         if line.startswith( 'export ' ):
                             modules.append( ( config.application,
                                               cfg.name,
                                               gencrud.util.utils.sourceName( templ ),
                                               exportAndType( line ) ) )
 
-                        stream.write( line )
-                        if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
-                            stream.write( '\n' )
+
 
                 except Exception:
                     logger.error( "Mako exception:" )
@@ -568,19 +568,16 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
             gencrud.util.utils.backupFile( filename )
 
         # Create the 'module.ts'
-        with open( filename, 'w' ) as stream:
+        with open( filename, 'wb' ) as stream:
             # for item in cfg.modules.items:
             #     print( item )
 
             try:
-                for line in Template( filename = templ ).render( obj = cfg,
+                stream.write( Template( filename = templ ).render( obj = cfg,
                                                                  root = config,
                                                                  username = userName,
                                                                  date = generationDateTime,
-                                                                 version = gencrud.version.__version__ ).split( '\n' ):
-                    stream.write( line )
-                    if gencrud.util.utils.get_platform() == C_PLATFORM_LINUX:
-                        stream.write( '\n' )
+                                                                 version = gencrud.version.__version__ ).encode('utf-8') )
 
             except Exception:
                 logger.error("Mako exception:")
@@ -599,12 +596,6 @@ def createAngularComponentModuleTs( config: TemplateConfiguration, appModule: di
         imp = "{cls}Module".format( cls = cfg.cls )
         if imp not in imports:
             imports.append( imp )
-
-        # for mod in cfg.modules:
-        #     if mod.cls not in imports:
-        #         imports.append( mod.cls )
-        #         files.append( "import {{ {modCls} }} from '{path}';".format( modCls = mod.cls,
-        #                                                                      path = mod.importPath ) )
 
     appModule = {
         "files": [  "import { BrowserModule } from '@angular/platform-browser';",

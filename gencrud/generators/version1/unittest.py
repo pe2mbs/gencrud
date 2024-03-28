@@ -51,7 +51,7 @@ MENU_ROUTE              = 'route'
 
 def makeUnittestModules( root_path, *args ):
     def write__init__py():
-        with open( os.path.join( root_path, '__init__.py' ), 'w+' ) as stream:
+        with open(os.path.join(root_path, '../__init__.py'), 'w+') as stream:
             # Write one newline to the file
             print( '', file = stream )
 
@@ -65,7 +65,7 @@ def makeUnittestModules( root_path, *args ):
         makeUnittestModules( root_path, *args[ 1: ] )
 
     if len( args ) > 0:
-        if not os.path.isfile( os.path.join( root_path, '__init__.py' ) ):
+        if not os.path.isfile(os.path.join(root_path, '../__init__.py')):
             write__init__py()
 
     return
@@ -119,9 +119,11 @@ def generateCommonTemplateFiles( config:  TemplateConfiguration ):
     if not os.path.exists( os.path.dirname( suite_py_file ) ):
         os.makedirs( os.path.dirname(suite_py_file ) )
 
-    with open( suite_py_file, 'w' ) as stream:
-        for line in  Template( filename = template ).render( config = config, modules = modules ).split( '\n' ):
-            stream.write( line )
+    with open( suite_py_file, 'wb' ) as stream:
+        stream.write( Template( filename = template ).render( config = config, modules = modules ).encode('utf-8') )
+        # for line in  Template( filename = template ).render( config = config, modules = modules ).split( '\n' ):
+        #     stream.write( line.strip( '\r' ) )
+        #     stream.write( '\r\n' )
 
     return
 
@@ -142,9 +144,11 @@ def generateUnittest( config: TemplateConfiguration, templates: list ):
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
         for col in cfg.table.columns:
             logger.info( '- {0:<20}  {1}'.format( col.name, col.sqlAlchemyDef() ) )
+
         for templ in templates:
             if cfg.ignoreTemplates( templ ):
                 continue
+
             logger.info( 'template    : {0}'.format( templ ) )
             if not os.path.isdir( config.unittest.sourceFolder ):
                 os.makedirs( config.unittest.sourceFolder )
@@ -154,20 +158,27 @@ def generateUnittest( config: TemplateConfiguration, templates: list ):
             outputSourceFile = os.path.join( modulePath, gencrud.util.utils.sourceName( templ ) )
             if config.options.backupFiles:
                 gencrud.util.utils.backupFile( outputSourceFile )
+
             if os.path.isfile( outputSourceFile ):
                 # remove the file first
                 os.remove( outputSourceFile )
+
             makeUnittestModules( config.unittest.sourceFolder, config.application, cfg.name )
             with open( outputSourceFile,
-                       gencrud.util.utils.C_FILEMODE_WRITE ) as stream:
-                for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
+                       gencrud.util.utils.C_FILEMODE_WRITE + 'b' ) as stream:
+                stream.write( Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
                                                                                     root = config,
                                                                                     date = generationDateTime,
                                                                                     version = gencrud.version.__version__,
-                                                                                    username = userName ).split( '\n' ):
-                    stream.write( line )
-                    if sys.platform.startswith( 'linux' ):
-                        stream.write( '\n' )
+                                                                                    username = userName ).encode('utf-8') )
+                # for line in Template( filename = os.path.abspath( templ ) ).render( obj = cfg,
+                #                                                                     root = config,
+                #                                                                     date = generationDateTime,
+                #                                                                     version = gencrud.version.__version__,
+                #                                                                     username = userName ).split( '\n' ):
+                #     stream.write( line )
+                #     if sys.platform.startswith( 'linux' ):
+                #         stream.write( '\r\n' )
 
     updateUnittestDirectory( config, '' )
     return

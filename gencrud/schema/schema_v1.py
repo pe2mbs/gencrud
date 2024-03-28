@@ -1,9 +1,7 @@
-import os.path
-import yaml
 #
 #   This is the JSON schema for the templates
 #
-GENCRUD_SCHEME = {
+_GENCRUD_SCHEME_V1 = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "GenCrud",
     "type": "object",
@@ -636,6 +634,9 @@ GENCRUD_SCHEME = {
                                                             'function': {
                                                                 'type': 'string'
                                                             },
+                                                            'ngIf': {
+                                                                'type': 'string'
+                                                            },
                                                         }
                                                     }
                                                 },
@@ -883,17 +884,5 @@ GENCRUD_SCHEME = {
     }
 }
 
-
-def getSchema():
-    global GENCRUD_SCHEME
-    schema_filename = os.path.join(os.path.dirname(__file__), 'schema.yaml')
-    print( f"schema-file: {schema_filename}")
-    if os.path.exists( schema_filename ):
-        print( f"Loading schema {schema_filename}" )
-        with open( schema_filename, 'rt' ) as stream:
-            GENCRUD_SCHEME = yaml.load( stream, yaml.Loader )
-
-    else:
-        print( f"Using internal schema" )
-
-    return GENCRUD_SCHEME
+def getTemplateV1():
+    return _GENCRUD_SCHEME_V1
