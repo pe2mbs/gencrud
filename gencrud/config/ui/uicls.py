@@ -25,6 +25,7 @@ from gencrud.config.base import TemplateBase
 from gencrud.config.service import TemplateService
 from gencrud.constants import *
 from gencrud.util.validators import Validator, ValidatorType
+from gencrud.config.ui.monaco import TemplateMonaco
 
 
 class TypeComponents( object ):
@@ -77,15 +78,21 @@ class TemplateUi( TemplateBase ):
         self.__cfg = cfg
         if C_SERVICE in cfg:
             self.__service = TemplateService( parent=self, **cfg[ C_SERVICE ] )
+
         else:
             self.__service = None
 
         if C_ACTIONS in cfg:
-            self.__actions = TemplateActions( self, "name", cfg[C_ACTIONS], includeDefault=False )
+            self.__actions = TemplateActions( self, "name", cfg[ C_ACTIONS ], includeDefault=False )
+
         else:
             self.__actions = []
 
         self.__group = self.__cfg.get( C_GROUP, None )
+        self.__monaco = None
+        if C_MONACO_EDITOR in self.__cfg:
+            self.__monaco = TemplateMonaco( self, **self.__cfg.get( C_MONACO_EDITOR ) )
+
         return
 
     @property
@@ -111,6 +118,9 @@ class TemplateUi( TemplateBase ):
     @property
     def group( self ):
         return self.__group
+
+    def hasGroup( self ) -> bool:
+        return self.__group is not None
 
     @property
     def label( self ):
@@ -217,6 +227,10 @@ class TemplateUi( TemplateBase ):
             return self.__service.label
         return None
 
+    @property
+    def width( self ) -> int:
+        return self.get( C_WIDTH, 100 )
+
     def get( self, property, default = None ):
         return self.__cfg.get( property, default )
 
@@ -225,7 +239,7 @@ class TemplateUi( TemplateBase ):
 
     # deprecated
     def isChoice( self ):
-        return self.uiObject in ( C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE )
+        return self.uiObject in ( C_CHOICE, C_CHOICE_AUTO ) #, C_CHOICE_BASE )
 
     # deprecated
     def isCombobox( self ):
@@ -234,40 +248,25 @@ class TemplateUi( TemplateBase ):
     def isSet( self, property ):
         return property in self.__cfg or self.parent.isSet( property )
 
-    def buildInputElement( self, table, field, label, options = None, mixin = "", validators: List[Validator] = [] ):
+    def buildInputElement( self, table, field, label, options = None, mixin = "", validators: List[Validator] = [], tab: bool = False ):
         if options is None:
             options = []
         
-        if C_WIDTH in self.__cfg:
-                options.append('fxFlex="{}"'.format( self.__cfg.get( C_WIDTH ) ))
-        else:
-            # default width
-            options.append( self.__components.getFlex( self.uiObject ) )
-
         if self.hasNgIf():
             options.append( '*ngIf="{}"'.format( self.ngIf ) )
 
         if C_HINT in  self.__cfg:
             options.append( 'hint="{0}"'.format( self.__cfg[ C_HINT ] ) )
 
-        if self.hasAttributes():
-            for attr,  value in self.attributes.items():
-                if value.startswith( '^' ):
-                    value = value[1:]
-                    attr = "[{}]".format( attr )
-
-                options.append( '{0}="{1}"'.format( attr, value ) )
-
-        options.append( 'error="{0}"'.format( self.error.lower() ) )
-
+        options.append( '[error]="{0}"'.format( self.error.lower() ) )
         if self.isSet( 'prefix-type' ) or self.isSet( 'prefix' ):
             options.append( 'prefix="{0}" prefix-type="{1}"'.format( self.prefix, self.prefixType ) )
 
         if self.isSet( 'suffix-type' ) or self.isSet( 'suffix' ):
             options.append( 'suffix="{0}" suffix-type="{1}"'.format( self.suffix, self.suffixType ) )
 
-        if self.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE, C_TEXTBOX ):
-            if self.__service is None and not self.isUiType( C_CHOICE, C_TEXTBOX ): # choice is backend rendered and does not take items list
+        if self.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO, C_TEXTBOX, C_LABEL ):        # C_CHOICE_BASE
+            if self.__service is None and self.hasResolveList() and not self.isUiType( C_TEXTBOX ): # choice is backend rendered and does not take items list
                 options.append( '[items]="{}List"'.format( self.parent.name ) )
 
             else:
@@ -286,6 +285,7 @@ class TemplateUi( TemplateBase ):
                         if self.service.hasFilter():
                             filterDictString = ", ".join([key + ": " + value for key, value in self.service.filter.items()])
                             options.append( '[filterDict]="{ ' + filterDictString + '}"' )
+
                     # TODO: right now, only one action button is supported for a service and
                     # the functionality is the same (redirecting to the screen view of the service class)
                     # in case multiple functionalities and buttons should be supported, the following lines
@@ -315,7 +315,6 @@ class TemplateUi( TemplateBase ):
             options.append( 'thumbLabel="{0}"'.format( self.thumbLabel ) )
             options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
 
-
         # no service defined --> custom button with custom function
         if len(self.__actions) > 0 and self.__service is None:
             buttonPosition = self.__actions[0].position if len(self.__actions) == 1 else 'both'
@@ -331,10 +330,10 @@ class TemplateUi( TemplateBase ):
             options.append( '[disabled]="{0}"'.format( self.__cfg[C_DISABLED] ) )
 
         if self.field.isPrimaryKey():
-            options.append( 'readonly="true"' )
+            options.append( '[readonly]="true"' )
 
         elif C_READ_ONLY in self.__cfg or self.field.readonly:
-            options.append( 'readonly="{0}"'.format( self.readonly ) )
+            options.append( '[readonly]="{0}"'.format( self.readonly ) )
 
         if C_COLOR in self.__cfg:
             options.append( 'color="{0}"'.format( self.color ) )
@@ -357,7 +356,23 @@ class TemplateUi( TemplateBase ):
         if C_DEBUG in self.__cfg:
             options.append( '[debug]="{0}"'.format( str( self.__cfg.get( C_DEBUG, False ) ) ).lower() )
 
-        result = '''<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}></{tag}>'''.\
+        if self.hasMonaco():
+            # Check if we are on a tab
+            if tab:
+                options.append( 'monacoMatTab' )
+                options.append( 'height="auto"')
+
+            # Set the minimap and language, default minimap = false, language = 'text'
+            options.append( f'[minimap]="{ self.Monaco.Minimap }"' )
+            options.append( f'language="{ self.Monaco.Language }"' )
+            options.append( f'theme="{ self.Monaco.Theme }"')
+            # Do we have a action bar defined ?
+            if self.Monaco.hasActionBar():
+                # Add the actionbar and monacoConfig elements
+                options.append( f'[actionbar]="getActionBar_{ field }()"' )
+                options.append( f'[monacoConfig]="getEditorConfig_{ field }()"' )
+
+        result = '<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}></{tag}>'.\
                 format( tag         = self.__components.getComponentTag( self.uiObject ),
                         table       = self.table.name,
                         name        = self.parent.name,
@@ -365,29 +380,25 @@ class TemplateUi( TemplateBase ):
                         option      = ' '.join( options ),
                         field       = field,
                         mixin       = " " + mixin if len(mixin) > 0 else "" )
+        if self.hasMonaco():
+            if self.Monaco.hasHeight() and self.Monaco.Height != 'auto':
+                result = f'<div style="{ self.Monaco.Height }">{ result }</div>'
 
         if validators != None and len(validators) > 0:
             errorHandler = ""
             for validator in validators:
+                if validator.validatorType in ( ValidatorType.REQUIRED, ValidatorType.MAXLENGTH, ValidatorType.MINLENGTH ):
+                    result += f'\n <span class="form-error" *ngIf="{field}?.errors && '
+
                 if validator.validatorType == ValidatorType.REQUIRED:
-                    errorHandler = "\n <span class=\"form-error\" \n" +\
-                                "*ngIf=\"formGroup.get('{field}').errors && \n" +\
-                                "formGroup.get('{field}').hasError('required')\" \n" +\
-                                ">{label} is a required field</span>"
-                    result += errorHandler.format(field = field, label = label)
+                    result += f'{field}?.hasError(\'required\')">{label} is a required field</span>'
+
                 elif validator.validatorType == ValidatorType.MAXLENGTH:
-                    errorHandler = "\n <span class=\"form-error\" \n" +\
-                                "*ngIf=\"formGroup.get('{field}').errors && \n" +\
-                                "formGroup.get('{field}').hasError('maxlength')\" \n" +\
-                                ">Maximum size limit ({size}) exceeded for {label} field</span>"
-                    result += errorHandler.format(field = field, label = label, size = validator.value)
+                    result += f'{field}?.hasError(\'maxlength\')">Maximum size limit ({validator.value}) exceeded for {label} field</span>'
+
                 elif validator.validatorType == ValidatorType.MINLENGTH:
-                    errorHandler = "\n <span class=\"form-error\" \n" +\
-                                "*ngIf=\"formGroup.get('{field}').errors && \n" +\
-                                "formGroup.get('{field}').hasError('minlength')\" \n" +\
-                            ">Minimum size limit ({size}) not reached for {label} field</span>"
-                    result += errorHandler.format(field = field, label = label, size = validator.value)
-    
+                    result += f'{field}?.hasError(\'minlength\')">Minimum size limit ({validator.value}) not reached for {label} field</span>'
+
         return result
 
     def hasNgIf( self ):
@@ -591,3 +602,10 @@ class TemplateUi( TemplateBase ):
             for i in range(startIndex, len(components) + 1):
                 result += ".".join(components[:i]) + " != null && "
             return result[:-4] + " ? " + inputString + " : null"
+
+    def hasMonaco( self ) -> bool:
+        return self.__monaco is not None
+
+    @property
+    def Monaco( self ) -> TemplateMonaco:
+        return self.__monaco

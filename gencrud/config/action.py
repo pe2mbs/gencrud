@@ -88,7 +88,7 @@ class TemplateAction( TemplateBase ):
 
     @property
     def label( self ):
-        return self.__cfg.get( C_LABEL, "{}{}".format( self.name[0].upper(), self.name[1:].lower() ) )
+        return self.__cfg.get( C_LABEL, self.name.title() )
 
     @property
     def icon( self ):
@@ -178,17 +178,28 @@ class TemplateAction( TemplateBase ):
 
     @property
     def width( self ):
-        return self.__cfg.get( 'width', "80%" )
+        return self.__cfg.get( C_WIDTH, "80%" )
 
     def hasWidth( self ):
-        return self.__cfg.get( 'width' ) is not None
+        return self.__cfg.get( C_WIDTH ) is not None
 
     @property
     def height( self ):
-        return self.__cfg.get( 'height', "80%" )
+        return self.__cfg.get( C_HEIGHT, "80%" )
 
     def hasHeight( self ):
-        return self.__cfg.get( 'height' ) is not None
+        return self.__cfg.get( C_HEIGHT ) is not None
+
+    def hasHelp( self ):
+        return self.__cfg.get( C_HELP ) is not None
+
+    @property
+    def HelpText( self ) -> str:
+        return self.__cfg.get( C_HELP, '' )
+
+    @property
+    def Help(self) -> str:
+        return self.__cfg.get(C_HELP, '')
 
     #
     #   Internal functions and properies to gencrud
@@ -221,12 +232,12 @@ class TemplateAction( TemplateBase ):
 
         return route
 
-    def routingParams( self ) -> dict:
+    def routingParams( self ) -> str:
         params = {}
         if self.isAngularRoute():
             params = self.route.params()
-        return "{" + ", ".join(['%s: %s' % (key, value) for (key, value) in params.items()]) + "}"
 
+        return "{" + ", ".join( ['%s: %s' % (key, value) for (key, value) in params.items()] ) + "}"
 
     def buttonObject( self ) -> str:
         tooltip = ''

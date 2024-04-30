@@ -1,8 +1,6 @@
+from gencrud.configuraton import TemplateConfiguration
 
 
-
-
-
-def generateUnittest( config: dict, templates: list, flask_config: dict ):
+def generateUnittest( config: TemplateConfiguration, templates: list, flask_config: dict ):
     pass
 

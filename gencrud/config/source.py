@@ -1,6 +1,6 @@
 #
 #   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   Copyright (C) 2018-2024 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -123,7 +123,7 @@ class TemplateSource( TemplateBase ):
         # Now check if the templates exists
         cnt = 0
         for templ_file in os.listdir( folder ):
-            if os.path.splitext( templ_file )[ 1 ] == '.templ':
+            if os.path.splitext( templ_file )[ 1 ] in ( '.templ', '.mako' ):
                 cnt += 1
 
         if cnt == 0:
@@ -168,6 +168,18 @@ class TemplateSource( TemplateBase ):
 class TemplateSourcePython( TemplateSource ):
     def __init__( self, **cfg ):
         TemplateSource.__init__( self, C_PYTHON, **cfg )
+        return
+
+
+class TemplateSourceExtModels( TemplateSource ):
+    def __init__( self, **cfg ):
+        TemplateSource.__init__( self, C_EXT_MODELS, **cfg )
+        return
+
+
+class TemplateSourceHelpPages( TemplateSource ):
+    def __init__( self, **cfg ):
+        TemplateSource.__init__( self, C_HELP_PAGES, **cfg )
         return
 
 

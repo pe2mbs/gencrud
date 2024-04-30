@@ -35,6 +35,8 @@ from gencrud.util.positon import PositionInterface
 from gencrud.util.sha import sha256sum
 import posixpath
 import time
+from gencrud.generators.servicelist import ServicesList, buildServiceLists
+
 
 logger = logging.getLogger()
 
@@ -322,48 +324,6 @@ class ComponentsModules( list ):
 
         return
 
-class ServicesList( list ):
-    def __init__( self ):
-        self.__mapper = {}
-        super( ServicesList, self ).__init__()
-        return
-
-    def append( self, new_item ):
-        if new_item.mapperName in self.__mapper:
-            logger.error("NOT ADDED SERVICE {}".format( new_item ) )
-            return
-
-        logger.info("Adding service: {}".format( new_item ) )
-        idx = len( self )
-        list.append( self, new_item )
-        self.__mapper[ new_item.mapperName ] = idx
-        return
-
-    def unique( self, *args, exclude=[] ):
-        logger.debug("ServicesList.unique: {}".format( args ) )
-        intermediate  = {}
-        for service in list( self ):
-            if service.parent is None or service.parent.uiObject not in exclude:
-                key = ''.join( [ v for k, v in service.dictionary.items() if k in args ] )
-                logger.debug( "ServicesList.service: {} => {} | {}".format( service, args, key ) )
-                if key == '':
-                    continue
-                
-                intermediate[ key ] = service
-
-        logger.debug("ServicesList.unique => {}".format( intermediate.values() ) )
-        return intermediate.values()
-
-    @property
-    def externalService(self) -> str:
-        FILLER = ( ' ' * 17 ) + ', '
-        FILLER_LF = '\r\n{}'.format( FILLER )
-        result = []
-        for service in list( self.unique( 'class', 'name' ) ):
-            result.append( 'public {name}Service: {cls}'.format( name = service.name, cls = service.cls ) )
-
-        return (FILLER if len(result) > 0 else '') + (FILLER_LF.join(result))
-
 
 def generateAngular( config: TemplateConfiguration, templates: list ):
     modules = ComponentsModules()
@@ -371,8 +331,8 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
         os.makedirs( config.angular.sourceFolder )
 
     dt = datetime.datetime.now()
-    generationDateTime = dt.strftime( "%Y-%m-%d %H:%M:%S" )
-    userName = os.path.split( os.path.expanduser( "~" ) )[ 1 ]
+    generationDateTime = dt.strftime("%Y-%m-%d %H:%M:%S")
+    userName = os.path.split(os.path.expanduser("~"))[1]
     for cfg in config:
         modulePath = os.path.join( config.angular.sourceFolder,
                                    config.application,
@@ -393,23 +353,8 @@ def generateAngular( config: TemplateConfiguration, templates: list ):
         logger.info( 'primary key : {0}'.format( cfg.table.primaryKey ) )
         logger.info( 'uri         : {0}'.format( cfg.uri ) )
 
-        servicesList = ServicesList()
         # TODO: temporary solutionto include all services
-        fullServiceList = ServicesList()
-        for field in cfg.table.columns:
-            if field.ui is not None and field.hasService():
-                field.ui.service.fieldLabel = field.label
-                if field.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE, C_COMBOBOX, C_COMBO, C_CHECKBOX):
-                    servicesList.append( field.ui.service )
-                fullServiceList.append( field.ui.service )
-            # required ad-on for the support of siblings, i.e., multiple usage of the same database field
-            for sibling in field.siblings:
-                if sibling.ui is not None and sibling.hasService():
-                    sibling.ui.service.fieldLabel = sibling.label
-                    if sibling.ui.isUiType(C_CHOICE, C_CHOICE_AUTO, C_CHOICE_BASE, C_COMBOBOX, C_COMBO, C_CHECKBOX):
-                        servicesList.append( sibling.ui.service )
-                    fullServiceList.append( sibling.ui.service )
-
+        servicesList, fullServiceList = buildServiceLists( cfg.table.columns )
         for templ in templates:
             templateFilename = os.path.join( config.angular.sourceFolder,
                                              config.application,

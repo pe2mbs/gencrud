@@ -83,7 +83,7 @@ _GENCRUD_SCHEME_V1 = {
                     'type': 'object',
                     'additionalProperties': False,
                     'properties': {
-                        'filename': { 'type': 'string' },
+                        'file': { 'type': 'string' },
                         'class':  { 'type': 'string' },
                         'module':  { 'type': 'string' },
                     }
@@ -92,7 +92,7 @@ _GENCRUD_SCHEME_V1 = {
                     'type': 'object',
                     'additionalProperties': False,
                     'properties': {
-                        'filename':  { 'type': 'string' },
+                        'file':  { 'type': 'string' },
                         'class':  { 'type': 'string' },
                         'module': { 'type': 'string' },
                     }
@@ -118,7 +118,7 @@ _GENCRUD_SCHEME_V1 = {
         'objects': {
             'type': 'array',
             'items': {
-                "required": [ 'name', 'title', 'class', 'uri', 'actions', 'table' ],
+                "required": [ 'name', 'uri', 'actions', 'table' ],
                 'type': 'object',
                 "additionalProperties": False,
                 'properties': {
@@ -787,9 +787,6 @@ _GENCRUD_SCHEME_V1 = {
                                                                         'type': 'string',
                                                                     },
                                                                     'minimap': {
-                                                                        'type': 'string',
-                                                                    },
-                                                                    'heightAdjust': {
                                                                         'type': 'string',
                                                                     },
                                                                     'decodeFunc': {

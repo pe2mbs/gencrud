@@ -21,6 +21,7 @@
 from __future__ import print_function    # (at top of module)
 import getopt
 import os
+from shutil import which
 import sys
 import glob
 import traceback
@@ -36,9 +37,18 @@ from gencrud.constants import *
 import pypac.os_settings
 from pypac.parser import PACFile
 from pypac import get_pac
+from gencrud.schema.export import exportSchema
 
 
 logger = logging.getLogger()
+
+
+class ToolNotFound( Exception ):
+    pass
+
+
+class CodingStyleMissing( Exception ):
+    pass
 
 
 def initializeCodeGenerationProcess( input_file ):
@@ -48,6 +58,27 @@ def initializeCodeGenerationProcess( input_file ):
     if config.nogen:
         print( "This template is blocked for generation" )
         return
+
+    if config.options.UsePrettier:
+        if which( 'prettier' ) in ( None, '' ):
+            raise ToolNotFound( 'prettier not found, install tool with "npm install -g prettier"' )
+
+        if isinstance( config.options.PrettierStyle, str ):
+            # Must be a filename
+            if not os.path.exists( config.options.PrettierStyle ):
+                raise CodingStyleMissing( config.options.PrettierStyle )
+
+    if config.options.UseYapf:
+        if which('yapf') in (None, ''):
+            # Is ths a vierual environment module ?
+            if not os.path.exists( os.path.join(os.path.split(sys.executable)[0], 'yapf.exe') ):
+                raise ToolNotFound('yapf not found, install tool with "pip install yapf"')
+
+        if isinstance( config.options.YapfStyle, str ):
+            if config.options.YapfStyle not in ( 'pep8', 'google' ):
+                # Check filename
+                if not os.path.exists( config.options.YapfStyle ):
+                    raise CodingStyleMissing( config.options.YapfStyle )
 
     gencrud.util.utils.version = config.version
     if gencrud.util.utils.version not in ( 1, 2 ):
@@ -100,7 +131,8 @@ Options:
     -v                                  Verbose option, prints what the tool is doing.
     -V / --version                      Print the version of the tool.
     -I / --install <angular-version>    Install templates into project, angular-version is the major Angular version 
-                                        to be installed. current supported versions 8, 10 and 12                                       
+                                        to be installed. current supported versions 8, 10 and 12
+    -E/--export-schema <version>        exports the schema into version-<X>.yamls                                                                               
 ''' )
     return
 
@@ -110,7 +142,7 @@ def main():
     logging.basicConfig( format = FORMAT, level=logging.WARNING, stream = sys.stdout )
     try:
         opts, args = getopt.getopt( sys.argv[1:],
-                                    'hs:obvVcMri:e:np:PI:',
+                                    'hs:obvVcMri:e:np:PI:E:',
                                     [
                                         'help',
                                         'ssl-verify=',
@@ -125,7 +157,8 @@ def main():
                                         'proxy=',
                                         'proxy-system',
                                         'install=',
-                                        'nltk-update'
+                                        'nltk-update',
+                                        'export-schema='
                                     ] )
 
     except getopt.GetoptError as err:
@@ -183,6 +216,18 @@ def main():
 
                 else:
                     raise Exception( "use manual proxy settings" )
+            elif o in ( '-E', '--export-schema' ):
+                if a.isdigit():
+                    version = int( a )
+
+                if not isinstance( version, int ):
+                    raise ValueError( "version {version} not a valid number (1/2)" )
+
+                elif version not in ( 1, 2 ):
+                    raise ValueError( "version {version} not a valid number (1/2)")
+
+                exportSchema( version, f'schema-v{version}' )
+                sys.exit()
 
             elif o.lower() in ( '-p', '--proxy' ):
                 pacFile = None
@@ -272,6 +317,9 @@ def main():
                 if '*' in arg:
                     # Wild card handling
                     for filename in glob.glob( os.path.abspath( os.path.expanduser( arg ) ) ):
+                        if filename.endswith( tuple( ignoreFolders ) ):
+                            continue
+
                         print( f"Filename: {filename} from wildcard" )
                         if filename.lower().endswith( extension ):
                             # process the configuration file and create code files
@@ -288,8 +336,7 @@ def main():
         logger.error( 'You can use the --overwrite option to avoid this error.' )
 
     except InvalidSetting as exc:
-        logger.error( "Invalid setting" )
-        logger.error( str( exc ) )
+        logger.exception( "Invalid setting" )
 
     except FileNotFoundError as exc:
         logger.error( "File not found" )

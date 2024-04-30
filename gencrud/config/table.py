@@ -17,6 +17,7 @@
 #   Boston, MA 02110-1301 USA
 #
 #
+import typing as t
 from collections import defaultdict
 import logging
 from gencrud.config.base import TemplateBase
@@ -90,8 +91,11 @@ class TemplateTable( TemplateBase ):
         if C_COLUMNS not in self.__table:
             raise MissingAttribute( C_TABLE, C_COLUMNS )
 
-        for col in self.__table[ C_COLUMNS ]:
+        for idx, col in enumerate( self.__table[ C_COLUMNS ] ):
             column = TemplateColumn( self, self.name, **col )
+            if not isinstance( column.index, int ):
+                column.index = idx
+
             self.__columns.append( column )
             if column.isPrimaryKey():
                 self.__primaryKey = column.name
@@ -168,14 +172,33 @@ class TemplateTable( TemplateBase ):
         return self.object.config
 
     @property
-    def groups ( self ) -> List[InputGroup]:
+    def groups( self ) -> List[ InputGroup ]:
         return self.__groups
 
     def getFieldByName( self, name ):
         for column in self.__columns:
             if column.name == name:
                 return column
+
         return None
+
+    def groupFieldsForTab( self, tab_name: str ):
+        result = []
+        groups = {}
+        for column in self.tabs().fieldsFor( tab_name ):
+            groups.setdefault( column.group, [] ).append( column )
+
+        if len( groups ) == 0:
+            return result
+
+        if len( groups[ None ] ) > 0:
+            result.append( InputGroup( 'no-group', groups[ None ] ) )
+            del groups[ None ]
+
+        for key, value in groups.items():
+            result.append( InputGroup( key, value ) )
+
+        return result
 
     def groupInTab( self, group, tab ) -> bool:
         # iterate through fields of the tab
@@ -183,7 +206,16 @@ class TemplateTable( TemplateBase ):
             # check for overlapping field between group and tab
             if column in group.fields:
                 return True
+
         return False
+
+    def groupOfTab( self, tab )-> List[ InputGroup ]:
+        result = []
+        for group in self.__groups:
+            if group.inTab( tab ):
+                result.append( group )
+
+        return result
 
     def hasInputGroups( self ) -> bool:
         return len( self.groups ) > 0
@@ -194,9 +226,10 @@ class TemplateTable( TemplateBase ):
 
         return len( self.__table.get( tp + C_TABS, [] ) ) > 0
 
-    def tabs( self, tp = C_DIALOG ) -> TemplateTabs:
+    def tabs( self, tp = '' ) -> TemplateTabs:
+        # TODO: To be simplified
         if C_TABS in self.__table:
-            return TemplateTabs( self,**self.__table.get( C_TABS,{ } ) )
+            return TemplateTabs( self,**self.__table.get( C_TABS, {} ) )
 
         return TemplateTabs( self, **self.__table.get( tp + C_TABS, {} ) )
 
@@ -239,6 +272,10 @@ class TemplateTable( TemplateBase ):
             return self.__table.get( C_NAME, '' ).lower()
 
         return self.__table.get( C_NAME, '' )
+
+    @property
+    def PythonName(self) -> str:
+        return self.__table.get(C_NAME, '')
 
     @property
     def sortField( self ) -> str:
@@ -371,3 +408,10 @@ class TemplateTable( TemplateBase ):
 
     def __repr__(self):
         return "<TemplateTable name={}, table={}>".format( self.name, self.tableName )
+
+    def hasMonaco( self ):
+        for column in self.columns:
+            if column.ui is not None and column.ui.hasMonaco():
+                return True
+
+        return False

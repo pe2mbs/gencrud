@@ -16,10 +16,14 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+import typing as t
 import os
 import logging
 import shutil
-
+from six.moves.urllib.request import ProxyHandler
+import pypac.parser
+from urllib.parse import unquote, urlparse
+import base64
 from gencrud.util.positon import PositionInterface
 from platform import system
 
@@ -144,14 +148,14 @@ def replaceInList( lines, range_obj, to_replace ):
     return
 
 
-def sourceName( templateName ):
-    return os.path.splitext( os.path.basename( templateName ) )[ 0 ]
+def sourceName( templateName, model: t.Optional[ str ] = None ):
+    # Remove the .templ
+    result = os.path.splitext( os.path.basename( templateName ) )[ 0 ]
+    if isinstance( model, str ) and '{' in result and '}' in result:
+        result = result.format( model = model )
 
+    return result
 
-from six.moves.urllib.request import ProxyHandler
-import pypac.parser
-from urllib.parse import unquote, urlparse
-import base64
 
 class PacProxyHandler( ProxyHandler ):
     def __init__( self, pac_file ):

@@ -160,6 +160,7 @@ setup(
                          'jsonschema',
                          'nltk',
                          'pyyaml',
+                         'inflection',
                          'six' ],  # Optional
 
     # List additional groups of dependencies here (e.g. development

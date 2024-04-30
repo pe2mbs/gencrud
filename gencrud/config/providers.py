@@ -1,6 +1,6 @@
 #
 #   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   Copyright (C) 2018-2024 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -18,27 +18,31 @@
 #
 import typing as t
 from gencrud.constants import *
+from gencrud.config.base import TemplateBase
 
 
-class InputGroup( object ):
-    def __init__( self, name, fields ):
-        self.__fields = fields
-        self.__name = name
+class TemplateModule( TemplateBase ):
+    def __init__( self, parent, provider: dict ):
+        super().__init__( parent )
+        self.provider = provider
         return
 
     @property
-    def name ( self ) -> str:
-        return self.__name
+    def Filename( self ) -> str:
+        return self.provider.get( C_FILENAME )
 
     @property
-    def fields( self ) -> t.List[ 'TemplateColumn' ]:
-        return self.__fields
+    def Class( self ) -> str:
+        return self.provider.get( C_CLASS )
 
-    def isLastInGroup( self, field ) -> bool:
-        return self.__fields[ -1 ] == field
 
-    def isFirstInGroup( self, field ) -> bool:
-        return self.__fields[ 0 ] == field
+class TemplateProviders( TemplateBase ):
+    def __init__( self, parent, providers ):
+        super().__init__( parent )
+        self.__providers = [ TemplateModule( self, provider ) for provider in providers ]
 
-    def inTab( self, tab_name: str ) -> bool:
-        return self.__fields[ 0 ].tab.label == tab_name
+    def __iter__(self) -> t.Iterator[ TemplateModule ]:
+        return iter( self.__providers )
+
+    def hasProviders( self ) -> bool:
+        return len( self.__providers ) > 0

@@ -30,7 +30,7 @@ class InjectionElementTemplate( TemplateBase ):
 
     @property
     def file( self ):
-        return self.__config.get( C_FILE )
+        return self.__config.get( C_FILENAME )
 
     @property
     def export( self ):
@@ -55,6 +55,9 @@ class InjectionBlockTemplate( TemplateBase ):
             self.__components.append( InjectionElementTemplate( self, ElementType.MODULE, elem ) )
 
         return
+
+    def __iter__(self):
+        return iter( self.__components )
 
     @property
     def declaredClasses( self ):

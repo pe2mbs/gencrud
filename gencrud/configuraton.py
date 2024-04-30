@@ -1,6 +1,6 @@
 #
-#   Python backend and Angular frontend code generation by gencrud
-#   Copyright (C) 2018-2020 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#   Python backend and Angular frontend code
+#   Copyright (C) 2018-2024 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
 #
 #   This library is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU Library General Public License GPL-2.0-only
@@ -17,17 +17,17 @@
 #   Boston, MA 02110-1301 USA
 #
 import typing as t
-import os
 import io
 import gencrud.util.utils
 from gencrud.config.object import TemplateObject, TemplateObjects
-from gencrud.config.source import TemplateSourcePython, TemplateSourceAngular, TemplateSourceUnittest
+from gencrud.config.source import ( TemplateSourcePython, TemplateSourceAngular,
+                                    TemplateSourceUnittest, TemplateSourceExtModels,
+                                    TemplateSourceHelpPages )
 from gencrud.config.options import TemplateOptions
 from gencrud.config.references import TemplateReferences
 from gencrud.config.dynamic.controls import DymanicControls
 from gencrud.config.interface import Interface
 from gencrud.constants import *
-from gencrud.util.exceptions import MissingAttribute
 import jsonschema
 from gencrud.schema import getSchema
 import gencrud.myyaml as yaml
@@ -82,6 +82,8 @@ class TemplateConfiguration( object ):
         self.__python       = TemplateSourcePython( **self.__config )
         self.__angular      = TemplateSourceAngular( **self.__config )
         self.__unittest     = TemplateSourceUnittest( **self.__config )
+        self.__ext_models   = TemplateSourceExtModels( **self.__config )
+        self.__help_pages   = TemplateSourceHelpPages( **self.__config )
         opts                = self.__config[ C_REFERENCES ] if C_REFERENCES in self.__config else { }
         self.__references   = TemplateReferences( **opts )
         self.__objects      = []
@@ -113,6 +115,15 @@ class TemplateConfiguration( object ):
     @property
     def unittest( self ) -> TemplateSourceUnittest:
         return self.__unittest
+
+    @property
+    def ExtModels( self ) -> TemplateSourceExtModels:
+        return self.__ext_models
+
+    @property
+    def HelpPages( self ) -> TemplateSourceHelpPages:
+        return self.__help_pages
+
 
     @property
     def objects( self ) -> TemplateObjects:

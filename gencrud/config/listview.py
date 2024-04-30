@@ -32,6 +32,9 @@ class TemplateListView( TemplateBase ):
     def __len__( self ):
         return len( self.__cfg )
 
+    def has(self) -> bool:
+        return len( self.__cfg ) > 0
+
     def get( self, name, def_value ):
         return self.__cfg.get( name, def_value )
 

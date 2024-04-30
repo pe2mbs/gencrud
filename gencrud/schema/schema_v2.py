@@ -22,6 +22,12 @@ properties:
             unittest:
                 type: string
                 optional': true
+            ext-models:
+                type: string
+                optional: true
+            help-pages:
+                type: string
+                optional: true
     templates:
         type: object
         optional: true
@@ -35,6 +41,12 @@ properties:
             angular:
                 type: string
             unittest:
+                type: string
+                optional: true
+            ext-models:
+                type: string
+                optional: true
+            help-pages:
                 type: string
                 optional: true
             common:
@@ -51,18 +63,58 @@ properties:
                     unittest:
                         type: string
                         optional: true
+                    ext-models:
+                        type: string
+                        optional: true
+                    help-pages:
+                        type: string
+                        optional: true                       
     application:
         type: string
     interface:
+        # When defining an interface instead of 'application'   
         type: object
         additionalProperties: false
+        required: 
+        -   backend  
+        -   frontend  
         properties:
             backend:
-                type: string
+                type: object
+                additionalProperties: false
+                properties:
+                    path:
+                        type: string   
+                    module:
+                        type: string                                         
+                    package:
+                        type: string                                         
             frontend:
-                type: string
-            module:
-                type: string
+                type: object
+                additionalProperties: false
+                required: 
+                -   path  
+                properties:
+                    path:
+                        type: string
+                    class:
+                        type: string
+                    file:
+                        type: string  
+                    templates:
+                        type: object
+                        additionalProperties: false
+                        required: 
+                        -   route  
+                        -   sub-route
+                        -   module  
+                        properties:
+                            route:
+                                type: string
+                            sub-route:
+                                type: string
+                            module:
+                                type: string                               
     nogen:
         type: boolean
     options:
@@ -75,18 +127,34 @@ properties:
                 type: boolean
             use-module:           
                 type: boolean
-            generate-tests:       
+            generate-backend:
                 type: boolean
+            generate-frontend:
+                type: boolean
+            generate-tests:
+                type: boolean
+            generate-ext-models:
+                type: boolean
+            generate-help-pages:
+                type: boolean
+            use-prettier:
+                type: boolean
+            prettier-style:
+                type: string
+            use-yapf:
+                type: boolean
+            yapf-style:
+                type: string
+                default: pep8
     objects:
         type: array
         items:
             required: 
             -   name
-            -   title
-            -   class
             -   uri
             -   actions
             -   table
+            -   route
             type: object
             additionalProperties: true
             properties:
@@ -104,6 +172,18 @@ properties:
                     type: string
                 action-width: 
                     type: string
+                help:
+                    type:   object
+                    additionalProperties: false
+                    properties:
+                        title:  
+                            type: string
+                        table:
+                            type: string
+                        screen:
+                            type: string
+                        dialog:
+                            type: string
                 modules:
                     type: array
                     items:
@@ -201,6 +281,18 @@ properties:
                                             type: string
                 ignore_templates: 
                     type: array
+                providers:
+                    type: array
+                    items:
+                        type: object
+                        required: 
+                        -   file
+                        -   class
+                        properties:
+                            file:     
+                                type: string
+                            class:    
+                                type: string
                 injection:
                     type: object
                     properties:
@@ -239,6 +331,8 @@ properties:
                                 -   directive
                                 -   none
                             icon:     
+                                type: string
+                            help:
                                 type: string
                             position: 
                                 enum: 
@@ -297,6 +391,7 @@ properties:
                                             value: 
                                                 type: string
                 menu:
+                    # At this moment we support only 3 levels.
                     type: object
                     required: 
                     -   caption
@@ -304,15 +399,19 @@ properties:
                     properties:
                         caption:
                             type: string
-                        index:
-                            type: integer
                         icon:
                             type: string
                         after:
-                            type: string
+                            type: 
+                            -   string
+                            -   "null"
                         before:
-                            type: string
+                            type: 
+                            -   string
+                            -   "null"
                         route:
+                            type: string
+                        access:
                             type: string
                         menu:
                             type: object
@@ -322,15 +421,19 @@ properties:
                             properties:
                                 caption:
                                     type: string
-                                index:
-                                    type: integer
                                 icon:
                                     type: string
                                 after:
-                                    type: string
+                                    type: 
+                                    -   string
+                                    -   "null"
                                 before:
-                                    type: string
+                                    type: 
+                                    -   string
+                                    -   "null"
                                 route:
+                                    type: string
+                                access:
                                     type: string
                                 menu:
                                     type: object
@@ -340,16 +443,20 @@ properties:
                                     properties:
                                         caption:
                                             type: string
-                                        index:
-                                            type: integer
                                         icon:
                                             type: string
                                         after:
-                                            type: string
+                                            type: 
+                                            -   string
+                                            -   "null"
                                         before:
-                                            type: string
+                                            type: 
+                                            -   string
+                                            -   "null"  
                                         route:
                                             type: string
+                                        access:
+                                            type: string  
                                         menu:
                                             type: object
                 table:
@@ -427,12 +534,22 @@ properties:
                                         required: 
                                         -   label
                                         -   component
+                                        -   name
+                                        -   file
                                         -   params
                                         additionalProperties: false
                                         properties:
                                             label:
                                                 type: string
                                             component:
+                                                type: string
+                                            name:
+                                                type: string
+                                            class:
+                                                type: string
+                                            file:
+                                                type: string
+                                            help:
                                                 type: string
                                             params:
                                                 type: object
@@ -475,6 +592,8 @@ properties:
                                         type: string
                                     label:
                                         type: string
+                                    help:
+                                        type: string
                                     ui:
                                         type: object
                                         required: 
@@ -488,7 +607,7 @@ properties:
                                                 -   number
                                                 -   choice
                                                 -   choice-auto-complete
-                                                -   choice-base
+#                                                -   choice-base
                                                 -   textarea
                                                 -   checkbox
                                                 -   password
@@ -499,7 +618,7 @@ properties:
                                             format:
                                                 type: string
                                             width:
-                                                type: integer
+                                                type: string
                                             group:
                                                 type: string
                                             ngIf:
@@ -529,6 +648,8 @@ properties:
                                                         type: string
                                                     class:
                                                         type: string
+                                                    module:
+                                                        type: string
                                                     value:
                                                         type: string
                                                     label:
@@ -537,34 +658,6 @@ properties:
                                                         type: object
                                                         optional: true
                                                         additionalProperties: true
-                                            attributes:
-                                                type: object
-                                                additionalProperties: false
-                                                properties:
-                                                    language:
-                                                        # This is limited due to the formatters available
-                                                        enum: 
-                                                        -   markdown
-                                                        -   json
-                                                        -   python
-                                                        -   yaml
-                                                        -   xml
-                                                        -   sql
-                                                        -   xpath
-                                                    height:
-                                                        type: string
-                                                    minimap:
-                                                        type: string
-                                                    heightAdjust:
-                                                        type: string
-                                                    decodeFunc:
-                                                        type: string
-                                                    encodeFunc:
-                                                        type: string
-                                                    onSaveClick:
-                                                        type: string
-                                                    prettyPrintOption:
-                                                        type: string
                                             actions:
                                                 type: array
                                                 items:
@@ -588,6 +681,41 @@ properties:
                                                             type: string
                                                         ngIf:
                                                             type: string
+                                            monaco:
+                                                type: object
+                                                additionalProperties: false
+                                                required: 
+                                                -   language
+                                                properties:
+                                                    minimap:
+                                                        type: boolean
+                                                    language:
+                                                        type: string
+                                                    theme:
+                                                        type: string
+                                                    height:
+                                                        type: string
+                                                    function:
+                                                        type: string
+                                                    file:
+                                                        type: string
+                                                    actionbar:
+                                                        type: array
+                                                        items:
+                                                            type: object
+                                                            required: 
+                                                            -   tooltip
+                                                            -   action
+                                                            -   icon
+                                                            additionalProperties: false
+                                                            properties:
+                                                                tooltip:
+                                                                    type: string
+                                                                action:
+                                                                    type: string
+                                                                icon:
+                                                                    type: string
+                                            
                                     listview:
                                         type: object
                                         additionalProperties: false
@@ -666,7 +794,7 @@ properties:
                                                             -   number
                                                             -   choice
                                                             -   choice-auto-complete
-                                                            -   choice-base
+#                                                            -   choice-base
                                                             -   textarea
                                                             -   checkbox
                                                             -   password
@@ -677,7 +805,7 @@ properties:
                                                         format:
                                                             type: string
                                                         width:
-                                                            type: integer
+                                                            type: string
                                                         group:
                                                             type: string
                                                         ngIf:
@@ -717,33 +845,6 @@ properties:
                                                                     type: object
                                                                     optional: true
                                                                     additionalProperties: true
-                                                        attributes:
-                                                            type: object
-                                                            additionalProperties: false
-                                                            properties:
-                                                                language:
-                                                                    enum: 
-                                                                    -   markdown
-                                                                    -   json
-                                                                    -   python
-                                                                    -   yaml
-                                                                    -   xml
-                                                                    -   sql
-                                                                    -   xpath
-                                                                height:
-                                                                    type: string
-                                                                minimap:
-                                                                    type: string
-                                                                heightAdjust:
-                                                                    type: string
-                                                                decodeFunc:
-                                                                    type: string
-                                                                encodeFunc:
-                                                                    type: string
-                                                                onSaveClick:
-                                                                    type: string
-                                                                prettyPrintOption:
-                                                                    type: string
                                                         actions:
                                                             type: array
                                                             items:
@@ -765,6 +866,41 @@ properties:
                                                                         -   right
                                                                     function:
                                                                         type: string
+                                                        monaco:
+                                                            type: object
+                                                            additionalProperties: false
+                                                            required: 
+                                                            -   language
+                                                            properties:
+                                                                minimap:
+                                                                    type: boolean
+                                                                language:
+                                                                    type: string
+                                                                height:
+                                                                    type: string
+                                                                theme:
+                                                                    type: string
+                                                                function:
+                                                                    type: string
+                                                                file:
+                                                                    type: string
+                                                                    type: string
+                                                                actionbar:
+                                                                    type: array
+                                                                    items:
+                                                                        type: object
+                                                                        required: 
+                                                                        -   tooltip
+                                                                        -   action
+                                                                        -   icon
+                                                                        additionalProperties: false
+                                                                        properties:
+                                                                            tooltip:
+                                                                                type: string
+                                                                            action:
+                                                                                type: string
+                                                                            icon:
+                                                                                type: string
                                                 listview:
                                                     type: object
                                                     additionalProperties: false
@@ -896,7 +1032,7 @@ _GENCRUD_SCHEME_V2 = {
                     'type': 'object',
                     'additionalProperties': False,
                     'properties': {
-                        'filename': { 'type': 'string' },
+                        'file': { 'type': 'string' },
                         'class':  { 'type': 'string' },
                         'module':  { 'type': 'string' },
                     }
@@ -905,7 +1041,7 @@ _GENCRUD_SCHEME_V2 = {
                     'type': 'object',
                     'additionalProperties': False,
                     'properties': {
-                        'filename':  { 'type': 'string' },
+                        'file':  { 'type': 'string' },
                         'class':  { 'type': 'string' },
                         'module': { 'type': 'string' },
                     }
@@ -1341,7 +1477,7 @@ _GENCRUD_SCHEME_V2 = {
                                                     'type': 'string'
                                                 },
                                                 'width': {
-                                                    'type': 'integer'
+                                                    'type': 'string'
                                                 },
                                                 'group': {
                                                     'type': 'string'
@@ -1532,7 +1668,7 @@ _GENCRUD_SCHEME_V2 = {
                                                                 'type': 'string'
                                                             },
                                                             'width': {
-                                                                'type': 'integer'
+                                                                'type': 'string'
                                                             },
                                                             'group': {
                                                                 'type': 'string'

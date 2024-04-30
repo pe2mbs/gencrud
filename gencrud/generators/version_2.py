@@ -1,3 +1,21 @@
+#
+#   Python backend and Angular frontend
+#   Copyright (C) 2018-2024 Marc Bertens-Nguyen m.bertens@pe2mbs.nl
+#
+#   This library is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU Library General Public License GPL-2.0-only
+#   as published by the Free Software Foundation.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#   Library General Public License for more details.
+#
+#   You should have received a copy of the GNU Library General Public
+#   License GPL-2.0-only along with this library; if not, write to the
+#   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+#   Boston, MA 02110-1301 USA
+#
 import typing as t
 import logging
 import json
@@ -9,7 +27,8 @@ from gencrud.util.exceptions import EnvironmentInvalidMissing, MissingAngularEnv
 from gencrud.generators.version2.python import generatePython
 from gencrud.generators.version2.angular import generateAngular
 from gencrud.generators.version2.unittest import generateUnittest
-from gencrud.constants import *
+from gencrud.generators.version2.extmodels import generateExtModels
+from gencrud.generators.version2.help_pages import generateHelpPages
 
 
 logger = logging.getLogger()
@@ -74,7 +93,7 @@ def verifyLoadPythonProject( config: TemplateConfiguration ) -> t.Tuple[ str, di
     return configFile, data
 
 
-def version_2_StyleGeneration( config ):
+def version_2_StyleGeneration( config: TemplateConfiguration ):
     flaskConfig = {}
     angularConfig = {}
     if config.options.generateFrontend:
@@ -96,9 +115,13 @@ def version_2_StyleGeneration( config ):
                         [ os.path.abspath( os.path.join( templateFolder, t ) )
                             for t in os.listdir( templateFolder ) ],
                         flaskConfig )
-        # Update the FLASK configuration
-        with open( flaskCfgFile, 'w' ) as stream:   # noqa
-            yaml.dump( stream, flaskConfig )
+
+    if config.options.GenerateExtModels:
+        logger.info("*** Generating External models source code.***")
+        templateFolder = config.ExtModels.templateFolder
+        generateExtModels( config, [ os.path.abspath( os.path.join( templateFolder, t ) )
+                            for t in os.listdir( templateFolder ) ] )
+
 
     if config.options.generateFrontend:
         logger.info( "*** Generating Typescript Angular frontend source code. ***" )
@@ -107,6 +130,12 @@ def version_2_StyleGeneration( config ):
                             for t in os.listdir( config.angular.templateFolder ) ],
                          angularConfig )
 
+    if config.options.GenerateHelpPages:
+        logger.info( "*** Generating Help pages. ***" )
+        generateHelpPages( config, [ os.path.abspath( os.path.join( config.HelpPages.templateFolder, t ) )
+                                     for t in os.listdir( config.HelpPages.templateFolder ) ],
+                           flaskConfig )
+
     if config.options.generateTests:
         logger.info( "*** Generating Unittest source code. ***" )
         generateUnittest( config,
@@ -114,5 +143,10 @@ def version_2_StyleGeneration( config ):
                             for t in os.listdir( config.unittest.templateFolder ) ],
                           flaskConfig )
 
+    if config.options.generateBackend or config.options.GenerateHelpPages or config.options.generateTests:
+        # Update the FLASK configuration
+        with open( flaskCfgFile, 'w' ) as stream:   # noqa
+            yaml.dump( stream, flaskConfig )
 
+    # As we are not making any modification to the Ansgular configuration its NOT saved.
     return

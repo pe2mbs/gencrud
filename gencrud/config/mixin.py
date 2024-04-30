@@ -32,7 +32,7 @@ class TemplateMixinComponent( TemplateBase ):
         return self.__config.get( C_CLASS, None ) is not None
 
     def hasFilename( self ):
-        return self.__config.get( C_FILENAME,  self.__config.get( C_FILE, None ) ) is not None
+        return self.__config.get( C_FILENAME, None ) is not None
 
     @property
     def cls( self ):
@@ -40,7 +40,7 @@ class TemplateMixinComponent( TemplateBase ):
 
     @property
     def filename( self ):
-        file = self.__config.get( C_FILENAME, self.__config.get( C_FILE, None ) )
+        file = self.__config.get( C_FILENAME, None )
         file, ext = posixpath.splitext( file )
         if ext == '.py':
             return file.replace( '\\', '.' ).replace( '/', '.' ) #.replace( '.py', '' )

@@ -24,6 +24,7 @@ from gencrud.util.exceptions import MissingAttribute
 class TemplateService( TemplateBase ):
     def __init__( self, parent=None, **cfg ):
         TemplateBase.__init__( self, parent )
+        self.__relativePath = None
         self.__config = cfg
         if C_NAME not in self.__config:
             raise MissingAttribute( C_SERVICE, C_NAME )
@@ -91,6 +92,7 @@ class TemplateService( TemplateBase ):
         # we will take that one
         if C_BASECLASS in self.__config:
             return self.__config.get( C_BASECLASS )
+
         return self.__config.get( C_CLASS, None )
 
     def hasBaseClass( self ):
@@ -109,7 +111,29 @@ class TemplateService( TemplateBase ):
         if C_PATH in self.__config:
             return self.__config[ C_PATH ]
 
-        return '../{}/service'.format( self.__config[ C_NAME ] )
+        if C_MODULE in self.__config:
+            return '{module}/{name}/service'.format( **self.__config )
+
+        return '{name}/service'.format( **self.__config )
+
+    @property
+    def RelativePath( self ) -> str:
+        if isinstance( self.__relativePath, str ):
+            return self.__relativePath
+
+        return self.path
+
+    @RelativePath.setter
+    def RelativePath( self, value: str ):
+        self.__relativePath = value
+        return
+
+    @property
+    def module( self ):
+        if C_MODULE in self.__config:
+            return self.__config[ C_MODULE ]
+
+        return ''
 
     def hasInitial( self ):
         return 'initial' in self.__config

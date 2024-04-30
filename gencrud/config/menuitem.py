@@ -19,6 +19,7 @@
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import MissingAttribute
+import json
 
 # Old names
 C_DISPLAY_NAME  = 'displayName'
@@ -91,5 +92,9 @@ class TemplateMenuItem( TemplateBase ):
     def access( self ):
         return self.__item.get( 'access', '*' )
 
-    def json( self ):
+    def json( self ) -> str:
         return json.dumps( self.__config, indent = 4 )
+
+    @property
+    def dictionary( self ):
+        return self.json().replace( "null", "None" )

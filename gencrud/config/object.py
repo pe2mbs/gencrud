@@ -16,9 +16,12 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
-from typing import List
+import typing as t
 import logging
+from inflection import camelize
+from gencrud.config.guard import TemplateGuard
 from gencrud.config.menuitem import TemplateMenuItem
+from gencrud.config.providers import TemplateProviders
 from gencrud.config.table import TemplateTable
 from gencrud.config.actions import TemplateActions
 from gencrud.config.extra import TemplateExtra
@@ -52,22 +55,50 @@ class TemplateObject( TemplateBase ):
         self.__table        = TemplateTable( self, **self.__config.get( C_TABLE, {} ) )
         self.__extra        = TemplateExtra( self, **self.__config.get( C_EXTRA, {} ) )
         self.__mixin        = TemplateMixin( self, **self.__config.get( C_MIXIN, {} ) )
+        self.__guard        = TemplateGuard( self, **self.__config.get( C_GUARD, {} ) ) if C_GUARD in self.__config else None
+        self.__providers    = TemplateProviders( self, self.__config.get( C_PROVIDERS, [] ) )
         return
+
+    def hasGuard( self ):
+        return isinstance( self.__guard, TemplateGuard )
+
+    @property
+    def Guard( self ):
+        return self.__guard
+
+    def hasProviders( self ) -> bool:
+        return self.__providers.hasProviders()
+
+    @property
+    def Providers( self ) -> TemplateProviders:
+        return self.__providers
 
     #
     #   Configuration properties
     #
     @property
     def title( self ) -> str:
-        return self.__config.get( C_TITLE, self.__config.get( C_CLASS, '<-Unknown->' ) )
+        return self.__config.get( C_TITLE, self.name.title() )
 
     @property
     def name( self ) -> str:
-        return self.__config.get( C_NAME, '' )
+        return self.__config[ C_NAME ]
 
     @property
     def module( self ) -> str:
         return self.__config.get( C_NAME, '' )
+
+    @property
+    def HelpTitle( self ) -> t.Union[ str, None ]:
+        return self.__config.get( C_HELP, {} ).get( C_TITLE )
+
+    @property
+    def HelpTable(self) -> str:
+        return self.__config.get( C_HELP, {} ).get( C_TABLE, '' )
+
+    @property
+    def HelpScreen(self) -> str:
+        return self.__config.get( C_HELP, {} ).get( C_SCREEN, '' )
 
     @property
     def modules( self ):
@@ -75,7 +106,11 @@ class TemplateObject( TemplateBase ):
 
     @property
     def cls( self ) -> str:
-        return self.__config.get( C_CLASS, '' )
+        return self.__config.get( C_CLASS, self.name.title() )
+
+    @property
+    def ViewName( self ):
+        return camelize( self.cls, False )
 
     @property
     def mixin( self ):
@@ -182,4 +217,4 @@ class TemplateObject( TemplateBase ):
         return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
 
 
-TemplateObjects = List[ TemplateObject ]
+TemplateObjects = t.List[ TemplateObject ]

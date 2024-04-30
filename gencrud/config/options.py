@@ -69,8 +69,34 @@ class TemplateOptions( TemplateBase ):
 
     @property
     def copySupport( self ):
-        return self.__config.get( 'copy-support-files', True )
+        return self.__config.get( C_COPY_SUPPORT_FILES, True )
 
     @property
     def useLocalTemplate( self ):
-        return self.__config.get( 'use-local-template', False )
+        return self.__config.get( C_USE_LOCAL_TEMPLATE, False )
+
+    @property
+    def UsePrettier( self ) -> bool:
+        return self.__config.get( C_USE_PRETTIER, False )
+
+    @property
+    def PrettierStyle( self ) -> str:
+        return self.__config.get( C_PRETTIER_STYLE, '.prettierrc.yaml' )
+
+    @property
+    def UseYapf( self ) -> bool:
+        return self.__config.get( C_USE_YAPF, False )
+
+    @property
+    def YapfStyle(self) -> str:
+        return self.__config.get( C_YAPF_STYLE, 'pep8' )
+
+    @property
+    def GenerateExtModels( self ) -> bool:
+        # This override/set commandline options from the template defintion.
+        return self.__config.get( C_GENERATE_EXT_MODELS, False )
+
+    @property
+    def GenerateHelpPages( self ) -> bool:
+        # This override/set commandline options from the template defintion.
+        return self.__config.get( C_GENERATE_HELP_PAGES, False )

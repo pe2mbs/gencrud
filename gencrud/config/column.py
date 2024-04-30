@@ -30,6 +30,7 @@ from gencrud.util.validators import Validator, ValidatorType
 import gencrud.util.utils as root
 from gencrud.util.exceptions import MissingAttribute
 from deprecated import deprecated
+import typing as t
 
 logger = logging.getLogger()
 
@@ -52,7 +53,26 @@ class TemplateColumn( TemplateBase ):
                           'DECIMAL': 'string',
                           'CLOB': 'string',
                           'TEXT': 'string' }
+    PYTHON_TYPES_FROM_SQL = { 'CHAR': 'str',
+         'VARCHAR': 'str',
+         'INT': 'int',
+         'BIGINT': 'int',
+         'BOOLEAN': 'bool',
+         'BOOL': 'bool',
+         'TIMESTAMP': 'datetime',
+         'DATETIME': 'datetime',
+         'DATE': 'date',
+         'FLOAT': 'float',
+         'REAL': 'float',
+         'INTERVAL': 'int',
+         'BLOB': 'bytes',
+         'NUMERIC': 'float',
+         'DECIMAL': 'float',
+         'CLOB': 'str',
+         'TEXT': 'str',
+         'TIME': 'time' }
 
+    # This is actually the alchemy type
     PY_TYPES_FROM_SQL = { 'CHAR': 'API.db.String',
                           'VARCHAR': 'API.db.String',
                           'INT': 'API.db.Integer',
@@ -120,6 +140,7 @@ class TemplateColumn( TemplateBase ):
         TemplateBase.__init__( self, parent )
         self.__tableName    = table_name
         self.__config       = cfg
+        self.__index        = 0
         self.__field        = ''
         self.__testdata     = None
         self.__sqlType      = ''
@@ -232,6 +253,15 @@ class TemplateColumn( TemplateBase ):
 
         return
 
+    @property
+    def index( self ) -> int:
+        return self.__index
+
+    @index.setter
+    def index( self, value: int ) -> None:
+        self.__index = value
+        return
+
     def hasAttribute( self,attr ):
         if attr in self.__attrs:
             return True
@@ -246,6 +276,16 @@ class TemplateColumn( TemplateBase ):
     @property
     def table( self ):
         return self.parent
+
+    @property
+    def Help( self ):
+        return self.__config.get( C_HELP )
+
+    def hasHelp( self ) -> bool:
+        return C_HELP in self.__config
+
+    def hasView( self ) -> bool:
+        return C_LABEL in self.__config
 
     @property
     def object( self ):
@@ -296,7 +336,10 @@ class TemplateColumn( TemplateBase ):
     @property
     def listview( self ):
         return self.__listview
-    
+
+    def hasListView( self ):
+        return self.__listview.has()
+
     @property
     def testdata( self ):
         return self.__testdata
@@ -492,6 +535,27 @@ class TemplateColumn( TemplateBase ):
     def isString( self ):
         return self.TS_TYPES_FROM_SQL[ self.__sqlType ] == 'string'
 
+    @property
+    def pyType( self ) -> str:
+        return self.PYTHON_TYPES_FROM_SQL[ self.__sqlType ]
+
+    @property
+    def pyNullValue( self ) -> t.Any:
+        result = self.PYTHON_TYPES_FROM_SQL[ self.__sqlType ]
+        if result == 'str':
+            return ''
+
+        elif result == 'int':
+            return 0
+
+        elif result == 'float':
+            return 0.0
+
+        elif result == 'bool':
+            return False
+
+        return None
+
     def sqlAttrs2Dict( self ):
         options = { 'autoincrement': False,
                     'primary_key': False,
@@ -543,6 +607,25 @@ class TemplateColumn( TemplateBase ):
                 logger.error( 'Extra unknown attributes found: {0}'.format( attr ) )
 
         return options
+
+    def sqlAlchemyMapped( self ) -> str:
+        result = f'mapped_column( "{self.__dbField}"'
+        for attr in self.__attrs:
+            if 'AUTO NUMBER' in attr:
+                result += ', autoincrement = True'
+
+            elif 'PRIMARY KEY' in attr:
+                result += ', primary_key = True'
+
+            elif attr.startswith( 'FOREIGN KEY' ):
+                foreignKeyName = attr.split( ' ' )[ 2 ].lower() if root.config.options.ignoreCaseDbIds else attr.split( ' ' )[ 2 ]
+                if 'NULL' in self.__attrs and 'NOT NULL' not in self.__attrs:
+                    # TODO: maybe better to set to default if it is specified
+                    result += ', ForeignKey( "{0}", ondelete = "SET NULL" )'.format( foreignKeyName )
+                else:
+                    result += ', ForeignKey( "{0}", ondelete = "CASCADE" )'.format( foreignKeyName )
+
+        return result + " )"
 
     def sqlAlchemyDef( self ) -> str:
         """
@@ -699,7 +782,7 @@ class TemplateColumn( TemplateBase ):
 
         return result
 
-    def angularUiInput( self, mixin="" ):
+    def angularUiInput( self, mixin: t.Optional[ str ] = "", tab = False ):
         if self.__ui is None:
             raise Exception( "Missing 'ui' group for column {} on table {}".format( self.__field,
                                                                                     self.__tableName ) )
@@ -710,6 +793,7 @@ class TemplateColumn( TemplateBase ):
                                             self.name,
                                             self.__config.get( C_LABEL, '' ),
                                             mixin = mixin,
+                                            tab = tab,
                                             validators=self.validatorsList )
 
     @property
@@ -722,6 +806,12 @@ class TemplateColumn( TemplateBase ):
             return self.ui.group
 
         return None
+
+    def hasGroup( self ) -> bool:
+        if self.ui is not None:
+            return self.ui.hasGroup()
+
+        return False
 
     @property
     def disabled( self ) -> bool:

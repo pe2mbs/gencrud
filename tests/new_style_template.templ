@@ -1,0 +1,38 @@
+generate frontend yes, backend no, unittest no
+interface backend webapp2/service, frontend wa_admin
+table ACCESS
+class Access
+title Access rights
+uri /api/wa-admin/access
+route /wa-admin/access
+menu Administration before Info
+action new screen header add class params id 0, mode 'add'
+action edit screen header add class params id 'A_ID', mode 'edit', value A_ID
+action delete function cell delete deleteRecord( i, row, 'A_NAME' )
+field A_ID {
+    type            int
+    sqltype         INTEGER
+    auto number     yes
+    primary key     yes
+}
+field A_NAME
+{
+    type            str
+    secondary key   yes
+    sqltype         CHAR
+    length          50
+    null allowed    no
+    label           Name
+    component       textbox
+    listview 0, 60%, filter yes, sort yes
+}
+field A_R_ID
+{
+    type            integer
+    foreign key     role.r_id
+    label           Role
+    component       choice {
+        service roles Role R_ID R_NAME
+        action edit edit right
+    }
+}
