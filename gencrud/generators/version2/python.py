@@ -234,4 +234,20 @@ def generatePython( config: TemplateConfiguration, templates: t.List[ str ], fla
 
             reformatPythonCode( filename, config )
 
+        # Now check if there are any mixin's missing
+        if cfg.mixin.python.hasModel():
+            filename = os.path.abspath(os.path.join(moduleFolder, cfg.name, cfg.mixin.python.Model.actualFilename ))
+            if not os.path.exists( filename ):
+                logger.warning( f'Missing python model mixin: { filename }' )
+
+        if cfg.mixin.python.hasSchema():
+            filename = os.path.abspath(os.path.join(moduleFolder, cfg.name, cfg.mixin.python.Schema.actualFilename ))
+            if not os.path.exists( filename ):
+                logger.warning( f'Missing python schema mixin: { filename }' )
+
+        if cfg.mixin.python.hasView():
+            filename = os.path.abspath( os.path.join( moduleFolder, cfg.name, cfg.mixin.python.View.actualFilename ) )
+            if not os.path.exists( filename ):
+                logger.warning( f'Missing python view mixin: { filename }' )
+
     return

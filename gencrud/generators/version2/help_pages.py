@@ -210,7 +210,6 @@ def generateHelpPages( config: TemplateConfiguration, templates: t.List[ str ], 
 
             templ = Template( filename = template )
             data = templ.render( help = help_obj )
-
             if config.hasInterface():
                 targetFolder = os.path.join( config.HelpPages.sourceFolder, config.Interface.Backend.Module, obj.name )
 

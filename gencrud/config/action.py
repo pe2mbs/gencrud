@@ -170,7 +170,10 @@ class TemplateAction( TemplateBase ):
         if len( params ) > 0:
             items = {}
             for key, value in params.items():
-                items[ key ] = value
+                if key in ( C_IDENTIFICATION, 'mode' ):
+                    items[key] = f'"{value}"'
+                else:
+                    items[ key ] = value
 
             return '{{ queryParams: {} }}'.format( items )
 
@@ -232,12 +235,20 @@ class TemplateAction( TemplateBase ):
 
         return route
 
+    @staticmethod
+    def translateParameters( key, value ):
+        if key in ( 'id', 'mode' ):
+            if not value.startswith( ( '"', "'" ) ):
+                value = f'"{value}"'
+
+        return key, value
+
     def routingParams( self ) -> str:
         params = {}
         if self.isAngularRoute():
             params = self.route.params()
 
-        return "{" + ", ".join( ['%s: %s' % (key, value) for (key, value) in params.items()] ) + "}"
+        return "{" + ", ".join( ['%s: %s' % self.translateParameters( key, value ) for (key, value) in params.items()] ) + "}"
 
     def buttonObject( self ) -> str:
         tooltip = ''
@@ -325,9 +336,10 @@ class TemplateAction( TemplateBase ):
             self.__name, self.name, self.label, self.type, self.icon, self.position, self.function, self.route
         )
 
+
     def screenObject( self ):
         if self.__cfg.get( 'directive', None ) is not None:
-            params = " ".join( [ keyValueToHTML(par, val) for par, val in self.__cfg.get( 'params', {} ).items() ] )
+            params = " ".join( [ keyValueToHTML( par, val ) for par, val in self.__cfg.get( 'params', {} ).items() ] )
             params += ' [disabled]="{}"'.format( self.disabled )
             # define properties without binding to components attributes
             unbindedProps = [("name", "name"), ("tooltip", "label")]

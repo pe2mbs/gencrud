@@ -44,6 +44,9 @@ class FilterInfo( TemplateBase ):
     def __repr__(self):
         return "<FilterInfo >"
 
+    def filterTypeScript( self ):
+        return f'{{ column: "{self.__column}", operator: "{self.__operator}", value: {self.__value} }}'
+
 
 class FilterInfoList( TemplateBase ):
     def __init__( self, data ):
@@ -60,10 +63,17 @@ class FilterInfoList( TemplateBase ):
     def __len__( self ):
         return len( self.__filters )
 
-    def __getitem__(self, item):
-        return self.__filters[item]
+    def __getitem__( self, item ):
+        return self.__filters[ item ]
+
+    def filterTypeScript( self ):
+        lines = []
+        for filter in self.__filters:
+            lines.append( filter.filterTypeScript() )
+
+        return "[ " + ( ", ".join( lines ) ) + " ]"
 
     def toTypeScript( self ):
-        return TypeScript().build( self.__data ) 
+        return TypeScript().build( self.__data )
 
 

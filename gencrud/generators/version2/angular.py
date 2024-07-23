@@ -123,6 +123,20 @@ def getRelativePath( src, dst ):
     return posixpath.relpath( src, dst )
 
 
+class ProviderList( list ):
+    def __init__( self ):
+        super().__init__()
+        return
+
+    def append( self, obj ):
+        for duplicate in self:
+            if obj[0] == duplicate[0]:
+                # All ready in the provider list
+                return
+
+        return super().append( obj )
+
+
 def generateAngularRouting( config: TemplateConfiguration ):
     for obj in config.objects:
         declarations = [ ( f"{ obj.cls }TableComponent", './table.component' ) ]
@@ -144,7 +158,7 @@ def generateAngularRouting( config: TemplateConfiguration ):
 
                 actionRoute = Route()
                 # Setup the specific route for the action
-                actionRoute.setComponent( action.name, action.route.cls, f'./screen.component' )
+                actionRoute.setComponent( action.name, action.route.Class, f'./screen.component' )
                 if obj.hasGuard():
                     actionRoute.addCanActivate( obj.Guard.Class, posixpath.relpath( obj.Guard.Filename, moduleFolder ) )
 
@@ -154,83 +168,77 @@ def generateAngularRouting( config: TemplateConfiguration ):
                 if f"{obj.cls}DialogComponent" not in [item[0] for item in entryComponents]:
                     entryComponents.append( ( f"{obj.cls}DialogComponent", './dialog.component' ) )
 
-        # Remove if route file it exists, the module routing we just rebuild every time
-        filename = makePosixPath( config.angular.sourceFolder, moduleFolder, f"{obj.name}-routing.module.ts" )
-        if os.path.exists( filename ):
-            os.remove( filename )
+        # # Remove if route file it exists, the module routing we just rebuild every time
+        # filename = makePosixPath( config.angular.sourceFolder, moduleFolder, f"{obj.name}-routing.module.ts" )
+        # if os.path.exists( filename ):
+        #     os.remove( filename )
+        #
+        # # Build a new routing module
+        # # Get the relative path of the root project for the current output file
+        # relative = getRelativePath( makePosixPath( config.angular.sourceFolder ), filename )
+        # routingModule( filename, obj.cls, moduleRoutes, relative,
+        #                default_routing_ts = os.path.join( config.angular.templateFolder,
+        #                                                   config.Interface.Frontend.Templates.get( 'route' ) ),
+        #                service = f"{config.Interface.Backend.Path}/{obj.name}",
+        #                overwrite = True )
+        #
+        # filename = makePosixPath( config.angular.sourceFolder, moduleFolder, f"module.ts" )
+        # if os.path.exists(filename):
+        #     os.remove( filename )
+        #
+        # module = posixpath.split(obj.route)[-1]
+        # providers = ProviderList()
+        # providers.append( ( f"{obj.cls}DataService", f'./service' ) )
+        # # find all services used, as we need to attach in the 'providers' section of the module.ts
+        # for column in obj.table.columns:
+        #     column: TemplateColumn
+        #     if column.hasService():
+        #         service: TemplateService = column.ui.service
+        #         relativeFilename = getRelativePath( makePosixPath( config.angular.sourceFolder, service.path ),
+        #                                             makePosixPath( config.angular.sourceFolder, moduleFolder ) )
+        #         service.RelativePath = relativeFilename
+        #         providers.append( ( service.cls, relativeFilename.replace( '.ts', '' ) ) )
+        #
+        # if obj.hasProviders():
+        #     for provider in obj.Providers:
+        #         providers.append( ( provider.Class, provider.Filename.replace( '.ts', '' ) ) )
+        #
+        # imports = [
+        #     ( f'{obj.cls}RoutingModule', f'./{obj.name}-routing.module' )
+        # ]
+        # for import_module in obj.modules:
+        #     import_module: AngularModule
+        #     # TODO: This need to be a relative path to be resolved
+        #     moduleFilename = os.path.join( config.angular.sourceFolder, import_module.path )
+        #     relative = getRootRelativePath( config, moduleFilename )
+        #     _, localDir = moduleFilename.rsplit( '/', 1 )
+        #     imports.append( ( import_module.cls, posixpath.join( relative, localDir, 'module' ) ) )
+        #
+        # if obj.injection.hasModuleTs():
+        #     for inject in obj.injection.moduleTs:
+        #         declarations.append( ( inject.cls, inject.file ) )
+        #
+        # objects = {
+        #     "imports":          imports,
+        #     "declarations":     declarations,
+        #     "entryComponents":  entryComponents,
+        #     "providers":        providers
+        # }
+        # # Get the relative path of the root project for the current output file
+        # relative = getRelativePath(makePosixPath(config.angular.sourceFolder), filename)
+        # subModule(  filename, obj.cls, objects, relative,
+        #             default_module_ts = os.path.join( config.angular.templateFolder,
+        #                                               config.Interface.Frontend.Templates.get('module') ),
+        #             service = f"{config.Interface.Backend.Path}/{obj.name}",
+        #             overwrite = True )
+        # # Set up the segmented lazy loaded module, this routing shall be modified
 
-        # Build a new routing module
-        # Get the relative path of the root project for the current output file
-        relative = getRelativePath( makePosixPath( config.angular.sourceFolder ), filename )
-        routingModule( filename, obj.cls, moduleRoutes, relative,
-                       default_routing_ts = os.path.join( config.angular.templateFolder,
-                                                          config.Interface.Frontend.Templates.get( 'route' ) ),
-                       service = f"{config.Interface.Backend.Path}/{obj.name}",
-                       overwrite = True )
-
-        filename = makePosixPath( config.angular.sourceFolder, moduleFolder, f"module.ts" )
-        if os.path.exists(filename):
-            os.remove( filename )
-
-        module = posixpath.split(obj.route)[-1]
-        providers = [
-            (f"{obj.cls}DataService", f'./service'),
-        ]
-        # find all services used, as we need to attach in the 'providers' section of the module.ts
-        for column in obj.table.columns:
-            column: TemplateColumn
-            if column.hasService():
-                service: TemplateService = column.ui.service
-                relativeFilename = getRelativePath( makePosixPath( config.angular.sourceFolder, service.path ),
-                                                    makePosixPath( config.angular.sourceFolder, moduleFolder ) )
-                service.RelativePath = relativeFilename
-                found = False
-                for provider in providers:
-                    if provider[0] == service.cls:
-                        found = True
-                        break
-
-                if not found:
-                    providers.append( ( service.cls, relativeFilename.replace( '.ts', '' ) ) )
-
-        if obj.hasProviders():
-            for provider in obj.Providers:
-                providers.append( ( provider.Class, provider.Filename.replace( '.ts', '' ) ) )
-
-        imports = [
-            ( f'{obj.cls}RoutingModule', f'./{obj.name}-routing.module' )
-        ]
-        for import_module in obj.modules:
-            import_module: AngularModule
-            # TODO: This need to be a relative path to be resolved
-            moduleFilename = os.path.join( config.angular.sourceFolder, import_module.path )
-            relative = getRootRelativePath( config, moduleFilename )
-            _, localDir = moduleFilename.rsplit( '/', 1 )
-            imports.append( ( import_module.cls, posixpath.join( relative, localDir, 'module' ) ) )
-
-        if obj.injection.hasModuleTs():
-            for inject in obj.injection.moduleTs:
-                declarations.append( ( inject.cls, inject.file ) )
-
-        objects = {
-            "imports":          imports,
-            "declarations":     declarations,
-            "entryComponents":  entryComponents,
-            "providers":        providers
-        }
-        # Get the relative path of the root project for the current output file
-        relative = getRelativePath(makePosixPath(config.angular.sourceFolder), filename)
-        subModule(  filename, obj.cls, objects, relative,
-                    default_module_ts = os.path.join( config.angular.templateFolder,
-                                                      config.Interface.Frontend.Templates.get('module') ),
-                    service = f"{config.Interface.Backend.Path}/{obj.name}",
-                    overwrite = True )
-        # Set up the segmented lazy loaded module, this routing shall be modified
         moduleFolder = makePosixPath( config.Interface.Frontend.Path )
+        className = makeAngularClassName(config.Interface.Frontend.Path)
+
         moduleRoute = Route()
         guard = None
         # Write the pre-module package (routing & module)
-        className = makeAngularClassName( config.Interface.Frontend.Path )
         moduleRoute.setLazyLoadedModule( obj.name, f'./{obj.name}/module', obj.cls )
         filename = makePosixPath( config.angular.sourceFolder, moduleFolder, f'{config.Interface.Frontend.Path}-routing.module.ts')
         relative = getRelativePath( makePosixPath( config.angular.sourceFolder ), filename )
@@ -259,13 +267,6 @@ def generateAngularRouting( config: TemplateConfiguration ):
 
         # The last part to add/update the app-routing.module
         moduleRoute = Route()
-        if obj.hasGuard():
-            relative = '.'
-            guard = ( obj.Guard.Class, posixpath.join( relative, obj.Guard.Filename ) )
-
-        if isinstance( guard, tuple ):
-            moduleRoute.addCanActivate( *guard )
-
         # Set up the lazy loaded in the app routing, this routing shall be modified
         module = config.Interface.Frontend.Path
         moduleClass = makeAngularClassName( module )
@@ -287,7 +288,10 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
         if os.path.isdir( moduleFolder ) and not config.options.overWriteFiles:
             raise gencrud.util.exceptions.ModuleExistsAlready( cfg, moduleFolder )
 
-        logger.info( f'module      : {config.Interface.Frontend.Path}/{cfg.name}')
+        if not os.path.exists( moduleFolder ):
+            os.makedirs( moduleFolder )
+
+        logger.info( f'module      : {moduleFolder}')
         logger.info( f'name        : {cfg.name}')
         logger.info( f'class       : {cfg.cls}')
         logger.info( f'table       : {cfg.table.name}')
@@ -353,8 +357,8 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
 
 
                 except Exception:
-                    logger.error( f"Mako exception on {template}:" )
-                    logger.error( text_error_template().render_unicode().encode('ascii') )
+                    logger.error( f"Mako exception on { template }:" )
+                    logger.error( text_error_template().render_unicode() )
                     logger.error( "Mako done" )
                     raise
 
@@ -372,6 +376,23 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
                         logger.info( line.decode('utf-8') )
 
                     result.wait()
+
+        logger.debug( f"Module {cfg.name} folder: {moduleFolder}" )
+        # Now check if there are any mixin's missing
+        if cfg.mixin.angular.hasTableComponent():
+            filename = os.path.join( moduleFolder, cfg.mixin.angular.TableComponent.actualFilename )
+            if not os.path.exists( filename ):
+                logger.warning( f'Missing angular table mixin: { filename }' )
+
+        if cfg.mixin.angular.hasScreenComponent():
+            filename = os.path.join(moduleFolder, cfg.mixin.angular.ScreenComponent.actualFilename )
+            if not os.path.exists( filename ):
+                logger.warning( f'Missing angular component mixin: { filename }' )
+
+        if cfg.mixin.angular.hasComponentDialog():
+            filename = os.path.join(moduleFolder, cfg.mixin.angular.ComponentDialog.actualFilename )
+            if not os.path.exists( filename ):
+                logger.warning( f'Missing angular dialog mixin: { filename }' )
 
     return
 

@@ -308,6 +308,8 @@ properties:
                                             type: string
                 route: 
                     type: string
+                ignore-route:
+                    type: boolean
                 actions:
                     type: array
                     items:
@@ -328,7 +330,7 @@ properties:
                                 -   dialog
                                 -   api
                                 -   function
-                                -   directive
+                                -   button
                                 -   none
                             icon:     
                                 type: string
@@ -348,6 +350,10 @@ properties:
                             function: 
                                 type: string
                             directive: 
+                                type: string
+                            class:
+                                type: string
+                            file:
                                 type: string
                             index:    
                                 type: integer
@@ -534,8 +540,8 @@ properties:
                                         required: 
                                         -   label
                                         -   component
-                                        -   name
-                                        -   file
+                                        # -   name
+                                        # -   file
                                         -   params
                                         additionalProperties: false
                                         properties:

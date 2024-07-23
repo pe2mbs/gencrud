@@ -51,6 +51,10 @@ class RouteTemplate( TemplateBase ):
         return klasse
 
     @property
+    def Class(self):
+        return self.cls
+
+    @property
     def module( self ):
         return self.__config.get( C_MODULE, self.get_default( 'module' ) )
 
@@ -66,7 +70,11 @@ class RouteTemplate( TemplateBase ):
         if len( params ) > 0:
             items = {}
             for key, value in params.items():
-                items[ key ] = value
+                if key in (C_IDENTIFICATION, 'mode'):
+                    items[key] = f'"{value}"'
+
+                else:
+                    items[key] = value
 
             return '{{ queryParams: {} }}'.format( TypeScript().build( items ) ) if outerObject else \
                 '{}'.format( TypeScript().build( items ) )

@@ -53,7 +53,10 @@ class TemplateMixinComponent( TemplateBase ):
 
         return '?'
 
-
+    @property
+    def actualFilename( self ):
+        file = self.__config.get( C_FILENAME, None )
+        return file
 
 class TemplateMixinPython( TemplateBase ):
     def __init__( self, parent, mixin ):

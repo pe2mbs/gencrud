@@ -94,6 +94,10 @@ class TemplateComponentTab( TemplateBase ):
         return self.__cfg.get( C_CLASS, '' )
 
     @property
+    def Class(self) -> str:
+        return self.__cfg.get( C_CLASS, '' )
+
+    @property
     def Id(self) -> str:
         return self.__cfg.get( C_PARAMS, {} ).get( C_IDENTIFICATION, None )
 
@@ -199,10 +203,12 @@ class TemplateTabs( TemplateBase ):
 
     def params( self, label, mode = None ):
         result = ''
+        # print( f'label: {label}' )
+        # print( f"self.__params: {self.__params}" )
         for key, value in self.__params[ label ].items():
             value = str(self.variable2typescript( value )).replace("'", "").replace("\"", "") if \
                 "[" not in str(value) else str(self.variable2typescript( value )) 
-            if key in ( 'value', 'displayedColumns' ):
+            if key in ( 'value', 'displayedColumns', 'caption' ):
                 result += '[{}]="{}" '.format( key, value )
 
             else:

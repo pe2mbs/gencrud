@@ -137,6 +137,13 @@ class TemplateActions( TemplateBase ):
 
         return result
 
+    def getRowEditLink( self ):
+        for action in self.__actions:
+            if action.position in ( C_ROW, C_CELL ) and action.name == C_EDIT:
+                return action
+
+        return ''
+
     def isRowActionFunction( self ):
         for action in self.__actions:
             if action.position == C_ROW and action.type != C_NONE:
@@ -202,8 +209,13 @@ class TemplateActions( TemplateBase ):
         return False
 
     def getScreenActions( self ):
-        return sorted( [ action for action in self.__actions if action.type in [C_SCREEN, C_API] and action.position == 'sidebar' ],
+        return sorted( [ action for action in self.__actions if action.type in [C_SCREEN, C_API, C_BUTTON] and action.position == C_SIDEBAR ],
                        key = lambda k: k.get( 'index', 0 ) )
+
+    def getSidebarActions( self ):
+        result =[ action for action in self.__actions if action.type in [C_SCREEN, C_API, C_BUTTON] and action.position == C_SIDEBAR ]
+
+        return sorted( result, key=lambda k: k.get('index', 0))
 
     @property
     def module( self ):

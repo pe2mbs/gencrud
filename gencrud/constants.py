@@ -102,6 +102,7 @@ C_DIALOG                = 'dialog'
 C_COMPONENTS            = 'components'
 C_SERVICES              = 'services'
 C_SCREEN                = 'screen'
+C_BUTTON                = 'button'
 C_LIST                  = 'list'
 C_API                   = 'api'
 C_DIRECTIVE             = 'directive'
@@ -120,7 +121,7 @@ C_LEFT                  = 'left'
 C_RIGHT                 = 'right'
 C_SIDEBAR               = 'sidebar'
 
-C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_DIRECTIVE, C_FUNCTION, C_NONE )
+C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_DIRECTIVE, C_FUNCTION, C_BUTTON, C_NONE )
 C_ACTION_POSITIONS      = ( C_CELL, C_HEADER, C_FOOTER, C_ROW, C_NONE, C_SCREEN, C_LEFT, C_RIGHT, C_SIDEBAR )
 C_ACTION_ATTRIBUTES     = ( C_FUNCTION,
                             C_NAME,

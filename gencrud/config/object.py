@@ -135,6 +135,10 @@ class TemplateObject( TemplateBase ):
         return route
 
     @property
+    def IgnoreRoute( self ) -> bool:
+        return self.__config.get( 'ignore-route', False )
+
+    @property
     def actions( self ) -> TemplateActions:
         return self.__actions
 
@@ -165,9 +169,9 @@ class TemplateObject( TemplateBase ):
         return InjectionTemplate( self, self.__config.get( C_INJECTION, {} ) )
 
     def ignoreTemplates( self, templateFilename: str ):
-        if templateFilename.endswith( 'module.ts.templ' ):
-            logger.info( "Ignore template {} ".format( templateFilename ) )
-            return True
+        # if templateFilename.endswith( 'module.ts.templ' ):
+        #     logger.info( "Ignore template {} ".format( templateFilename ) )
+        #     return True
 
         for item in self.__config.get( 'ignore_templates', [] ):
             if not item.strip().endswith( '.templ' ):

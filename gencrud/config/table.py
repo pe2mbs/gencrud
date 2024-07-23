@@ -316,6 +316,7 @@ class TemplateTable( TemplateBase ):
 
         return False
 
+    # This needs to be removed, as this is now solved in the crud.py module of webapp2
     @property
     def relationShips( self ):
         return [ RelationShip( self, rs ) for rs in self.__table.get( C_RELATION_SHIP, [] ) ]

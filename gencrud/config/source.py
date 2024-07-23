@@ -43,6 +43,10 @@ class TemplateSource( TemplateBase ):
         self.__template = self.__config.get( platf, self.__config ).get( C_TEMPLATES, {} )
         return
 
+    @property
+    def Type(self) -> str:
+        return self.__key
+
     def set( self, key, value ):
         self.__config[ key ] = value
         return
@@ -89,10 +93,10 @@ class TemplateSource( TemplateBase ):
         if not folder.startswith( os.path.pathsep ):
             # not absolute path
             # first test with baseFolder
-            if os.path.isdir( os.path.join( self.sourceBaseFolder, folder ) ):
-                folder = os.path.join( self.sourceBaseFolder, folder )
+            folder = os.path.abspath( os.path.join( self.sourceBaseFolder, folder ) )
+            if not os.path.isdir( folder ):
+                os.makedirs( folder )
 
-            folder = os.path.abspath( folder )
 
         if not os.path.isdir( folder ):
             raise MissingSourceFolder( folder )
