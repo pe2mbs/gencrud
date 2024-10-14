@@ -30,7 +30,7 @@ import gencrud.util.utils
 import gencrud.installer
 from gencrud.configuraton import TemplateConfiguration
 from gencrud.version import __version__, __author__, __email__, __copyright__
-from gencrud.util.exceptions import ModuleExistsAlready, InvalidSetting
+from gencrud.util.exceptions import ModuleExistsAlready, InvalidSetting, MissingTemplateAttribute
 from gencrud.generators.version_1 import version_1_StyleGeneration
 from gencrud.generators.version_2 import version_2_StyleGeneration
 from gencrud.constants import *
@@ -330,6 +330,8 @@ def main():
                     initializeCodeGenerationProcess( arg )
 
         print( "Done" )
+    except MissingTemplateAttribute as exc:
+        print( exc )
 
     except ModuleExistsAlready as exc:
         logger.error( 'Module already exists: {}'.format( str( exc ) ) )

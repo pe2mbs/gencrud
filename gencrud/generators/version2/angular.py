@@ -1,4 +1,5 @@
 import os.path
+import shutil
 import typing as t
 import logging
 import subprocess
@@ -7,10 +8,11 @@ from shutil import which
 from datetime import datetime
 from mako.template import Template
 from mako.exceptions import text_error_template
-from gencrud.config.angular import AngularModule
-from gencrud.config.column import TemplateColumn
-from gencrud.config.object import TemplateObject
-from gencrud.config.service import TemplateService
+from gencrud.util.exceptions import ModuleExistsAlready, MissingTemplateAttribute
+# from gencrud.config.angular import AngularModule
+# from gencrud.config.column import TemplateColumn
+# from gencrud.config.object import TemplateObject
+# from gencrud.config.service import TemplateService
 from gencrud.configuraton import TemplateConfiguration
 from gencrud.generators.servicelist import ServicesList, buildServiceLists
 from gencrud.generators.version2.boilerplate import BOILERPLATE
@@ -18,7 +20,6 @@ from gencrud.generators.version2.angular_classes.route import Route, ROUTE_MODUL
 from gencrud.constants import *
 import gencrud.version
 import gencrud.util.utils
-import gencrud.util.exceptions
 
 
 logger = logging.getLogger( 'gengrud.generate.angular' )
@@ -158,6 +159,9 @@ def generateAngularRouting( config: TemplateConfiguration ):
 
                 actionRoute = Route()
                 # Setup the specific route for the action
+                if action.route is None:
+                    raise MissingTemplateAttribute(f"action.route.class is missing for {action.name} ")
+
                 actionRoute.setComponent( action.name, action.route.Class, f'./screen.component' )
                 if obj.hasGuard():
                     actionRoute.addCanActivate( obj.Guard.Class, posixpath.relpath( obj.Guard.Filename, moduleFolder ) )
@@ -239,7 +243,8 @@ def generateAngularRouting( config: TemplateConfiguration ):
         moduleRoute = Route()
         guard = None
         # Write the pre-module package (routing & module)
-        moduleRoute.setLazyLoadedModule( obj.name, f'./{obj.name}/module', obj.cls )
+        _, path = obj.route.rsplit( '/', 1 )
+        moduleRoute.setLazyLoadedModule( path, f'./{obj.name}/module', obj.cls )
         filename = makePosixPath( config.angular.sourceFolder, moduleFolder, f'{config.Interface.Frontend.Path}-routing.module.ts')
         relative = getRelativePath( makePosixPath( config.angular.sourceFolder ), filename )
         if obj.hasGuard():
@@ -315,12 +320,12 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
                 continue
 
             logger.info('template    : {0}'.format(template))
-            if config.options.backupFiles:
-                gencrud.util.utils.backupFile(sourceFilename)
-
-            if os.path.isfile(sourceFilename):
-                # First remove the old file
-                os.remove(sourceFilename)
+            # if config.options.backupFiles:
+            #     gencrud.util.utils.backupFile(sourceFilename)
+            #
+            # if os.path.isfile(sourceFilename):
+            #     # First remove the old file
+            #     os.remove(sourceFilename)
 
             logger.debug('Action new  : {0}'.format(cfg.actions.get(C_NEW).type))
             logger.debug('Action edit : {0}'.format(cfg.actions.get(C_EDIT).type))
@@ -343,7 +348,9 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
                     continue
 
             relative = getRelativePath( makePosixPath( config.angular.sourceFolder ), sourceFilename )
-            with open( sourceFilename, gencrud.util.utils.C_FILEMODE_WRITE + 'b' ) as stream:
+            filename, fileext = os.path.splitext(sourceFilename)
+            sourceFilenameTmp = f"{filename}.new{fileext}"
+            with open( sourceFilenameTmp, gencrud.util.utils.C_FILEMODE_WRITE + 'b' ) as stream:
                 try:
                     templateData = Template( filename = os.path.abspath( template ) ).render( obj= cfg,
                                                                      root = config,
@@ -354,7 +361,6 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
                                                                      allServices = fullServiceList,
                                                                      date = generationDateTime)
                     stream.write( templateData.encode('utf-8') )
-
 
                 except Exception:
                     logger.error( f"Mako exception on { template }:" )
@@ -368,7 +374,7 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
                 if isinstance( prettier, str ) and os.path.exists( os.path.join( config.python.sourceFolder, '.prettierrc.yaml' ) ):
                     # Prettier installed,
                     logger.info( f"Using {prettier} to format the code {os.path.basename( sourceFilename )}" )
-                    result = subprocess.Popen( ( prettier, '--write', sourceFilename ),
+                    result = subprocess.Popen( ( prettier, '--write', sourceFilenameTmp ),
                                                shell = True,
                                                stdout = subprocess.PIPE,
                                                stderr = subprocess.STDOUT )
@@ -377,22 +383,63 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
 
                     result.wait()
 
+            if sourceFilename.lower().endswith('.ts'):
+                if not gencrud.util.utils.compareAngularFile(sourceFilenameTmp, sourceFilename):
+                    if os.path.exists( sourceFilename ):
+                        os.remove(sourceFilename)
+
+                    shutil.copy( sourceFilenameTmp, sourceFilename )
+
+            elif sourceFilename.lower().endswith('.html'):
+                if not gencrud.util.utils.compareHtmlFile(sourceFilenameTmp, sourceFilename):
+                    if os.path.exists( sourceFilename ):
+                        os.remove(sourceFilename)
+
+                    shutil.copy(sourceFilenameTmp, sourceFilename)
+
+            else:
+                if os.path.exists(sourceFilename):
+                    os.remove(sourceFilename)
+
+                shutil.copy(sourceFilenameTmp, sourceFilename)
+
+            os.remove(sourceFilenameTmp)
+
         logger.debug( f"Module {cfg.name} folder: {moduleFolder}" )
         # Now check if there are any mixin's missing
         if cfg.mixin.angular.hasTableComponent():
-            filename = os.path.join( moduleFolder, cfg.mixin.angular.TableComponent.actualFilename )
+            filename = os.path.abspath( os.path.join( moduleFolder, cfg.mixin.angular.TableComponent.actualFilename ) )
             if not os.path.exists( filename ):
                 logger.warning( f'Missing angular table mixin: { filename }' )
 
         if cfg.mixin.angular.hasScreenComponent():
-            filename = os.path.join(moduleFolder, cfg.mixin.angular.ScreenComponent.actualFilename )
+            filename = os.path.abspath( os.path.join(moduleFolder, cfg.mixin.angular.ScreenComponent.actualFilename ) )
             if not os.path.exists( filename ):
                 logger.warning( f'Missing angular component mixin: { filename }' )
 
         if cfg.mixin.angular.hasComponentDialog():
-            filename = os.path.join(moduleFolder, cfg.mixin.angular.ComponentDialog.actualFilename )
+            filename = os.path.abspath( os.path.join(moduleFolder, cfg.mixin.angular.ComponentDialog.actualFilename ) )
             if not os.path.exists( filename ):
                 logger.warning( f'Missing angular dialog mixin: { filename }' )
+
+        if len( cfg.Declare.Module ) > 0:
+            for declare in cfg.Declare.Module:
+                filename = os.path.abspath( os.path.join(moduleFolder, declare.actualFilename) )
+                if not os.path.exists( filename ):
+                    logger.warning( f'Missing angular module: { filename } for component { declare.cls }' )
+
+        if len( cfg.Declare.Component ) > 0:
+            for declare in cfg.Declare.Component:
+                filename = os.path.abspath( os.path.join(moduleFolder, declare.actualFilename) )
+                if not os.path.exists( filename ):
+                    logger.warning( f'Missing angular declaration: { filename } for component { declare.cls }' )
+
+        if len( cfg.Declare.Service ) > 0:
+            for declare in cfg.Declare.Service:
+                filename = os.path.abspath( os.path.join(moduleFolder, declare.actualFilename) )
+                if not os.path.exists( filename ):
+                    logger.warning( f'Missing angular service: { filename } for component { declare.cls }' )
+
 
     return
 

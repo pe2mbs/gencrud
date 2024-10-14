@@ -24,17 +24,52 @@ from gencrud.config.menuitem import TemplateMenuItem
 from gencrud.config.providers import TemplateProviders
 from gencrud.config.table import TemplateTable
 from gencrud.config.actions import TemplateActions
-from gencrud.config.extra import TemplateExtra
+from gencrud.config.extra import TemplateExtra, TemplateComponent
 from gencrud.constants import *
 from gencrud.config.base import TemplateBase
 from gencrud.util.exceptions import MissingAttribute
 from gencrud.config.mixin import TemplateMixin
 from gencrud.config.injection import InjectionTemplate
-from gencrud.config.angular import AngularModule, AngularModules
+from gencrud.config.angular import AngularModules
 import posixpath
 
 
 logger = logging.getLogger()
+
+
+class TemplateDeclareList(list):
+    def __init__(self, parent, items):
+        super().__init__()
+        self.__parent = parent
+        for item in items:
+            self.append(TemplateComponent(**item))
+
+        return
+
+
+class TemplateDeclare():
+    def __init__( self, parent, config ):
+        super().__init__()
+        self.__parent = parent
+        self.__modules      = TemplateDeclareList( self, config.get( 'module', [] ) )
+        self.__components   = TemplateDeclareList( self, config.get( 'component', [] ) )
+        self.__service      = TemplateDeclareList( self, config.get( 'service', [] ) )
+        return
+
+    @property
+    def Component( self ) -> TemplateDeclareList:
+        return self.__components
+
+    @property
+    def Module( self ) -> TemplateDeclareList:
+        return self.__modules
+
+    @property
+    def Service( self ) -> TemplateDeclareList:
+        return self.__service
+
+    def __iter__( self ):
+        return iter( list( self.__modules ) + list( self.__components ) + list( self.__service ) )
 
 
 class TemplateObject( TemplateBase ):
@@ -57,6 +92,8 @@ class TemplateObject( TemplateBase ):
         self.__mixin        = TemplateMixin( self, **self.__config.get( C_MIXIN, {} ) )
         self.__guard        = TemplateGuard( self, **self.__config.get( C_GUARD, {} ) ) if C_GUARD in self.__config else None
         self.__providers    = TemplateProviders( self, self.__config.get( C_PROVIDERS, [] ) )
+        self.__declare      = TemplateDeclare( self, self.__config.get( 'declare', {} ) )
+
         return
 
     def hasGuard( self ):
@@ -219,6 +256,11 @@ class TemplateObject( TemplateBase ):
                         raise Exception( "service missing in {} in field {}".format( self.__table.name, field.name )  )
 
         return ( FILLER if len( result ) > 0 else '' ) + ( FILLER_LF.join( result ) )
+
+    @property
+    def Declare( self ) -> TemplateDeclare:
+        return self.__declare
+
 
 
 TemplateObjects = t.List[ TemplateObject ]

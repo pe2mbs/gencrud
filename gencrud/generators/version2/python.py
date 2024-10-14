@@ -1,3 +1,4 @@
+import shutil
 import typing as t
 from datetime import datetime
 from mako.template import Template
@@ -10,7 +11,6 @@ from gencrud.generators.version2.constant_gen import generatePythonConstants
 from gencrud.generators.version2.boilerplate import BOILERPLATE
 from gencrud.configuraton import TemplateConfiguration, TemplateObject
 from gencrud.generators.version2.reformat import reformatPythonCode
-
 
 logger = logging.getLogger( 'gencrud.python' )
 # logger.setLevel( logging.DEBUG )
@@ -32,7 +32,10 @@ def update_gencrud_comment( lines: list ):
 
 
 def init_file( folder: str,  imports: t.List[ dict ], template: t.Union[ str, t.List[ str ] ] ):
-    filename = os.path.join( folder, '__init__.py' )
+    with open( os.path.join( folder, '__init__.py' ), 'wt' ) as stream:
+        stream.write( "" )
+
+    filename = os.path.join( folder, 'init.py' )
     if os.path.exists( filename ):
         # Open the file and read
         with open( filename, 'r' ) as stream:
@@ -201,38 +204,58 @@ def generatePython( config: TemplateConfiguration, templates: t.List[ str ], fla
                 raise gencrud.util.exceptions.ModuleExistsAlready( cfg, modulePath )
 
             outputSourceFile = os.path.join( modulePath, gencrud.util.utils.sourceName( template ) )
-            if config.options.backupFiles:
-                gencrud.util.utils.backupFile(outputSourceFile)
-
-            if os.path.isfile(outputSourceFile):
-                # remove the file first
-                os.remove(outputSourceFile)
 
             makoTemplate = Template( filename = template )
             templateFilename = os.path.join( modulePath, outputSourceFile )
-            with open( templateFilename, 'w', newline = '' ) as stream:
+            templateFilenameTmp = os.path.join( modulePath, outputSourceFile + ".new" )
+
+            with open( templateFilenameTmp, 'w', newline = '' ) as stream:
                 stream.write( makoTemplate.render( obj = cfg,
                                                    root = config,
                                                    modules = modules,
                                                    date = generationDateTime,
                                                    version = gencrud.version.__version__,
                                                    username = userName ) )
-
             if templateFilename.lower().endswith( '.py' ):
                 # execute yapf to format the Python code.
-                reformatPythonCode( templateFilename, config )
+                reformatPythonCode( templateFilenameTmp, config )
+
+            if not gencrud.util.utils.comparePythonFile( templateFilenameTmp, templateFilename ):
+                # New content in file
+                if config.options.backupFiles:
+                    gencrud.util.utils.backupFile(templateFilename)
+
+                if os.path.isfile( templateFilename ):
+                    # remove the file first
+                    os.remove( templateFilename )
+
+                shutil.copy( templateFilenameTmp, templateFilename )
+
+            else:
+                # Generated file is the same, therefore we don't update the actual file
+                pass
+
+            os.remove( templateFilenameTmp )
 
         constantLines = generatePythonConstants( config, cfg )
         if len( constantLines ) > 0:
             filename = os.path.join( modulePath, 'constants.py' )
-            with open( filename, 'w', newline = '' ) as stream:
+            filename_new = filename + ".new"
+            with open( filename_new, 'w', newline = '' ) as stream:
                 # Write the BOILERPLATE
                 stream.write( BOILERPLATE )
                 stream.write( '\n\n' )
                 # Write the lines
                 stream.write( '\n'.join( constantLines ) )
 
-            reformatPythonCode( filename, config )
+            reformatPythonCode( filename_new, config )
+            if not gencrud.util.utils.comparePythonFile( filename_new, filename ):
+                if os.path.isfile( filename ):
+                    os.remove( filename )
+
+                shutil.copy( filename_new, filename )
+
+            os.remove( filename_new )
 
         # Now check if there are any mixin's missing
         if cfg.mixin.python.hasModel():

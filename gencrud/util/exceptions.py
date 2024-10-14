@@ -154,3 +154,6 @@ class InvalidViewSize( Exception ):
 class MissingAttribute( Exception ):
     def __init__( self, group, name ):
         Exception.__init__( self, "Missing '{1}' in section '{0}'".format( group, name ) )
+
+class MissingTemplateAttribute( Exception ):
+    pass

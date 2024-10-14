@@ -117,8 +117,8 @@ C_DBLCLICK              = 'dblclick'
 C_DOUBLE_CLICK          = 'dblclick'
 C_MIXIN                 = 'mixin'
 
-C_LEFT                  = 'left'
-C_RIGHT                 = 'right'
+C_LEFT                  = 'prefix'
+C_RIGHT                 = 'suffix'
 C_SIDEBAR               = 'sidebar'
 
 C_ACTION_TYPES          = ( C_DIALOG, C_SCREEN, C_LIST, C_API, C_DIRECTIVE, C_FUNCTION, C_BUTTON, C_NONE )
@@ -224,6 +224,7 @@ C_NGIF                  = 'ngIf'
 C_VERTICAL              = 'vertical'
 C_PIPE                  = 'pipe'
 C_FORMAT                = 'format'
+C_TIMEZONE              = 'timezone'
 C_INVERT                = 'invert'
 C_STEP                  = 'step'
 C_THUMB_LABEL           = 'thumbLabel'

@@ -20,6 +20,8 @@ import typing as t
 import os
 import logging
 import shutil
+from difflib import Differ
+
 from six.moves.urllib.request import ProxyHandler
 import pypac.parser
 from urllib.parse import unquote, urlparse
@@ -220,3 +222,45 @@ def check_nltk():
         update_nltk()
 
     return
+
+
+def _compareFile( file_a: str, file_b: str ) -> t.List[ str ]:
+    with open( file_a, 'r' ) as stream_a:
+        a = stream_a.readlines()
+        with open( file_b, 'r' ) as stream_b:
+            b = stream_b.readlines()
+            diff_data = [ line for line in Differ().compare( a, b ) if line[ 0 ] not in ( ' ', '?' ) ]
+
+    if diff_data is None:
+        raise Exception()
+
+    idx = 0
+    # '- #   gencrud: 2024-09-26 08:14:07 version 3.2.1193 by user a480226
+    # '
+    while idx < len(diff_data):
+        if diff_data[idx][2:].startswith('#') and 'gencrud' in diff_data[idx]:
+            del diff_data[idx]
+
+        else:
+            idx += 1
+
+    return diff_data
+
+
+def comparePythonFile( file_a: str, file_b: str ) -> bool:
+    diff_data = _compareFile( file_a, file_b )
+    return len( diff_data ) == 0
+
+
+def compareAngularFile( file_a: str, file_b: str ) -> bool:
+    diff_data = _compareFile( file_a, file_b )
+    idx = 0
+
+    return len( diff_data ) == 0
+
+
+def compareHtmlFile(file_a: str, file_b: str) -> bool:
+    diff_data = _compareFile(file_a, file_b)
+    idx = 0
+
+    return len( diff_data ) == 0

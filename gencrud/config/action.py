@@ -16,6 +16,7 @@
 #   Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 #   Boston, MA 02110-1301 USA
 #
+import typing as t
 import logging
 from gencrud.util.typescript import TypeScript
 from gencrud.util.exceptions import InvalidSetting
@@ -153,8 +154,12 @@ class TemplateAction( TemplateBase ):
         return self.__cfg.get( C_CSS, '' )
 
     @property
-    def route( self ) -> RouteTemplate:
-        return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else None # {}
+    def route( self ) -> t.Union[ RouteTemplate, str, None ]:
+        route = self.__cfg.get(C_ROUTE, None)
+        if isinstance( route, dict ):
+            return RouteTemplate( self, **self.__cfg.get( C_ROUTE, None ) ) if self.isAngularRoute() else None # {}
+
+        return route
 
     @property
     def params( self ):
@@ -178,6 +183,10 @@ class TemplateAction( TemplateBase ):
             return '{{ queryParams: {} }}'.format( items )
 
         return '{ }'
+
+    @property
+    def mode( self ) -> str:
+        return self.params.get( 'mode', 'edit' )
 
     @property
     def width( self ):
@@ -352,6 +361,24 @@ class TemplateAction( TemplateBase ):
             return self.buttonObject()
         return ""
 
+    def createFieldAction( self, field, service = None ):
+        disabled = ''
+        if self.disabled:
+            disabled = f'[disabled]="{ self.disabled }"'
+
+        if self.function != '':
+            r = f'<gc-action-button { self.position } { disabled } [value]="row.{ field }" (action)="{ self.function }"><mat-icon>{ self.icon }</mat-icon></gc-action-button>'
+
+        elif service is not None:
+            # Handle the service data
+            # field: 'TE_U_ID', icon: 'edit', mode: 'edit', route: 'wa_admin/users/edit'
+            route = f'{ service.module }/{ service.name }/edit'
+            r = f'<gc-route-button { self.position } { disabled } [value]="row.{ field }" field="{ service.value }" route="{route}" mode="edit"><mat-icon>{ self.icon }</mat-icon></gc-route-button>'
+
+        else:
+            return ''
+
+        return r
 
 DEFAULT_NEW_ACTION      = TemplateAction( None,
                                           'internal_action',

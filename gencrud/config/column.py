@@ -51,26 +51,32 @@ class TemplateColumn( TemplateBase ):
                           'BLOB': 'string',
                           'NUMERIC': 'string',
                           'DECIMAL': 'string',
+                          'GZIP_JSON': 'any',
+                          'GZIP_BLOB': 'string',
+                          'GZIP_TEXT': 'string',
                           'CLOB': 'string',
                           'TEXT': 'string' }
     PYTHON_TYPES_FROM_SQL = { 'CHAR': 'str',
-         'VARCHAR': 'str',
-         'INT': 'int',
-         'BIGINT': 'int',
-         'BOOLEAN': 'bool',
-         'BOOL': 'bool',
-         'TIMESTAMP': 'datetime',
-         'DATETIME': 'datetime',
-         'DATE': 'date',
-         'FLOAT': 'float',
-         'REAL': 'float',
-         'INTERVAL': 'int',
-         'BLOB': 'bytes',
-         'NUMERIC': 'float',
-         'DECIMAL': 'float',
-         'CLOB': 'str',
-         'TEXT': 'str',
-         'TIME': 'time' }
+                              'VARCHAR': 'str',
+                              'INT': 'int',
+                              'BIGINT': 'int',
+                              'BOOLEAN': 'bool',
+                              'BOOL': 'bool',
+                              'TIMESTAMP': 'datetime',
+                              'DATETIME': 'datetime',
+                              'DATE': 'date',
+                              'FLOAT': 'float',
+                              'REAL': 'float',
+                              'INTERVAL': 'int',
+                              'BLOB': 'bytes',
+                              'NUMERIC': 'float',
+                              'DECIMAL': 'float',
+                              'CLOB': 'str',
+                              'GZIP_JSON': 'dict',
+                              'GZIP_BLOB': 'bytes',
+                              'GZIP_TEXT': 'str',
+                              'TEXT': 'str',
+                              'TIME': 'time' }
 
     # This is actually the alchemy type
     PY_TYPES_FROM_SQL = { 'CHAR': 'API.db.String',
@@ -89,46 +95,55 @@ class TemplateColumn( TemplateBase ):
                           'NUMERIC': 'API.db.Numeric',
                           'DECIMAL': 'API.db.Numeric',
                           'CLOB': 'API.db.LONGTEXT',
+                          'GZIP_JSON': 'API.db.CompressedJSON',
+                          'GZIP_BLOB': 'API.db.CompressedBytes',
+                          'GZIP_TEXT': 'API.db.CompressedString',
                           'TEXT': 'API.db.LONGTEXT',
                           'TIME': 'API.db.Time' }
 
     NATIVE_PY_TYPES_FROM_SQL = { 'CHAR': 'str',
-                          'VARCHAR': 'str',
-                          'INT': 'int',
-                          'BIGINT': 'int',
-                          'BOOLEAN': 'bool',
-                          'BOOL': 'bool',
-                          'TIMESTAMP': 'str',
-                          'DATETIME': 'str',
-                          'DATE': 'str',
-                          'FLOAT': 'float',
-                          'REAL': 'float',
-                          'INTERVAL': 'tuple',
-                          'BLOB': 'bytes',
-                          'NUMERIC': 'float',
-                          'DECIMAL': 'int',
-                          'CLOB': 'str',
-                          'TEXT': 'str',
-                          'TIME': 'str' }
+                                 'VARCHAR': 'str',
+                                 'INT': 'int',
+                                 'BIGINT': 'int',
+                                 'BOOLEAN': 'bool',
+                                 'BOOL': 'bool',
+                                 'TIMESTAMP': 'str',
+                                 'DATETIME': 'str',
+                                 'DATE': 'str',
+                                 'FLOAT': 'float',
+                                 'REAL': 'float',
+                                 'INTERVAL': 'tuple',
+                                 'BLOB': 'bytes',
+                                 'NUMERIC': 'float',
+                                 'DECIMAL': 'int',
+                                 'CLOB': 'str',
+                                 'GZIP_JSON': 'dict',
+                                 'GZIP_BLOB': 'bytes',
+                                 'GZIP_TEXT': 'str',
+                                 'TEXT': 'str',
+                                 'TIME': 'str' }
 
     SCHEMA_TYPES_FROM_SQL = { 'CHAR': 'String',
-                          'VARCHAR': 'String',
-                          'INT': 'Integer',
-                          'BIGINT': 'Integer',
-                          'BOOLEAN': 'Boolean',
-                          'BOOL': 'Boolean',
-                          'TIMESTAMP': 'DateTime',
-                          'DATETIME': 'DateTime',
-                          'DATE': 'Date',
-                          'FLOAT': 'Float',
-                          'REAL': 'Float',
-                          'INTERVAL': 'Integer',
-                          'BLOB': 'String',
-                          'NUMERIC': 'Decimal',
-                          'DECIMAL': 'Decimal',
-                          'CLOB': 'String',
-                          'TEXT': 'String',
-                          'TIME': 'Time' }
+                              'VARCHAR': 'String',
+                              'INT': 'Integer',
+                              'BIGINT': 'Integer',
+                              'BOOLEAN': 'Boolean',
+                              'BOOL': 'Boolean',
+                              'TIMESTAMP': 'DateTime',
+                              'DATETIME': 'DateTime',
+                              'DATE': 'Date',
+                              'FLOAT': 'Float',
+                              'REAL': 'Float',
+                              'INTERVAL': 'Integer',
+                              'BLOB': 'String',
+                              'NUMERIC': 'Decimal',
+                              'DECIMAL': 'Decimal',
+                              'CLOB': 'String',
+                              'GZIP_JSON': 'DictToString',
+                              'GZIP_BLOB': 'String',
+                              'GZIP_TEXT': 'String',
+                              'TEXT': 'String',
+                              'TIME': 'Time' }
 
     def __init__( self, parent, table_name, **cfg ):
         """
@@ -760,25 +775,47 @@ class TemplateColumn( TemplateBase ):
 
     @property
     def validators( self ):
-        result = ""
-        if not self.isPrimaryKey():
+        result = []
+        def quoteVariable( variable: t.Union[ str, None ], quote_char = '"' ):
+            if isinstance( variable, str ):
+                return f'{quote_char}{variable}{quote_char}'
+
+            return 'null'
+
+        if not self.isPrimaryKey() and self.ui.type != C_LABEL and not self.readonly:
             if 'NOT NULL' in self.__attrs or self.hasForeign():
-                result += 'Validators.required, '
+                result.append( 'CGcValidators.required' )
 
             if self.__length > 0:
-                result += 'Validators.maxLength( {0} ), '.format( self.__length )
+                result.append( f'CGcValidators.maxLength( {self.__length} )' )
 
-        return '[ {} ] '.format( result )
+            if self.pyType == 'date':
+                if self.__ui.pipe == 'date':
+                    result.append( f'CGcValidators.date( {quoteVariable( self.__ui.format )} )')
+
+            elif self.pyType == 'datetime':
+                if self.__ui.pipe == 'datetime':
+                    if self.__ui.timezone != 'UTC':
+                        result.append( f'CGcValidators.datetime( {quoteVariable( self.__ui.format )}, "{self.__ui.timezone}" )')
+
+                    else:
+                        result.append(f'CGcValidators.datetime( "{self.__ui.format}" )')
+
+            elif self.pyType == 'time':
+                if self.__ui.pipe == 'time':
+                    result.append( f'CGcValidators.time( {quoteVariable( self.__ui.format )} )')
+
+        return f'[ { ", ".join( result ) } ] '
 
     @property
     def validatorsList( self ):
         result = []
         if not self.isPrimaryKey():
-            if 'NOT NULL' in self.__attrs or self.hasForeign():
-                result.append(Validator(ValidatorType.REQUIRED, True))
+            if ( 'NOT NULL' in self.__attrs or self.hasForeign() ) and self.pyType == 'bool':
+                result.append( Validator( ValidatorType.REQUIRED, True ) )
 
             if self.__length > 0:
-                result.append(Validator(ValidatorType.MAXLENGTH, self.__length))
+                result.append( Validator( ValidatorType.MAXLENGTH, self.__length ) )
 
         return result
 

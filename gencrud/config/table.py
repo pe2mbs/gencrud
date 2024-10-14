@@ -25,6 +25,7 @@ from gencrud.config._inports import SourceImport
 from gencrud.config.column import TemplateColumn
 from gencrud.config.filter import FilterInfoList
 from gencrud.config.inputgroup import InputGroup
+from gencrud.config.relationship import TemplateRelationShip
 from gencrud.config.tab import TemplateTabs
 from gencrud.config.sort import SortInfo
 from gencrud.config.mixin import TemplateMixin
@@ -54,6 +55,10 @@ class RelationShip( TemplateBase ):
     @property
     def cascade( self ):
         return self.__relation.get( C_CASCADE )
+
+    @property
+    def single_parent( self ):
+        return self.__relation.get( 'single-parent', False )
 
 
 class TemplateDatabaseEngine( TemplateBase ):
@@ -85,6 +90,7 @@ class TemplateTable( TemplateBase ):
         self.__viewSize         = None
         self.__defaultViewSize  = 10
         self.__inports          = SourceImport()
+        self.__relationShips    = []
         if C_NAME not in self.__table:
             raise MissingAttribute( C_TABLE, C_NAME )
 
@@ -140,7 +146,15 @@ class TemplateTable( TemplateBase ):
         else:
             self.__engine = None
 
+        self.__relationShips = [ TemplateRelationShip( self, **obj ) for obj in table.get( 'relationships', [] ) ]
         return
+
+    def hasRelationShips( self ):
+        return len( self.__relationShips ) > 0
+
+    @property
+    def RelationShips( self ) -> t.Iterator:
+        return iter( self.__relationShips )
 
     def hasEngine( self ) -> bool:
         return self.__engine is not None
@@ -245,7 +259,7 @@ class TemplateTable( TemplateBase ):
                 return True
         return False
 
-    def maximumTestValues( self ) -> bool:
+    def maximumTestValues( self ) -> int:
         return max( len( column.testdata.values ) for column in self.columns ) 
 
     @property

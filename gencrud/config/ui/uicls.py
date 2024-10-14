@@ -19,7 +19,9 @@
 import logging
 import traceback
 import json
-from typing import List
+import typing as t
+
+from gencrud.config.action import TemplateAction
 from gencrud.config.actions import TemplateActions
 from gencrud.config.base import TemplateBase
 from gencrud.config.service import TemplateService
@@ -96,7 +98,7 @@ class TemplateUi( TemplateBase ):
         return
 
     @property
-    def field( self ):
+    def field( self ) -> 'TemplateColumn':
         return self.parent
 
     @property
@@ -104,7 +106,7 @@ class TemplateUi( TemplateBase ):
         return self.parent.table
 
     @property
-    def object( self ):
+    def object( self ) -> 'TemplateObject':
         return self.table.object
 
     @property
@@ -112,7 +114,7 @@ class TemplateUi( TemplateBase ):
         return self.__cfg.get( C_TYPE, C_TEXTBOX ).lower()
 
     @property
-    def type( self ):
+    def type( self ) -> str:
         return self.__cfg.get( C_TYPE, None )
 
     @property
@@ -191,7 +193,11 @@ class TemplateUi( TemplateBase ):
 
     @property
     def format( self ):
-        return str( self.__cfg.get( C_FORMAT, C_TEXT ) )
+        return str( self.__cfg.get( C_FORMAT ) )
+
+    @property
+    def timezone( self ) -> str:
+        return self.__cfg.get( C_TIMEZONE, 'UTC' )
 
     @property
     def invert( self ):
@@ -248,7 +254,7 @@ class TemplateUi( TemplateBase ):
     def isSet( self, property ):
         return property in self.__cfg or self.parent.isSet( property )
 
-    def buildInputElement( self, table, field, label, options = None, mixin = "", validators: List[Validator] = [], tab: bool = False ):
+    def buildInputElement( self, table, field, label, options = None, mixin = "", validators: t.List[Validator] = [], tab: bool = False ):
         if options is None:
             options = []
         
@@ -264,6 +270,38 @@ class TemplateUi( TemplateBase ):
 
         if self.isSet( 'suffix-type' ) or self.isSet( 'suffix' ):
             options.append( 'suffix="{0}" suffix-type="{1}"'.format( self.suffix, self.suffixType ) )
+
+        def createActionButtons( actions: list, service: t.Optional[ TemplateService] = None ) -> list:
+            _options = []
+            for action in actions:
+                buttonFields = []
+                buttonFields.append(f"field: '{action.parent.parent.name}'")
+
+                if action.icon is not None:
+                    buttonFields.append(f"icon: '{action.icon}'")
+
+                if action.mode is not None:
+                    buttonFields.append(f"mode: '{action.mode}'")
+
+                # if action.disabled is not None:
+                #     buttonFields.append(f"disabled: {action.disabled}")
+
+                if action.function not in ( None, '' ):
+                    buttonFields.append( f"function: {action.function}" )
+
+                else:
+                    if isinstance( service, TemplateService ):
+                        buttonFields.append(f"route: '{service.module}/{service.name}/edit'")
+
+                    elif action.route in (None, ''):
+                        buttonFields.append(f"route: '{self.object.route}/edit'")
+
+                    else:
+                        buttonFields.append(f"route: '{ action.route }'")
+
+                _options.append(f'[{action.position}ActionButton]="{{ {", ".join(buttonFields)} }}"')
+
+            return _options
 
         if self.isUiType( C_COMBO, C_CHOICE, C_CHOICE_AUTO, C_TEXTBOX, C_LABEL ):        # C_CHOICE_BASE
             if self.__service is None and self.hasResolveList() and not self.isUiType( C_TEXTBOX ): # choice is backend rendered and does not take items list
@@ -286,20 +324,6 @@ class TemplateUi( TemplateBase ):
                             filterDictString = ", ".join([key + ": " + value for key, value in self.service.filter.items()])
                             options.append( '[filterDict]="{ ' + filterDictString + '}"' )
 
-                    # TODO: right now, only one action button is supported for a service and
-                    # the functionality is the same (redirecting to the screen view of the service class)
-                    # in case multiple functionalities and buttons should be supported, the following lines
-                    # need an adjustment
-                    if len(self.__actions) > 0:
-                        buttonPosition = self.__actions[0].position if len(self.__actions) == 1 else 'both'
-                        options.append( 'buttonPosition="{}"'.format( buttonPosition ) )
-                        options.append( '[contextObject]="this"' )
-                        for action in self.__actions:
-                            position = 'Left' if action.position == 'left' else 'Right'
-                            options.append( 'icon{}="{}"'.format( position, action.icon ) )
-                            if action.function != '' and action.function != None:
-                                options.append( 'funcToEvaluate{}="{}"'.format( position, action.function ) )
-
         elif self.isUiType( C_TEXTAREA ):
             options.append( 'rows="{0}" cols="{1}"'.format( self.rows, self.cols ) )
 
@@ -315,17 +339,6 @@ class TemplateUi( TemplateBase ):
             options.append( 'thumbLabel="{0}"'.format( self.thumbLabel ) )
             options.append( 'labelPosition="{0}"'.format( self.labelPosition ) )
 
-        # no service defined --> custom button with custom function
-        if len(self.__actions) > 0 and self.__service is None:
-            buttonPosition = self.__actions[0].position if len(self.__actions) == 1 else 'both'
-            options.append( 'buttonPosition="{}"'.format( buttonPosition ) )
-            options.append( '[contextObject]="this"' )
-            for action in self.__actions:
-                position = 'Left' if action.position == 'left' else 'Right'
-                options.append( 'icon{}="{}"'.format( position, action.icon ) )
-                if action.function != '' and action.function != None:
-                    options.append( 'funcToEvaluate{}="{}"'.format( position, action.function ) )
-
         if C_DISABLED in self.__cfg:
             options.append( '[disabled]="{0}"'.format( self.__cfg[C_DISABLED] ) )
 
@@ -338,12 +351,18 @@ class TemplateUi( TemplateBase ):
         if C_COLOR in self.__cfg:
             options.append( 'color="{0}"'.format( self.color ) )
 
-        if self.isUiType( C_LABEL ):
-            options.append( 'format="{0}"'.format( self.format ) )
-            options.append( 'pipe="{0}"'.format( self.pipe ) )
+        if self.pipe != '':
+            if self.isUiType( C_LABEL ):
+                options.append( 'format="{0}"'.format( self.format ) )
+                options.append( 'pipe="{0}"'.format( self.pipe ) )
+                if self.timezone != 'UTC':
+                    options.append( 'timezone="{0}"'.format(self.timezone))
 
-        if self.isUiType( C_DATE, C_DATE_PICKER, C_DATE_TIME, C_DATE_TIME_PICKER, C_TIME, C_TIME_PICKER ):
-            options.append( 'format="{0}"'.format( self.format ) )
+            elif self.isUiType( C_DATE, C_DATE_PICKER, C_DATE_TIME, C_DATE_TIME_PICKER, C_TIME, C_TIME_PICKER ):
+                options.append( 'format="{0}"'.format( self.format ) )
+                options.append( 'pipe="{0}"'.format( self.pipe ) )
+                if self.timezone != 'UTC':
+                    options.append( 'timezone="{0}"'.format(self.timezone))
 
         if self.hasDetailButton():
             s = self.detailButton()
@@ -372,13 +391,19 @@ class TemplateUi( TemplateBase ):
                 options.append( f'[actionbar]="getActionBar_{ field }()"' )
                 options.append( f'[monacoConfig]="getEditorConfig_{ field }()"' )
 
-        result = '<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}></{tag}>'.\
+        ng_context = ''
+        for action in self.__actions:
+            action: TemplateAction
+            ng_context += action.createFieldAction( field, self.__service ) + "\n"
+
+        result = '<{tag} id="{table}.{field}" placeholder="{placeholder}" {option} formControlName="{field}"{mixin}>{ng_context}</{tag}>'.\
                 format( tag         = self.__components.getComponentTag( self.uiObject ),
                         table       = self.table.name,
                         name        = self.parent.name,
                         placeholder = label,
                         option      = ' '.join( options ),
                         field       = field,
+                        ng_context  = ng_context,
                         mixin       = " " + mixin if len(mixin) > 0 else "" )
         if self.hasMonaco():
             if self.Monaco.hasHeight() and self.Monaco.Height != 'auto':

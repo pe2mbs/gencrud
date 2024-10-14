@@ -21,11 +21,44 @@ from gencrud.config.base import TemplateBase
 C_APP                   = 'app'
 
 
+class TemplateComponent( TemplateBase ):
+    def __init__( self, **cfg ):
+        TemplateBase.__init__( self, None )
+        self.__config = cfg
+        return
+
+    @property
+    def cls( self ) -> str:
+        return self.__config.get( C_CLASS, '' )
+
+    @property
+    def filename( self ) -> str:
+        filename = self.__config.get( C_FILENAME, '' )
+        if filename.endswith( '.ts' ):
+            filename = filename[ :-3 ]
+
+        if not filename.startswith('.'):
+            filename = "./" + filename
+
+        return filename
+
+    @property
+    def actualFilename( self ) -> str:
+        return self.__config.get( C_FILENAME, '' )
+
+
+
+
 class TemplateImport( TemplateBase ):
     def __init__( self, **cfg ):
         TemplateBase.__init__( self, None )
         self.__config = cfg
         return
+
+    @property
+    def cls( self ) -> str:
+        return self.__config.get( C_CLASS, '' )
+
 
     @property
     def module( self ) -> str:
