@@ -205,7 +205,8 @@ class TemplateTable( TemplateBase ):
         if len( groups ) == 0:
             return result
 
-        if len( groups[ None ] ) > 0:
+        if None in groups and len( groups[ None ] ) > 0:
+            logger.warning( f"Undefined group on tab { tab_name } renamed to 'no-group'" )
             result.append( InputGroup( 'no-group', groups[ None ] ) )
             del groups[ None ]
 
