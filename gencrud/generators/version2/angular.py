@@ -375,7 +375,7 @@ def generateAngular( config: TemplateConfiguration, templates: list, angular_con
                     # Prettier installed,
                     logger.info( f"Using {prettier} to format the code {os.path.basename( sourceFilename )}" )
                     result = subprocess.Popen( ( prettier, '--write', sourceFilenameTmp ),
-                                               shell = True,
+                                               # shell = True,
                                                stdout = subprocess.PIPE,
                                                stderr = subprocess.STDOUT )
                     for line in result.stdout.readlines():

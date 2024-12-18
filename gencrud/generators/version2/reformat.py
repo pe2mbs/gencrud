@@ -1,14 +1,18 @@
 import os.path
 import sys
 import logging
-import subprocess
+import traceback
 from shutil import which
-
+from gencrud.configuraton import TemplateConfiguration
+from yapf import main as yapf_main
 
 logger = logging.getLogger( 'gencrud.reformat' )
 
 
-def reformatPythonCode( filename, config ):
+def reformatPythonCode( filename, config: TemplateConfiguration ):
+    if not config.options.UseYapf:
+        return
+
     yapf = which('yapf')
     if not isinstance(yapf, str):
         # Is ths a vierual environment module ?
@@ -16,13 +20,9 @@ def reformatPythonCode( filename, config ):
 
     if isinstance(yapf, str):
         logger.info(f"Using {yapf} to format the code {os.path.basename(filename)}")
-        result = subprocess.Popen(
-            (yapf, '--style', config.options.YapfStyle, '--in-place', '--print-modified', filename ),
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        for line in result.stdout.readlines():
-            logger.info(line.decode('utf-8'))
+        try:
+            yapf_main( ( 'yapf', '--style', config.options.YapfStyle, '--in-place', '--print-modified', filename ) )
 
-        result.wait()
+        except Exception:
+            print( traceback.format_exc() )
 

@@ -207,7 +207,7 @@ def generatePython( config: TemplateConfiguration, templates: t.List[ str ], fla
 
             makoTemplate = Template( filename = template )
             templateFilename = os.path.join( modulePath, outputSourceFile )
-            templateFilenameTmp = os.path.join( modulePath, outputSourceFile + ".new" )
+            templateFilenameTmp = os.path.join( modulePath, outputSourceFile + ".py" )
 
             with open( templateFilenameTmp, 'w', newline = '' ) as stream:
                 stream.write( makoTemplate.render( obj = cfg,
@@ -240,7 +240,7 @@ def generatePython( config: TemplateConfiguration, templates: t.List[ str ], fla
         constantLines = generatePythonConstants( config, cfg )
         if len( constantLines ) > 0:
             filename = os.path.join( modulePath, 'constants.py' )
-            filename_new = filename + ".new"
+            filename_new = filename + ".py"
             with open( filename_new, 'w', newline = '' ) as stream:
                 # Write the BOILERPLATE
                 stream.write( BOILERPLATE )
