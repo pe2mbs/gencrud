@@ -762,7 +762,17 @@ class TemplateColumn( TemplateBase ):
 
     @property
     def initValue( self ):
+
         def initValueDefault():
+
+            #TODO Check adapted by Ernst 28-12-2024
+            if self.hasAttribute('DEFAULT'):
+                for attr in self.__attrs:
+                    if attr.startswith('DEFAULT'):
+                        return attr[ 8: ]
+
+            #ENDTODO
+
             if self.isNumericField():
                 return "0"
 
