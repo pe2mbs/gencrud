@@ -2,8 +2,47 @@ import io
 import yaml
 
 
+__all___ = [ 'getTemplateV2' ]
+
+
 _GENCRUD_SCHEME_V2_YAML = """---
-'$schema': http://json-schema.org/draft-07/schema#
+$schema: http://json-schema.org/draft-07/schema#
+$defs:
+    menu_item:
+        type: object
+        required: 
+        -   caption
+        additionalProperties: false
+        properties:
+            caption:
+                type: string
+            icon:
+                type: string
+            after:
+                type: 
+                -   string
+                -   "null"
+            before:
+                type: 
+                -   string
+                -   "null"
+            route:
+                type: string
+            access:
+                type: string
+            menu: { "$ref": "#/$defs/menu_item" }
+    class_file:
+        type: object
+        required:
+        -   class
+        -   file
+        additionalProperties: false
+        properties:
+            class:
+                type: string
+            file:
+                type: string
+    
 title: GenCrud
 type: object
 required: 
@@ -211,105 +250,29 @@ properties:
                             type: object
                             additionalProperties: false
                             properties:
-                                module:
-                                    type: object
-                                    required: 
-                                    -   class
-                                    -   file
-                                    additionalProperties: false
-                                    properties:
-                                        class:
-                                            type: string
-                                        file:
-                                            type: string
-                                component.dialog:
-                                    type: object
-                                    required: 
-                                    -   class
-                                    -   file
-                                    additionalProperties: false
-                                    properties:
-                                        class:
-                                            type: string
-                                        file:
-                                            type: string
-                                screen.component:
-                                    type: object
-                                    required:
-                                    -   class
-                                    -   file
-                                    additionalProperties: false
-                                    properties:
-                                        class:
-                                            type: string
-                                        file:
-                                            type: string
-                                table.component:
-                                    required: 
-                                    -   class
-                                    -   file
-                                    type: object
-                                    additionalProperties: false
-                                    properties:
-                                        class:
-                                            type: string
-                                        file:
-                                            type: string
+                                module:             { "$ref": "#/$defs/class_file" }
+                                component.dialog:   { "$ref": "#/$defs/class_file" }
+                                screen.component:   { "$ref": "#/$defs/class_file" }
+                                table.component:    { "$ref": "#/$defs/class_file" }
                         python:
                             type: object
                             additionalProperties: false
                             properties:
-                                model:
-                                    type: object
-                                    additionalProperties: false
-                                    properties:
-                                        class: 
-                                            type: string
-                                        file: 
-                                            type: string
-                                schema:
-                                    type: object
-                                    additionalProperties: false
-                                    properties:
-                                        class:
-                                            type: string
-                                        file:
-                                            type: string
-                                view:
-                                    type: object
-                                    additionalProperties: false
-                                    properties:
-                                        class: 
-                                            type: string
-                                        file: 
-                                            type: string
+                                model:              { "$ref": "#/$defs/class_file" }
+                                schema:             { "$ref": "#/$defs/class_file" }
+                                view:               { "$ref": "#/$defs/class_file" }
                 ignore_templates: 
                     type: array
                 providers:
                     type: array
-                    items:
-                        type: object
-                        required: 
-                        -   file
-                        -   class
-                        properties:
-                            file:     
-                                type: string
-                            class:    
-                                type: string
+                    items:                          { "$ref": "#/$defs/class_file" }
                 injection:
                     type: object
                     properties:
                         module.ts:
                             type: object
                             properties:
-                                dialog:
-                                    type: object
-                                    properties:
-                                        class: 
-                                            type: string
-                                        file: 
-                                            type: string
+                                dialog:             { "$ref": "#/$defs/class_file" }
                 route: 
                     type: string
                 ignore-route:
@@ -400,75 +363,7 @@ properties:
                                                 -   string
                                             value: 
                                                 type: string
-                menu:
-                    # At this moment we support only 3 levels.
-                    type: object
-                    required: 
-                    -   caption
-                    additionalProperties: false
-                    properties:
-                        caption:
-                            type: string
-                        icon:
-                            type: string
-                        after:
-                            type: 
-                            -   string
-                            -   "null"
-                        before:
-                            type: 
-                            -   string
-                            -   "null"
-                        route:
-                            type: string
-                        access:
-                            type: string
-                        menu:
-                            type: object
-                            required: 
-                            -   caption
-                            additionalProperties: false
-                            properties:
-                                caption:
-                                    type: string
-                                icon:
-                                    type: string
-                                after:
-                                    type: 
-                                    -   string
-                                    -   "null"
-                                before:
-                                    type: 
-                                    -   string
-                                    -   "null"
-                                route:
-                                    type: string
-                                access:
-                                    type: string
-                                menu:
-                                    type: object
-                                    required:
-                                    -   caption
-                                    additionalProperties: false
-                                    properties:
-                                        caption:
-                                            type: string
-                                        icon:
-                                            type: string
-                                        after:
-                                            type: 
-                                            -   string
-                                            -   "null"
-                                        before:
-                                            type: 
-                                            -   string
-                                            -   "null"  
-                                        route:
-                                            type: string
-                                        access:
-                                            type: string  
-                                        menu:
-                                            type: object
+                menu:                               { "$ref": "#/$defs/menu_item" }
                 table:
                     type: object
                     required: 
@@ -564,8 +459,6 @@ properties:
                                         required: 
                                         -   label
                                         -   component
-                                        # -   name
-                                        # -   file
                                         -   params
                                         additionalProperties: false
                                         properties:
